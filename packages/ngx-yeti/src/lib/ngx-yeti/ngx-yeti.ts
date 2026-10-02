@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
 
 @Component({
   selector: 'yeti-ngx-yeti',
@@ -6,4 +6,6 @@ import { Component } from '@angular/core';
   templateUrl: './ngx-yeti.html',
   styleUrl: './ngx-yeti.css',
 })
-export class NgxYeti {}
+export class NgxYeti {
+  packageName = input('ngx-yeti');
+}
