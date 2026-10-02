@@ -17,6 +17,6 @@ export const Primary: Story = {
 export const Heading: Story = {
   args: {},
   play: async ({ canvas }) => {
-    await expect(canvas.getByText(/ngx-yeti works!/gi)).toBeTruthy();
+    await expect(canvas.getByText(/ngx-yeti works!/i)).toBeTruthy();
   },
 };
