@@ -38,6 +38,11 @@
       "options": {
         "watch": false
       }
+    },
+    "storybook": {
+      "options": {
+        "port": 4400
+      }
     }
   }
 }

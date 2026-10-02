@@ -34,11 +34,6 @@
       "cache": true,
       "inputs": ["default", "^production"]
     },
-    "storybook": {
-      "options": {
-        "port": 6006
-      }
-    },
     "build-storybook": {
       "cache": true,
       "inputs": [

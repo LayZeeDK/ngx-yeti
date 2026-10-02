@@ -20,6 +20,7 @@ export default defineConfig({
           storybookAngularVitest(),
           storybookTest({
             configDir: path.join(import.meta.dirname, '.storybook'),
+            storybookUrl: 'http://localhost:4400',
           }),
         ],
         test: {
