@@ -2,7 +2,6 @@
   "name": "ngx-yeti",
   "version": "0.0.1",
   "peerDependencies": {
-    "@angular/common": "^22.1.0",
     "@angular/core": "^22.1.0"
   },
   "sideEffects": false
