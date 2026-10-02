@@ -42,8 +42,25 @@
       "cache": true,
       "inputs": ["default", "^production"]
     },
+    "storybook": {
+      "options": {
+        "port": 6006
+      }
+    },
     "build-storybook": {
-      "cache": true
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "externalDependencies": [
+            "storybook",
+            "@storybook/angular-vite",
+            "@analogjs/vite-plugin-angular",
+            "vite"
+          ]
+        }
+      ]
     }
   },
   "plugins": [

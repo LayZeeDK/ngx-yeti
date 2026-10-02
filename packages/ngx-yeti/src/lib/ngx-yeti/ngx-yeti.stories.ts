@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import type { Meta, StoryObj } from '@storybook/angular-vite';
 import { NgxYeti } from './ngx-yeti';
 import { expect } from 'storybook/test';
 
