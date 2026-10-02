@@ -8,7 +8,10 @@
       "!{projectRoot}/.eslintrc.json",
       "!{projectRoot}/eslint.config.mjs",
       "!{projectRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)",
-      "!{projectRoot}/.storybook/**/*"
+      "!{projectRoot}/.storybook/**/*",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/vitest.config.*"
     ],
     "sharedGlobals": []
   },
