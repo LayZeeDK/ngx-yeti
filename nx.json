@@ -55,12 +55,35 @@
         {
           "externalDependencies": [
             "storybook",
+            "@storybook/addon-vitest",
             "@storybook/angular-vite",
             "@analogjs/vite-plugin-angular",
             "vite"
           ]
         }
       ]
+    },
+    "test-storybook": {
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "externalDependencies": [
+            "storybook",
+            "@storybook/addon-vitest",
+            "@storybook/angular-vite",
+            "@analogjs/vite-plugin-angular",
+            "vite",
+            "vitest",
+            "@vitest/browser-playwright",
+            "@vitest/coverage-v8",
+            "playwright"
+          ]
+        },
+        { "env": "CI" }
+      ],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"]
     }
   },
   "plugins": [
