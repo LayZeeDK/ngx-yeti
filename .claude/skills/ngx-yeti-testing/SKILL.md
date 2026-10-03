@@ -64,7 +64,7 @@ Locally, every browser layer runs Chromium only: Playwright's browsers are x64 u
 
 ## The browser floor
 
-Ticket 93 reruns layers 2 and 4 at the Baseline 2025 floor in `.github/workflows/floor.yml` (weekly, on `release/**`, and by hand); a failure blocks a release, not a pull request. Two variables select the floor engines, and both are cache inputs:
+`.github/workflows/floor.yml` reruns layers 2 and 4 at the Baseline 2025 floor on every pull request and every push to `main` or `release/**`, so a floor failure blocks the pull request. That is the user's ruling of 2026-10-03; it replaces ticket 93 decision 4, which ran the floor only weekly and on release branches. Two variables select the floor engines, and both are cache inputs:
 
 - `FLOOR_CHROMIUM_PATH=<chrome.exe>` runs `nx test ngx-yeti` and both e2e projects in Chromium only, on that browser. Install it with `npx @puppeteer/browsers install chrome@141.0.7390.54 --path <dir>`; the command prints the path. This replaces ticket 93's Playwright 1.56.1 alias: the Storybook gallery needs `mount(storyId)`, which Playwright 1.63 ships and 1.56.1 lacks, and ticket 27 measured Chrome for Testing 141 by `executablePath` working with Playwright 1.63 (commit e3e0b20).
 - `FLOOR_FIREFOX=true` runs `nx test ngx-yeti` in Firefox 145 through WebdriverIO, which downloads the browser itself.
