@@ -8,18 +8,12 @@
   "targets": {
     "test": {
       "command": "vitest run --config vitest.config.mts",
-      "dependsOn": ["^yeti-build"],
       "options": {
         "cwd": "{projectRoot}"
       },
       "cache": true,
       "inputs": ["default", "^production"]
     },
-    "typecheck": {
-      "dependsOn": ["^yeti-build"]
-    },
-    "lint": {
-      "dependsOn": ["^yeti-build"]
-    }
+    "typecheck": {}
   }
 }

@@ -9,7 +9,6 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "dependsOn": ["^build", "^yeti-build"],
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {

@@ -32,12 +32,13 @@
   "targetDefaults": {
     "@angular/build:application": {
       "cache": true,
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "^yeti-build"],
       "inputs": ["production", "^production"]
     },
     "@angular/build:unit-test": {
       "cache": true,
-      "inputs": ["default", "^production"]
+      "inputs": ["default", "^production"],
+      "dependsOn": ["^yeti-build"]
     },
     "@nx/angular:package": {
       "cache": true,
@@ -90,6 +91,7 @@
     },
     "typecheck": [
       {
+        "dependsOn": ["^yeti-build"],
         "executor": "angular-typechecker:typecheck",
         "cache": true,
         "outputs": [],
@@ -192,6 +194,15 @@
           "env": "FLOOR_FIREFOX_E2E"
         }
       ]
+    },
+    "@angular/build:dev-server": {
+      "dependsOn": ["^yeti-build"]
+    },
+    "test": {
+      "dependsOn": ["^yeti-build"]
+    },
+    "lint": {
+      "dependsOn": ["^yeti-build"]
     }
   },
   "plugins": [
