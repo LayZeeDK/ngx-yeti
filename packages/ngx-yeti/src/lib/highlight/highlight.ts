@@ -7,5 +7,5 @@ import { Directive, input } from '@angular/core';
   },
 })
 export class Highlight {
-  color = input('yellow', { alias: 'yetiHighlight' });
+  readonly color = input('yellow', { alias: 'yetiHighlight' });
 }

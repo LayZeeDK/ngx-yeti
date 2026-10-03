@@ -7,5 +7,5 @@ import { Component, input } from '@angular/core';
   styleUrl: './ngx-yeti.css',
 })
 export class NgxYeti {
-  packageName = input('ngx-yeti');
+  readonly packageName = input('ngx-yeti');
 }

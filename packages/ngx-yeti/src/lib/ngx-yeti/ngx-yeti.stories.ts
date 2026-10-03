@@ -4,7 +4,6 @@ import { expect } from 'storybook/test';
 
 const meta: Meta<NgxYeti> = {
   component: NgxYeti,
-  title: 'NgxYeti',
 };
 export default meta;
 
