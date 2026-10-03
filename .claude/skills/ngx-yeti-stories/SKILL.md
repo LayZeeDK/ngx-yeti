@@ -9,7 +9,7 @@ Stories are test layer 1 (ADR 0014 point 1): the single home of interaction and 
 
 ## The story gate
 
-`packages/ngx-yeti/.storybook/preview.ts` runs axe on every story through `@storybook/addon-a11y` with `parameters.a11y.test = 'error'` and `runOnly` set to `wcagTags` from `@ngx-yeti/testing` (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`, `best-practice`). Any violation fails the story's test in `nx test-storybook ngx-yeti`, which `npm run check`, `npm run affected`, and CI run. That is the enforcing check of ADR 0015 point 2.
+`packages/ngx-yeti/.storybook/preview.ts` runs axe on every story through `@storybook/addon-a11y` with `parameters.a11y.test = 'error'` and `runOnly` set to `wcagTags` from `@ngx-yeti/testing`, the tags of ADR 0014 point 1. Any violation fails the story's test in `nx test-storybook ngx-yeti`, which `npm run check`, `npm run affected`, and CI run. That is the enforcing check of ADR 0015 point 2.
 
 - Never lower `test`, set `disable`, or switch off a rule to make a story pass. Fix the markup or the directive. A Yeti default that fails is a finding: record it, and the spec's ledger row decides the fix.
 - The only exception is an **Anti-pattern story**: markup the package tells consumers not to write, shown to say why (`docs/specs/CONTEXT.md`). It switches off only the rules it demonstrates, and only when axe flags it:
@@ -26,7 +26,7 @@ Stories are test layer 1 (ADR 0014 point 1): the single home of interaction and 
 
 - Axe reports some colour contrast as incomplete rather than failing (pseudo-element backgrounds, text over images). Those cases need a contrast assertion in the play function; see the `ngx-yeti-accessibility` skill.
 - Any `console.error` during a story fails it too (`beforeEach` and `afterEach` in the preview), because Angular reports runtime errors there and keeps rendering. Fix the error; do not silence the console.
-- Images: every static `<img>` uses `NgOptimizedImage`, and a plain `<img>` is only for a `data:` or `blob:` URL (building-blocks 1.2). `staticDirs` serves only `yeti-css/`, so use `data:` URLs, or add an images `staticDirs` entry in the change that first needs one. A missing image produced a false `scrollable-region-focusable` violation in Yeti's own axe run.
+- Images: every static `<img>` uses `NgOptimizedImage`. A plain `<img>` is only for where `NgOptimizedImage` cannot be used: the `<img>` of an art-directed `<picture>`, or a `data:` or `blob:` URL (building-blocks 1.2). `staticDirs` serves only `yeti-css/`, so use `data:` URLs, or add an images `staticDirs` entry in the change that first needs one. A missing image produced a false `scrollable-region-focusable` violation in Yeti's own axe run.
 
 ## Directive stories
 
