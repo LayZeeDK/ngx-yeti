@@ -1,102 +1,99 @@
-# NgxYeti
+# ngx-yeti
 
-<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
+`ngx-yeti` is an Angular package that wraps [Yeti](https://github.com/foundation/yeti), version 7 of Foundation (`yeti-css`), in typed directives. This repository is the Nx workspace that builds, tests, and documents it.
 
-✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
+The package is pre-release. The specs in [`docs/specs/`](docs/specs/README.md) describe all 49 Yeti items and five shared pieces. The tooling, Storybook, and test infrastructure are in place, and no item is implemented yet.
 
-[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
+## What the workspace holds
 
-## Run tasks
+| Path                        | What it is                                                                                             |
+| --------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `packages/ngx-yeti`         | The published package, with its stories and its unit and server-render tests                           |
+| `packages/ngx-yeti-testing` | Test helpers shared by specs, stories, and e2e tests, imported as `@ngx-yeti/testing`; never published |
+| `apps/yeti-app`             | The Fixture app: an Angular SSR app that serves one prerendered and one server-rendered route per item |
+| `apps/yeti-app-e2e`         | Playwright tests against the Fixture app's Node server                                                 |
+| `apps/ngx-yeti-e2e`         | Playwright tests against the static Storybook build                                                    |
+| `apps/yeti-analog`          | A demo app built with Analog                                                                           |
+| `vendor/yeti`               | Yeti's source at the pinned commit, as the npm workspace package `yeti-css`                            |
+| `tools/yeti`                | The script that vendors Yeti and the Nx plugin that builds it                                          |
+| `docs/specs`                | The specs, ADRs, and records the package is built from; a verbatim copy, never edited                  |
+| `docs/decisions`            | Decision trails of larger changes                                                                      |
+| `references`                | Notes for contributors, such as [`fast-compile.md`](references/fast-compile.md)                        |
+| `.claude/skills`            | Instructions for coding agents, one skill per area                                                     |
 
-To run the dev server for your app, use:
+## Set up
 
-```sh
-npx nx serve yeti-app
-```
+You need Node.js 24 or later, which Yeti's build requires.
 
-To create a production bundle:
+1. Install the dependencies. This also links `vendor/yeti` as `node_modules/yeti-css`:
 
-```sh
-npx nx build yeti-app
-```
+   ```sh
+   npm ci
+   ```
 
-To see all available targets to run for a project, run:
+2. Install the browsers the tests use. Local runs use Chromium only:
 
-```sh
-npx nx show project yeti-app
-```
+   ```sh
+   npx playwright install chromium
+   ```
 
-These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
+   To run all three engines the way CI does, install `firefox` and `webkit` too and set `CI=true`.
 
-[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Nx builds Yeti before any task that needs it, so you never run its build by hand. To build it alone, run `npx nx yeti-build yeti-css`.
 
-## Add new projects
+## Run common tasks
 
-While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
+Every script runs an Nx target. Run them with `npm run <script>`.
 
-Use the plugin's generator to create new projects.
+| Script           | What it does                                                    |
+| ---------------- | --------------------------------------------------------------- |
+| `check`          | Lint, type-check, unit tests, and story tests for every project |
+| `affected`       | The same plus builds, for the projects your changes affect      |
+| `test`           | Unit and server-render tests                                    |
+| `test-storybook` | Every story's play function and its accessibility check         |
+| `e2e`            | All Playwright projects                                         |
+| `typecheck`      | The full Angular compiler without emitting                      |
+| `storybook`      | Storybook for `ngx-yeti` on port 4400                           |
+| `start`          | The Fixture app's dev server                                    |
+| `build`          | Every build                                                     |
+| `format:check`   | Prettier over the workspace                                     |
 
-To generate a new application, use:
+Most compiles use Analog `fastCompile`, which never type-checks. A green `test`, `test-storybook`, or `build-fast` says nothing about types, so run `typecheck` beside them. [`references/fast-compile.md`](references/fast-compile.md) explains the split. The Storybook scripts have `-fast` twins, such as `npm run storybook-fast`, and `build-fast` builds the library with `fastCompile`.
 
-```sh
-npx nx g @nx/angular:app demo
-```
+## How the tests are organized
 
-To generate a new library, use:
+The tests follow the four layers of [ADR 0014](docs/specs/adr/0014-testing-stack-for-yeti.md):
 
-```sh
-npx nx g @nx/angular:lib mylib
-```
+1. Story play functions, run by `test-storybook`. Axe checks every story against WCAG 2.2 AA.
+2. Unit tests in a real browser, run by `test` in Vitest browser mode.
+3. Server-render and pure-logic tests in Node. Their files end in `.ssr.spec.ts` or `.node.spec.ts`.
+4. Playwright tests against the static Storybook build and the Fixture app, with JavaScript on and off.
 
-You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+The [`ngx-yeti-testing` skill](.claude/skills/ngx-yeti-testing/SKILL.md) says which layer a test belongs to and which helpers exist.
 
-[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+## Accessibility
 
-## Set up CI!
+Every story fails its test on any axe violation of the WCAG 2.2 AA tags, and on any `console.error`. `npm run check`, `npm run affected`, and CI all run that check. A story may switch off an axe rule only to show an anti-pattern, and only the rule it shows. The [`ngx-yeti-stories`](.claude/skills/ngx-yeti-stories/SKILL.md) and [`ngx-yeti-accessibility`](.claude/skills/ngx-yeti-accessibility/SKILL.md) skills have the details.
 
-### Step 1
+## Browser support
 
-To connect to Nx Cloud, run the following command:
+The package targets Baseline 2025: Chrome and Edge 141, Firefox 145, and Safari 26.2 ([ADR 0002](docs/specs/adr/0002-browser-target-baseline-2025.md)). Two checks hold that floor:
 
-```sh
-npx nx connect
-```
+- `.browserslistrc` sets it for the Angular builds, and ESLint fails on CSS or TypeScript newer than Baseline 2025.
+- `.github/workflows/floor.yml` reruns the browser tests at the floor for every pull request and every push to `main`: Chromium 141 (Chrome for Testing), Firefox 145 (through WebdriverIO), and WebKit 26.4 (Playwright 1.59.1 in its container image, the earliest WebKit not below Safari 26.2). No CI runner offers Safari 26.2 itself, and Edge 141 is the Chromium 141 engine.
 
-Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+## Yeti
 
-- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Yeti has no npm release. The workspace vendors its source at one `develop` commit, recorded in `vendor/yeti/COMMIT` ([ADR 0006](docs/specs/adr/0006-yeti-pinned-develop-commit-vendored-and-gated.md)). Never edit `vendor/yeti`. To move the pin, follow the [`yeti-pin` skill](.claude/skills/yeti-pin/SKILL.md).
 
-### Step 2
+## Continuous integration
 
-Use the following command to configure a CI workflow for your workspace:
+`.github/workflows/ci.yml` runs `prettier --check`, lint, typecheck, unit and story tests, every build, and every e2e project in Chromium, Firefox, and WebKit. `.github/workflows/floor.yml` runs the browser-floor tests.
 
-```sh
-npx nx g ci-workflow
-```
+## Contribute
 
-[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+Read [`AGENTS.md`](AGENTS.md) first. Commits follow Conventional Commits, and every commit must pass `npx prettier --check .` and `npm exec nx -- run-many -t lint typecheck test` on its own. To implement a spec, start with the [`ngx-yeti-specs` skill](.claude/skills/ngx-yeti-specs/SKILL.md).
 
-## Install Nx Console
+## License
 
-Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
-
-[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-## Useful links
-
-Learn more:
-
-- [Learn more about this workspace setup](https://nx.dev/getting-started/tutorials/angular-monorepo-tutorial?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
-
-And join the Nx community:
-
-- [Discord](https://go.nx.dev/community)
-- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
-- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
-- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+MIT. The vendored Yeti source in `vendor/yeti` keeps its own license, FSL-1.1-MIT (`vendor/yeti/LICENSE`).
