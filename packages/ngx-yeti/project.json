@@ -34,10 +34,19 @@
       }
     },
     "test": {
-      "executor": "@nx/angular:unit-test",
+      "command": "vitest run --config vitest.unit.config.mts",
       "options": {
-        "watch": false
-      }
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "env": "CI"
+        }
+      ],
+      "outputs": ["{workspaceRoot}/coverage/unit/{projectRoot}"]
     },
     "storybook": {
       "options": {
