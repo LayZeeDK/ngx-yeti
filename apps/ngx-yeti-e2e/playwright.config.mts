@@ -25,7 +25,7 @@ export default defineConfig({
   webServer: {
     command: 'npx nx run ngx-yeti:static-storybook',
     url: storybookURL,
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env['CI'],
     cwd: workspaceRoot,
     timeout: 180_000,
   },
