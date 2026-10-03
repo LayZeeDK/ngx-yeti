@@ -30,6 +30,21 @@ Run `nx typecheck-watch <project>` beside `serve` or `storybook` for type feedba
 
 Read `references/fast-compile.md` before you change a Vite, Vitest, or Storybook config, add an Angular project, or move a target onto or off `fastCompile`.
 
+# Specs and skills
+
+`docs/specs/` holds the specs, ADRs, and records `ngx-yeti` is built from. Start with `docs/specs/README.md`. The folder is a verbatim copy of the planning bundle: never edit it.
+
+Before working on a spec, a test, a story, accessibility, or Yeti itself, read the matching skill in `.claude/skills/`:
+
+| Skill                    | Read it for                                                             |
+| ------------------------ | ----------------------------------------------------------------------- |
+| `ngx-yeti-specs`         | Reading a spec, which record wins, where code goes, naming              |
+| `ngx-yeti-testing`       | The four test layers, helpers, e2e projects, engines, the browser floor |
+| `ngx-yeti-stories`       | Stories and the axe story gate                                          |
+| `ngx-yeti-accessibility` | WCAG 2.2 AA criteria, contrast assertions, ledger rows                  |
+| `yeti-pin`               | The vendored Yeti, its build, moving the pin                            |
+| `type-safety`            | The lint and type rules for every TypeScript file                       |
+
 # Commits
 
 Write every commit message in [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format: `type(scope): subject`. Use the types in the git history, such as `build`, `refactor`, `docs`, `feat`, `fix`, and `test`. Use the Nx project or the tool as the scope, such as `ngx-yeti`, `eslint`, or `nx`.
