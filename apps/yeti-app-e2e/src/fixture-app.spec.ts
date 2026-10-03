@@ -1,5 +1,4 @@
 import { type Page } from '@playwright/test';
-import { axeRunsWithoutJavaScript, axeViolations } from './support/axe';
 import { expect, isProduction, test } from './support/fixtures';
 import { watchHydration } from './support/hydration';
 import { holdBackMainBundle } from './support/main-bundle';
@@ -8,9 +7,6 @@ const routeKinds = [
   { kind: 'prerendered', prefix: '' },
   { kind: 'server-rendered', prefix: 'server/' },
 ] as const;
-
-const noAxeWithoutJavaScript =
-  'Firefox runs no microtask on a JavaScript-disabled page, so axe cannot run there';
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} route`, () => {
@@ -30,42 +26,42 @@ for (const { kind, prefix } of routeKinds) {
       await hydration.expectClean();
     });
 
-    test('serves server HTML that Yeti styles with JavaScript off', async ({
-      noScriptPage,
-    }) => {
-      await noScriptPage.goto(`${prefix}highlight`);
+    test.describe('with JavaScript off', () => {
+      test.use({ javaScriptEnabled: false });
 
-      await expect(noScriptPage.getByText('Highlighted text')).toHaveCSS(
-        'background-color',
-        'rgb(255, 255, 0)',
-      );
+      test('serves server HTML that Yeti styles', async ({ page }) => {
+        await page.goto(`${prefix}highlight`);
 
-      const { fontFamily, yetiFontSans } = await noScriptPage
-        .locator('html')
-        .evaluate((html) => {
-          const style = getComputedStyle(html);
+        await expect(page.getByText('Highlighted text')).toHaveCSS(
+          'background-color',
+          'rgb(255, 255, 0)',
+        );
 
-          return {
-            fontFamily: style.fontFamily,
-            yetiFontSans: style.getPropertyValue('--yeti-font-sans').trim(),
-          };
-        });
+        const { fontFamily, yetiFontSans } = await page
+          .locator('html')
+          .evaluate((html) => {
+            const style = getComputedStyle(html);
 
-      expect(yetiFontSans, 'Yeti defines --yeti-font-sans').not.toBe('');
-      expect(fontFamily, "the root font is Yeti's --yeti-font-sans").toBe(
-        yetiFontSans,
-      );
-    });
+            return {
+              fontFamily: style.fontFamily,
+              yetiFontSans: style.getPropertyValue('--yeti-font-sans').trim(),
+            };
+          });
 
-    test('serves server HTML that axe passes with JavaScript off', async ({
-      browserName,
-      noScriptPage,
-    }) => {
-      test.skip(!axeRunsWithoutJavaScript(browserName), noAxeWithoutJavaScript);
+        expect(yetiFontSans, 'Yeti defines --yeti-font-sans').not.toBe('');
+        expect(fontFamily, "the root font is Yeti's --yeti-font-sans").toBe(
+          yetiFontSans,
+        );
+      });
 
-      await noScriptPage.goto(`${prefix}highlight`);
+      test('serves server HTML that axe passes', async ({
+        axeViolations,
+        page,
+      }) => {
+        await page.goto(`${prefix}highlight`);
 
-      expect(await axeViolations(noScriptPage)).toEqual([]);
+        expect(await axeViolations()).toEqual([]);
+      });
     });
 
     test('replays a click made before hydration', async ({ page }) => {
@@ -89,30 +85,35 @@ for (const { kind, prefix } of routeKinds) {
   });
 }
 
-test.describe('the axe helper', () => {
-  async function violationsWithImageMissingAlt(page: Page): Promise<string[]> {
+test.describe('the axe fixture', () => {
+  async function violationsWithImageMissingAlt(
+    page: Page,
+    axeViolations: () => Promise<string[]>,
+  ): Promise<string[]> {
     await page.goto('highlight');
     await page.locator('main').evaluate((main) => {
       main.append(document.createElement('img'));
     });
 
-    return axeViolations(page);
+    return axeViolations();
   }
 
-  test('reports a violation with JavaScript on', async ({ page }) => {
-    expect(await violationsWithImageMissingAlt(page)).toContainEqual(
-      expect.stringMatching(/^image-alt: /),
-    );
+  test('reports a violation with JavaScript on', async ({
+    axeViolations,
+    page,
+  }) => {
+    expect(
+      await violationsWithImageMissingAlt(page, axeViolations),
+    ).toContainEqual(expect.stringMatching(/^image-alt: /));
   });
 
-  test('reports a violation with JavaScript off', async ({
-    browserName,
-    noScriptPage,
-  }) => {
-    test.skip(!axeRunsWithoutJavaScript(browserName), noAxeWithoutJavaScript);
+  test.describe('with JavaScript off', () => {
+    test.use({ javaScriptEnabled: false });
 
-    expect(await violationsWithImageMissingAlt(noScriptPage)).toContainEqual(
-      expect.stringMatching(/^image-alt: /),
-    );
+    test('reports a violation', async ({ axeViolations, page }) => {
+      expect(
+        await violationsWithImageMissingAlt(page, axeViolations),
+      ).toContainEqual(expect.stringMatching(/^image-alt: /));
+    });
   });
 });
