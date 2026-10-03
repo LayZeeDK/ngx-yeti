@@ -11,12 +11,12 @@ export default defineConfig({
     baseURL: `${storybookURL}/`,
     trace: 'on-first-retry',
   },
-  // The plain `nx run` form lets @nx/playwright infer the static-storybook
-  // dependency, which builds Storybook first.
+  // Never reuse a server: static-storybook also serves on 4401 for people,
+  // and a reused one may be a fastCompile build or one being rebuilt.
   webServer: {
     command: 'npx nx run ngx-yeti:static-storybook',
     url: storybookURL,
-    reuseExistingServer: !process.env['CI'],
+    reuseExistingServer: false,
     cwd: workspaceRoot,
     timeout: 180_000,
   },
