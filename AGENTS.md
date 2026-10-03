@@ -29,3 +29,11 @@ Targets that compile with Analog `fastCompile` never type-check. A green `test`,
 Run `nx typecheck-watch <project>` beside `serve` or `storybook` for type feedback while you work. To check one tsconfig, add `-c src`, `-c spec`, or `-c stories` to `nx typecheck`.
 
 Read `references/fast-compile.md` before you change a Vite, Vitest, or Storybook config, add an Angular project, or move a target onto or off `fastCompile`.
+
+# Commits
+
+Write every commit message in [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format: `type(scope): subject`. Use the types in the git history, such as `build`, `refactor`, `docs`, `feat`, `fix`, and `test`. Use the Nx project or the tool as the scope, such as `ngx-yeti`, `eslint`, or `nx`.
+
+Make each commit atomic. It holds one logical change, and a reviewer can revert it alone.
+
+Make each commit bisect-safe. `npx prettier --check .` and `npm exec nx -- run-many -t lint typecheck test` pass at every commit, not only at the tip. If a change needs code fixes before a stricter rule can land, commit the fixes first.
