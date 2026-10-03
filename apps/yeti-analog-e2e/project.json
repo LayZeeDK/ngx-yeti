@@ -4,5 +4,7 @@
   "projectType": "application",
   "sourceRoot": "apps/yeti-analog-e2e/src",
   "implicitDependencies": ["yeti-analog"],
-  "targets": {}
+  "targets": {
+    "typecheck": {}
+  }
 }
