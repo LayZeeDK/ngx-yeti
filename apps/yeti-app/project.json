@@ -83,6 +83,14 @@
       "executor": "angular-typechecker:typecheck",
       "options": {
         "tsConfig": "apps/yeti-app/tsconfig.json"
+      },
+      "configurations": {
+        "app": {
+          "tsConfig": "apps/yeti-app/tsconfig.app.json"
+        },
+        "spec": {
+          "tsConfig": "apps/yeti-app/tsconfig.spec.json"
+        }
       }
     },
     "typecheck-watch": {}

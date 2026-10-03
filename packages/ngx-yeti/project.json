@@ -57,6 +57,17 @@
       "executor": "angular-typechecker:typecheck",
       "options": {
         "tsConfig": "packages/ngx-yeti/tsconfig.json"
+      },
+      "configurations": {
+        "lib": {
+          "tsConfig": "packages/ngx-yeti/tsconfig.lib.json"
+        },
+        "spec": {
+          "tsConfig": "packages/ngx-yeti/tsconfig.spec.json"
+        },
+        "stories": {
+          "tsConfig": "packages/ngx-yeti/.storybook/tsconfig.json"
+        }
       }
     },
     "build-fast": {

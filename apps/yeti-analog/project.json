@@ -13,6 +13,14 @@
       "executor": "angular-typechecker:typecheck",
       "options": {
         "tsConfig": "apps/yeti-analog/tsconfig.json"
+      },
+      "configurations": {
+        "app": {
+          "tsConfig": "apps/yeti-analog/tsconfig.app.json"
+        },
+        "spec": {
+          "tsConfig": "apps/yeti-analog/tsconfig.spec.json"
+        }
       }
     },
     "typecheck-watch": {}

@@ -10,5 +10,6 @@
     "vitest.config.mts",
     "vitest.unit.config.mts",
     "vite.lib.config.mts"
-  ]
+  ],
+  "exclude": ["src/**/*.stories.ts"]
 }
