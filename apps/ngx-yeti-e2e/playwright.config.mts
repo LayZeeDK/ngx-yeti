@@ -5,7 +5,17 @@ import { workspaceRoot } from '@nx/devkit';
 // The port of the ngx-yeti static-storybook target.
 const storybookURL = 'http://localhost:4401';
 
-const chromium = { name: 'chromium', use: { ...devices['Desktop Chrome'] } };
+// The floor job (docs/specs/issues/93-decide-testing-at-the-browser-floor.md)
+// runs Chromium only, on Chrome for Testing 141 at this path.
+const chromiumFloor = process.env['FLOOR_CHROMIUM_PATH'];
+
+const chromium = {
+  name: 'chromium',
+  use: {
+    ...devices['Desktop Chrome'],
+    ...(chromiumFloor && { launchOptions: { executablePath: chromiumFloor } }),
+  },
+};
 
 /**
  * Test layer 4 over the static Storybook build of ngx-yeti
@@ -32,11 +42,12 @@ export default defineConfig({
   },
   // Windows on ARM runs the browsers under x64 emulation, so local runs use
   // Chromium only and CI runs all three engines.
-  projects: process.env['CI']
-    ? [
-        chromium,
-        { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-        { name: 'webkit', use: { ...devices['Desktop Safari'] } },
-      ]
-    : [chromium],
+  projects:
+    process.env['CI'] && !chromiumFloor
+      ? [
+          chromium,
+          { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+          { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+        ]
+      : [chromium],
 });

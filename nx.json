@@ -165,6 +165,22 @@
           "buildTarget": "build-storybook:fast"
         }
       }
+    },
+    "e2e": {
+      "inputs": [
+        "default",
+        "^production",
+        "^{projectRoot}/tsconfig*.json",
+        {
+          "externalDependencies": ["@playwright/test"]
+        },
+        {
+          "env": "CI"
+        },
+        {
+          "env": "FLOOR_CHROMIUM_PATH"
+        }
+      ]
     }
   },
   "plugins": [

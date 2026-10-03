@@ -46,6 +46,12 @@
         "^production",
         {
           "env": "CI"
+        },
+        {
+          "env": "FLOOR_CHROMIUM_PATH"
+        },
+        {
+          "env": "FLOOR_FIREFOX"
         }
       ],
       "outputs": ["{workspaceRoot}/coverage/unit/{projectRoot}"]

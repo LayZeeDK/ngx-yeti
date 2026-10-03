@@ -1,7 +1,9 @@
 import path from 'node:path';
 import angular from '@analogjs/vite-plugin-angular';
 import { playwright } from '@vitest/browser-playwright';
+import { webdriverio } from '@vitest/browser-webdriverio';
 import { defineConfig } from 'vitest/config';
+import type { BrowserConfigOptions } from 'vitest/node';
 
 // Playwright's browsers run as x64 under emulation on the Windows-on-Arm
 // development machine, so the three engines run only in CI (ADR 0014,
@@ -9,6 +11,42 @@ import { defineConfig } from 'vitest/config';
 const browsers = process.env['CI']
   ? (['chromium', 'firefox', 'webkit'] as const)
   : (['chromium'] as const);
+/**
+ * The floor job of docs/specs/issues/93-decide-testing-at-the-browser-floor.md
+ * reruns this project at the browser floor: Chrome for Testing 141 by path
+ * (FLOOR_CHROMIUM_PATH), or Firefox 145 through WebdriverIO (FLOOR_FIREFOX).
+ */
+function browserEngines(): Pick<
+  BrowserConfigOptions,
+  'provider' | 'instances'
+> {
+  const chromiumFloor = process.env['FLOOR_CHROMIUM_PATH'];
+
+  if (process.env['FLOOR_FIREFOX'] === 'true') {
+    // Measured in ticket 27: the plain '145.0' tag finds no Firefox build.
+    return {
+      provider: webdriverio({
+        capabilities: { browserVersion: 'stable_145.0' },
+      }),
+      instances: [{ browser: 'firefox' }],
+    };
+  }
+
+  if (chromiumFloor) {
+    return {
+      provider: playwright({
+        launchOptions: { executablePath: chromiumFloor },
+      }),
+      instances: [{ browser: 'chromium' }],
+    };
+  }
+
+  return {
+    provider: playwright(),
+    instances: browsers.map((browser) => ({ browser })),
+  };
+}
+
 // Item code lives in secondary entry points at <item>/src beside src.
 const specRoots = '{src,*/src}';
 const nodeSpecs = [
@@ -40,8 +78,7 @@ export default defineConfig({
           browser: {
             enabled: true,
             headless: true,
-            provider: playwright(),
-            instances: browsers.map((browser) => ({ browser })),
+            ...browserEngines(),
           },
         },
       },

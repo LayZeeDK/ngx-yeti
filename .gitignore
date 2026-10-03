@@ -54,3 +54,4 @@ storybook-static
 vitest.config.*.timestamp*
 
 .vitest/
+.vitest-attachments/
