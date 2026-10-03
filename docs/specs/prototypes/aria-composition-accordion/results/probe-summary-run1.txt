@@ -1,0 +1,426 @@
+##### chromium 153.0.8010.12
+--- ref
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= null
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?Almo
+  kb enter      details:c/-/dom/hid | details:O/-/dom/VIS
+  kb space      details:c/-/dom/hid | details:c/-/dom/hid
+  kb arrows Can I use my own class names? | Can I use my own class names? | end Can I use my own class names? | home Can I use my own class names?
+  never click   null  enter null
+  find {"found":true} details:c/-/dom/hid | details:c/-/dom/hid
+  fragment      details:c/-/dom/hid | details:c/-/dom/hid
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    null
+  noJS find true details:c/-/dom/hid | details:c/-/dom/hid
+  noJS fragment details:c/-/dom/hid | details:c/-/dom/hid
+--- a
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= true,false
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/-/dom/hid | details:O/-/dom/VIS
+  kb space      details:c/-/dom/hid | details:c/-/dom/hid
+  kb arrows Can I use my own class names? | Can I use my own class names? | end Can I use my own class names? | home Can I use my own class names?
+  never click   details:O/-/dom/VIS | details:c/-/dom/hid  enter details:c/-/dom/hid | details:c/-/dom/hid
+  find {"found":true} details:c/-/dom/hid | details:c/-/dom/hid
+  fragment      details:c/-/dom/hid | details:O/-/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS find true details:c/-/dom/hid | details:c/-/dom/hid
+  noJS fragment details:c/-/dom/hid | details:O/-/dom/VIS
+  preHyd click  details:O/-/dom/VIS | details:c/-/dom/hid
+  preHyd after  details:O/-/dom/VIS | details:c/-/dom/hid out= true,false errors 
+  preHyd frag   details:c/-/dom/hid | details:c/-/dom/hid -> after details:c/-/dom/hid | details:O/-/dom/VIS out= false,true
+--- c
+  errors 0 
+  initial       details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  click1        details:O/true/dom/VIS | details:c/false/dom/hid/INERT out= true,false
+  click2        details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  click2again   details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  kb space      details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb arrows Can I use my own class names? | Does Yeti need JavaScript? | end Can I use my own class names? | home Does Yeti need JavaScript?
+  never click   details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT  enter details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  find {"found":false} details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  fragment      details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS click1   details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS click2   details:c/false/dom/hid/INERT | details:O/false/dom/hid/INERT
+  noJS enter2   details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS never    details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS find false details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS fragment details:c/false/dom/hid/INERT | details:O/false/dom/hid/INERT
+  preHyd click  details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  preHyd after  details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT out= false,false errors 
+  preHyd frag   details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT -> after details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT out= false,false
+--- cn
+  errors 0 
+  initial       details:c/false/dom/hid | details:c/false/dom/hid
+  click1        details:O/true/dom/VIS | details:c/false/dom/hid out= true,false
+  click2        details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  click2again   details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  kb space      details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb arrows Can I use my own class names? | Does Yeti need JavaScript? | end Can I use my own class names? | home Does Yeti need JavaScript?
+  never click   details:O/false/dom/VIS | details:c/false/dom/hid  enter details:c/false/dom/hid | details:c/false/dom/hid
+  find {"found":true} details:c/false/dom/hid | details:c/false/dom/hid
+  fragment      details:c/false/dom/hid | details:O/true/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/false/dom/hid | details:c/false/dom/hid
+  noJS click1   details:O/false/dom/VIS | details:c/false/dom/hid
+  noJS click2   details:c/false/dom/hid | details:O/false/dom/VIS
+  noJS enter2   details:c/false/dom/hid | details:c/false/dom/hid
+  noJS never    details:O/false/dom/VIS | details:c/false/dom/hid
+  noJS find true details:c/false/dom/hid | details:c/false/dom/hid
+  noJS fragment details:c/false/dom/hid | details:O/false/dom/VIS
+  preHyd click  details:O/false/dom/VIS | details:c/false/dom/hid
+  preHyd after  details:c/false/dom/hid | details:c/false/dom/hid out= false,false errors 
+  preHyd frag   details:c/false/dom/hid | details:c/false/dom/hid -> after details:c/false/dom/hid | details:c/false/dom/hid out= false,false
+--- d
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= true,false
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/-/dom/hid | details:O/-/dom/VIS
+  kb space      details:c/-/dom/hid | details:c/-/dom/hid
+  kb arrows Can I use my own class names? | Can I use my own class names? | end Can I use my own class names? | home Can I use my own class names?
+  never click   details:O/-/dom/VIS | details:c/-/dom/hid  enter details:c/-/dom/hid | details:c/-/dom/hid
+  find {"found":true} details:c/-/dom/hid | details:c/-/dom/hid
+  fragment      details:c/-/dom/hid | details:O/-/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS find true details:c/-/dom/hid | details:c/-/dom/hid
+  noJS fragment details:c/-/dom/hid | details:O/-/dom/VIS
+  preHyd click  details:O/-/dom/VIS | details:c/-/dom/hid
+  preHyd after  details:O/-/dom/VIS | details:c/-/dom/hid out= true,false errors 
+  preHyd frag   details:c/-/dom/hid | details:c/-/dom/hid -> after details:c/-/dom/hid | details:O/-/dom/VIS out= false,true
+--- dr
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= true,false
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/-/dom/hid | details:O/-/dom/VIS
+  kb space      details:c/-/dom/hid | details:c/-/dom/hid
+  kb arrows Can I use my own class names? | Can I use my own class names? | end Can I use my own class names? | home Can I use my own class names?
+  never click   details:O/-/dom/VIS | details:c/-/dom/hid  enter details:c/-/dom/hid | details:c/-/dom/hid
+  find {"found":true} details:c/-/dom/hid | details:c/-/dom/hid
+  fragment      details:c/-/dom/hid | details:O/-/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS find true details:c/-/dom/hid | details:c/-/dom/hid
+  noJS fragment details:c/-/dom/hid | details:O/-/dom/VIS
+  preHyd click  details:O/-/dom/VIS | details:c/-/dom/hid
+  preHyd after  details:O/-/dom/VIS | details:c/-/dom/hid out= true,false errors 
+  preHyd frag   details:c/-/dom/hid | details:c/-/dom/hid -> after details:c/-/dom/hid | details:O/-/dom/VIS out= false,true
+##### firefox 155.0
+--- ref
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= null
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Can I use my own class names?
+  kb enter      details:c/-/dom/hid | details:c/-/dom/hid
+  kb space      details:O/-/dom/VIS | details:c/-/dom/hid
+  kb arrows Does Yeti need JavaScript? | Does Yeti need JavaScript? | end Does Yeti need JavaScript? | home Does Yeti need JavaScript?
+  never click   null  enter null
+  find {"found":true} details:c/-/dom/hid | details:O/-/dom/VIS
+  fragment      details:c/-/dom/hid | details:O/-/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    null
+  noJS find true details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS fragment details:c/-/dom/hid | details:O/-/dom/VIS
+--- a
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= true,false
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/-/dom/hid | details:O/-/dom/VIS
+  kb space      details:c/-/dom/hid | details:c/-/dom/hid
+  kb arrows Can I use my own class names? | Can I use my own class names? | end Can I use my own class names? | home Can I use my own class names?
+  never click   details:O/-/dom/VIS | details:c/-/dom/hid  enter details:c/-/dom/hid | details:c/-/dom/hid
+  find {"found":true} details:c/-/dom/hid | details:O/-/dom/VIS
+  fragment      details:c/-/dom/hid | details:O/-/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS find true details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS fragment details:c/-/dom/hid | details:O/-/dom/VIS
+  preHyd click  details:O/-/dom/VIS | details:c/-/dom/hid
+  preHyd after  details:O/-/dom/VIS | details:c/-/dom/hid out= true,false errors 
+  preHyd frag   details:c/-/dom/hid | details:O/-/dom/VIS -> after details:c/-/dom/hid | details:O/-/dom/VIS out= false,true
+--- c
+  errors 0 
+  initial       details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  click1        details:O/true/dom/VIS | details:c/false/dom/hid/INERT out= true,false
+  click2        details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  click2again   details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  kb space      details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb arrows Can I use my own class names? | Does Yeti need JavaScript? | end Can I use my own class names? | home Does Yeti need JavaScript?
+  never click   details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT  enter details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  find {"found":false} details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  fragment      details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS click1   details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS click2   details:c/false/dom/hid/INERT | details:O/false/dom/hid/INERT
+  noJS enter2   details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS never    details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS find false details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS fragment details:c/false/dom/hid/INERT | details:O/false/dom/hid/INERT
+  preHyd click  details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  preHyd after  details:O/true/dom/VIS | details:c/false/dom/hid/INERT out= true,false errors 
+  preHyd frag   details:c/false/dom/hid/INERT | details:O/false/dom/hid/INERT -> after details:c/false/dom/hid/INERT | details:O/true/dom/VIS out= false,true
+--- cn
+  errors 0 
+  initial       details:c/false/dom/hid | details:c/false/dom/hid
+  click1        details:O/true/dom/VIS | details:c/false/dom/hid out= true,false
+  click2        details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  click2again   details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  kb space      details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb arrows Can I use my own class names? | Does Yeti need JavaScript? | end Can I use my own class names? | home Does Yeti need JavaScript?
+  never click   details:O/false/dom/VIS | details:c/false/dom/hid  enter details:c/false/dom/hid | details:c/false/dom/hid
+  find {"found":true} details:c/false/dom/hid | details:O/true/dom/VIS
+  fragment      details:c/false/dom/hid | details:O/true/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/false/dom/hid | details:c/false/dom/hid
+  noJS click1   details:O/false/dom/VIS | details:c/false/dom/hid
+  noJS click2   details:c/false/dom/hid | details:O/false/dom/VIS
+  noJS enter2   details:c/false/dom/hid | details:c/false/dom/hid
+  noJS never    details:O/false/dom/VIS | details:c/false/dom/hid
+  noJS find true details:c/false/dom/hid | details:O/false/dom/VIS
+  noJS fragment details:c/false/dom/hid | details:O/false/dom/VIS
+  preHyd click  details:O/false/dom/VIS | details:c/false/dom/hid
+  preHyd after  details:O/true/dom/VIS | details:c/false/dom/hid out= true,false errors 
+  preHyd frag   details:c/false/dom/hid | details:O/false/dom/VIS -> after details:c/false/dom/hid | details:O/true/dom/VIS out= false,true
+--- d
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= true,false
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/-/dom/hid | details:O/-/dom/VIS
+  kb space      details:c/-/dom/hid | details:c/-/dom/hid
+  kb arrows Can I use my own class names? | Can I use my own class names? | end Can I use my own class names? | home Can I use my own class names?
+  never click   details:O/-/dom/VIS | details:c/-/dom/hid  enter details:c/-/dom/hid | details:c/-/dom/hid
+  find {"found":true} details:c/-/dom/hid | details:O/-/dom/VIS
+  fragment      details:c/-/dom/hid | details:O/-/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS find true details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS fragment details:c/-/dom/hid | details:O/-/dom/VIS
+  preHyd click  details:O/-/dom/VIS | details:c/-/dom/hid
+  preHyd after  details:O/-/dom/VIS | details:c/-/dom/hid out= true,false errors 
+  preHyd frag   details:c/-/dom/hid | details:O/-/dom/VIS -> after details:c/-/dom/hid | details:O/-/dom/VIS out= false,true
+--- dr
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= true,false
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/-/dom/hid | details:O/-/dom/VIS
+  kb space      details:c/-/dom/hid | details:c/-/dom/hid
+  kb arrows Can I use my own class names? | Can I use my own class names? | end Can I use my own class names? | home Can I use my own class names?
+  never click   details:O/-/dom/VIS | details:c/-/dom/hid  enter details:c/-/dom/hid | details:c/-/dom/hid
+  find {"found":true} details:c/-/dom/hid | details:O/-/dom/VIS
+  fragment      details:c/-/dom/hid | details:O/-/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS find true details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS fragment details:c/-/dom/hid | details:O/-/dom/VIS
+  preHyd click  details:O/-/dom/VIS | details:c/-/dom/hid
+  preHyd after  details:O/-/dom/VIS | details:c/-/dom/hid out= true,false errors 
+  preHyd frag   details:c/-/dom/hid | details:O/-/dom/VIS -> after details:c/-/dom/hid | details:O/-/dom/VIS out= false,true
+##### webkit 26.6
+--- ref
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= null
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?Almo
+  kb enter      details:c/-/dom/hid | details:O/-/dom/VIS
+  kb space      details:c/-/dom/hid | details:c/-/dom/hid
+  kb arrows Can I use my own class names? | Can I use my own class names? | end Can I use my own class names? | home Can I use my own class names?
+  never click   null  enter null
+  find {"found":true} details:c/-/dom/hid | details:c/-/dom/hid
+  fragment      details:c/-/dom/hid | details:c/-/dom/hid
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    null
+  noJS find true details:c/-/dom/hid | details:c/-/dom/hid
+  noJS fragment details:c/-/dom/hid | details:c/-/dom/hid
+--- a
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= true,false
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/-/dom/hid | details:O/-/dom/VIS
+  kb space      details:c/-/dom/hid | details:c/-/dom/hid
+  kb arrows Can I use my own class names? | Can I use my own class names? | end Can I use my own class names? | home Can I use my own class names?
+  never click   details:O/-/dom/VIS | details:c/-/dom/hid  enter details:c/-/dom/hid | details:c/-/dom/hid
+  find {"found":true} details:c/-/dom/hid | details:c/-/dom/hid
+  fragment      details:c/-/dom/hid | details:O/-/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS find true details:c/-/dom/hid | details:c/-/dom/hid
+  noJS fragment details:c/-/dom/hid | details:O/-/dom/VIS
+  preHyd click  details:O/-/dom/VIS | details:c/-/dom/hid
+  preHyd after  details:O/-/dom/VIS | details:c/-/dom/hid out= true,false errors 
+  preHyd frag   details:c/-/dom/hid | details:c/-/dom/hid -> after details:c/-/dom/hid | details:O/-/dom/VIS out= false,true
+--- c
+  errors 0 
+  initial       details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  click1        details:O/true/dom/VIS | details:c/false/dom/hid/INERT out= true,false
+  click2        details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  click2again   details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  kb space      details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb arrows Can I use my own class names? | Does Yeti need JavaScript? | end Can I use my own class names? | home Does Yeti need JavaScript?
+  never click   details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT  enter details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  find {"found":true} details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  fragment      details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS click1   details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS click2   details:c/false/dom/hid/INERT | details:O/false/dom/hid/INERT
+  noJS enter2   details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS never    details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS find true details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  noJS fragment details:c/false/dom/hid/INERT | details:O/false/dom/hid/INERT
+  preHyd click  details:O/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  preHyd after  details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT out= false,false errors 
+  preHyd frag   details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT -> after details:c/false/dom/hid/INERT | details:O/true/dom/VIS out= false,true
+--- cn
+  errors 0 
+  initial       details:c/false/dom/hid | details:c/false/dom/hid
+  click1        details:O/true/dom/VIS | details:c/false/dom/hid out= true,false
+  click2        details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  click2again   details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/false/dom/hid/INERT | details:O/true/dom/VIS
+  kb space      details:c/false/dom/hid/INERT | details:c/false/dom/hid/INERT
+  kb arrows Can I use my own class names? | Does Yeti need JavaScript? | end Can I use my own class names? | home Does Yeti need JavaScript?
+  never click   details:O/false/dom/VIS | details:c/false/dom/hid  enter details:c/false/dom/hid | details:c/false/dom/hid
+  find {"found":true} details:c/false/dom/hid | details:c/false/dom/hid
+  fragment      details:c/false/dom/hid | details:O/true/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/false/dom/hid | details:c/false/dom/hid
+  noJS click1   details:O/false/dom/VIS | details:c/false/dom/hid
+  noJS click2   details:c/false/dom/hid | details:O/false/dom/VIS
+  noJS enter2   details:c/false/dom/hid | details:c/false/dom/hid
+  noJS never    details:O/false/dom/VIS | details:c/false/dom/hid
+  noJS find true details:c/false/dom/hid | details:c/false/dom/hid
+  noJS fragment details:c/false/dom/hid | details:O/false/dom/VIS
+  preHyd click  details:O/false/dom/VIS | details:c/false/dom/hid
+  preHyd after  details:c/false/dom/hid | details:c/false/dom/hid out= false,false errors 
+  preHyd frag   details:c/false/dom/hid | details:c/false/dom/hid -> after details:c/false/dom/hid | details:c/false/dom/hid out= false,false
+--- d
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= true,false
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/-/dom/hid | details:O/-/dom/VIS
+  kb space      details:c/-/dom/hid | details:c/-/dom/hid
+  kb arrows Can I use my own class names? | Can I use my own class names? | end Can I use my own class names? | home Can I use my own class names?
+  never click   details:O/-/dom/VIS | details:c/-/dom/hid  enter details:c/-/dom/hid | details:c/-/dom/hid
+  find {"found":true} details:c/-/dom/hid | details:c/-/dom/hid
+  fragment      details:c/-/dom/hid | details:O/-/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS find true details:c/-/dom/hid | details:c/-/dom/hid
+  noJS fragment details:c/-/dom/hid | details:O/-/dom/VIS
+  preHyd click  details:O/-/dom/VIS | details:c/-/dom/hid
+  preHyd after  details:O/-/dom/VIS | details:c/-/dom/hid out= true,false errors 
+  preHyd frag   details:c/-/dom/hid | details:c/-/dom/hid -> after details:c/-/dom/hid | details:O/-/dom/VIS out= false,true
+--- dr
+  errors 0 
+  initial       details:c/-/dom/hid | details:c/-/dom/hid
+  click1        details:O/-/dom/VIS | details:c/-/dom/hid out= true,false
+  click2        details:c/-/dom/hid | details:O/-/dom/VIS
+  click2again   details:c/-/dom/hid | details:c/-/dom/hid
+  kb tab Can I use my own class names? -> Does Yeti need JavaScript?
+  kb enter      details:c/-/dom/hid | details:O/-/dom/VIS
+  kb space      details:c/-/dom/hid | details:c/-/dom/hid
+  kb arrows Can I use my own class names? | Can I use my own class names? | end Can I use my own class names? | home Can I use my own class names?
+  never click   details:O/-/dom/VIS | details:c/-/dom/hid  enter details:c/-/dom/hid | details:c/-/dom/hid
+  find {"found":true} details:c/-/dom/hid | details:c/-/dom/hid
+  fragment      details:c/-/dom/hid | details:O/-/dom/VIS
+  axe closed none | open none
+  noJS initial  details:c/-/dom/hid | details:c/-/dom/hid
+  noJS click1   details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS click2   details:c/-/dom/hid | details:O/-/dom/VIS
+  noJS enter2   details:c/-/dom/hid | details:c/-/dom/hid
+  noJS never    details:O/-/dom/VIS | details:c/-/dom/hid
+  noJS find true details:c/-/dom/hid | details:c/-/dom/hid
+  noJS fragment details:c/-/dom/hid | details:O/-/dom/VIS
+  preHyd click  details:O/-/dom/VIS | details:c/-/dom/hid
+  preHyd after  details:O/-/dom/VIS | details:c/-/dom/hid out= true,false errors 
+  preHyd frag   details:c/-/dom/hid | details:c/-/dom/hid -> after details:c/-/dom/hid | details:O/-/dom/VIS out= false,true

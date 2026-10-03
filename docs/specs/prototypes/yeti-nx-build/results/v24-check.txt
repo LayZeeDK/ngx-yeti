@@ -1,0 +1,27 @@
+[OK] yeti-custom:custom-css @nx/esbuild:esbuild
+[OK] yeti-custom:custom-js @nx/esbuild:esbuild
+[OK] yeti-custom:custom-css-cli nx:run-commands
+[OK] yeti-fetch:yeti-build nx:run-commands
+[OK] demo-e:build @angular/build:application
+[OK] demo-e:serve @angular/build:dev-server
+[OK] demo-e:serve-static @nx/web:file-server
+[OK] yeti-css:yeti-build nx:run-commands
+[OK] yeti-css:yeti-pack nx:run-commands
+[OK] yeti-css:build nx:run-script
+[OK] yeti-css:validate nx:run-script
+[OK] yeti-css:validate:html nx:run-script
+[OK] yeti-css:shots nx:run-script
+[OK] yeti-css:docs nx:run-script
+[OK] yeti-css:test nx:run-script
+[OK] yeti-css:test:tools nx:run-script
+[OK] yeti-css:test:browser nx:run-script
+[OK] yeti-css:test:browser:all nx:run-script
+[OK] yeti-css:test:screenshots nx:run-script
+[OK] yeti-css:screenshots:update nx:run-script
+[OK] yeti-css:fixtures nx:run-script
+[OK] yeti-css:release nx:run-script
+[OK] yeti-css:nx-release-publish @nx/js:release-publish
+[OK] demo:build @angular/build:application
+[OK] demo:serve @angular/build:dev-server
+[OK] demo:serve-static @nx/web:file-server
+flagged: 0

@@ -1,0 +1,40 @@
+chromium {
+ "textRoots": 9,
+ "parsedRoots": 4,
+ "missing": [
+  "--yeti-white",
+  "--yeti-duration-fast",
+  "--yeti-duration-fast",
+  "--yeti-border-width",
+  "--yeti-button-radius",
+  "--yeti-spinner-duration"
+ ],
+ "before": [
+  "tral) var(--yeti-hue-neutral)));--yeti-color-scrim:color-mix(in oklch, var(--yeti-color-surface) 85%, transparent);--yeti-color-focus:var(--yeti-color-primary)}",
+  "0) l var(--_yeti-c-neutral) var(--yeti-hue-neutral));--yeti-color-neutral-100:oklch(from var(--yeti-grey-100) l var(--_yeti-c-neutral) var(--yeti-hue-neutral))}",
+  "0) l var(--_yeti-c-neutral) var(--yeti-hue-neutral));--yeti-color-neutral-100:oklch(from var(--yeti-grey-100) l var(--_yeti-c-neutral) var(--yeti-hue-neutral))}",
+  "e:ease}@media(prefers-reduced-motion:reduce){:root{--yeti-duration-fast:.01ms;--yeti-duration-base:.01ms;--yeti-motion-iterations:1;--yeti-page-duration:.01ms}}",
+  "' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23808080' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E\");--yeti-opacity-muted:.6}",
+  "attention-duration:.6s;--yeti-attention-distance:.35rem;--yeti-attention-scale:1.06;--yeti-fit-width:var(--yeti-width-md)}@media(prefers-reduced-motion:reduce){"
+ ]
+}
+firefox {
+ "textRoots": 9,
+ "parsedRoots": 3,
+ "missing": [
+  "--yeti-white",
+  "--yeti-duration-fast",
+  "--yeti-duration-fast",
+  "--yeti-border-width",
+  "--yeti-button-radius",
+  "--yeti-spinner-duration"
+ ],
+ "before": [
+  "tral) var(--yeti-hue-neutral)));--yeti-color-scrim:color-mix(in oklch, var(--yeti-color-surface) 85%, transparent);--yeti-color-focus:var(--yeti-color-primary)}",
+  "0) l var(--_yeti-c-neutral) var(--yeti-hue-neutral));--yeti-color-neutral-100:oklch(from var(--yeti-grey-100) l var(--_yeti-c-neutral) var(--yeti-hue-neutral))}",
+  "0) l var(--_yeti-c-neutral) var(--yeti-hue-neutral));--yeti-color-neutral-100:oklch(from var(--yeti-grey-100) l var(--_yeti-c-neutral) var(--yeti-hue-neutral))}",
+  "e:ease}@media(prefers-reduced-motion:reduce){:root{--yeti-duration-fast:.01ms;--yeti-duration-base:.01ms;--yeti-motion-iterations:1;--yeti-page-duration:.01ms}}",
+  "' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23808080' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E\");--yeti-opacity-muted:.6}",
+  "attention-duration:.6s;--yeti-attention-distance:.35rem;--yeti-attention-scale:1.06;--yeti-fit-width:var(--yeti-width-md)}@media(prefers-reduced-motion:reduce){"
+ ]
+}

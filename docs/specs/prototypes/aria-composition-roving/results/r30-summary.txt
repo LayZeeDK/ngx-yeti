@@ -1,0 +1,141 @@
+######## chromium 153.0.8010.12
+== buttons
+  jsOff: tabindex=0 count 3, inert 0; Tab: button:toolbar-widget-168 > button:toolbar-widget-171 > button:toolbar-widget-174 > body > button:toolbar-widget-168 > button:toolbar-widget-171 > button:toolbar-widget-174 > body
+  before: tabindex=0 count 3, inert 0; Tab: button:toolbar-widget-176 > button:toolbar-widget-179 > button:toolbar-widget-182 > body > button:toolbar-widget-176 > button:toolbar-widget-179 > button:toolbar-widget-182 > body
+  before axe: none
+  hand-over (release main.js to settled): 43 records, 35 same-value; {"action.role":"toolbar -> group -> toolbar  [FLIP]","toggle.role":"toolbar -> group -> toolbar  [FLIP]"}
+  live load (first paint to settled): 43 records, 35 same-value; {"action.role":"toolbar -> group -> toolbar  [FLIP]","toggle.role":"toolbar -> group -> toolbar  [FLIP]"}
+  live: tabindex=0 count 3, inert 0; Tab: button:toolbar-widget-0 > button:toolbar-widget-3 > button:toolbar-widget-6 > body > button:toolbar-widget-0 > button:toolbar-widget-3 > button:toolbar-widget-6 > body
+  live axe: none
+  live keys: ArrowRight->button:toolbar-widget-4, ArrowRight->button:toolbar-widget-5, ArrowRight->button:toolbar-widget-3, End->button:toolbar-widget-5, Home->button:toolbar-widget-3, ArrowLeft->button:toolbar-widget-5, Space->button:toolbar-widget-5, Tab->button:toolbar-widget-6, Shift+Tab->button:toolbar-widget-5
+  busy: ArrowRight->button:toolbar-widget-1, ArrowRight->button:toolbar-widget-2; aria-disabled on focus true; race (expect widget-4): button:toolbar-widget-2, button:toolbar-widget-4, button:toolbar-widget-3, button:toolbar-widget-4
+  console (other than dev-mode and hydration-count logs): none
+  hydration: log: Angular hydrated 3 component(s) and 28 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== tabs
+  jsOff: tabindex=0 count 2, inert 0; Tab: tab:tab-profile > tabpanel:panel-profile > body > tab:tab-profile > tabpanel:panel-profile > body
+  before: tabindex=0 count 2, inert 0; Tab: tab:tab-profile > tabpanel:panel-profile > body > tab:tab-profile > tabpanel:panel-profile > body
+  before axe: none
+  hand-over (release main.js to settled): 22 records, 18 same-value; {"panel-billing.inert":"∅ -> true","panel-billing.hidden":"∅ -> "}
+  live load (first paint to settled): 22 records, 18 same-value; {"panel-billing.inert":"∅ -> true","panel-billing.hidden":"∅ -> "}
+  live: tabindex=0 count 2, inert 1; Tab: tab:tab-profile > tabpanel:panel-profile > body > tab:tab-profile > tabpanel:panel-profile > body
+  live axe: none
+  live keys: ArrowRight->tab:tab-billing, Tab->tabpanel:panel-billing, Shift+Tab->tab:tab-billing, Home->tab:tab-profile, End->tab:tab-billing, ArrowRight->tab:tab-profile
+  panels: panel-profile hidden=false inert=false visible=true; panel-billing hidden=true inert=true visible=false
+  console (other than dev-mode and hydration-count logs): warning: Violations found on element: %o: JSHandle@node | warning: ngTabPanel must have an ngTabContent structural directive to render.
+  hydration: log: Angular hydrated 3 component(s) and 21 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== carousel
+  jsOff: tabindex=0 count 2, inert 0; Tab: group:Slides > tabpanel:work-1 > tab:tab-112 > body > group:Slides > tabpanel:work-1
+  before: tabindex=0 count 2, inert 0; Tab: group:Slides > tabpanel:work-1 > tab:tab-119 > body > group:Slides > tabpanel:work-1
+  before axe: aria-allowed-role (minor) x3: #work-1, #work-2, #work-3 | heading-order (moderate) x1: #work-1 > h3
+  hand-over (release main.js to settled): 36 records, 31 same-value; {"work-2.inert":"∅ -> true","work-3.inert":"∅ -> true"}
+  live load (first paint to settled): 36 records, 31 same-value; {"work-2.inert":"∅ -> true","work-3.inert":"∅ -> true"}
+  live: tabindex=0 count 2, inert 2; Tab: group:Slides > tabpanel:work-1 > tab:tab-0 > body > group:Slides > tabpanel:work-1
+  live axe: aria-allowed-role (minor) x1: #work-1 | heading-order (moderate) x1: #work-1 > h3
+  live keys: ArrowRight->tab:tab-1, End->tab:tab-2, Home->tab:tab-0
+  keys, reduced motion: ArrowRight->tab:tab-1, End->tab:tab-2, Home->tab:tab-0, ArrowRight->tab:tab-1
+  carousel: afterArrow {"inView":1,"inert":[true,false,true],"history":2} afterClick {"history":2,"hash":"","dotTabindex":["-1","-1","0"]} afterSwipe {"selected":["true","false","false"],"dotTabindex":["-1","-1","0"],"inert":[false,true,true]} historyStart 2
+  console (other than dev-mode and hydration-count logs): warning: Violations found on element: %o: JSHandle@node | warning: ngTabPanel must have an ngTabContent structural directive to render.
+  hydration: log: Angular hydrated 3 component(s) and 39 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== never: activeTrue 0, tabindex=0 count 7; Tab: button:toolbar-widget-184 > button:toolbar-widget-187 > button:toolbar-widget-190 > tab:tab-profile > tabpanel:panel-profile > group:Slides > tabpanel:work-1 > tab:tab-124 > body > button:toolbar-widget-184 > button:toolbar-widget-187 > button:toolbar-widget-190 > tab:tab-profile > tabpanel:panel-profile > group:Slides > tabpanel:work-1
+  never keys: toolbar ArrowRight->button:ng-toolbar-widget-a72575-184 tabs ArrowRight->tab:tab-profile; axe aria-allowed-role (minor) x3: #work-1, #work-2, #work-3 | heading-order (moderate) x1: #work-1 > h3
+  never console: log: Angular hydrated 2 component(s) and 19 node(s), 0 component(s) were skipped. 3 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== styles
+  tabs live vs Yeti example + tabs.js: []
+  tabs jsOff vs Yeti example without tabs.js: ["#2: button[tab]: block | row | normal | oklch(0.35 0.12 250) | rgba(0, 0, 0, 0) | oklch(0.52 0.15 250) | 2px | 13.5034px | 18px | 600 | pointer | 1 | 56px | visible  VS  button[tab]: block | row | normal | oklch(0.15 0.02 250) | rgba(0, 0, 0, 0) | rgba(0, 0, 0, 0) | 2px | 13.5034px | 18px | 600 | pointer | 1 | 56px | visible"]
+  Yeti no-script Tab: tab:tab-profile > tab:tab-billing > body > tab:tab-profile > tab:tab-billing; Yeti with tabs.js Tab: tab:tab-profile > tabpanel:panel-profile > body > tab:tab-profile; attrs tablist tabindex=null hidden=false; tab-profile tabindex=0 hidden=false; tab-billing tabindex=-1 hidden=false; panel-profile tabindex=0 hidden=false; panel-billing tabindex=0 hidden=true
+  buttons action vs ref (role column ignored): []
+  buttons toggle vs ref: []
+######## firefox 155.0
+== buttons
+  jsOff: tabindex=0 count 3, inert 0; Tab: button:toolbar-widget-200 > button:toolbar-widget-203 > button:toolbar-widget-206 > button:toolbar-widget-206 > button:toolbar-widget-206 > button:toolbar-widget-206 > button:toolbar-widget-206 > button:toolbar-widget-206
+  before: tabindex=0 count 3, inert 0; Tab: button:toolbar-widget-208 > button:toolbar-widget-211 > button:toolbar-widget-214 > button:toolbar-widget-214 > button:toolbar-widget-214 > button:toolbar-widget-214 > button:toolbar-widget-214 > button:toolbar-widget-214
+  before axe: none
+  hand-over (release main.js to settled): 43 records, 35 same-value; {"action.role":"toolbar -> group -> toolbar  [FLIP]","toggle.role":"toolbar -> group -> toolbar  [FLIP]"}
+  live load (first paint to settled): 43 records, 35 same-value; {"action.role":"toolbar -> group -> toolbar  [FLIP]","toggle.role":"toolbar -> group -> toolbar  [FLIP]"}
+  live: tabindex=0 count 3, inert 0; Tab: button:toolbar-widget-0 > button:toolbar-widget-3 > button:toolbar-widget-6 > button:toolbar-widget-6 > button:toolbar-widget-6 > button:toolbar-widget-6 > button:toolbar-widget-6 > button:toolbar-widget-6
+  live axe: none
+  live keys: ArrowRight->button:toolbar-widget-4, ArrowRight->button:toolbar-widget-5, ArrowRight->button:toolbar-widget-3, End->button:toolbar-widget-5, Home->button:toolbar-widget-3, ArrowLeft->button:toolbar-widget-5, Space->button:toolbar-widget-5, Tab->button:toolbar-widget-6, Shift+Tab->button:toolbar-widget-5
+  busy: ArrowRight->button:toolbar-widget-1, ArrowRight->button:toolbar-widget-2; aria-disabled on focus true; race (expect widget-4): button:toolbar-widget-3, button:toolbar-widget-4, button:toolbar-widget-4, button:toolbar-widget-4
+  console (other than dev-mode and hydration-count logs): none
+  hydration: log: Angular hydrated 3 component(s) and 28 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== tabs
+  jsOff: tabindex=0 count 2, inert 0; Tab: tab:tab-profile > tabpanel:panel-profile > tabpanel:panel-profile > tabpanel:panel-profile > tabpanel:panel-profile > tabpanel:panel-profile
+  before: tabindex=0 count 2, inert 0; Tab: tab:tab-profile > tabpanel:panel-profile > tabpanel:panel-profile > tabpanel:panel-profile > tabpanel:panel-profile > tabpanel:panel-profile
+  before axe: none
+  hand-over (release main.js to settled): 22 records, 18 same-value; {"panel-billing.inert":"∅ -> true","panel-billing.hidden":"∅ -> "}
+  live load (first paint to settled): 22 records, 18 same-value; {"panel-billing.inert":"∅ -> true","panel-billing.hidden":"∅ -> "}
+  live: tabindex=0 count 2, inert 1; Tab: tab:tab-profile > tabpanel:panel-profile > tabpanel:panel-profile > tabpanel:panel-profile > tabpanel:panel-profile > tabpanel:panel-profile
+  live axe: none
+  live keys: ArrowRight->tab:tab-billing, Tab->tabpanel:panel-billing, Shift+Tab->tab:tab-billing, Home->tab:tab-profile, End->tab:tab-billing, ArrowRight->tab:tab-profile
+  panels: panel-profile hidden=false inert=false visible=true; panel-billing hidden=true inert=true visible=false
+  console (other than dev-mode and hydration-count logs): warning: Violations found on element:  JSHandle@node : | warning: ngTabPanel must have an ngTabContent structural directive to render.
+  hydration: log: Angular hydrated 3 component(s) and 21 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== carousel
+  jsOff: tabindex=0 count 2, inert 0; Tab: group:Slides > tabpanel:work-1 > tab:tab-137 > tab:tab-137 > tab:tab-137 > tab:tab-137
+  before: tabindex=0 count 2, inert 0; Tab: group:Slides > tabpanel:work-1 > tab:tab-144 > tab:tab-144 > tab:tab-144 > tab:tab-144
+  before axe: aria-allowed-role (minor) x3: #work-1, #work-2, #work-3 | heading-order (moderate) x1: #work-1 > h3
+  hand-over (release main.js to settled): 36 records, 31 same-value; {"work-2.inert":"∅ -> true","work-3.inert":"∅ -> true"}
+  live load (first paint to settled): 36 records, 31 same-value; {"work-2.inert":"∅ -> true","work-3.inert":"∅ -> true"}
+  live: tabindex=0 count 2, inert 2; Tab: group:Slides > tabpanel:work-1 > tab:tab-0 > tab:tab-0 > tab:tab-0 > tab:tab-0
+  live axe: aria-allowed-role (minor) x1: #work-1 | heading-order (moderate) x1: #work-1 > h3
+  live keys: ArrowRight->tab:tab-1, End->tab:tab-2  FIGHT work-2.tabindex: 0 -> -1 -> 0  [FLIP]; work-2.inert: ∅ -> true -> ∅  [FLIP]; work-3.tabindex: -1 -> 0 -> -1  [FLIP]; work-3.inert: true -> ∅ -> true  [FLIP]; tab-1.aria-selected: true -> false -> true  [FLIP]; tab-2.aria-selected: false -> true -> false  [FLIP], Home->tab:tab-0  FIGHT work-1.tabindex: -1 -> 0 -> -1  [FLIP]; work-1.inert: true -> ∅ -> true  [FLIP]; work-2.tabindex: 0 -> -1 -> 0  [FLIP]; work-2.inert: ∅ -> true -> ∅  [FLIP]; tab-0.aria-selected: false -> true -> false  [FLIP]; tab-1.aria-selected: true -> false -> true  [FLIP]; work-3.tabindex: -1 -> 0 -> -1  [FLIP]; work-3.inert: true -> ∅ -> true  [FLIP]; tab-2.aria-selected: false -> true -> false  [FLIP]
+  keys, reduced motion: ArrowRight->tab:tab-1, End->tab:tab-2, Home->tab:tab-0, ArrowRight->tab:tab-1
+  carousel: afterArrow {"inView":0,"inert":[false,true,true],"history":1} afterClick {"history":1,"hash":"","dotTabindex":["-1","-1","0"]} afterSwipe {"selected":["true","false","false"],"dotTabindex":["-1","-1","0"],"inert":[false,true,true]} historyStart 1
+  console (other than dev-mode and hydration-count logs): warning: Violations found on element:  JSHandle@node : | warning: ngTabPanel must have an ngTabContent structural directive to render.
+  hydration: log: Angular hydrated 3 component(s) and 39 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== never: activeTrue 0, tabindex=0 count 7; Tab: button:toolbar-widget-216 > button:toolbar-widget-219 > button:toolbar-widget-222 > tab:tab-profile > tabpanel:panel-profile > group:Slides > tabpanel:work-1 > tab:tab-149 > tab:tab-149 > tab:tab-149 > tab:tab-149 > tab:tab-149 > tab:tab-149 > tab:tab-149 > tab:tab-149 > tab:tab-149
+  never keys: toolbar ArrowRight->button:ng-toolbar-widget-a72575-216 tabs ArrowRight->tab:tab-profile; axe aria-allowed-role (minor) x3: #work-1, #work-2, #work-3 | heading-order (moderate) x1: #work-1 > h3
+  never console: log: Angular hydrated 2 component(s) and 19 node(s), 0 component(s) were skipped. 3 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== styles
+  tabs live vs Yeti example + tabs.js: []
+  tabs jsOff vs Yeti example without tabs.js: ["#2: button[tab]: block | row | normal | oklch(0.35 0.12 250) | rgba(0, 0, 0, 0) | oklch(0.52 0.15 250) | 2px | 13.5034px | 18px | 600 | pointer | 1 | 56px | visible  VS  button[tab]: block | row | normal | oklch(0.15 0.02 250) | rgba(0, 0, 0, 0) | rgba(0, 0, 0, 0) | 2px | 13.5034px | 18px | 600 | pointer | 1 | 56px | visible"]
+  Yeti no-script Tab: tab:tab-profile > tab:tab-billing > tab:tab-billing > tab:tab-billing > tab:tab-billing; Yeti with tabs.js Tab: tab:tab-profile > tabpanel:panel-profile > tabpanel:panel-profile > tabpanel:panel-profile; attrs tablist tabindex=null hidden=false; tab-profile tabindex=0 hidden=false; tab-billing tabindex=-1 hidden=false; panel-profile tabindex=0 hidden=false; panel-billing tabindex=0 hidden=true
+  buttons action vs ref (role column ignored): []
+  buttons toggle vs ref: []
+######## webkit 26.6
+== buttons
+  jsOff: tabindex=0 count 3, inert 0; Tab: button:toolbar-widget-232 > button:toolbar-widget-235 > button:toolbar-widget-238 > body > button:toolbar-widget-232 > button:toolbar-widget-235 > button:toolbar-widget-238 > body
+  before: tabindex=0 count 3, inert 0; Tab: button:toolbar-widget-240 > button:toolbar-widget-243 > button:toolbar-widget-246 > body > button:toolbar-widget-240 > button:toolbar-widget-243 > button:toolbar-widget-246 > body
+  before axe: none
+  hand-over (release main.js to settled): 43 records, 35 same-value; {"action.role":"toolbar -> group -> toolbar  [FLIP]","toggle.role":"toolbar -> group -> toolbar  [FLIP]"}
+  live load (first paint to settled): 43 records, 35 same-value; {"action.role":"toolbar -> group -> toolbar  [FLIP]","toggle.role":"toolbar -> group -> toolbar  [FLIP]"}
+  live: tabindex=0 count 3, inert 0; Tab: button:toolbar-widget-0 > button:toolbar-widget-3 > button:toolbar-widget-6 > body > button:toolbar-widget-0 > button:toolbar-widget-3 > button:toolbar-widget-6 > body
+  live axe: none
+  live keys: ArrowRight->button:toolbar-widget-4, ArrowRight->button:toolbar-widget-5, ArrowRight->button:toolbar-widget-3, End->button:toolbar-widget-5, Home->button:toolbar-widget-3, ArrowLeft->button:toolbar-widget-5, Space->button:toolbar-widget-5, Tab->button:toolbar-widget-6, Shift+Tab->button:toolbar-widget-5
+  busy: ArrowRight->button:toolbar-widget-1, ArrowRight->button:toolbar-widget-2; aria-disabled on focus true; race (expect widget-4): button:toolbar-widget-3, button:toolbar-widget-4, button:toolbar-widget-4, button:toolbar-widget-4
+  console (other than dev-mode and hydration-count logs): none
+  hydration: log: Angular hydrated 3 component(s) and 28 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== tabs
+  jsOff: tabindex=0 count 2, inert 0; Tab: tab:tab-profile > tabpanel:panel-profile > body > tab:tab-profile > tabpanel:panel-profile > body
+  before: tabindex=0 count 2, inert 0; Tab: tab:tab-profile > tabpanel:panel-profile > body > tab:tab-profile > tabpanel:panel-profile > body
+  before axe: none
+  hand-over (release main.js to settled): 22 records, 18 same-value; {"panel-billing.inert":"∅ -> true","panel-billing.hidden":"∅ -> "}
+  live load (first paint to settled): 22 records, 18 same-value; {"panel-billing.inert":"∅ -> true","panel-billing.hidden":"∅ -> "}
+  live: tabindex=0 count 2, inert 1; Tab: tab:tab-profile > tabpanel:panel-profile > body > tab:tab-profile > tabpanel:panel-profile > body
+  live axe: none
+  live keys: ArrowRight->tab:tab-billing, Tab->tabpanel:panel-billing, Shift+Tab->tab:tab-billing, Home->tab:tab-profile, End->tab:tab-billing, ArrowRight->tab:tab-profile
+  panels: panel-profile hidden=false inert=false visible=true; panel-billing hidden=true inert=true visible=false
+  console (other than dev-mode and hydration-count logs): warning: Violations found on element: %o: JSHandle@node | warning: ngTabPanel must have an ngTabContent structural directive to render.
+  hydration: log: Angular hydrated 3 component(s) and 21 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== carousel
+  jsOff: tabindex=0 count 2, inert 0; Tab: group:Slides > tabpanel:work-1 > tab:tab-162 > body > group:Slides > tabpanel:work-1
+  before: tabindex=0 count 2, inert 0; Tab: group:Slides > tabpanel:work-1 > tab:tab-169 > body > group:Slides > tabpanel:work-1
+  before axe: aria-allowed-role (minor) x3: #work-1, #work-2, #work-3 | heading-order (moderate) x1: #work-1 > h3
+  hand-over (release main.js to settled): 36 records, 31 same-value; {"work-2.inert":"∅ -> true","work-3.inert":"∅ -> true"}
+  live load (first paint to settled): 36 records, 31 same-value; {"work-2.inert":"∅ -> true","work-3.inert":"∅ -> true"}
+  live: tabindex=0 count 2, inert 2; Tab: group:Slides > tabpanel:work-1 > tab:tab-0 > body > group:Slides > tabpanel:work-1
+  live axe: aria-allowed-role (minor) x1: #work-1 | heading-order (moderate) x1: #work-1 > h3
+  live keys: ArrowRight->tab:tab-1, End->tab:tab-2, Home->tab:tab-0  FIGHT work-1.tabindex: -1 -> 0 -> -1  [FLIP]; work-1.inert: true -> ∅ -> true  [FLIP]; tab-0.aria-selected: false -> true -> false  [FLIP]
+  keys, reduced motion: ArrowRight->tab:tab-1, End->tab:tab-2, Home->tab:tab-0, ArrowRight->tab:tab-1
+  carousel: afterArrow {"inView":0,"inert":[true,false,true],"history":2} afterClick {"history":2,"hash":"","dotTabindex":["-1","-1","0"]} afterSwipe {"selected":["true","false","false"],"dotTabindex":["-1","-1","0"],"inert":[false,true,true]} historyStart 2
+  console (other than dev-mode and hydration-count logs): warning: Violations found on element: %o: JSHandle@node | warning: ngTabPanel must have an ngTabContent structural directive to render.
+  hydration: log: Angular hydrated 3 component(s) and 39 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== never: activeTrue 0, tabindex=0 count 7; Tab: button:toolbar-widget-248 > button:toolbar-widget-251 > button:toolbar-widget-254 > tab:tab-profile > tabpanel:panel-profile > group:Slides > tabpanel:work-1 > tab:tab-174 > body > button:toolbar-widget-248 > button:toolbar-widget-251 > button:toolbar-widget-254 > tab:tab-profile > tabpanel:panel-profile > group:Slides > tabpanel:work-1
+  never keys: toolbar ArrowRight->button:ng-toolbar-widget-a72575-248 tabs ArrowRight->tab:tab-profile; axe aria-allowed-role (minor) x3: #work-1, #work-2, #work-3 | heading-order (moderate) x1: #work-1 > h3
+  never console: log: Angular hydrated 2 component(s) and 19 node(s), 0 component(s) were skipped. 3 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+== styles
+  tabs live vs Yeti example + tabs.js: []
+  tabs jsOff vs Yeti example without tabs.js: ["#2: button[tab]: block | row | normal | oklch(0.35 0.12 250) | rgba(0, 0, 0, 0) | oklch(0.52 0.15 250) | 2px | 13.503376px | 18px | 600 | pointer | 1 | 56px | visible  VS  button[tab]: block | row | normal | oklch(0.15 0.02 250) | rgba(0, 0, 0, 0) | rgba(0, 0, 0, 0) | 2px | 13.503376px | 18px | 600 | pointer | 1 | 56px | visible"]
+  Yeti no-script Tab: tab:tab-profile > tab:tab-billing > body > tab:tab-profile > tab:tab-billing; Yeti with tabs.js Tab: tab:tab-profile > tabpanel:panel-profile > body > tab:tab-profile; attrs tablist tabindex=null hidden=false; tab-profile tabindex=0 hidden=false; tab-billing tabindex=-1 hidden=false; panel-profile tabindex=0 hidden=false; panel-billing tabindex=0 hidden=true
+  buttons action vs ref (role column ignored): []
+  buttons toggle vs ref: []

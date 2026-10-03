@@ -1,0 +1,1209 @@
+{
+  "compact": {
+    "TY": {
+      "yetiElementsChanged": "9/9/9/9/9/9",
+      "sameAcrossRuns": false,
+      "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-bottom padding-inline-end padding-inline-start padding-left padding-right row-rule-color text-decoration-color text-emphasis-color",
+      "utilitiesWin": [
+        "p-utils"
+      ],
+      "lazy": [
+        "ins:1,0,1 cardVsY0:34 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:34 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false"
+      ]
+    },
+    "YT": {
+      "yetiElementsChanged": "63/63/63/63/63/63",
+      "sameAcrossRuns": false,
+      "props": "-webkit-text-decorations-in-effect -webkit-text-fill-color -webkit-text-stroke-color appearance background-color border-block-end-color border-block-end-width border-block-start-color border-block-start-width border-bottom-color border-bottom-left-radius border-bottom-right-radius border-bottom-width border-end-end-radius border-end-start-radius border-inline-end-color border-inline-end-width border-inline-start-color border-inline-start-width border-left-color border-left-width border-right-color border-right-width border-start-end-radius border-start-start-radius border-top-color border-top-left-radius border-top-right-radius border-top-width box-sizing caret-color color column-rule-color display font-family font-size font-weight grid-template-rows line-height list-style-type margin-block-start margin-inline-end margin-inline-start margin-left margin-right margin-top outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top row-rule-color text-decoration text-decoration-color text-decoration-line text-emphasis-color",
+      "utilitiesWin": [
+        "button-utils alert-utils stack-hidden p-utils card-utils"
+      ],
+      "lazy": [
+        "ins:1,0,1 cardVsY0:114 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:114 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:109 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:109 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:115 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:115 unload:0 reins:0 fresh:0 layersMoved:false"
+      ]
+    },
+    "S1": {
+      "yetiElementsChanged": "9/9/9/9/9/9",
+      "sameAcrossRuns": false,
+      "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-bottom padding-inline-end padding-inline-start padding-left padding-right row-rule-color text-decoration-color text-emphasis-color",
+      "utilitiesWin": [
+        "button-utils alert-utils stack-hidden p-utils card-utils"
+      ],
+      "lazy": [
+        "ins:1,0,1 cardVsY0:34 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:34 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false"
+      ]
+    },
+    "S1n": {
+      "yetiElementsChanged": "9/9/9/9/9/9",
+      "sameAcrossRuns": false,
+      "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-bottom padding-inline-end padding-inline-start padding-left padding-right row-rule-color text-decoration-color text-emphasis-color",
+      "utilitiesWin": [
+        "button-utils alert-utils stack-hidden p-utils card-utils"
+      ],
+      "lazy": [
+        "ins:1,0,1 cardVsY0:34 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:34 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:29 unload:0 reins:0 fresh:0 layersMoved:false"
+      ]
+    },
+    "S3": {
+      "yetiElementsChanged": "0/0/0/0/0/0",
+      "sameAcrossRuns": true,
+      "props": "",
+      "utilitiesWin": [
+        "button-utils alert-utils stack-hidden p-utils card-utils"
+      ],
+      "lazy": [
+        "ins:1,0,1 cardVsY0:0 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:0 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:0 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:0 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:0 unload:0 reins:0 fresh:0 layersMoved:false",
+        "ins:1,0,1 cardVsY0:0 unload:0 reins:0 fresh:0 layersMoved:false"
+      ]
+    },
+    "pluginOnly chromium": "0/0",
+    "pluginOnly firefox": "0/0",
+    "pluginOnly webkit": "0/0"
+  },
+  "detail": {
+    "TY": {
+      "chromium/light": {
+        "yetiElementsChanged": 9,
+        "declarations": 28,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-bottom padding-inline-end padding-inline-start padding-left padding-right row-rule-color text-decoration-color text-emphasis-color",
+        "utilitiesWin": "p-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 34,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "chromium/dark": {
+        "yetiElementsChanged": 9,
+        "declarations": 28,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-bottom padding-inline-end padding-inline-start padding-left padding-right row-rule-color text-decoration-color text-emphasis-color",
+        "utilitiesWin": "p-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 34,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "firefox/light": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "p-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "firefox/dark": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "p-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "webkit/light": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "p-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "webkit/dark": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "p-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      }
+    },
+    "YT": {
+      "chromium/light": {
+        "yetiElementsChanged": 63,
+        "declarations": 684,
+        "props": "-webkit-text-decorations-in-effect -webkit-text-fill-color -webkit-text-stroke-color appearance background-color border-block-end-color border-block-end-width border-block-start-color border-block-start-width border-bottom-color border-bottom-left-radius border-bottom-right-radius border-bottom-width border-end-end-radius border-end-start-radius border-inline-end-color border-inline-end-width border-inline-start-color border-inline-start-width border-left-color border-left-width border-right-color border-right-width border-start-end-radius border-start-start-radius border-top-color border-top-left-radius border-top-right-radius border-top-width box-sizing caret-color color column-rule-color display font-family font-size font-weight grid-template-rows line-height list-style-type margin-block-start margin-inline-end margin-inline-start margin-left margin-right margin-top outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top row-rule-color text-decoration text-decoration-color text-decoration-line text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 114,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "chromium/dark": {
+        "yetiElementsChanged": 63,
+        "declarations": 684,
+        "props": "-webkit-text-decorations-in-effect -webkit-text-fill-color -webkit-text-stroke-color appearance background-color border-block-end-color border-block-end-width border-block-start-color border-block-start-width border-bottom-color border-bottom-left-radius border-bottom-right-radius border-bottom-width border-end-end-radius border-end-start-radius border-inline-end-color border-inline-end-width border-inline-start-color border-inline-start-width border-left-color border-left-width border-right-color border-right-width border-start-end-radius border-start-start-radius border-top-color border-top-left-radius border-top-right-radius border-top-width box-sizing caret-color color column-rule-color display font-family font-size font-weight grid-template-rows line-height list-style-type margin-block-start margin-inline-end margin-inline-start margin-left margin-right margin-top outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top row-rule-color text-decoration text-decoration-color text-decoration-line text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 114,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "firefox/light": {
+        "yetiElementsChanged": 63,
+        "declarations": 680,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance background-color border-block-end-color border-block-end-width border-block-start-color border-block-start-width border-bottom-color border-bottom-left-radius border-bottom-right-radius border-bottom-width border-end-end-radius border-end-start-radius border-inline-end-color border-inline-end-width border-inline-start-color border-inline-start-width border-left-color border-left-width border-right-color border-right-width border-start-end-radius border-start-start-radius border-top-color border-top-left-radius border-top-right-radius border-top-width box-sizing caret-color color column-rule-color display font-family font-size font-weight grid-template-rows line-height list-style-type margin-block-start margin-inline-end margin-inline-start margin-left margin-right margin-top outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-decoration-line text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 109,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "firefox/dark": {
+        "yetiElementsChanged": 63,
+        "declarations": 680,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance background-color border-block-end-color border-block-end-width border-block-start-color border-block-start-width border-bottom-color border-bottom-left-radius border-bottom-right-radius border-bottom-width border-end-end-radius border-end-start-radius border-inline-end-color border-inline-end-width border-inline-start-color border-inline-start-width border-left-color border-left-width border-right-color border-right-width border-start-end-radius border-start-start-radius border-top-color border-top-left-radius border-top-right-radius border-top-width box-sizing caret-color color column-rule-color display font-family font-size font-weight grid-template-rows line-height list-style-type margin-block-start margin-inline-end margin-inline-start margin-left margin-right margin-top outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-decoration-line text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 109,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "webkit/light": {
+        "yetiElementsChanged": 63,
+        "declarations": 682,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance background-color border-block-end-color border-block-end-width border-block-start-color border-block-start-width border-bottom-color border-bottom-left-radius border-bottom-right-radius border-bottom-width border-end-end-radius border-end-start-radius border-inline-end-color border-inline-end-width border-inline-start-color border-inline-start-width border-left-color border-left-width border-right-color border-right-width border-start-end-radius border-start-start-radius border-top-color border-top-left-radius border-top-right-radius border-top-width box-sizing caret-color color column-rule-color display font-family font-size font-weight grid-template-rows line-height list-style-type margin-block-start margin-inline-end margin-inline-start margin-left margin-right margin-top outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top rotate text-decoration-color text-decoration-line text-emphasis-color translate",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 115,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "webkit/dark": {
+        "yetiElementsChanged": 63,
+        "declarations": 682,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance background-color border-block-end-color border-block-end-width border-block-start-color border-block-start-width border-bottom-color border-bottom-left-radius border-bottom-right-radius border-bottom-width border-end-end-radius border-end-start-radius border-inline-end-color border-inline-end-width border-inline-start-color border-inline-start-width border-left-color border-left-width border-right-color border-right-width border-start-end-radius border-start-start-radius border-top-color border-top-left-radius border-top-right-radius border-top-width box-sizing caret-color color column-rule-color display font-family font-size font-weight grid-template-rows line-height list-style-type margin-block-start margin-inline-end margin-inline-start margin-left margin-right margin-top outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top rotate text-decoration-color text-decoration-line text-emphasis-color translate",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 115,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      }
+    },
+    "S1": {
+      "chromium/light": {
+        "yetiElementsChanged": 9,
+        "declarations": 28,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-bottom padding-inline-end padding-inline-start padding-left padding-right row-rule-color text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 34,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "chromium/dark": {
+        "yetiElementsChanged": 9,
+        "declarations": 28,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-bottom padding-inline-end padding-inline-start padding-left padding-right row-rule-color text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 34,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "firefox/light": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "firefox/dark": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "webkit/light": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "webkit/dark": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      }
+    },
+    "S1n": {
+      "chromium/light": {
+        "yetiElementsChanged": 9,
+        "declarations": 28,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-bottom padding-inline-end padding-inline-start padding-left padding-right row-rule-color text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 34,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "chromium/dark": {
+        "yetiElementsChanged": 9,
+        "declarations": 28,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-bottom padding-inline-end padding-inline-start padding-left padding-right row-rule-color text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 34,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "firefox/light": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "firefox/dark": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "webkit/light": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "webkit/dark": {
+        "yetiElementsChanged": 9,
+        "declarations": 29,
+        "props": "-webkit-text-fill-color -webkit-text-stroke-color appearance border-block-end-color border-bottom-color border-inline-end-color border-inline-start-color border-left-color border-right-color caret-color color column-rule-color list-style-type outline-color padding-block-end padding-block-start padding-bottom padding-inline-end padding-inline-start padding-left padding-right padding-top text-decoration-color text-emphasis-color",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 29,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      }
+    },
+    "S3": {
+      "chromium/light": {
+        "yetiElementsChanged": 0,
+        "declarations": 0,
+        "props": "",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 0,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "chromium/dark": {
+        "yetiElementsChanged": 0,
+        "declarations": 0,
+        "props": "",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 0,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "firefox/light": {
+        "yetiElementsChanged": 0,
+        "declarations": 0,
+        "props": "",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 0,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "firefox/dark": {
+        "yetiElementsChanged": 0,
+        "declarations": 0,
+        "props": "",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 0,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "webkit/light": {
+        "yetiElementsChanged": 0,
+        "declarations": 0,
+        "props": "",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 0,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      },
+      "webkit/dark": {
+        "yetiElementsChanged": 0,
+        "declarations": 0,
+        "props": "",
+        "utilitiesWin": "button-utils alert-utils stack-hidden p-utils card-utils",
+        "lazy": {
+          "styleCounts": [
+            1,
+            0,
+            1
+          ],
+          "layersChangedOnInsert": false,
+          "cardVsYetiAlone": 0,
+          "removedVsBefore": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "reinsertedVsInserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "freshVsReinserted": {
+            "elements": 0,
+            "declarations": 0,
+            "topProps": [],
+            "bySection": {},
+            "samples": []
+          },
+          "cardBeforeInsert": 1
+        }
+      }
+    }
+  }
+}

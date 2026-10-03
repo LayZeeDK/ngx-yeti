@@ -1,0 +1,45 @@
+{
+  "a": [
+    "group \"\"",
+    "  DisclosureTriangleGrouped \"Does Yeti need JavaScript?\" expanded=true",
+    "    StaticText \"Does Yeti need JavaScript?\"",
+    "      InlineTextBox \"Does Yeti need JavaScript?\"",
+    "  paragraph \"\"",
+    "    StaticText \"Almost never. A handful of optional modules exist and nothing depends on them.\"",
+    "      InlineTextBox \"Almost never. A handful of optional modules exist and nothing depends on them.\"",
+    "group \"\"",
+    "  DisclosureTriangleGrouped \"Can I use my own class names?\" expanded=false",
+    "    StaticText \"Can I use my own class names?\"",
+    "      InlineTextBox \"Can I use my own class names?\""
+  ],
+  "b": [
+    "generic \"\"",
+    "  heading \"Does Yeti need JavaScript?\"",
+    "    button \"Does Yeti need JavaScript?\" expanded=true",
+    "      StaticText \"Does Yeti need JavaScript?\"",
+    "        InlineTextBox \"Does Yeti need JavaScript?\"",
+    "  region \"Does Yeti need JavaScript?\"",
+    "    paragraph \"\"",
+    "      StaticText \"Almost never. A handful of optional modules exist and nothing depends on them.\"",
+    "        InlineTextBox \"Almost never. A handful of optional modules exist and nothing depends on them.\"",
+    "  heading \"Can I use my own class names?\"",
+    "    button \"Can I use my own class names?\" expanded=false",
+    "      StaticText \"Can I use my own class names?\"",
+    "        InlineTextBox \"Can I use my own class names?\""
+  ],
+  "b2": [
+    "generic \"\"",
+    "  group \"\"",
+    "    button \"Does Yeti need JavaScript?\" expanded=true",
+    "      StaticText \"Does Yeti need JavaScript?\"",
+    "        InlineTextBox \"Does Yeti need JavaScript?\"",
+    "    region \"Does Yeti need JavaScript?\"",
+    "      paragraph \"\"",
+    "        StaticText \"Almost never. A handful of optional modules exist and nothing depends on them.\"",
+    "          InlineTextBox \"Almost never. A handful of optional modules exist and nothing depends on them.\"",
+    "  group \"\"",
+    "    button \"Can I use my own class names?\" expanded=false",
+    "      StaticText \"Can I use my own class names?\"",
+    "        InlineTextBox \"Can I use my own class names?\""
+  ]
+}

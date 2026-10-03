@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+  <file source-language="en-US" target-language="da" datatype="plaintext" original="ng2.template">
+    <body>
+      <trans-unit id="cardTitle" datatype="html">
+        <source>Weekend in the hills</source>
+        <target>Weekend i bakkerne</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/i18n-page.ts</context>
+          <context context-type="linenumber">12,13</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cardBody" datatype="html">
+        <source>Six miles, <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>one summit<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/>, and <x id="ICU" equiv-text="{views, plural, =1 {one view} other {{{views}} views}}" xid="3626743838881561634"/>.</source>
+        <target>Ti kilometer, <x id="START_TAG_STRONG" ctype="x-strong" equiv-text="&lt;strong&gt;"/>en top<x id="CLOSE_TAG_STRONG" ctype="x-strong" equiv-text="&lt;/strong&gt;"/> og <x id="ICU" equiv-text="{views, plural, =1 {one view} other {{{views}} views}}" xid="3626743838881561634"/>.</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/i18n-page.ts</context>
+          <context context-type="linenumber">13,15</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="8492743040789932836" datatype="html">
+        <source>{VAR_PLURAL, plural, =1 {one view} other {<x id="INTERPOLATION"/> views}}</source>
+        <target>{VAR_PLURAL, plural, =1 {en udsigt} other {<x id="INTERPOLATION"/> udsigter}}</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/i18n-page.ts</context>
+          <context context-type="linenumber">13,14</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="cardMore" datatype="html">
+        <source>Read more</source>
+        <target>Læs mere</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/i18n-page.ts</context>
+          <context context-type="linenumber">15,17</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="dialogOpen" datatype="html">
+        <source>Delete project</source>
+        <target>Slet projekt</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/i18n-page.ts</context>
+          <context context-type="linenumber">18,19</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="dialogTitle" datatype="html">
+        <source>Delete this project?</source>
+        <target>Slet dette projekt?</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/i18n-page.ts</context>
+          <context context-type="linenumber">20,21</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="tabA" datatype="html">
+        <source>Profile</source>
+        <target>Profil</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/i18n-page.ts</context>
+          <context context-type="linenumber">25,26</context>
+        </context-group>
+      </trans-unit>
+      <trans-unit id="tabB" datatype="html">
+        <source>Billing</source>
+        <target>Betaling</target>
+        <context-group purpose="location">
+          <context context-type="sourcefile">src/app/pages/i18n-page.ts</context>
+          <context context-type="linenumber">26,27</context>
+        </context-group>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

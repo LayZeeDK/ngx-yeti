@@ -1,0 +1,133 @@
+{
+  "yetiClassCount": 49,
+  "yetiAttrCount": 93,
+  "classCollisions": [
+    {
+      "name": "container",
+      "yeti": [
+        "layouts/container/container.css"
+      ],
+      "tailwind": ".container { width: 100%; @media (width >= 40rem) { max-width: 40rem; } @media (width >= 48rem) { max-width: 48rem; } @media (width >= 64rem) { max-width: 64rem; } @media (width >= 80rem) { max-width: 80rem; } @media (width >= 96rem) { max-width: 96rem; } }"
+    },
+    {
+      "name": "grid",
+      "yeti": [
+        "components/card/card.css",
+        "layouts/grid/grid.css"
+      ],
+      "tailwind": ".grid { display: grid; }"
+    },
+    {
+      "name": "table",
+      "yeti": [
+        "components/table/table.css",
+        "layouts/attributes.css"
+      ],
+      "tailwind": ".table { display: table; }"
+    }
+  ],
+  "attrCollisions": [
+    {
+      "name": "hidden",
+      "yeti": [
+        "base/reset.css"
+      ],
+      "tailwind": ".hidden { display: none; }"
+    }
+  ],
+  "attrs": [
+    "aria-busy",
+    "aria-current",
+    "aria-disabled",
+    "aria-invalid",
+    "aria-pressed",
+    "aria-selected",
+    "class",
+    "data-actions",
+    "data-affix",
+    "data-align",
+    "data-align-self",
+    "data-alternate",
+    "data-attention",
+    "data-bleed",
+    "data-border",
+    "data-brand",
+    "data-center",
+    "data-close",
+    "data-columns",
+    "data-dots",
+    "data-edge",
+    "data-emphasis",
+    "data-enter",
+    "data-error",
+    "data-fill",
+    "data-fit",
+    "data-fixed",
+    "data-flip",
+    "data-fold",
+    "data-gap",
+    "data-gap-block",
+    "data-gap-inline",
+    "data-height",
+    "data-hide",
+    "data-hint",
+    "data-hover",
+    "data-inline",
+    "data-intrinsic",
+    "data-justify",
+    "data-justify-self",
+    "data-lift",
+    "data-max",
+    "data-min",
+    "data-note",
+    "data-nowrap",
+    "data-numbered",
+    "data-numeric",
+    "data-once",
+    "data-orientation",
+    "data-over",
+    "data-paint",
+    "data-panel",
+    "data-placement",
+    "data-preview",
+    "data-print",
+    "data-raised",
+    "data-ratio",
+    "data-resize",
+    "data-rows",
+    "data-rule",
+    "data-scroll",
+    "data-shape",
+    "data-show",
+    "data-side",
+    "data-size",
+    "data-slides",
+    "data-snap",
+    "data-space",
+    "data-span",
+    "data-split",
+    "data-stagger",
+    "data-start",
+    "data-sticky",
+    "data-stretch",
+    "data-striped",
+    "data-surface",
+    "data-text",
+    "data-threshold",
+    "data-track",
+    "data-tracks",
+    "data-variant",
+    "data-view",
+    "data-width",
+    "hidden",
+    "href",
+    "open",
+    "popover",
+    "popovertarget",
+    "rel",
+    "required",
+    "role",
+    "tabindex",
+    "type"
+  ]
+}

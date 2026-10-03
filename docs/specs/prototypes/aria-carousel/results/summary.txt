@@ -1,0 +1,213 @@
+
+######## chromium 153.0.8010.12
+styles A: section.height: Y=167.828px A=225.281px | selector count diffs: none
+styles B: no diffs | selector count diffs: none
+styles G: no diffs | selector count diffs: none
+styles C: no diffs | selector count diffs: none
+beh Y: init {"hash":"","inView":0,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   dot2 {"h":0,"hash":"","inView":1,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   scrollLast {"hash":"","inView":2,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+beh A: init {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   dot2 {"h":0,"hash":"","inView":1,"inert":"000","cur":",true,","dotTi":",,","slideTi":",,","ev":1,"ng":true}
+   scrollLast {"hash":"","inView":2,"inert":"000","cur":",,true","dotTi":",,","slideTi":",,","ev":1,"ng":true}
+beh B: init {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"0,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":true}
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   scrollLast {"hash":"#work-2","inView":2,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+beh G: init {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"0,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":true}
+   dot2 {"h":0,"hash":"","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":1,"ng":true}
+   scrollLast {"hash":"","inView":2,"inert":"110","cur":"false,false,true","dotTi":"-1,0,-1","slideTi":"-1,-1,0","ev":1,"ng":true}
+beh C: init {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"0,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":true}
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   scrollLast {"hash":"#work-2","inView":2,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+reducedMotion {"Y":"auto","A":"auto","B":"auto","G":"auto","C":"auto"}
+normalMotion {"Y":"smooth","A":"smooth","B":"smooth","G":"smooth","C":"smooth"}
+a11y Y: axe ["heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > a:Slide 1 > a:Slide 2 > a:Slide 3 > body > group:Slides > a:Slide 1
+   firstDot a:Slide 1 | right a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   end a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   home a:Slide 1
+   enterDot2 a:Slide 2 {"h":0,"hash":"","inView":1,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+a11y A: axe ["aria-allowed-role (minor): 3 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > a:Slide 1 > a:Slide 2 > a:Slide 3 > button:Previous slide > button:Next slide > body
+   firstDot a:Slide 1 | right a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   end a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   home a:Slide 1
+   enterDot2 a:Slide 2 {"h":0,"hash":"","inView":1,"inert":"000","cur":",true,","dotTi":",,","slideTi":",,","ev":1,"ng":true}
+a11y B: axe ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a59246-0 > body > group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a59246-0
+   firstDot tab:Slide 1#ng-tab-a59246-0 | right tab:Slide 2#ng-tab-a59246-1 {"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   end tab:Slide 3#ng-tab-a59246-2 {"hash":"","inView":0,"inert":"110","cur":"false,false,true","dotTi":"-1,-1,0","slideTi":"-1,-1,0","ev":0,"ng":true}
+   home tab:Slide 1#ng-tab-a59246-0
+   enterDot2 tab:Slide 2#ng-tab-a59246-1 {"h":0,"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+a11y G: axe ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a72965-0 > body > group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a72965-0
+   firstDot tab:Slide 1#ng-tab-a72965-0 | right tab:Slide 2#ng-tab-a72965-1 {"hash":"","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":1,"ng":true}
+   end tab:Slide 3#ng-tab-a72965-2 {"hash":"","inView":2,"inert":"110","cur":"false,false,true","dotTi":"-1,-1,0","slideTi":"-1,-1,0","ev":2,"ng":true}
+   home tab:Slide 1#ng-tab-a72965-0
+   enterDot2 tab:Slide 2#ng-tab-a72965-1 {"h":0,"hash":"","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":4,"ng":true}
+a11y C: axe ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a68569-0 > body > group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a68569-0
+   firstDot tab:Slide 1#ng-tab-a68569-0 | right tab:Slide 2#ng-tab-a68569-1 {"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   end tab:Slide 3#ng-tab-a68569-2 {"hash":"","inView":0,"inert":"110","cur":"false,false,true","dotTi":"-1,-1,0","slideTi":"-1,-1,0","ev":0,"ng":true}
+   home tab:Slide 1#ng-tab-a68569-0
+   enterDot2 tab:Slide 2#ng-tab-a68569-1 {"h":0,"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+console {"Y":[],"A":[],"B":["warning: Violations found on element: %o: JSHandle@node","warning: ngTabPanel must have an ngTabContent structural directive to render."],"G":["warning: Violations found on element: %o: JSHandle@node","warning: ngTabPanel must have an ngTabContent structural directive to render."],"C":[]}
+jsoff-A: {"inert":[false,false,false],"dotTabindex":[null,null,null],"dotWidth":"40px","dotBefore":"oklch(0.75 0.02 250)","trackSnap":"x mandatory","slide1Children":2} tabs group:Slides > a:Slide 1 > a:Slide 2 > a:Slide 3 > button:Previous slide > button:Next slide | afterDot2 {"scrollLeft":1041,"slide2Offset":0,"hash":"#work-2","history":3} url http://localhost:4329/a#work-2
+jsoff-B: {"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"dotWidth":"40px","dotBefore":"oklch(0.75 0.02 250)","trackSnap":"x mandatory","slide1Children":2} tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > body > group:Slides > tabpanel:A trail mapPrinted i#work-1 > body | afterDot2 {"scrollLeft":1041,"slide2Offset":0,"hash":"#work-2","history":3} url http://localhost:4329/b#work-2
+jsoff-C: {"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"dotWidth":"40px","dotBefore":"oklch(0.75 0.02 250)","trackSnap":"x mandatory","slide1Children":0} tabs group:Slides > tabpanel:#work-1 > body > group:Slides > tabpanel:#work-1 > body | afterDot2 {"scrollLeft":1041,"slide2Offset":0,"hash":"#work-2","history":3} url http://localhost:4329/b-content#work-2
+prehydration-A: before {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   tabs group:Slides > a:Slide 1 > a:Slide 2 > a:Slide 3 > button:Previous slide
+   axeBefore ["aria-allowed-role (minor): 3 node(s)","heading-order (moderate): 1 node(s)"]
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   afterHydration {"hash":"#work-2","inView":1,"inert":"000","cur":",true,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   console []
+prehydration-B: before {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"-1,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":false}
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > body > group:Slides > tabpanel:A trail mapPrinted i#work-1
+   axeBefore ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"011","cur":"true,false,false","dotTi":"-1,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":false}
+   afterHydration {"hash":"#work-2","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   console ["warning: Violations found on element: %o: JSHandle@node","warning: ngTabPanel must have an ngTabContent structural directive to render."]
+never A: {"initial":{"inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":0,"history":2,"hash":""},"afterDot2":{"inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":1041,"history":3,"hash":"#a-work-2","historyDelta":1},"tabAfterTrack":"a:Slide 1","afterArrow":{"focus":"a:Slide 1","inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":1041,"history":3,"hash":"#a-work-2"},"afterNextButton":{"inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":1041,"history":3,"hash":"#a-work-2"}}
+never B: {"initial":{"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"scrollLeft":0,"history":3,"hash":"#a-work-2"},"afterDot2":{"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"scrollLeft":1041,"history":4,"hash":"#b-work-2","historyDelta":1},"tabAfterTrack":"tabpanel:A trail mapPrinted i#b-work-1","afterArrow":{"focus":"tabpanel:A trail mapPrinted i#b-work-1","inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"scrollLeft":2083,"history":4,"hash":"#b-work-2"}}
+
+######## firefox 155.0
+styles A: section.height: Y=167.883px A=225.35px | selector count diffs: none
+styles B: no diffs | selector count diffs: none
+styles G: no diffs | selector count diffs: none
+styles C: no diffs | selector count diffs: none
+beh Y: init {"hash":"","inView":0,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   dot2 {"h":0,"hash":"","inView":1,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   scrollLast {"hash":"","inView":2,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+beh A: init {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   dot2 {"h":0,"hash":"","inView":1,"inert":"000","cur":",true,","dotTi":",,","slideTi":",,","ev":1,"ng":true}
+   scrollLast {"hash":"","inView":2,"inert":"000","cur":",,true","dotTi":",,","slideTi":",,","ev":1,"ng":true}
+beh B: init {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"0,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":true}
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   scrollLast {"hash":"#work-2","inView":2,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+beh G: init {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"0,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":true}
+   dot2 {"h":0,"hash":"","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":1,"ng":true}
+   scrollLast {"hash":"","inView":2,"inert":"110","cur":"false,false,true","dotTi":"-1,0,-1","slideTi":"-1,-1,0","ev":1,"ng":true}
+beh C: init {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"0,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":true}
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   scrollLast {"hash":"#work-2","inView":2,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+reducedMotion {"Y":"auto","A":"auto","B":"auto","G":"auto","C":"auto"}
+normalMotion {"Y":"smooth","A":"smooth","B":"smooth","G":"smooth","C":"smooth"}
+a11y Y: axe ["heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > a:Slide 1 > a:Slide 2 > a:Slide 3 > a:Slide 3 > a:Slide 3 > a:Slide 3
+   firstDot a:Slide 1 | right a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   end a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   home a:Slide 1
+   enterDot2 a:Slide 2 {"h":0,"hash":"","inView":1,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+a11y A: axe ["aria-allowed-role (minor): 3 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > a:Slide 1 > a:Slide 2 > a:Slide 3 > button:Previous slide > button:Next slide > button:Next slide
+   firstDot a:Slide 1 | right a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   end a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   home a:Slide 1
+   enterDot2 a:Slide 2 {"h":0,"hash":"","inView":1,"inert":"000","cur":",true,","dotTi":",,","slideTi":",,","ev":1,"ng":true}
+a11y B: axe ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a8020-0 > tab:Slide 1#ng-tab-a8020-0 > tab:Slide 1#ng-tab-a8020-0 > tab:Slide 1#ng-tab-a8020-0 > tab:Slide 1#ng-tab-a8020-0
+   firstDot tab:Slide 1#ng-tab-a8020-0 | right tab:Slide 2#ng-tab-a8020-1 {"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   end tab:Slide 3#ng-tab-a8020-2 {"hash":"","inView":0,"inert":"110","cur":"false,false,true","dotTi":"-1,-1,0","slideTi":"-1,-1,0","ev":0,"ng":true}
+   home tab:Slide 1#ng-tab-a8020-0
+   enterDot2 tab:Slide 2#ng-tab-a8020-1 {"h":0,"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+a11y G: axe ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a58232-0 > tab:Slide 1#ng-tab-a58232-0 > tab:Slide 1#ng-tab-a58232-0 > tab:Slide 1#ng-tab-a58232-0 > tab:Slide 1#ng-tab-a58232-0
+   firstDot tab:Slide 1#ng-tab-a58232-0 | right tab:Slide 2#ng-tab-a58232-1 {"hash":"","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":1,"ng":true}
+   end tab:Slide 3#ng-tab-a58232-2 {"hash":"","inView":2,"inert":"110","cur":"false,false,true","dotTi":"-1,-1,0","slideTi":"-1,-1,0","ev":2,"ng":true}
+   home tab:Slide 1#ng-tab-a58232-0
+   enterDot2 tab:Slide 2#ng-tab-a58232-1 {"h":0,"hash":"","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":4,"ng":true}
+a11y C: axe ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a84391-0 > tab:Slide 1#ng-tab-a84391-0 > tab:Slide 1#ng-tab-a84391-0 > tab:Slide 1#ng-tab-a84391-0 > tab:Slide 1#ng-tab-a84391-0
+   firstDot tab:Slide 1#ng-tab-a84391-0 | right tab:Slide 2#ng-tab-a84391-1 {"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   end tab:Slide 3#ng-tab-a84391-2 {"hash":"","inView":0,"inert":"110","cur":"false,false,true","dotTi":"-1,-1,0","slideTi":"-1,-1,0","ev":0,"ng":true}
+   home tab:Slide 1#ng-tab-a84391-0
+   enterDot2 tab:Slide 2#ng-tab-a84391-1 {"h":0,"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+console {"Y":[],"A":[],"B":["warning: Violations found on element:  JSHandle@node :","warning: ngTabPanel must have an ngTabContent structural directive to render."],"G":["warning: Violations found on element:  JSHandle@node :","warning: ngTabPanel must have an ngTabContent structural directive to render."],"C":[]}
+jsoff-A: {"inert":[false,false,false],"dotTabindex":[null,null,null],"dotWidth":"40px","dotBefore":"oklch(0.75 0.02 250)","trackSnap":"x mandatory","slide1Children":2} tabs group:Slides > a:Slide 1 > a:Slide 2 > a:Slide 3 > button:Previous slide > button:Next slide | afterDot2 {"scrollLeft":1041,"slide2Offset":0,"hash":"#work-2","history":2} url http://localhost:4329/a#work-2
+jsoff-B: {"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"dotWidth":"40px","dotBefore":"oklch(0.75 0.02 250)","trackSnap":"x mandatory","slide1Children":2} tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > tabpanel:A trail mapPrinted i#work-1 > tabpanel:A trail mapPrinted i#work-1 > tabpanel:A trail mapPrinted i#work-1 > tabpanel:A trail mapPrinted i#work-1 | afterDot2 {"scrollLeft":1041,"slide2Offset":0,"hash":"#work-2","history":2} url http://localhost:4329/b#work-2
+jsoff-C: {"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"dotWidth":"40px","dotBefore":"oklch(0.75 0.02 250)","trackSnap":"x mandatory","slide1Children":0} tabs group:Slides > tabpanel:#work-1 > tabpanel:#work-1 > tabpanel:#work-1 > tabpanel:#work-1 > tabpanel:#work-1 | afterDot2 {"scrollLeft":1041,"slide2Offset":0,"hash":"#work-2","history":2} url http://localhost:4329/b-content#work-2
+prehydration-A: before {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   tabs group:Slides > a:Slide 1 > a:Slide 2 > a:Slide 3 > button:Previous slide
+   axeBefore ["aria-allowed-role (minor): 3 node(s)","heading-order (moderate): 1 node(s)"]
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   afterHydration {"hash":"#work-2","inView":1,"inert":"000","cur":",true,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   console []
+prehydration-B: before {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"-1,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":false}
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > tabpanel:A trail mapPrinted i#work-1 > tabpanel:A trail mapPrinted i#work-1 > tabpanel:A trail mapPrinted i#work-1
+   axeBefore ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"011","cur":"true,false,false","dotTi":"-1,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":false}
+   afterHydration {"hash":"#work-2","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   console ["warning: Violations found on element:  JSHandle@node :","warning: ngTabPanel must have an ngTabContent structural directive to render."]
+never A: {"initial":{"inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":0,"history":1,"hash":""},"afterDot2":{"inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":1041,"history":2,"hash":"#a-work-2","historyDelta":1},"tabAfterTrack":"a:Slide 1","afterArrow":{"focus":"a:Slide 1","inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":1041,"history":2,"hash":"#a-work-2"},"afterNextButton":{"inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":1041,"history":2,"hash":"#a-work-2"}}
+never B: {"initial":{"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"scrollLeft":0,"history":2,"hash":"#a-work-2"},"afterDot2":{"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"scrollLeft":1041,"history":3,"hash":"#b-work-2","historyDelta":1},"tabAfterTrack":"tabpanel:A trail mapPrinted i#b-work-1","afterArrow":{"focus":"tabpanel:A trail mapPrinted i#b-work-1","inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"scrollLeft":1041,"history":3,"hash":"#b-work-2"}}
+
+######## webkit 26.6
+styles A: section.height: Y=167.8125px A=225.265625px | selector count diffs: none
+styles B: no diffs | selector count diffs: none
+styles G: no diffs | selector count diffs: none
+styles C: no diffs | selector count diffs: none
+beh Y: init {"hash":"","inView":0,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   dot2 {"h":0,"hash":"","inView":1,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   scrollLast {"hash":"","inView":2,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+beh A: init {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   dot2 {"h":0,"hash":"","inView":1,"inert":"000","cur":",true,","dotTi":",,","slideTi":",,","ev":1,"ng":true}
+   scrollLast {"hash":"","inView":2,"inert":"000","cur":",,true","dotTi":",,","slideTi":",,","ev":1,"ng":true}
+beh B: init {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"0,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":true}
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   scrollLast {"hash":"#work-2","inView":2,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+beh G: init {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"0,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":true}
+   dot2 {"h":0,"hash":"","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":1,"ng":true}
+   scrollLast {"hash":"","inView":2,"inert":"110","cur":"false,false,true","dotTi":"-1,0,-1","slideTi":"-1,-1,0","ev":1,"ng":true}
+beh C: init {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"0,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":true}
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   scrollLast {"hash":"#work-2","inView":2,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+reducedMotion {"Y":"auto","A":"auto","B":"auto","G":"auto","C":"auto"}
+normalMotion {"Y":"smooth","A":"smooth","B":"smooth","G":"smooth","C":"smooth"}
+a11y Y: axe ["heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > body > group:Slides > body > group:Slides > body > group:Slides
+   firstDot a:Slide 1 | right a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   end a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   home a:Slide 1
+   enterDot2 body {"h":0,"hash":"","inView":0,"inert":"000","cur":",,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+a11y A: axe ["aria-allowed-role (minor): 3 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > button:Previous slide > button:Next slide > body > group:Slides > button:Previous slide > button:Next slide
+   firstDot a:Slide 1 | right a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   end a:Slide 1 {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   home a:Slide 1
+   enterDot2 button:Previous slide {"h":0,"hash":"","inView":2,"inert":"000","cur":",,true","dotTi":",,","slideTi":",,","ev":1,"ng":true}
+a11y B: axe ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a76476-0 > body > group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a76476-0
+   firstDot tab:Slide 1#ng-tab-a76476-0 | right tab:Slide 2#ng-tab-a76476-1 {"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   end tab:Slide 3#ng-tab-a76476-2 {"hash":"","inView":0,"inert":"110","cur":"false,false,true","dotTi":"-1,-1,0","slideTi":"-1,-1,0","ev":0,"ng":true}
+   home tab:Slide 1#ng-tab-a76476-0
+   enterDot2 tab:Slide 2#ng-tab-a76476-1 {"h":0,"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+a11y G: axe ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a44087-0 > body > group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a44087-0
+   firstDot tab:Slide 1#ng-tab-a44087-0 | right tab:Slide 2#ng-tab-a44087-1 {"hash":"","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":1,"ng":true}
+   end tab:Slide 3#ng-tab-a44087-2 {"hash":"","inView":2,"inert":"110","cur":"false,false,true","dotTi":"-1,-1,0","slideTi":"-1,-1,0","ev":2,"ng":true}
+   home tab:Slide 1#ng-tab-a44087-0
+   enterDot2 tab:Slide 2#ng-tab-a44087-1 {"h":0,"hash":"","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":4,"ng":true}
+a11y C: axe ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a13302-0 > body > group:Slides > tabpanel:A trail mapPrinted i#work-1 > tab:Slide 1#ng-tab-a13302-0
+   firstDot tab:Slide 1#ng-tab-a13302-0 | right tab:Slide 2#ng-tab-a13302-1 {"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   end tab:Slide 3#ng-tab-a13302-2 {"hash":"","inView":0,"inert":"110","cur":"false,false,true","dotTi":"-1,-1,0","slideTi":"-1,-1,0","ev":0,"ng":true}
+   home tab:Slide 1#ng-tab-a13302-0
+   enterDot2 tab:Slide 2#ng-tab-a13302-1 {"h":0,"hash":"","inView":0,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+console {"Y":[],"A":[],"B":["warning: Violations found on element: %o: JSHandle@node","warning: ngTabPanel must have an ngTabContent structural directive to render."],"G":["warning: Violations found on element: %o: JSHandle@node","warning: ngTabPanel must have an ngTabContent structural directive to render."],"C":[]}
+jsoff-A: {"inert":[false,false,false],"dotTabindex":[null,null,null],"dotWidth":"40px","dotBefore":"oklch(0.75 0.02 250)","trackSnap":"x mandatory","slide1Children":2} tabs group:Slides > button:Previous slide > button:Next slide > body > group:Slides > button:Previous slide | afterDot2 {"scrollLeft":1041,"slide2Offset":0,"hash":"#work-2","history":3} url http://localhost:4329/a#work-2
+jsoff-B: {"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"dotWidth":"40px","dotBefore":"oklch(0.75 0.02 250)","trackSnap":"x mandatory","slide1Children":2} tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > body > group:Slides > tabpanel:A trail mapPrinted i#work-1 > body | afterDot2 {"scrollLeft":1041,"slide2Offset":0,"hash":"#work-2","history":3} url http://localhost:4329/b#work-2
+jsoff-C: {"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"dotWidth":"40px","dotBefore":"oklch(0.75 0.02 250)","trackSnap":"x mandatory","slide1Children":0} tabs group:Slides > tabpanel:#work-1 > body > group:Slides > tabpanel:#work-1 > body | afterDot2 {"scrollLeft":1041,"slide2Offset":0,"hash":"#work-2","history":3} url http://localhost:4329/b-content#work-2
+prehydration-A: before {"hash":"","inView":0,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   tabs group:Slides > button:Previous slide > button:Next slide > body > group:Slides
+   axeBefore ["aria-allowed-role (minor): 3 node(s)","heading-order (moderate): 1 node(s)"]
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"000","cur":"true,,","dotTi":",,","slideTi":",,","ev":0,"ng":false}
+   afterHydration {"hash":"#work-2","inView":1,"inert":"000","cur":",true,","dotTi":",,","slideTi":",,","ev":0,"ng":true}
+   console []
+prehydration-B: before {"hash":"","inView":0,"inert":"011","cur":"true,false,false","dotTi":"-1,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":false}
+   tabs group:Slides > tabpanel:A trail mapPrinted i#work-1 > body > group:Slides > tabpanel:A trail mapPrinted i#work-1
+   axeBefore ["aria-allowed-role (minor): 1 node(s)","heading-order (moderate): 1 node(s)"]
+   dot2 {"h":1,"hash":"#work-2","inView":1,"inert":"011","cur":"true,false,false","dotTi":"-1,-1,-1","slideTi":"0,-1,-1","ev":0,"ng":false}
+   afterHydration {"hash":"#work-2","inView":1,"inert":"101","cur":"false,true,false","dotTi":"-1,0,-1","slideTi":"-1,0,-1","ev":0,"ng":true}
+   console ["warning: Violations found on element: %o: JSHandle@node","warning: ngTabPanel must have an ngTabContent structural directive to render."]
+never A: {"initial":{"inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":0,"history":2,"hash":""},"afterDot2":{"inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":1041,"history":3,"hash":"#a-work-2","historyDelta":1},"tabAfterTrack":"button:Previous slide","afterArrow":{"focus":"button:Previous slide","inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":1041,"history":3,"hash":"#a-work-2"},"afterNextButton":{"inert":[false,false,false],"dotTabindex":[null,null,null],"scrollLeft":1041,"history":3,"hash":"#a-work-2"}}
+never B: {"initial":{"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"scrollLeft":0,"history":3,"hash":"#a-work-2"},"afterDot2":{"inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"scrollLeft":1041,"history":4,"hash":"#b-work-2","historyDelta":1},"tabAfterTrack":"tabpanel:A trail mapPrinted i#b-work-1","afterArrow":{"focus":"tabpanel:A trail mapPrinted i#b-work-1","inert":[false,true,true],"dotTabindex":["-1","-1","-1"],"scrollLeft":2083,"history":4,"hash":"#b-work-2"}}

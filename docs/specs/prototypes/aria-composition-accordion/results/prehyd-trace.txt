@@ -1,0 +1,78 @@
+=== chromium /a: open=true aria-expanded=null inert=no out=true,false
+  80 attr details open=
+  87 toggle Does Yet closed->open open=true
+  --- release main.js
+=== chromium /c: open=true aria-expanded=true inert=no out=true,false
+  92 attr details open=
+  98 toggle Does Yet closed->open open=true
+  --- release main.js
+  604 attr details open=
+  604 attr summary aria-expanded=true
+  604 attr p inert=null
+  604 attr summary aria-expanded=false
+  604 attr p inert=true
+=== chromium /c-noinert: open=true aria-expanded=true inert=no out=true,false
+  79 attr details open=
+  87 toggle Does Yet closed->open open=true
+  --- release main.js
+  596 attr details open=
+  596 attr summary aria-expanded=true
+  596 attr summary aria-expanded=false
+  596 attr p inert=null
+  596 attr p inert=null
+=== chromium /d: open=true aria-expanded=null inert=no out=true,false
+  104 attr details open=
+  110 toggle Does Yet closed->open open=true
+  --- release main.js
+=== firefox /a: open=true aria-expanded=null inert=no out=true,false
+  514 attr details open=
+  520 toggle Does Yet closed->open open=true
+  --- release main.js
+=== firefox /c: open=true aria-expanded=true inert=no out=true,false
+  167 attr details open=
+  172 toggle Does Yet closed->open open=true
+  --- release main.js
+  713 attr details open=
+  713 attr summary aria-expanded=true
+  713 attr p inert=null
+  713 attr summary aria-expanded=false
+  713 attr p inert=true
+=== firefox /c-noinert: open=true aria-expanded=true inert=no out=true,false
+  163 attr details open=
+  167 toggle Does Yet closed->open open=true
+  --- release main.js
+  695 attr details open=
+  695 attr summary aria-expanded=true
+  695 attr summary aria-expanded=false
+  695 attr p inert=null
+  695 attr p inert=null
+=== firefox /d: open=true aria-expanded=null inert=no out=true,false
+  177 attr details open=
+  180 toggle Does Yet closed->open open=true
+  --- release main.js
+=== webkit /a: open=true aria-expanded=null inert=no out=true,false
+  183 toggle Does Yet closed->open open=true
+  184 attr details open=
+  --- release main.js
+=== webkit /c: open=true aria-expanded=true inert=no out=true,false
+  177 attr details open=
+  185 toggle Does Yet closed->open open=true
+  --- release main.js
+  778 attr details open=
+  778 attr summary aria-expanded=true
+  778 attr p inert=null
+  778 attr summary aria-expanded=false
+  778 attr p inert=true
+=== webkit /c-noinert: open=true aria-expanded=true inert=no out=true,false
+  178 attr details open=
+  183 toggle Does Yet closed->open open=true
+  --- release main.js
+  729 attr details open=
+  729 attr summary aria-expanded=true
+  729 attr summary aria-expanded=false
+  729 attr p inert=null
+  729 attr p inert=null
+=== webkit /d: open=true aria-expanded=null inert=no out=true,false
+  176 attr details open=
+  186 toggle Does Yet closed->open open=true
+  --- release main.js

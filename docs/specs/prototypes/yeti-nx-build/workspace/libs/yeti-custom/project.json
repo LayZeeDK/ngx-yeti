@@ -1,0 +1,100 @@
+{
+  "name": "yeti-custom",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "implicitDependencies": [
+    "yeti-css"
+  ],
+  "targets": {
+    "custom-css": {
+      "executor": "@nx/esbuild:esbuild",
+      "dependsOn": [
+        "^yeti-build"
+      ],
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "main": "libs/yeti-custom/site.css",
+        "outputPath": "dist/libs/yeti-custom/css",
+        "tsConfig": "libs/yeti-custom/tsconfig.json",
+        "bundle": true,
+        "minify": true,
+        "thirdParty": true,
+        "skipTypeCheck": true,
+        "format": [
+          "esm"
+        ],
+        "outputFileName": "site.min.css",
+        "esbuildOptions": {
+          "outExtension": {
+            ".js": ".css"
+          }
+        }
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*",
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        }
+      ]
+    },
+    "custom-js": {
+      "executor": "@nx/esbuild:esbuild",
+      "dependsOn": [
+        "^yeti-build"
+      ],
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "main": "libs/yeti-custom/site.js",
+        "outputPath": "dist/libs/yeti-custom/js",
+        "tsConfig": "libs/yeti-custom/tsconfig.json",
+        "bundle": true,
+        "minify": true,
+        "thirdParty": true,
+        "skipTypeCheck": true,
+        "format": [
+          "esm"
+        ],
+        "platform": "browser"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*",
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        }
+      ]
+    },
+    "custom-css-cli": {
+      "executor": "nx:run-commands",
+      "dependsOn": [
+        "^yeti-build"
+      ],
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/site.css",
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        },
+        {
+          "externalDependencies": [
+            "esbuild"
+          ]
+        }
+      ],
+      "outputs": [
+        "{workspaceRoot}/dist/libs/yeti-custom/cli"
+      ],
+      "options": {
+        "command": "esbuild libs/yeti-custom/site.css --bundle --minify --outfile=dist/libs/yeti-custom/cli/site.min.css"
+      }
+    }
+  }
+}

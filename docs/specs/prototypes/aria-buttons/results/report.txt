@@ -1,0 +1,876 @@
+{
+ "engine": "chromium 153.0.8010.12",
+ "styles": {
+  "actionA": [
+   "group margin-top: ref 0px vs 13.5034px"
+  ],
+  "actionB": [
+   "group margin-top: ref 0px vs 13.5034px",
+   "item 3 (Export) cursor: ref not-allowed vs progress",
+   "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+  ],
+  "toggleA": [],
+  "toggleB": [],
+  "hoverExport": {
+   "ref": "rgba(0, 0, 0, 0)",
+   "a-action": "rgba(0, 0, 0, 0)",
+   "b-action": "oklch(0.95 0.06 250)"
+  },
+  "lift": {
+   "a": {
+    "el": "Italic",
+    "fv": true,
+    "position": "relative",
+    "z": "1",
+    "outline": "solid"
+   },
+   "b": {
+    "el": "Italic",
+    "fv": true,
+    "position": "relative",
+    "z": "1",
+    "outline": "solid"
+   }
+  }
+ },
+ "axe": {
+  "A": {
+   "violations": [],
+   "passes": 14
+  },
+  "B": {
+   "violations": [
+    "aria-allowed-attr (critical): <div role=\"group\" ngtoolbar=\"\" aria-label=\"Probe\" data-testid=\"b-probe\" class=\"buttons\" tabindex=\"-1\" aria-disabled=\"fal :: Fix all of the following:   ARIA attribute is not allowed: aria-orientation=\"horizontal\"",
+    "color-contrast (serious): <button ngtoolbarwidget=\"\" type=\"button\" data-emphasis=\"medium\" yetibutton=\"\" class=\"button\" aria-busy=\"true\" aria-disab :: Fix any of the following:   Element has insufficient color contrast of 3.6 (foreground color: #6188ac, background color: #f2fdff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1 ;; <button ngtoolbarwidget=\"\" type=\"button\" aria-disabled=\"false\" aria-busy=\"true\" class=\"button\" id=\"ng-toolbar-widget-a50 :: Fix any of the following:   Element has insufficient color contrast of 2.58 (foreground color: #f8fcfd, background color: #61a5d6, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1"
+   ],
+   "passes": 15
+  },
+  "ref": []
+ },
+ "tree": {
+  "a-action": "- group \"Form actions\":\n  - button \"Save\"\n  - button \"Cancel\"\n  - button \"Export\" [disabled]",
+  "a-toggle": "- group \"Text style\":\n  - button \"Bold\" [pressed]\n  - button \"Italic\"\n  - button \"Underline\"",
+  "b-action": "- toolbar \"Form actions\":\n  - button \"Save\"\n  - button \"Cancel\"\n  - button \"Export\"",
+  "b-toggle": "- toolbar \"Text style\":\n  - button \"Bold\" [pressed]\n  - button \"Italic\"\n  - button \"Underline\"",
+  "b-probe": "- group \"Probe\":\n  - button \"Static busy\"\n  - button \"Aria-disabled busy\" [disabled]\n  - button \"Static tabindex\""
+ },
+ "tabOrder": [
+  "a-action:Save",
+  "a-action:Cancel",
+  "a-action:Export",
+  "a-toggle:Bold",
+  "a-toggle:Italic",
+  "a-toggle:Underline",
+  "b-action:Save",
+  "b-toggle:Bold",
+  "b-probe:Static busy",
+  "(body)",
+  "a-action:Save",
+  "a-action:Cancel"
+ ],
+ "kbB": [
+  "enter -> b-action:Save",
+  "ArrowRight -> b-action:Cancel",
+  "ArrowRight -> b-action:Export",
+  "ArrowRight -> b-action:Save",
+  "ArrowLeft -> b-action:Export",
+  "Home -> b-action:Save",
+  "End -> b-action:Export",
+  "ArrowDown -> b-action:Export",
+  "ArrowUp -> b-action:Export",
+  "Tab -> b-toggle:Bold"
+ ],
+ "kbBreturn": [
+  "ArrowRight -> b-toggle:Italic",
+  "Shift+Tab -> b-toggle:Bold",
+  "Tab -> b-probe:Static busy"
+ ],
+ "toggleB": {
+  "before": [
+   "Bold=true",
+   "Italic=false",
+   "Underline=false"
+  ],
+  "afterSpace": [
+   "Bold=true",
+   "Italic=false",
+   "Underline=true"
+  ],
+  "afterEnter": [
+   "Bold=true",
+   "Italic=false",
+   "Underline=false"
+  ]
+ },
+ "kbA": [
+  "enter -> a-toggle:Bold",
+  "ArrowRight -> a-toggle:Bold",
+  "Tab -> a-toggle:Italic"
+ ],
+ "aSpace": [
+  "Bold=false",
+  "Italic=false",
+  "Underline=false"
+ ],
+ "afterClick": [
+  "SaveCancelExport:-1",
+  "Save:-1",
+  "Cancel:0",
+  "Export:-1"
+ ],
+ "jsOff": {
+  "tabindex": {
+   "a-action": [
+    "SaveCancelExport:null",
+    "Save:null",
+    "Cancel:null",
+    "Export:null"
+   ],
+   "b-action": [
+    "SaveCancelExport:-1",
+    "Save:-1",
+    "Cancel:-1",
+    "Export:-1"
+   ],
+   "b-toggle": [
+    "BoldItalicUnderline:-1",
+    "Bold:-1",
+    "Italic:-1",
+    "Underline:-1"
+   ]
+  },
+  "styles": {
+   "action": {
+    "A": [
+     "group margin-top: ref 0px vs 13.5034px"
+    ],
+    "B": [
+     "group margin-top: ref 0px vs 13.5034px",
+     "item 3 (Export) cursor: ref not-allowed vs progress",
+     "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+    ]
+   },
+   "toggle": {
+    "A": [],
+    "B": []
+   }
+  },
+  "tabOrder": [
+   "a-action:Save",
+   "a-action:Cancel",
+   "a-action:Export",
+   "a-toggle:Bold",
+   "a-toggle:Italic",
+   "a-toggle:Underline",
+   "(body)",
+   "a-action:Save",
+   "a-action:Cancel",
+   "a-action:Export"
+  ],
+  "pressedAfterClick": {
+   "a": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ]
+  }
+ },
+ "beforeHydration": {
+  "styles": {
+   "action": {
+    "A": [
+     "group margin-top: ref 0px vs 13.5034px"
+    ],
+    "B": [
+     "group margin-top: ref 0px vs 13.5034px",
+     "item 3 (Export) cursor: ref not-allowed vs progress",
+     "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+    ]
+   },
+   "toggle": {
+    "A": [],
+    "B": []
+   }
+  },
+  "tabOrder": [
+   "a-action:Save",
+   "a-action:Cancel",
+   "a-action:Export",
+   "a-toggle:Bold",
+   "a-toggle:Italic",
+   "a-toggle:Underline",
+   "(body)",
+   "a-action:Save"
+  ],
+  "pressedBefore": {
+   "a": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ]
+  },
+  "pressedAfterHydration": {
+   "a": [
+    "Bold=true",
+    "Italic=true",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=true"
+   ]
+  },
+  "tabindexAfter": [
+   "BoldItalicUnderline:-1",
+   "Bold:-1",
+   "Italic:-1",
+   "Underline:0"
+  ]
+ },
+ "hydrateNever": {
+  "styles": {
+   "action": {
+    "A": [
+     "group margin-top: ref 0px vs 13.5034px"
+    ],
+    "B": [
+     "group margin-top: ref 0px vs 13.5034px",
+     "item 3 (Export) cursor: ref not-allowed vs progress",
+     "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+    ]
+   },
+   "toggle": {
+    "A": [],
+    "B": []
+   }
+  },
+  "tabindex": {
+   "b": [
+    "SaveCancelExport:-1",
+    "Save:-1",
+    "Cancel:-1",
+    "Export:-1"
+   ]
+  },
+  "tabOrder": [
+   "a-action:Save",
+   "a-action:Cancel",
+   "a-action:Export",
+   "a-toggle:Bold",
+   "a-toggle:Italic",
+   "a-toggle:Underline",
+   "(body)",
+   "a-action:Save"
+  ],
+  "kbB": [
+   "ArrowRight -> (body)"
+  ],
+  "pressedAfterClick": {
+   "a": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ]
+  }
+ }
+}
+{
+ "engine": "firefox 155.0",
+ "styles": {
+  "actionA": [
+   "group margin-top: ref 0px vs 13.5034px"
+  ],
+  "actionB": [
+   "group margin-top: ref 0px vs 13.5034px",
+   "item 3 (Export) cursor: ref not-allowed vs progress",
+   "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+  ],
+  "toggleA": [],
+  "toggleB": [],
+  "hoverExport": {
+   "ref": "rgba(0, 0, 0, 0)",
+   "a-action": "rgba(0, 0, 0, 0)",
+   "b-action": "oklch(0.95 0.06 250)"
+  },
+  "lift": {
+   "a": {
+    "el": "Italic",
+    "fv": true,
+    "position": "relative",
+    "z": "1",
+    "outline": "solid"
+   },
+   "b": {
+    "el": "Italic",
+    "fv": true,
+    "position": "relative",
+    "z": "1",
+    "outline": "solid"
+   }
+  }
+ },
+ "axe": {
+  "A": {
+   "violations": [],
+   "passes": 14
+  },
+  "B": {
+   "violations": [
+    "aria-allowed-attr (critical): <div role=\"group\" ngtoolbar=\"\" aria-label=\"Probe\" data-testid=\"b-probe\" class=\"buttons\" tabindex=\"-1\" aria-disabled=\"fal :: Fix all of the following:   ARIA attribute is not allowed: aria-orientation=\"horizontal\"",
+    "color-contrast (serious): <button ngtoolbarwidget=\"\" type=\"button\" data-emphasis=\"medium\" yetibutton=\"\" class=\"button\" aria-busy=\"true\" aria-disab :: Fix any of the following:   Element has insufficient color contrast of 3.6 (foreground color: #6188ac, background color: #f2fdff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1 ;; <button ngtoolbarwidget=\"\" type=\"button\" aria-disabled=\"false\" aria-busy=\"true\" class=\"button\" id=\"ng-toolbar-widget-a10 :: Fix any of the following:   Element has insufficient color contrast of 2.58 (foreground color: #f8fcfd, background color: #61a5d6, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1"
+   ],
+   "passes": 15
+  },
+  "ref": []
+ },
+ "tree": {
+  "a-action": "- group \"Form actions\":\n  - button \"Save\"\n  - button \"Cancel\"\n  - button \"Export\" [disabled]",
+  "a-toggle": "- group \"Text style\":\n  - button \"Bold\" [pressed]\n  - button \"Italic\"\n  - button \"Underline\"",
+  "b-action": "- toolbar \"Form actions\":\n  - button \"Save\"\n  - button \"Cancel\"\n  - button \"Export\"",
+  "b-toggle": "- toolbar \"Text style\":\n  - button \"Bold\" [pressed]\n  - button \"Italic\"\n  - button \"Underline\"",
+  "b-probe": "- group \"Probe\":\n  - button \"Static busy\"\n  - button \"Aria-disabled busy\" [disabled]\n  - button \"Static tabindex\""
+ },
+ "tabOrder": [
+  "a-action:Save",
+  "a-action:Cancel",
+  "a-action:Export",
+  "a-toggle:Bold",
+  "a-toggle:Italic",
+  "a-toggle:Underline",
+  "b-action:Save",
+  "b-toggle:Bold",
+  "b-probe:Static busy",
+  "b-probe:Static busy",
+  "b-probe:Static busy",
+  "b-probe:Static busy"
+ ],
+ "kbB": [
+  "enter -> b-action:Save",
+  "ArrowRight -> b-action:Cancel",
+  "ArrowRight -> b-action:Export",
+  "ArrowRight -> b-action:Save",
+  "ArrowLeft -> b-action:Export",
+  "Home -> b-action:Save",
+  "End -> b-action:Export",
+  "ArrowDown -> b-action:Export",
+  "ArrowUp -> b-action:Export",
+  "Tab -> b-toggle:Bold"
+ ],
+ "kbBreturn": [
+  "ArrowRight -> b-toggle:Italic",
+  "Shift+Tab -> b-action:Export",
+  "Tab -> b-toggle:Italic"
+ ],
+ "toggleB": {
+  "before": [
+   "Bold=true",
+   "Italic=false",
+   "Underline=false"
+  ],
+  "afterSpace": [
+   "Bold=true",
+   "Italic=false",
+   "Underline=true"
+  ],
+  "afterEnter": [
+   "Bold=true",
+   "Italic=false",
+   "Underline=false"
+  ]
+ },
+ "kbA": [
+  "enter -> a-toggle:Bold",
+  "ArrowRight -> a-toggle:Bold",
+  "Tab -> a-toggle:Italic"
+ ],
+ "aSpace": [
+  "Bold=false",
+  "Italic=false",
+  "Underline=false"
+ ],
+ "afterClick": [
+  "SaveCancelExport:-1",
+  "Save:-1",
+  "Cancel:0",
+  "Export:-1"
+ ],
+ "jsOff": {
+  "tabindex": {
+   "a-action": [
+    "SaveCancelExport:null",
+    "Save:null",
+    "Cancel:null",
+    "Export:null"
+   ],
+   "b-action": [
+    "SaveCancelExport:-1",
+    "Save:-1",
+    "Cancel:-1",
+    "Export:-1"
+   ],
+   "b-toggle": [
+    "BoldItalicUnderline:-1",
+    "Bold:-1",
+    "Italic:-1",
+    "Underline:-1"
+   ]
+  },
+  "styles": {
+   "action": {
+    "A": [
+     "group margin-top: ref 0px vs 13.5034px"
+    ],
+    "B": [
+     "group margin-top: ref 0px vs 13.5034px",
+     "item 3 (Export) cursor: ref not-allowed vs progress",
+     "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+    ]
+   },
+   "toggle": {
+    "A": [],
+    "B": []
+   }
+  },
+  "tabOrder": [
+   "a-action:Save",
+   "a-action:Cancel",
+   "a-action:Export",
+   "a-toggle:Bold",
+   "a-toggle:Italic",
+   "a-toggle:Underline",
+   "a-toggle:Underline",
+   "a-toggle:Underline",
+   "a-toggle:Underline",
+   "a-toggle:Underline"
+  ],
+  "pressedAfterClick": {
+   "a": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ]
+  }
+ },
+ "beforeHydration": {
+  "styles": {
+   "action": {
+    "A": [
+     "group margin-top: ref 0px vs 13.5034px"
+    ],
+    "B": [
+     "group margin-top: ref 0px vs 13.5034px",
+     "item 3 (Export) cursor: ref not-allowed vs progress",
+     "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+    ]
+   },
+   "toggle": {
+    "A": [],
+    "B": []
+   }
+  },
+  "tabOrder": [
+   "a-action:Save",
+   "a-action:Cancel",
+   "a-action:Export",
+   "a-toggle:Bold",
+   "a-toggle:Italic",
+   "a-toggle:Underline",
+   "a-toggle:Underline",
+   "a-toggle:Underline"
+  ],
+  "pressedBefore": {
+   "a": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ]
+  },
+  "pressedAfterHydration": {
+   "a": [
+    "Bold=true",
+    "Italic=true",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=true"
+   ]
+  },
+  "tabindexAfter": [
+   "BoldItalicUnderline:-1",
+   "Bold:-1",
+   "Italic:-1",
+   "Underline:0"
+  ]
+ },
+ "hydrateNever": {
+  "styles": {
+   "action": {
+    "A": [
+     "group margin-top: ref 0px vs 13.5034px"
+    ],
+    "B": [
+     "group margin-top: ref 0px vs 13.5034px",
+     "item 3 (Export) cursor: ref not-allowed vs progress",
+     "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+    ]
+   },
+   "toggle": {
+    "A": [],
+    "B": []
+   }
+  },
+  "tabindex": {
+   "b": [
+    "SaveCancelExport:-1",
+    "Save:-1",
+    "Cancel:-1",
+    "Export:-1"
+   ]
+  },
+  "tabOrder": [
+   "a-action:Save",
+   "a-action:Cancel",
+   "a-action:Export",
+   "a-toggle:Bold",
+   "a-toggle:Italic",
+   "a-toggle:Underline",
+   "a-toggle:Underline",
+   "a-toggle:Underline"
+  ],
+  "kbB": [
+   "ArrowRight -> (body)"
+  ],
+  "pressedAfterClick": {
+   "a": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ]
+  }
+ }
+}
+{
+ "engine": "webkit 26.6",
+ "styles": {
+  "actionA": [
+   "group margin-top: ref 0px vs 13.5px"
+  ],
+  "actionB": [
+   "group margin-top: ref 0px vs 13.5px",
+   "item 3 (Export) cursor: ref not-allowed vs progress",
+   "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+  ],
+  "toggleA": [],
+  "toggleB": [],
+  "hoverExport": {
+   "ref": "rgba(0, 0, 0, 0)",
+   "a-action": "rgba(0, 0, 0, 0)",
+   "b-action": "oklch(0.95 0.06 250)"
+  },
+  "lift": {
+   "a": {
+    "el": "Italic",
+    "fv": true,
+    "position": "relative",
+    "z": "1",
+    "outline": "solid"
+   },
+   "b": {
+    "el": "Italic",
+    "fv": true,
+    "position": "relative",
+    "z": "1",
+    "outline": "solid"
+   }
+  }
+ },
+ "axe": {
+  "A": {
+   "violations": [],
+   "passes": 14
+  },
+  "B": {
+   "violations": [
+    "aria-allowed-attr (critical): <div role=\"group\" ngtoolbar=\"\" aria-label=\"Probe\" data-testid=\"b-probe\" class=\"buttons\" tabindex=\"-1\" aria-disabled=\"fal :: Fix all of the following:   ARIA attribute is not allowed: aria-orientation=\"horizontal\"",
+    "color-contrast (serious): <button ngtoolbarwidget=\"\" type=\"button\" data-emphasis=\"medium\" yetibutton=\"\" class=\"button\" aria-busy=\"true\" aria-disab :: Fix any of the following:   Element has insufficient color contrast of 3.6 (foreground color: #6188ac, background color: #f2fdff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1 ;; <button ngtoolbarwidget=\"\" type=\"button\" aria-disabled=\"false\" aria-busy=\"true\" class=\"button\" id=\"ng-toolbar-widget-a42 :: Fix any of the following:   Element has insufficient color contrast of 2.58 (foreground color: #f8fcfd, background color: #61a5d6, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1"
+   ],
+   "passes": 15
+  },
+  "ref": []
+ },
+ "tree": {
+  "a-action": "- group \"Form actions\":\n  - button \"Save\"\n  - button \"Cancel\"\n  - button \"Export\" [disabled]",
+  "a-toggle": "- group \"Text style\":\n  - button \"Bold\" [pressed]\n  - button \"Italic\"\n  - button \"Underline\"",
+  "b-action": "- toolbar \"Form actions\":\n  - button \"Save\"\n  - button \"Cancel\"\n  - button \"Export\"",
+  "b-toggle": "- toolbar \"Text style\":\n  - button \"Bold\" [pressed]\n  - button \"Italic\"\n  - button \"Underline\"",
+  "b-probe": "- group \"Probe\":\n  - button \"Static busy\"\n  - button \"Aria-disabled busy\" [disabled]\n  - button \"Static tabindex\""
+ },
+ "tabOrder": [
+  "a-action:Save",
+  "a-action:Cancel",
+  "a-action:Export",
+  "a-toggle:Bold",
+  "a-toggle:Italic",
+  "a-toggle:Underline",
+  "b-action:Save",
+  "b-toggle:Bold",
+  "b-probe:Static busy",
+  "(body)",
+  "a-action:Save",
+  "a-action:Cancel"
+ ],
+ "kbB": [
+  "enter -> b-action:Save",
+  "ArrowRight -> b-action:Cancel",
+  "ArrowRight -> b-action:Export",
+  "ArrowRight -> b-action:Save",
+  "ArrowLeft -> b-action:Export",
+  "Home -> b-action:Save",
+  "End -> b-action:Export",
+  "ArrowDown -> b-action:Export",
+  "ArrowUp -> b-action:Export",
+  "Tab -> b-toggle:Bold"
+ ],
+ "kbBreturn": [
+  "ArrowRight -> b-toggle:Italic",
+  "Shift+Tab -> b-toggle:Bold",
+  "Tab -> b-toggle:Italic"
+ ],
+ "toggleB": {
+  "before": [
+   "Bold=true",
+   "Italic=false",
+   "Underline=false"
+  ],
+  "afterSpace": [
+   "Bold=true",
+   "Italic=false",
+   "Underline=true"
+  ],
+  "afterEnter": [
+   "Bold=true",
+   "Italic=false",
+   "Underline=false"
+  ]
+ },
+ "kbA": [
+  "enter -> a-toggle:Bold",
+  "ArrowRight -> a-toggle:Bold",
+  "Tab -> a-toggle:Italic"
+ ],
+ "aSpace": [
+  "Bold=false",
+  "Italic=false",
+  "Underline=false"
+ ],
+ "afterClick": [
+  "SaveCancelExport:-1",
+  "Save:-1",
+  "Cancel:0",
+  "Export:-1"
+ ],
+ "jsOff": {
+  "tabindex": {
+   "a-action": [
+    "SaveCancelExport:null",
+    "Save:null",
+    "Cancel:null",
+    "Export:null"
+   ],
+   "b-action": [
+    "SaveCancelExport:-1",
+    "Save:-1",
+    "Cancel:-1",
+    "Export:-1"
+   ],
+   "b-toggle": [
+    "BoldItalicUnderline:-1",
+    "Bold:-1",
+    "Italic:-1",
+    "Underline:-1"
+   ]
+  },
+  "styles": {
+   "action": {
+    "A": [
+     "group margin-top: ref 0px vs 13.5px"
+    ],
+    "B": [
+     "group margin-top: ref 0px vs 13.5px",
+     "item 3 (Export) cursor: ref not-allowed vs progress",
+     "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+    ]
+   },
+   "toggle": {
+    "A": [],
+    "B": []
+   }
+  },
+  "tabOrder": [
+   "a-action:Save",
+   "a-action:Cancel",
+   "a-action:Export",
+   "a-toggle:Bold",
+   "a-toggle:Italic",
+   "a-toggle:Underline",
+   "(body)",
+   "a-action:Save",
+   "a-action:Cancel",
+   "a-action:Export"
+  ],
+  "pressedAfterClick": {
+   "a": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ]
+  }
+ },
+ "beforeHydration": {
+  "styles": {
+   "action": {
+    "A": [
+     "group margin-top: ref 0px vs 13.5px"
+    ],
+    "B": [
+     "group margin-top: ref 0px vs 13.5px",
+     "item 3 (Export) cursor: ref not-allowed vs progress",
+     "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+    ]
+   },
+   "toggle": {
+    "A": [],
+    "B": []
+   }
+  },
+  "tabOrder": [
+   "a-action:Save",
+   "a-action:Cancel",
+   "a-action:Export",
+   "a-toggle:Bold",
+   "a-toggle:Italic",
+   "a-toggle:Underline",
+   "(body)",
+   "a-action:Save"
+  ],
+  "pressedBefore": {
+   "a": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ]
+  },
+  "pressedAfterHydration": {
+   "a": [
+    "Bold=true",
+    "Italic=true",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=true"
+   ]
+  },
+  "tabindexAfter": [
+   "BoldItalicUnderline:-1",
+   "Bold:-1",
+   "Italic:-1",
+   "Underline:0"
+  ]
+ },
+ "hydrateNever": {
+  "styles": {
+   "action": {
+    "A": [
+     "group margin-top: ref 0px vs 13.5px"
+    ],
+    "B": [
+     "group margin-top: ref 0px vs 13.5px",
+     "item 3 (Export) cursor: ref not-allowed vs progress",
+     "item 3 (Export) no longer matches: .button:is(:disabled, [aria-disabled=\"true\"], :has(> input:disabled))"
+    ]
+   },
+   "toggle": {
+    "A": [],
+    "B": []
+   }
+  },
+  "tabindex": {
+   "b": [
+    "SaveCancelExport:-1",
+    "Save:-1",
+    "Cancel:-1",
+    "Export:-1"
+   ]
+  },
+  "tabOrder": [
+   "a-action:Save",
+   "a-action:Cancel",
+   "a-action:Export",
+   "a-toggle:Bold",
+   "a-toggle:Italic",
+   "a-toggle:Underline",
+   "(body)",
+   "a-action:Save"
+  ],
+  "kbB": [
+   "ArrowRight -> (body)"
+  ],
+  "pressedAfterClick": {
+   "a": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ],
+   "b": [
+    "Bold=true",
+    "Italic=false",
+    "Underline=false"
+   ]
+  }
+ }
+}

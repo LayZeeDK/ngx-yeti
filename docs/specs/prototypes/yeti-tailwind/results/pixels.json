@@ -1,0 +1,92 @@
+{
+  "chromium/plain button": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "chromium/yeti button": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "chromium/list": {
+    "TY": "differs",
+    "S1": "differs",
+    "S3": "same as Y0"
+  },
+  "chromium/hr": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "chromium/select": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "chromium/card": {
+    "TY": "differs",
+    "S1": "differs",
+    "S3": "differs"
+  },
+  "firefox/plain button": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "firefox/yeti button": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "firefox/list": {
+    "TY": "differs",
+    "S1": "differs",
+    "S3": "same as Y0"
+  },
+  "firefox/hr": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "firefox/select": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "firefox/card": {
+    "TY": "same as Y0",
+    "S1": "differs",
+    "S3": "differs"
+  },
+  "webkit/plain button": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "webkit/yeti button": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "webkit/list": {
+    "TY": "differs",
+    "S1": "differs",
+    "S3": "same as Y0"
+  },
+  "webkit/hr": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "webkit/select": {
+    "TY": "same as Y0",
+    "S1": "same as Y0",
+    "S3": "same as Y0"
+  },
+  "webkit/card": {
+    "TY": "same as Y0",
+    "S1": "differs",
+    "S3": "differs"
+  }
+}

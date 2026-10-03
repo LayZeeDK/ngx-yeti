@@ -1,0 +1,119 @@
+##### chromium
+--- a stylesClosed: 2 lines
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- a stylesOpen: 2 lines
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- a selectors (open): {".accordion":1,".accordion > details + details":1,".accordion > details > summary":2,".accordion > details > summary:hover":2,".accordion > details > summary:focus-visible":2,".accordion > details[open] > summary":1,".accordion > details > :not(summary)":2,".accordion > details > :not(summary):last-child":2,"details > summary":2,"details > summary::after":2,"details[open] > summary::after":1,"details":2,"details[open]":1,"details::details-content":2}
+--- c stylesClosed: 2 lines
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- c stylesOpen: 2 lines
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- c selectors (open): {".accordion":1,".accordion > details + details":1,".accordion > details > summary":2,".accordion > details > summary:hover":2,".accordion > details > summary:focus-visible":2,".accordion > details[open] > summary":1,".accordion > details > :not(summary)":2,".accordion > details > :not(summary):last-child":2,"details > summary":2,"details > summary::after":2,"details[open] > summary::after":1,"details":2,"details[open]":1,"details::details-content":2}
+--- cn stylesClosed: 2 lines
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- cn stylesOpen: 2 lines
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- cn selectors (open): {".accordion":1,".accordion > details + details":1,".accordion > details > summary":2,".accordion > details > summary:hover":2,".accordion > details > summary:focus-visible":2,".accordion > details[open] > summary":1,".accordion > details > :not(summary)":2,".accordion > details > :not(summary):last-child":2,"details > summary":2,"details > summary::after":2,"details[open] > summary::after":1,"details":2,"details[open]":1,"details::details-content":2}
+--- d stylesClosed: 5 lines
+   item.grid-template-rows: 60.9375px 0px -> 68.3594px 0px
+   item2.grid-template-rows: 60.9375px 0px -> 68.3594px 0px
+   triggerAfter.margin-left: 733.266px -> 580.266px
+   triggerHeight 60.9375 -> 68.359375
+   accordionHeight 124.875 -> 139.71875
+--- d stylesOpen: 5 lines
+   item.grid-template-rows: 61.9375px 60.9375px -> 69.3594px 60.9375px
+   item2.grid-template-rows: 60.9375px 0px -> 68.3594px 0px
+   triggerAfter.margin-left: 733.266px -> 580.266px
+   triggerHeight 61.9375 -> 69.359375
+   accordionHeight 186.8125 -> 201.65625
+--- d selectors (open): {".accordion":1,".accordion > details + details":1,".accordion > details > summary":2,".accordion > details > summary:hover":2,".accordion > details > summary:focus-visible":2,".accordion > details[open] > summary":1,".accordion > details > :not(summary)":2,".accordion > details > :not(summary):last-child":2,"details > summary":2,"details > summary::after":2,"details[open] > summary::after":1,"details":2,"details[open]":1,"details::details-content":2}
+--- dr stylesClosed: 2 lines
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- dr stylesOpen: 2 lines
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- dr selectors (open): {".accordion":1,".accordion > details + details":1,".accordion > details > summary":2,".accordion > details > summary:hover":2,".accordion > details > summary:focus-visible":2,".accordion > details[open] > summary":1,".accordion > details > :not(summary)":2,".accordion > details > :not(summary):last-child":2,"details > summary":2,"details > summary::after":2,"details[open] > summary::after":1,"details":2,"details[open]":1,"details::details-content":2}
+--- ref selectors (open): {".accordion":1,".accordion > details + details":1,".accordion > details > summary":2,".accordion > details > summary:hover":2,".accordion > details > summary:focus-visible":2,".accordion > details[open] > summary":1,".accordion > details > :not(summary)":2,".accordion > details > :not(summary):last-child":2,"details > summary":2,"details > summary::after":2,"details[open] > summary::after":1,"details":2,"details[open]":1,"details::details-content":2}
+--- d heading {"display":"block","padding-top":"0px","padding-left":"0px","margin-top":"0px","margin-left":"0px","margin-bottom":"0px","border-top-width":"0px","border-top-style":"none","border-bottom-width":"0px","border-bottom-style":"none","border-top-left-radius":"0px","background-color":"rgba(0, 0, 0, 0)","font-weight":"700","font-size":"29.1725px","cursor":"pointer","list-style-type":"none","outline-offset":"0px","grid-template-rows":"none","overflow-x":"visible","width":"360.766px"}
+--- dr heading {"display":"block","padding-top":"0px","padding-left":"0px","margin-top":"0px","margin-left":"0px","margin-bottom":"0px","border-top-width":"0px","border-top-style":"none","border-bottom-width":"0px","border-bottom-style":"none","border-top-left-radius":"0px","background-color":"rgba(0, 0, 0, 0)","font-weight":"600","font-size":"17.4167px","cursor":"pointer","list-style-type":"none","outline-offset":"0px","grid-template-rows":"none","overflow-x":"visible","width":"207.766px"}
+##### firefox
+--- a stylesClosed: 2 lines
+   triggerHeight 60.94999694824219 -> 60.94999694824219
+   accordionHeight 124.89999389648438 -> 124.89999389648438
+--- a stylesOpen: 2 lines
+   triggerHeight 61.94999694824219 -> 61.94999694824219
+   accordionHeight 186.85000610351562 -> 186.85000610351562
+--- c stylesClosed: 2 lines
+   triggerHeight 60.94999694824219 -> 60.94999694824219
+   accordionHeight 124.89999389648438 -> 124.89999389648438
+--- c stylesOpen: 2 lines
+   triggerHeight 61.94999694824219 -> 61.94999694824219
+   accordionHeight 186.85000610351562 -> 186.85000610351562
+--- cn stylesClosed: 2 lines
+   triggerHeight 60.94999694824219 -> 60.94999694824219
+   accordionHeight 124.89999389648438 -> 124.89999389648438
+--- cn stylesOpen: 2 lines
+   triggerHeight 61.94999694824219 -> 61.94999694824219
+   accordionHeight 186.85000610351562 -> 186.85000610351562
+--- d stylesClosed: 5 lines
+   item.grid-template-rows: 60.95px 0px -> 68.4px 0px
+   item2.grid-template-rows: 60.95px 0px -> 68.4px 0px
+   triggerAfter.margin-left: 733.367px -> 580.133px
+   triggerHeight 60.94999694824219 -> 68.39999389648438
+   accordionHeight 124.89999389648438 -> 139.8000030517578
+--- d stylesOpen: 5 lines
+   item.grid-template-rows: 61.95px 60.95px -> 69.4px 60.95px
+   item2.grid-template-rows: 60.95px 0px -> 68.4px 0px
+   triggerAfter.margin-left: 733.367px -> 580.133px
+   triggerHeight 61.94999694824219 -> 69.39999389648438
+   accordionHeight 186.85000610351562 -> 201.75
+--- dr stylesClosed: 2 lines
+   triggerHeight 60.94999694824219 -> 60.94999694824219
+   accordionHeight 124.89999389648438 -> 124.89999389648438
+--- dr stylesOpen: 2 lines
+   triggerHeight 61.94999694824219 -> 61.94999694824219
+   accordionHeight 186.85000610351562 -> 186.85000610351562
+##### webkit
+--- a stylesClosed: 2 lines
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- a stylesOpen: 2 lines
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- c stylesClosed: 2 lines
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- c stylesOpen: 2 lines
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- cn stylesClosed: 2 lines
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- cn stylesOpen: 2 lines
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- d stylesClosed: 5 lines
+   item.grid-template-rows: 60.9375px 0px -> 68.359375px 0px
+   item2.grid-template-rows: 60.9375px 0px -> 68.359375px 0px
+   triggerAfter.margin-left: 713.546875px -> 560px
+   triggerHeight 60.9375 -> 68.359375
+   accordionHeight 124.875 -> 139.71875
+--- d stylesOpen: 5 lines
+   item.grid-template-rows: 61.9375px 60.9375px -> 69.359375px 60.9375px
+   item2.grid-template-rows: 60.9375px 0px -> 68.359375px 0px
+   triggerAfter.margin-left: 713.546875px -> 560px
+   triggerHeight 61.9375 -> 69.359375
+   accordionHeight 186.8125 -> 201.65625
+--- dr stylesClosed: 2 lines
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- dr stylesOpen: 2 lines
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125

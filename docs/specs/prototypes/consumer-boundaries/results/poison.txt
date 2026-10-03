@@ -1,0 +1,13 @@
+dev s/plain/server/ctor: [fallbackA] fallback="probe ctor cardA" log=[EH onViewError] probe ctor cardA boundary=yes
+dev s/plain/none/ctor: [fallbackA] fallback="Cannot read properties of null (reading 'componentOffset')" log=[EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes
+dev s/plain/none/ctor: [fallbackA] fallback="Cannot read properties of null (reading 'componentOffset')" log=[EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes
+dev s/plain/none/ctor: [cardA]  log=-
+dev s/plain/server/ctor: [fallbackA] fallback="probe ctor cardA" log=[EH onViewError] probe ctor cardA boundary=yes
+dev s/plain/none/ctor: [cardA]  log=-
+dev s/plain/server/host: [fallbackA] fallback="probe host cardA" log=[EH onViewError] probe host cardA boundary=yes
+dev s/plain/none/ctor: [cardA]  log=-
+prod s/plain/server/ctor: [fallbackA] fallback="probe ctor cardA" log=[EH onViewError] probe ctor cardA boundary=yes
+prod s/plain/none/ctor: [fallbackA] fallback="Cannot read properties of null (reading 'componentOffset')" log=[EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes
+prod s/plain/none/ctor: [fallbackA] fallback="Cannot read properties of null (reading 'componentOffset')" log=[EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes
+prod s/on/server/ctor: [fallbackB]  log=[EH handleError] probe ctor cardA || [EH onViewError] probe ctor cardB boundary=yes
+prod s/on/none/ctor: [fallbackB]  log=[EH handleError] Cannot read properties of null (reading 'componentOffset') || [EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes

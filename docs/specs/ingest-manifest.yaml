@@ -1,0 +1,297 @@
+# Ingestion manifest for /gsd-ingest-docs (audit 0005, M4).
+#
+# The workflow caps one run at 50 documents, so ingestion is split into three runs.
+# Each run's `docs` list has the shape `--manifest` expects ({path, type, precedence};
+# lower precedence wins). Put one run's `docs` list in a file of its own and pass it:
+#   run 1: /gsd-ingest-docs --mode new --manifest <file>
+#   runs 2 and 3: /gsd-ingest-docs --mode merge --manifest <file>
+# Paths are relative to this bundle's root; the workflow reads them relative to the
+# repository root, so prefix each with the folder the bundle is copied into.
+#
+# Not listed, on purpose: issues/, research/, prototypes/, and audits/ are provenance,
+# not requirements (README, Provenance). The directory rules would also take
+# audits/NNNN-*.md for ADRs, which the manifest prevents. README.md, map.md, and
+# upstream-bugs.md are read by people and agents directly and are not ingested.
+# ADR 0005, 0042, and 0060 have points replaced by later ADRs; each records it in a
+# dated note in its body, not in its front matter.
+
+runs:
+  - run: 1
+    mode: new
+    # The ADRs and the four cross-cutting documents (35 files)
+    docs:
+      - path: adr/0001-yeti-licence-compatible-with-mit-package.md
+        type: ADR
+        precedence: 0
+      - path: adr/0002-browser-target-baseline-2025.md
+        type: ADR
+        precedence: 0
+      - path: adr/0003-directives-set-yetis-class-attributes-and-markers.md
+        type: ADR
+        precedence: 0
+      - path: adr/0004-yeti-tokens-are-a-consumer-stylesheet-surface.md
+        type: ADR
+        precedence: 0
+      - path: adr/0005-closed-unions-from-yetis-vocabularies.md
+        type: ADR
+        precedence: 0
+      - path: adr/0006-yeti-pinned-develop-commit-vendored-and-gated.md
+        type: ADR
+        precedence: 0
+      - path: adr/0010-animation-is-yetis-css-with-class-form-enter-and-leave.md
+        type: ADR
+        precedence: 0
+      - path: adr/0011-rendering-modes-contract-for-yeti.md
+        type: ADR
+        precedence: 0
+      - path: adr/0012-class-prefix-and-token-naming.md
+        type: ADR
+        precedence: 0
+      - path: adr/0013-parts-name-their-targets-by-reference.md
+        type: ADR
+        precedence: 0
+      - path: adr/0014-testing-stack-for-yeti.md
+        type: ADR
+        precedence: 0
+      - path: adr/0015-wcag-2-2-aa-enforcement-over-yeti.md
+        type: ADR
+        precedence: 0
+      - path: adr/0016-light-dismiss-is-the-platforms-plus-focus-out-and-tooltip-escape.md
+        type: ADR
+        precedence: 0
+      - path: adr/0017-release-policy-with-a-pinned-yeti.md
+        type: ADR
+        precedence: 0
+      - path: adr/0018-no-import-arrays-and-later-milestone-import-checks.md
+        type: ADR
+        precedence: 0
+      - path: adr/0019-nav-and-dropdown-are-disclosure-navigation.md
+        type: ADR
+        precedence: 0
+      - path: adr/0020-field-validity-comes-from-angular-forms.md
+        type: ADR
+        precedence: 0
+      - path: adr/0021-dialog-is-a-directive-on-the-native-dialog.md
+        type: ADR
+        precedence: 0
+      - path: adr/0022-button-declares-no-listeners.md
+        type: ADR
+        precedence: 0
+      - path: adr/0023-fragment-links-are-same-document-links.md
+        type: ADR
+        precedence: 0
+      - path: adr/0024-carousel-slides-are-not-inert-before-live.md
+        type: ADR
+        precedence: 0
+      - path: adr/0025-toc-finds-its-headings-from-its-links.md
+        type: ADR
+        precedence: 0
+      - path: adr/0040-package-replaces-yetis-optional-modules.md
+        type: ADR
+        precedence: 0
+      - path: adr/0041-closing-on-navigation-is-a-per-instance-subscription.md
+        type: ADR
+        precedence: 0
+      - path: adr/0042-generated-ids-come-from-cdk-idgenerator-through-one-helper.md
+        type: ADR
+        precedence: 0
+      - path: adr/0043-light-dismiss-additions-are-host-listeners-not-cdk-services.md
+        type: ADR
+        precedence: 0
+      - path: adr/0044-generated-ids-count-per-application-and-are-adopted-at-hydration.md
+        type: ADR
+        precedence: 0
+      - path: adr/0045-each-item-marks-its-host-with-its-own-attribute.md
+        type: ADR
+        precedence: 0
+      - path: adr/0060-item-styles-are-counted-links-to-the-consumers-yeti-build.md
+        type: ADR
+        precedence: 0
+      - path: adr/0070-where-a-yeti-attribute-sits-decides-its-mapping.md
+        type: ADR
+        precedence: 0
+      - path: adr/0080-yeti-prefix-ngx-yeti-runtime-names-ngxyeti-on-collision.md
+        type: ADR
+        precedence: 0
+      - path: building-blocks.md
+        type: SPEC
+        precedence: 1
+      - path: CONTEXT.md
+        type: DOC
+        precedence: 1
+      - path: ledger.md
+        type: DOC
+        precedence: 1
+      - path: architecture-guide.md
+        type: DOC
+        precedence: 3
+  - run: 2
+    mode: merge
+    # Specs 1 to 27, in file-name order (27 files)
+    docs:
+      - path: specs/accordion.md
+        type: SPEC
+        precedence: 2
+      - path: specs/affix.md
+        type: SPEC
+        precedence: 2
+      - path: specs/alert.md
+        type: SPEC
+        precedence: 2
+      - path: specs/attention.md
+        type: SPEC
+        precedence: 2
+      - path: specs/badge.md
+        type: SPEC
+        precedence: 2
+      - path: specs/billboard.md
+        type: SPEC
+        precedence: 2
+      - path: specs/box.md
+        type: SPEC
+        precedence: 2
+      - path: specs/breadcrumbs.md
+        type: SPEC
+        precedence: 2
+      - path: specs/breakout.md
+        type: SPEC
+        precedence: 2
+      - path: specs/button.md
+        type: SPEC
+        precedence: 2
+      - path: specs/buttons.md
+        type: SPEC
+        precedence: 2
+      - path: specs/card.md
+        type: SPEC
+        precedence: 2
+      - path: specs/carousel.md
+        type: SPEC
+        precedence: 2
+      - path: specs/center.md
+        type: SPEC
+        precedence: 2
+      - path: specs/cluster.md
+        type: SPEC
+        precedence: 2
+      - path: specs/columns.md
+        type: SPEC
+        precedence: 2
+      - path: specs/container.md
+        type: SPEC
+        precedence: 2
+      - path: specs/cover.md
+        type: SPEC
+        precedence: 2
+      - path: specs/demo.md
+        type: SPEC
+        precedence: 2
+      - path: specs/dialog.md
+        type: SPEC
+        precedence: 2
+      - path: specs/dropdown.md
+        type: SPEC
+        precedence: 2
+      - path: specs/enter.md
+        type: SPEC
+        precedence: 2
+      - path: specs/events.md
+        type: SPEC
+        precedence: 2
+      - path: specs/field.md
+        type: SPEC
+        precedence: 2
+      - path: specs/fragment-links.md
+        type: SPEC
+        precedence: 2
+      - path: specs/frame.md
+        type: SPEC
+        precedence: 2
+      - path: specs/generated-ids.md
+        type: SPEC
+        precedence: 2
+  - run: 3
+    mode: merge
+    # Specs 28 to 54, in file-name order (27 files)
+    docs:
+      - path: specs/grid.md
+        type: SPEC
+        precedence: 2
+      - path: specs/hero.md
+        type: SPEC
+        precedence: 2
+      - path: specs/icon.md
+        type: SPEC
+        precedence: 2
+      - path: specs/layer.md
+        type: SPEC
+        precedence: 2
+      - path: specs/lede.md
+        type: SPEC
+        precedence: 2
+      - path: specs/lift.md
+        type: SPEC
+        precedence: 2
+      - path: specs/masonry.md
+        type: SPEC
+        precedence: 2
+      - path: specs/media.md
+        type: SPEC
+        precedence: 2
+      - path: specs/nav.md
+        type: SPEC
+        precedence: 2
+      - path: specs/navigation-close.md
+        type: SPEC
+        precedence: 2
+      - path: specs/overlay.md
+        type: SPEC
+        precedence: 2
+      - path: specs/pagination.md
+        type: SPEC
+        precedence: 2
+      - path: specs/print.md
+        type: SPEC
+        precedence: 2
+      - path: specs/progress.md
+        type: SPEC
+        precedence: 2
+      - path: specs/scroller.md
+        type: SPEC
+        precedence: 2
+      - path: specs/seam.md
+        type: SPEC
+        precedence: 2
+      - path: specs/setup.md
+        type: SPEC
+        precedence: 2
+      - path: specs/shell.md
+        type: SPEC
+        precedence: 2
+      - path: specs/sidebar.md
+        type: SPEC
+        precedence: 2
+      - path: specs/spinner.md
+        type: SPEC
+        precedence: 2
+      - path: specs/stack.md
+        type: SPEC
+        precedence: 2
+      - path: specs/table.md
+        type: SPEC
+        precedence: 2
+      - path: specs/tabs.md
+        type: SPEC
+        precedence: 2
+      - path: specs/timeline.md
+        type: SPEC
+        precedence: 2
+      - path: specs/toc.md
+        type: SPEC
+        precedence: 2
+      - path: specs/tooltip.md
+        type: SPEC
+        precedence: 2
+      - path: specs/visually-hidden.md
+        type: SPEC
+        precedence: 2

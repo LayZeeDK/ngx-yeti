@@ -1,0 +1,430 @@
+{
+  "delayMs": 300,
+  "server": {
+    "headOrder": [
+      "style",
+      "link rel=\"stylesheet\" href=\"styles-RLZGWI23.css\" media=\"print\" data-beasties-media=\"all\"",
+      "link rel=\"stylesheet\" href=\"styles-RLZGWI23.css\"",
+      "link rel=\"stylesheet\" href=\"yeti-css/layouts/center/center.css?v=f52d1e8b9\" data-ngx-yeti-styles=\"center\" data-beasties-skip=\"\" data-ngx-yeti-app=\"ng\"",
+      "link rel=\"stylesheet\" href=\"yeti-css/components/badge/badge.css?v=f52d1e8b9\" data-ngx-yeti-styles=\"badge\" data-beasties-skip=\"\" data-ngx-yeti-app=\"ng\"",
+      "link rel=\"stylesheet\" href=\"yeti-css/components/card/card.css?v=f52d1e8b9\" data-ngx-yeti-styles=\"card\" data-beasties-skip=\"\" data-ngx-yeti-app=\"ng\""
+    ],
+    "criticalHasCardRule": false,
+    "criticalStartsWithStatement": true,
+    "partLinks": [
+      "<link rel=\"stylesheet\" href=\"yeti-css/layouts/center/center.css?v=f52d1e8b9\" data-ngx-yeti-styles=\"center\" data-beasties-skip=\"\" data-ngx-yeti-app=\"ng\">",
+      "<link rel=\"stylesheet\" href=\"yeti-css/components/badge/badge.css?v=f52d1e8b9\" data-ngx-yeti-styles=\"badge\" data-beasties-skip=\"\" data-ngx-yeti-app=\"ng\">",
+      "<link rel=\"stylesheet\" href=\"yeti-css/components/card/card.css?v=f52d1e8b9\" data-ngx-yeti-styles=\"card\" data-beasties-skip=\"\" data-ngx-yeti-app=\"ng\">"
+    ],
+    "hostAttrs": [
+      "card",
+      "badge",
+      "badge",
+      "badge",
+      "center"
+    ],
+    "preloadLinks": [
+      "<link rel=\"preload\" as=\"style\" href=\"yeti-css/components/alert/alert.css?v=f52d1e8b9\">"
+    ],
+    "cardAsset": {
+      "status": 200,
+      "cacheControl": "public, max-age=31536000",
+      "type": "text/css; charset=utf-8"
+    }
+  },
+  "engines": {
+    "chromium": {
+      "jsOff": {
+        "eagerPad": "18px",
+        "neverBadgePad": "2.16px",
+        "hoiBadgePad": "2.16px",
+        "plainCardPad": "18px",
+        "links": [
+          "center",
+          "badge",
+          "card"
+        ]
+      },
+      "hydration": {
+        "styleMutationsAfterDcl": [],
+        "eagerUnstyledFrames": 0,
+        "eagerStyledFrames": 58,
+        "neverBadgeUnstyledFrames": 0,
+        "links": [
+          "center",
+          "badge",
+          "card"
+        ],
+        "sheets": [
+          "style: @layer yeti.reset, yeti.base, yeti.theme",
+          "link styles-RLZGWI23.css: @layer yeti.reset, yeti.base, yeti.theme",
+          "link[center] center.css?v=f52d1e8b9: @layer yeti.layouts {\n  .center { box-si",
+          "link[badge] badge.css?v=f52d1e8b9: @layer yeti.components {\n  .badge { disp",
+          "link[card] card.css?v=f52d1e8b9: @layer yeti.components {\n  .card { posit"
+        ],
+        "cardVsFullYeti": 0,
+        "badgeVsFullYeti": 0
+      },
+      "leave": {
+        "duringLeave": {
+          "eagerPresent": true,
+          "eagerPad": "18px",
+          "eagerOpacity": "0.624885",
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ]
+        },
+        "afterLeave": {
+          "eagerPresent": false,
+          "links": [
+            "center",
+            "badge"
+          ],
+          "plainCardPad": "0px",
+          "unstyledFramesWhileLeaving": 0
+        }
+      },
+      "reload": {
+        "links": [
+          "center",
+          "badge",
+          "card"
+        ],
+        "cardVsFullYeti": 0,
+        "unstyledFramesOnReload": 0,
+        "sheets": [
+          "style: @layer yeti.reset, yeti.base, yeti.theme",
+          "link styles-RLZGWI23.css: @layer yeti.reset, yeti.base, yeti.theme",
+          "link[center] center.css?v=f52d1e8b9: @layer yeti.layouts {\n  .center { box-si",
+          "link[badge] badge.css?v=f52d1e8b9: @layer yeti.components {\n  .badge { disp",
+          "link[card] card.css?v=f52d1e8b9: @layer yeti.components {\n  .card { posit"
+        ]
+      },
+      "hold": {
+        "afterEagerBadgeHidden": {
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ],
+          "neverBadgePad": "2.16px",
+          "hoiBadgePad": "2.16px"
+        },
+        "afterHoiHydrated": {
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ],
+          "hoiBadgePad": "2.16px"
+        },
+        "afterEagerBadgeShown": {
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ],
+          "eagerBadgePad": "2.16px"
+        }
+      },
+      "tie": {
+        "links": [
+          "stack",
+          "center",
+          "badge",
+          "card"
+        ],
+        "centerInStackMarginLeft": "430px",
+        "sheetsOrder": [
+          "link[stack] stack.css?v=f52d1e8b9: @layer yeti.layouts {\n  .stack { display",
+          "link[center] center.css?v=f52d1e8b9: @layer yeti.layouts {\n  .center { box-si",
+          "link[badge] badge.css?v=f52d1e8b9: @layer yeti.components {\n  .badge { disp",
+          "link[card] card.css?v=f52d1e8b9: @layer yeti.components {\n  .card { posit"
+        ],
+        "referenceMarginLeft": "430px"
+      },
+      "clientDefer": {
+        "unstyledFrames": 18,
+        "styledFrames": 31,
+        "links": [
+          "stack",
+          "center",
+          "badge",
+          "card",
+          "alert"
+        ]
+      },
+      "clientDeferWithPreload": {
+        "preloadLinks": [
+          "alert/alert.css?v=f52d1e8b9"
+        ],
+        "unstyledFrames": 0,
+        "styledFrames": 51
+      }
+    },
+    "firefox": {
+      "jsOff": {
+        "eagerPad": "18px",
+        "neverBadgePad": "2.16094px",
+        "hoiBadgePad": "2.16094px",
+        "plainCardPad": "18px",
+        "links": [
+          "center",
+          "badge",
+          "card"
+        ]
+      },
+      "hydration": {
+        "styleMutationsAfterDcl": [],
+        "eagerUnstyledFrames": 1,
+        "eagerStyledFrames": 60,
+        "neverBadgeUnstyledFrames": 0,
+        "links": [
+          "center",
+          "badge",
+          "card"
+        ],
+        "sheets": [
+          "style: @layer yeti.reset, yeti.base, yeti.theme",
+          "link styles-RLZGWI23.css: @layer yeti.reset, yeti.base, yeti.theme",
+          "link[center] center.css?v=f52d1e8b9: @layer yeti.layouts {\n  .center { box-si",
+          "link[badge] badge.css?v=f52d1e8b9: @layer yeti.components {\n  .badge { disp",
+          "link[card] card.css?v=f52d1e8b9: @layer yeti.components {\n  .card { posit"
+        ],
+        "cardVsFullYeti": 0,
+        "badgeVsFullYeti": 0
+      },
+      "leave": {
+        "duringLeave": {
+          "eagerPresent": true,
+          "eagerPad": "18px",
+          "eagerOpacity": "0.625002",
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ]
+        },
+        "afterLeave": {
+          "eagerPresent": false,
+          "links": [
+            "center",
+            "badge"
+          ],
+          "plainCardPad": "0px",
+          "unstyledFramesWhileLeaving": 0
+        }
+      },
+      "reload": {
+        "links": [
+          "center",
+          "badge",
+          "card"
+        ],
+        "cardVsFullYeti": 0,
+        "unstyledFramesOnReload": 0,
+        "sheets": [
+          "style: @layer yeti.reset, yeti.base, yeti.theme",
+          "link styles-RLZGWI23.css: @layer yeti.reset, yeti.base, yeti.theme",
+          "link[center] center.css?v=f52d1e8b9: @layer yeti.layouts {\n  .center { box-si",
+          "link[badge] badge.css?v=f52d1e8b9: @layer yeti.components {\n  .badge { disp",
+          "link[card] card.css?v=f52d1e8b9: @layer yeti.components {\n  .card { posit"
+        ]
+      },
+      "hold": {
+        "afterEagerBadgeHidden": {
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ],
+          "neverBadgePad": "2.16094px",
+          "hoiBadgePad": "2.16094px"
+        },
+        "afterHoiHydrated": {
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ],
+          "hoiBadgePad": "2.16094px"
+        },
+        "afterEagerBadgeShown": {
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ],
+          "eagerBadgePad": "2.16094px"
+        }
+      },
+      "tie": {
+        "links": [
+          "stack",
+          "center",
+          "badge",
+          "card"
+        ],
+        "centerInStackMarginLeft": "430px",
+        "sheetsOrder": [
+          "link[stack] stack.css?v=f52d1e8b9: @layer yeti.layouts {\n  .stack { display",
+          "link[center] center.css?v=f52d1e8b9: @layer yeti.layouts {\n  .center { box-si",
+          "link[badge] badge.css?v=f52d1e8b9: @layer yeti.components {\n  .badge { disp",
+          "link[card] card.css?v=f52d1e8b9: @layer yeti.components {\n  .card { posit"
+        ],
+        "referenceMarginLeft": "430px"
+      },
+      "clientDefer": {
+        "unstyledFrames": 20,
+        "styledFrames": 31,
+        "links": [
+          "stack",
+          "center",
+          "badge",
+          "card",
+          "alert"
+        ]
+      },
+      "clientDeferWithPreload": {
+        "preloadLinks": [
+          "alert/alert.css?v=f52d1e8b9"
+        ],
+        "unstyledFrames": 0,
+        "styledFrames": 53
+      }
+    },
+    "webkit": {
+      "jsOff": {
+        "eagerPad": "18px",
+        "neverBadgePad": "2.16px",
+        "hoiBadgePad": "2.16px",
+        "plainCardPad": "18px",
+        "links": [
+          "center",
+          "badge",
+          "card"
+        ]
+      },
+      "hydration": {
+        "styleMutationsAfterDcl": [],
+        "eagerUnstyledFrames": 0,
+        "eagerStyledFrames": 58,
+        "neverBadgeUnstyledFrames": 0,
+        "links": [
+          "center",
+          "badge",
+          "card"
+        ],
+        "sheets": [
+          "style: @layer yeti.reset, yeti.base, yeti.theme",
+          "link styles-RLZGWI23.css: @layer yeti.reset, yeti.base, yeti.theme",
+          "link[center] center.css?v=f52d1e8b9: @layer yeti.layouts {\n  .center { box-si",
+          "link[badge] badge.css?v=f52d1e8b9: @layer yeti.components {\n  .badge { disp",
+          "link[card] card.css?v=f52d1e8b9: @layer yeti.components {\n  .card { posit"
+        ],
+        "cardVsFullYeti": 0,
+        "badgeVsFullYeti": 0
+      },
+      "leave": {
+        "duringLeave": {
+          "eagerPresent": true,
+          "eagerPad": "18px",
+          "eagerOpacity": "0.5875",
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ]
+        },
+        "afterLeave": {
+          "eagerPresent": false,
+          "links": [
+            "center",
+            "badge"
+          ],
+          "plainCardPad": "0px",
+          "unstyledFramesWhileLeaving": 0
+        }
+      },
+      "reload": {
+        "links": [
+          "center",
+          "badge",
+          "card"
+        ],
+        "cardVsFullYeti": 0,
+        "unstyledFramesOnReload": 19,
+        "sheets": [
+          "style: @layer yeti.reset, yeti.base, yeti.theme",
+          "link styles-RLZGWI23.css: @layer yeti.reset, yeti.base, yeti.theme",
+          "link[center] center.css?v=f52d1e8b9: @layer yeti.layouts {\n  .center { box-si",
+          "link[badge] badge.css?v=f52d1e8b9: @layer yeti.components {\n  .badge { disp",
+          "link[card] card.css?v=f52d1e8b9: @layer yeti.components {\n  .card { posit"
+        ]
+      },
+      "hold": {
+        "afterEagerBadgeHidden": {
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ],
+          "neverBadgePad": "2.16px",
+          "hoiBadgePad": "2.16px"
+        },
+        "afterHoiHydrated": {
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ],
+          "hoiBadgePad": "2.16px"
+        },
+        "afterEagerBadgeShown": {
+          "links": [
+            "center",
+            "badge",
+            "card"
+          ],
+          "eagerBadgePad": "2.16px"
+        }
+      },
+      "tie": {
+        "links": [
+          "stack",
+          "center",
+          "badge",
+          "card"
+        ],
+        "centerInStackMarginLeft": "430px",
+        "sheetsOrder": [
+          "link[stack] stack.css?v=f52d1e8b9: @layer yeti.layouts {\n  .stack { display",
+          "link[center] center.css?v=f52d1e8b9: @layer yeti.layouts {\n  .center { box-si",
+          "link[badge] badge.css?v=f52d1e8b9: @layer yeti.components {\n  .badge { disp",
+          "link[card] card.css?v=f52d1e8b9: @layer yeti.components {\n  .card { posit"
+        ],
+        "referenceMarginLeft": "430px"
+      },
+      "clientDefer": {
+        "unstyledFrames": 20,
+        "styledFrames": 32,
+        "links": [
+          "stack",
+          "center",
+          "badge",
+          "card",
+          "alert"
+        ]
+      },
+      "clientDeferWithPreload": {
+        "preloadLinks": [
+          "alert/alert.css?v=f52d1e8b9"
+        ],
+        "unstyledFrames": 0,
+        "styledFrames": 52
+      }
+    }
+  }
+}

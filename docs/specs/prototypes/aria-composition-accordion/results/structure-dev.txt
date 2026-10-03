@@ -1,0 +1,21 @@
+chromium /a same tree: true console errors/warnings: 0 
+chromium /c same tree: true console errors/warnings: 4 warning: Violations found on element: %o: JSHandle@node | warning: ngAccordionPanel must have an ngAccordionContent to render. | warning: Violations found on element: %o: JSHandle@node | warning: ngAc
+chromium /c-noinert same tree: true console errors/warnings: 4 warning: Violations found on element: %o: JSHandle@node | warning: ngAccordionPanel must have an ngAccordionContent to render. | warning: Violations found on element: %o: JSHandle@node | warning: ngAc
+chromium /c-open same tree: true console errors/warnings: 2 warning: Violations found on element: %o: JSHandle@node | warning: ngAccordionPanel must have an ngAccordionContent to render.
+chromium /d same tree: true console errors/warnings: 0 
+chromium /d-role same tree: true console errors/warnings: 0 
+chromium /b2 same tree: true console errors/warnings: 0 
+firefox /a same tree: true console errors/warnings: 0 
+firefox /c same tree: true console errors/warnings: 4 warning: Violations found on element:  JSHandle@node : | warning: ngAccordionPanel must have an ngAccordionContent to render. | warning: Violations found on element:  JSHandle@node : | warning: ngAcco
+firefox /c-noinert same tree: true console errors/warnings: 4 warning: Violations found on element:  JSHandle@node : | warning: ngAccordionPanel must have an ngAccordionContent to render. | warning: Violations found on element:  JSHandle@node : | warning: ngAcco
+firefox /c-open same tree: true console errors/warnings: 2 warning: Violations found on element:  JSHandle@node : | warning: ngAccordionPanel must have an ngAccordionContent to render.
+firefox /d same tree: true console errors/warnings: 0 
+firefox /d-role same tree: true console errors/warnings: 0 
+firefox /b2 same tree: true console errors/warnings: 0 
+webkit /a same tree: true console errors/warnings: 0 
+webkit /c same tree: true console errors/warnings: 4 warning: Violations found on element: %o: JSHandle@node | warning: ngAccordionPanel must have an ngAccordionContent to render. | warning: Violations found on element: %o: JSHandle@node | warning: ngAc
+webkit /c-noinert same tree: true console errors/warnings: 4 warning: Violations found on element: %o: JSHandle@node | warning: ngAccordionPanel must have an ngAccordionContent to render. | warning: Violations found on element: %o: JSHandle@node | warning: ngAc
+webkit /c-open same tree: true console errors/warnings: 2 warning: Violations found on element: %o: JSHandle@node | warning: ngAccordionPanel must have an ngAccordionContent to render.
+webkit /d same tree: true console errors/warnings: 0 
+webkit /d-role same tree: true console errors/warnings: 0 
+webkit /b2 same tree: true console errors/warnings: 0 

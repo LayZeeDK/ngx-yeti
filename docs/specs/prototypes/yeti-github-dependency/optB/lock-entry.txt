@@ -1,0 +1,5 @@
+6837:    "node_modules/yeti-css": {
+6838-      "version": "7.0.0-alpha.0",
+6839-      "resolved": "https://codeload.github.com/foundation/yeti/tar.gz/f52d1e8b9",
+6840-      "integrity": "sha512-kCEVZ80LQe5C+2/o4QzesLIsBOPhvK2q31nJ3bnbdfpx5osOGuBgpecPy12XTV+jSH8A55Q6ijcZzl/DMAjNRA==",
+6841-      "license": "FSL-1.1-MIT",

@@ -1,0 +1,4248 @@
+{
+  "mode": "i18n-off",
+  "base": "/da/",
+  "server": {
+    "home": {
+      "bytes": 47813,
+      "ngh": 3,
+      "skipHydration": 0,
+      "jsaction": [
+        "jsaction=\"toggle:;\"",
+        "jsaction=\"click:;\"",
+        "jsaction=\"input:;\""
+      ],
+      "bootstrap": "__jsaction_bootstrap(document.body,\"ng\",[\"click\",\"input\"],[\"toggle\"])",
+      "serverContext": "ssr",
+      "badgeStyle": 0,
+      "blocksWithContent": [],
+      "placeholders": [],
+      "cardTitle": "Weekend in the hills"
+    },
+    "pre": {
+      "bytes": 47813,
+      "ngh": 3,
+      "skipHydration": 0,
+      "jsaction": [
+        "jsaction=\"toggle:;\"",
+        "jsaction=\"click:;\"",
+        "jsaction=\"input:;\""
+      ],
+      "bootstrap": "__jsaction_bootstrap(document.body,\"ng\",[\"click\",\"input\"],[\"toggle\"])",
+      "serverContext": "ssg",
+      "badgeStyle": 0,
+      "blocksWithContent": [],
+      "placeholders": [],
+      "cardTitle": "Weekend in the hills"
+    },
+    "defer": {
+      "bytes": 43502,
+      "ngh": 10,
+      "skipHydration": 0,
+      "jsaction": [
+        "jsaction=\"click:;\"",
+        "jsaction=\"click:;keydown:;\"",
+        "jsaction=\"mouseenter:;mouseover:;focusin:;\""
+      ],
+      "bootstrap": "__jsaction_bootstrap(document.body,\"ng\",[\"click\",\"keydown\",\"mouseenter\",\"mouseover\",\"focusin\"],[])",
+      "serverContext": "ssr",
+      "badgeStyle": 0,
+      "blocksWithContent": [
+        "h-immediate",
+        "h-idle",
+        "h-timer",
+        "h-when",
+        "h-interaction",
+        "h-hover",
+        "h-never",
+        "h-viewport"
+      ],
+      "placeholders": [
+        "d-immediate",
+        "d-idle",
+        "d-timer",
+        "d-when",
+        "d-interaction",
+        "d-hover",
+        "d-viewport"
+      ],
+      "cardTitle": null
+    },
+    "i18n": {
+      "bytes": 37209,
+      "ngh": 2,
+      "skipHydration": 1,
+      "jsaction": [],
+      "bootstrap": null,
+      "serverContext": "ssr",
+      "badgeStyle": 0,
+      "blocksWithContent": [],
+      "placeholders": [],
+      "cardTitle": "Weekend i bakkerne"
+    },
+    "guard": {
+      "bytes": 34412,
+      "ngh": 4,
+      "skipHydration": 0,
+      "jsaction": [
+        "jsaction=\"click:;\""
+      ],
+      "bootstrap": "__jsaction_bootstrap(document.body,\"ng\",[\"click\"],[])",
+      "serverContext": "ssr",
+      "badgeStyle": 1,
+      "blocksWithContent": [],
+      "placeholders": [],
+      "cardTitle": null
+    }
+  },
+  "browsers": {
+    "chromium": {
+      "version": "153.0.8010.12",
+      "jsOff": {
+        "cardVisible": true,
+        "cardBox": {
+          "x": 0,
+          "y": 89.328125,
+          "width": 1280,
+          "height": 168.78125
+        },
+        "layoutBoxes": [
+          {
+            "x": 0,
+            "y": 282.09375,
+            "width": 414.65625,
+            "height": 65
+          },
+          {
+            "x": 432.65625,
+            "y": 282.09375,
+            "width": 414.671875,
+            "height": 65
+          },
+          {
+            "x": 865.328125,
+            "y": 282.09375,
+            "width": 414.65625,
+            "height": 65
+          }
+        ],
+        "dialogVisibleBefore": false,
+        "dropdownVisibleBefore": false,
+        "tabPanelsVisible": 2,
+        "accOpenBefore": null,
+        "dialogVisibleAfterClick": true,
+        "dialogVisibleAfterEscape": false,
+        "dropdownVisibleAfterClick": true,
+        "accOpenAfterClick": true,
+        "tabBSelected": null,
+        "urlAfterDot": "/da/#work-2"
+      },
+      "hydrateHome": {
+        "removed": 0,
+        "removedSample": [],
+        "addedAfterDcl": 0,
+        "attrWrites": 169,
+        "changed": [
+          {
+            "k": "tab2-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 80
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 80
+          },
+          {
+            "k": "tab2-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 80
+          },
+          {
+            "k": "tab2-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 80
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 80
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 80
+          },
+          {
+            "k": "tab-a@aria-selected",
+            "old": null,
+            "now": "true",
+            "t": 80
+          },
+          {
+            "k": "tab-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 80
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 80
+          },
+          {
+            "k": "tab-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 80
+          },
+          {
+            "k": "tab-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 80
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 80
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 80
+          },
+          {
+            "k": "dropdown@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 145
+          },
+          {
+            "k": "button@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 145
+          },
+          {
+            "k": "acc-plain@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 145
+          },
+          {
+            "k": "counter@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 145
+          },
+          {
+            "k": "input@jsaction",
+            "old": "input:;",
+            "now": null,
+            "t": 145
+          }
+        ],
+        "anim": [
+          {
+            "name": "yeti-enter-fade",
+            "testid": "enter-ssr",
+            "t": 141
+          }
+        ],
+        "t": {
+          "homeRendered": 1
+        },
+        "marks": {
+          "appCtor": 110,
+          "stable": 142
+        },
+        "tabState": {
+          "selected": [
+            "true",
+            "false"
+          ],
+          "hiddenPanels": 1,
+          "tabs2Selected": [
+            "true",
+            "false"
+          ],
+          "accStaticOpen": true,
+          "enterOnceDataOnce": true,
+          "enterOnceAnims": 0
+        },
+        "enterSsrAnimations": 1,
+        "afterTabClick": {
+          "hostListenerRuns": 1,
+          "hostListenerView": "1",
+          "plainListenerRuns": 0,
+          "plainFieldView": "0"
+        },
+        "counterAfterClick": "Clicked 1",
+        "afterDotClick": {
+          "plainSlideRuns": 1,
+          "plainSlidesView": "0",
+          "defaultCdRuns": 1,
+          "defaultCdView": "0",
+          "zoneLoaded": false
+        },
+        "errors": []
+      },
+      "hydratePre": {
+        "removed": 0,
+        "removedSample": [],
+        "addedAfterDcl": 0,
+        "attrWrites": 169,
+        "changed": [
+          {
+            "k": "tab2-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 86
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 86
+          },
+          {
+            "k": "tab2-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 86
+          },
+          {
+            "k": "tab2-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 86
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 86
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 86
+          },
+          {
+            "k": "tab-a@aria-selected",
+            "old": null,
+            "now": "true",
+            "t": 86
+          },
+          {
+            "k": "tab-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 86
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 86
+          },
+          {
+            "k": "tab-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 86
+          },
+          {
+            "k": "tab-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 86
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 86
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 86
+          },
+          {
+            "k": "dropdown@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 172
+          },
+          {
+            "k": "button@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 172
+          },
+          {
+            "k": "acc-plain@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 172
+          },
+          {
+            "k": "counter@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 172
+          },
+          {
+            "k": "input@jsaction",
+            "old": "input:;",
+            "now": null,
+            "t": 172
+          }
+        ],
+        "anim": [
+          {
+            "name": "yeti-enter-fade",
+            "testid": "enter-ssr",
+            "t": 165
+          }
+        ],
+        "t": {
+          "homeRendered": 1
+        },
+        "marks": {
+          "appCtor": 129,
+          "stable": 167
+        },
+        "tabState": {
+          "selected": [
+            "true",
+            "false"
+          ],
+          "hiddenPanels": 1,
+          "tabs2Selected": [
+            "true",
+            "false"
+          ],
+          "accStaticOpen": true,
+          "enterOnceDataOnce": true,
+          "enterOnceAnims": 0
+        },
+        "errors": []
+      },
+      "hydrateI18n": {
+        "removed": 1,
+        "removedSample": [
+          {
+            "tag": "main",
+            "testid": null,
+            "cls": "container stack",
+            "t": 149
+          }
+        ],
+        "addedAfterDcl": 0,
+        "attrWrites": 14,
+        "changed": [
+          {
+            "k": "tab-a@aria-selected",
+            "old": null,
+            "now": "true",
+            "t": 82
+          },
+          {
+            "k": "tab-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 82
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 82
+          },
+          {
+            "k": "tab-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 82
+          },
+          {
+            "k": "tab-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 82
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 82
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 82
+          }
+        ],
+        "anim": [],
+        "t": {},
+        "marks": {
+          "appCtor": 113,
+          "stable": 159
+        },
+        "tabState": {
+          "selected": [
+            null,
+            null
+          ],
+          "hiddenPanels": 0,
+          "tabs2Selected": [],
+          "accStaticOpen": null,
+          "enterOnceDataOnce": null,
+          "enterOnceAnims": 0
+        },
+        "cardTitle": "Weekend i bakkerne",
+        "cardBody": "Ti kilometer, en top og 3 udsigter.",
+        "errors": []
+      },
+      "beforeHydrationAll": {
+        "pre": {
+          "dialogOpened": true,
+          "dialogClosedByEscape": true,
+          "popoverOpened": true,
+          "accPlainOpen": true,
+          "accBoundOpen": true,
+          "tabBSelected": "true",
+          "accStaticOpen": false,
+          "tabs2Selected": [
+            "false",
+            "true"
+          ],
+          "enterOnceDataOnce": false,
+          "dotHash": "",
+          "dotHistoryDelta": 0,
+          "popoverLeftOpen": true,
+          "counterText": "Clicked 0"
+        },
+        "post": {
+          "removed": 0,
+          "removedSample": [],
+          "addedAfterDcl": 0,
+          "attrWrites": 192,
+          "changed": [
+            {
+              "k": "tab2-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 96
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 96
+            },
+            {
+              "k": "tab2-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 96
+            },
+            {
+              "k": "tab2-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 96
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 96
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 96
+            },
+            {
+              "k": "tab-a@aria-selected",
+              "old": null,
+              "now": "true",
+              "t": 96
+            },
+            {
+              "k": "tab-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 96
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 96
+            },
+            {
+              "k": "tab-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 96
+            },
+            {
+              "k": "tab-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 96
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 96
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 96
+            },
+            {
+              "k": "dialog@open",
+              "old": null,
+              "now": "",
+              "t": 190
+            },
+            {
+              "k": "dialog@open",
+              "old": "",
+              "now": null,
+              "t": 468
+            },
+            {
+              "k": "acc-plain@open",
+              "old": null,
+              "now": "",
+              "t": 1139
+            },
+            {
+              "k": "acc-bound@open",
+              "old": null,
+              "now": "",
+              "t": 1535
+            },
+            {
+              "k": "tab-a@aria-selected",
+              "old": "true",
+              "now": "false",
+              "t": 1927
+            },
+            {
+              "k": "tab-a@tabindex",
+              "old": "0",
+              "now": "-1",
+              "t": 1927
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 1927
+            },
+            {
+              "k": "tab-b@aria-selected",
+              "old": "false",
+              "now": "true",
+              "t": 1927
+            },
+            {
+              "k": "tab-b@tabindex",
+              "old": "-1",
+              "now": "0",
+              "t": 1927
+            },
+            {
+              "k": "section@hidden",
+              "old": "",
+              "now": null,
+              "t": 1927
+            },
+            {
+              "k": "enter-once-ssr@data-once",
+              "old": "",
+              "now": null,
+              "t": 1930
+            },
+            {
+              "k": "acc-static@open",
+              "old": "",
+              "now": null,
+              "t": 1974
+            },
+            {
+              "k": "tab2-a@aria-selected",
+              "old": "true",
+              "now": "false",
+              "t": 2381
+            },
+            {
+              "k": "tab2-a@tabindex",
+              "old": "0",
+              "now": "-1",
+              "t": 2381
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 2381
+            },
+            {
+              "k": "tab2-b@aria-selected",
+              "old": "false",
+              "now": "true",
+              "t": 2381
+            },
+            {
+              "k": "tab2-b@tabindex",
+              "old": "-1",
+              "now": "0",
+              "t": 2381
+            },
+            {
+              "k": "section@hidden",
+              "old": "",
+              "now": null,
+              "t": 2381
+            },
+            {
+              "k": "acc-static@open",
+              "old": null,
+              "now": "",
+              "t": 3176
+            },
+            {
+              "k": "tab2-a@aria-selected",
+              "old": "false",
+              "now": "true",
+              "t": 3176
+            },
+            {
+              "k": "enter-once-ssr@data-once",
+              "old": null,
+              "now": "",
+              "t": 3177
+            },
+            {
+              "k": "acc-bound@open",
+              "old": "",
+              "now": null,
+              "t": 3186
+            },
+            {
+              "k": "dropdown@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 3199
+            },
+            {
+              "k": "button@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 3201
+            },
+            {
+              "k": "acc-plain@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 3201
+            },
+            {
+              "k": "counter@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 3201
+            },
+            {
+              "k": "input@jsaction",
+              "old": "input:;",
+              "now": null,
+              "t": 3201
+            }
+          ],
+          "anim": [
+            {
+              "name": "yeti-enter-fade",
+              "testid": "enter-ssr",
+              "t": 110
+            },
+            {
+              "name": "yeti-enter-fade",
+              "testid": "enter-once-ssr",
+              "t": 1960
+            }
+          ],
+          "t": {
+            "homeRendered": 1,
+            "popoverToggle": 3,
+            "detailsToggle": 1,
+            "counterClick": 2,
+            "input": 1
+          },
+          "marks": {
+            "appCtor": 3121,
+            "stable": 3187
+          },
+          "counterText": "Clicked 2",
+          "inputValue": "abc",
+          "mirror": "abc",
+          "accPlainOpen": true,
+          "accBoundOpen": false,
+          "tabBSelected": "true",
+          "hiddenPanels": 1,
+          "popoverOpen": true,
+          "accStaticOpen": true,
+          "tabs2Selected": [
+            "true",
+            "true"
+          ],
+          "tabs2HiddenPanels": 1,
+          "enterOnceDataOnce": true,
+          "errors": []
+        }
+      },
+      "beforeHydrationDialog": {
+        "pre": {
+          "dialogLeftOpen": true,
+          "counterText": "Clicked 0"
+        },
+        "post": {
+          "removed": 0,
+          "removedSample": [],
+          "addedAfterDcl": 0,
+          "attrWrites": 170,
+          "changed": [
+            {
+              "k": "tab2-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 106
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 106
+            },
+            {
+              "k": "tab2-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 106
+            },
+            {
+              "k": "tab2-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 106
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 106
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 106
+            },
+            {
+              "k": "tab-a@aria-selected",
+              "old": null,
+              "now": "true",
+              "t": 106
+            },
+            {
+              "k": "tab-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 106
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 106
+            },
+            {
+              "k": "tab-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 106
+            },
+            {
+              "k": "tab-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 106
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 106
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 106
+            },
+            {
+              "k": "dialog@open",
+              "old": null,
+              "now": "",
+              "t": 198
+            },
+            {
+              "k": "dropdown@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 533
+            },
+            {
+              "k": "button@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 533
+            },
+            {
+              "k": "acc-plain@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 533
+            },
+            {
+              "k": "counter@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 533
+            },
+            {
+              "k": "input@jsaction",
+              "old": "input:;",
+              "now": null,
+              "t": 533
+            }
+          ],
+          "anim": [
+            {
+              "name": "yeti-enter-fade",
+              "testid": "enter-ssr",
+              "t": 116
+            }
+          ],
+          "t": {
+            "homeRendered": 1
+          },
+          "marks": {
+            "appCtor": 495,
+            "stable": 531
+          },
+          "counterText": "Clicked 0",
+          "inputValue": "",
+          "mirror": "",
+          "dialogOpen": true,
+          "dialogOpenAfterEscape": false,
+          "closeHandlerRuns": 1,
+          "errors": []
+        }
+      },
+      "i18nBeforeHydration": {
+        "counterText": "Clicked 0",
+        "counterRuns": 0,
+        "errors": []
+      },
+      "defer": {
+        "before": {
+          "d-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-when": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "d-interaction": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "d-hover": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "d-viewport": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "h-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-when": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-interaction": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-hover": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-never": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-viewport": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          }
+        },
+        "after": {
+          "d-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-when": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-interaction": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-hover": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-viewport": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "h-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-when": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-interaction": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 1
+          },
+          "h-hover": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-never": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-viewport": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          }
+        },
+        "neverDialogOpened": true,
+        "clientDialogOpened": true,
+        "actionErrors": [],
+        "errors": []
+      },
+      "anim": {
+        "onceSsr": {
+          "dataOnce": true,
+          "anims": 0
+        },
+        "dialogEnter": {
+          "first": {
+            "t": 6,
+            "present": true,
+            "cls": "dialog",
+            "opacity": "0",
+            "anims": [
+              "opacity",
+              "translate"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "opacity",
+            "translate"
+          ],
+          "classes": [
+            "dialog"
+          ],
+          "minOpacity": 0,
+          "removedAtMs": null,
+          "last": {
+            "t": 400,
+            "present": true,
+            "cls": "dialog",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": false
+          }
+        },
+        "dialogLeave": {
+          "first": {
+            "t": 13,
+            "present": true,
+            "cls": "dialog t-leave-dialog",
+            "opacity": "1",
+            "anims": [
+              "opacity",
+              "translate"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "opacity",
+            "translate"
+          ],
+          "classes": [
+            "dialog t-leave-dialog",
+            null
+          ],
+          "minOpacity": 6.65205e-8,
+          "removedAtMs": 181,
+          "last": {
+            "t": 613,
+            "present": false,
+            "cls": null,
+            "opacity": null,
+            "anims": [],
+            "dataOnce": null
+          }
+        },
+        "enterClassEnter": {
+          "first": {
+            "t": 14,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "0",
+            "anims": [
+              "yeti-enter-fade"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "yeti-enter-fade"
+          ],
+          "classes": [
+            "box enter",
+            "box"
+          ],
+          "minOpacity": 0,
+          "removedAtMs": null,
+          "last": {
+            "t": 913,
+            "present": true,
+            "cls": "box",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": false
+          }
+        },
+        "enterStaticEnter": {
+          "first": {
+            "t": 13,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "0",
+            "anims": [
+              "yeti-enter-fade"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "yeti-enter-fade"
+          ],
+          "classes": [
+            "box enter"
+          ],
+          "minOpacity": 0,
+          "removedAtMs": null,
+          "last": {
+            "t": 913,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": false
+          }
+        },
+        "enterOnceEnter": {
+          "first": {
+            "t": 11,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": true
+          },
+          "anims": [],
+          "classes": [
+            "box enter"
+          ],
+          "minOpacity": 1,
+          "removedAtMs": null,
+          "last": {
+            "t": 912,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": true
+          }
+        },
+        "alert2Leave": {
+          "first": {
+            "t": 13,
+            "present": true,
+            "cls": "alert t-leave-anim",
+            "opacity": "1",
+            "anims": [
+              "t-fade-out"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "t-fade-out"
+          ],
+          "classes": [
+            "alert t-leave-anim",
+            null
+          ],
+          "minOpacity": 0.00171085,
+          "removedAtMs": 316,
+          "last": {
+            "t": 713,
+            "present": false,
+            "cls": null,
+            "opacity": null,
+            "anims": [],
+            "dataOnce": null
+          }
+        },
+        "alertJsClose": {
+          "first": {
+            "t": 11,
+            "present": true,
+            "cls": "alert",
+            "opacity": "1",
+            "anims": [
+              "Animation"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "Animation"
+          ],
+          "classes": [
+            "alert",
+            null
+          ],
+          "minOpacity": 1,
+          "removedAtMs": 29,
+          "last": {
+            "t": 511,
+            "present": false,
+            "cls": null,
+            "opacity": null,
+            "anims": [],
+            "dataOnce": null
+          }
+        },
+        "alertAfterAngularHide": 0,
+        "alertAfterAngularShow": 1,
+        "alertErrors": [],
+        "errors": []
+      },
+      "guard": {
+        "G0_noLeaveAnywhere": {
+          "stylesAtLoad": 1,
+          "neverAtLoad": {
+            "paddingInline": "8.64px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterHide": 0,
+          "neverAfterHide": {
+            "paddingInline": "0px",
+            "radius": "0px",
+            "bg": "rgba(0, 0, 0, 0)"
+          },
+          "stylesAfterShow": 1,
+          "errors": []
+        },
+        "G1_permanentClassLeave": {
+          "stylesAtLoad": 1,
+          "neverAtLoad": {
+            "paddingInline": "8.64px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterHide": 0,
+          "neverAfterHide": {
+            "paddingInline": "0px",
+            "radius": "0px",
+            "bg": "rgba(0, 0, 0, 0)"
+          },
+          "stylesAfterShow": 1,
+          "errors": []
+        },
+        "G2_permanentFnLeave": {
+          "stylesAtLoad": 1,
+          "neverAtLoad": {
+            "paddingInline": "8.64px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterHide": 1,
+          "neverAfterHide": {
+            "paddingInline": "8.64px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterShow": 1,
+          "errors": []
+        },
+        "G3_badgeWithLeavingSibling": {
+          "stylesDuringLeave": 0,
+          "stylesAfterLeave": 0,
+          "errors": []
+        }
+      }
+    },
+    "firefox": {
+      "version": "155.0",
+      "jsOff": {
+        "cardVisible": true,
+        "cardBox": {
+          "x": 0,
+          "y": 89.33333587646484,
+          "width": 1280,
+          "height": 168.76667022705078
+        },
+        "layoutBoxes": [
+          {
+            "x": 0,
+            "y": 282.1000061035156,
+            "width": 414.6666564941406,
+            "height": 65
+          },
+          {
+            "x": 432.6666564941406,
+            "y": 282.1000061035156,
+            "width": 414.6666564941406,
+            "height": 65
+          },
+          {
+            "x": 865.3333129882812,
+            "y": 282.1000061035156,
+            "width": 414.66668701171875,
+            "height": 65
+          }
+        ],
+        "dialogVisibleBefore": false,
+        "dropdownVisibleBefore": false,
+        "tabPanelsVisible": 2,
+        "accOpenBefore": null,
+        "dialogVisibleAfterClick": true,
+        "dialogVisibleAfterEscape": false,
+        "dropdownVisibleAfterClick": true,
+        "accOpenAfterClick": true,
+        "tabBSelected": null,
+        "urlAfterDot": "/da/#work-2"
+      },
+      "hydrateHome": {
+        "removed": 0,
+        "removedSample": [],
+        "addedAfterDcl": 0,
+        "attrWrites": 170,
+        "changed": [
+          {
+            "k": "tab2-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 130
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 130
+          },
+          {
+            "k": "tab2-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 130
+          },
+          {
+            "k": "tab2-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 130
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 130
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 131
+          },
+          {
+            "k": "tab-a@aria-selected",
+            "old": null,
+            "now": "true",
+            "t": 131
+          },
+          {
+            "k": "tab-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 131
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 131
+          },
+          {
+            "k": "tab-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 131
+          },
+          {
+            "k": "tab-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 131
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 131
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 131
+          },
+          {
+            "k": "enter-once-ssr@data-once",
+            "old": "",
+            "now": null,
+            "t": 151
+          },
+          {
+            "k": "enter-once-ssr@data-once",
+            "old": null,
+            "now": "",
+            "t": 258
+          },
+          {
+            "k": "dropdown@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 262
+          },
+          {
+            "k": "button@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 262
+          },
+          {
+            "k": "acc-plain@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 262
+          },
+          {
+            "k": "counter@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 262
+          },
+          {
+            "k": "input@jsaction",
+            "old": "input:;",
+            "now": null,
+            "t": 262
+          }
+        ],
+        "anim": [
+          {
+            "name": "yeti-enter-fade",
+            "testid": "enter-ssr",
+            "t": 271
+          }
+        ],
+        "t": {
+          "homeRendered": 1
+        },
+        "marks": {
+          "appCtor": 215,
+          "stable": 261
+        },
+        "tabState": {
+          "selected": [
+            "true",
+            "false"
+          ],
+          "hiddenPanels": 1,
+          "tabs2Selected": [
+            "true",
+            "false"
+          ],
+          "accStaticOpen": true,
+          "enterOnceDataOnce": true,
+          "enterOnceAnims": 0
+        },
+        "enterSsrAnimations": 1,
+        "afterTabClick": {
+          "hostListenerRuns": 1,
+          "hostListenerView": "1",
+          "plainListenerRuns": 0,
+          "plainFieldView": "0"
+        },
+        "counterAfterClick": "Clicked 1",
+        "afterDotClick": {
+          "plainSlideRuns": 1,
+          "plainSlidesView": "0",
+          "defaultCdRuns": 1,
+          "defaultCdView": "0",
+          "zoneLoaded": false
+        },
+        "errors": []
+      },
+      "hydratePre": {
+        "removed": 0,
+        "removedSample": [],
+        "addedAfterDcl": 0,
+        "attrWrites": 170,
+        "changed": [
+          {
+            "k": "tab2-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 110
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 110
+          },
+          {
+            "k": "tab2-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 110
+          },
+          {
+            "k": "tab2-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 110
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 110
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 110
+          },
+          {
+            "k": "tab-a@aria-selected",
+            "old": null,
+            "now": "true",
+            "t": 110
+          },
+          {
+            "k": "tab-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 110
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 110
+          },
+          {
+            "k": "tab-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 110
+          },
+          {
+            "k": "tab-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 110
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 110
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 110
+          },
+          {
+            "k": "enter-once-ssr@data-once",
+            "old": "",
+            "now": null,
+            "t": 126
+          },
+          {
+            "k": "enter-once-ssr@data-once",
+            "old": null,
+            "now": "",
+            "t": 190
+          },
+          {
+            "k": "dropdown@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 194
+          },
+          {
+            "k": "button@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 194
+          },
+          {
+            "k": "acc-plain@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 194
+          },
+          {
+            "k": "counter@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 194
+          },
+          {
+            "k": "input@jsaction",
+            "old": "input:;",
+            "now": null,
+            "t": 194
+          }
+        ],
+        "anim": [
+          {
+            "name": "yeti-enter-fade",
+            "testid": "enter-ssr",
+            "t": 242
+          }
+        ],
+        "t": {
+          "homeRendered": 1
+        },
+        "marks": {
+          "appCtor": 156,
+          "stable": 193
+        },
+        "tabState": {
+          "selected": [
+            "true",
+            "false"
+          ],
+          "hiddenPanels": 1,
+          "tabs2Selected": [
+            "true",
+            "false"
+          ],
+          "accStaticOpen": true,
+          "enterOnceDataOnce": true,
+          "enterOnceAnims": 0
+        },
+        "errors": []
+      },
+      "hydrateI18n": {
+        "removed": 1,
+        "removedSample": [
+          {
+            "tag": "main",
+            "testid": null,
+            "cls": "container stack",
+            "t": 184
+          }
+        ],
+        "addedAfterDcl": 0,
+        "attrWrites": 14,
+        "changed": [
+          {
+            "k": "tab-a@aria-selected",
+            "old": null,
+            "now": "true",
+            "t": 113
+          },
+          {
+            "k": "tab-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 113
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 113
+          },
+          {
+            "k": "tab-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 113
+          },
+          {
+            "k": "tab-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 113
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 113
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 113
+          }
+        ],
+        "anim": [],
+        "t": {},
+        "marks": {
+          "appCtor": 156,
+          "stable": 185
+        },
+        "tabState": {
+          "selected": [
+            null,
+            null
+          ],
+          "hiddenPanels": 0,
+          "tabs2Selected": [],
+          "accStaticOpen": null,
+          "enterOnceDataOnce": null,
+          "enterOnceAnims": 0
+        },
+        "cardTitle": "Weekend i bakkerne",
+        "cardBody": "Ti kilometer, en top og 3 udsigter.",
+        "errors": []
+      },
+      "beforeHydrationAll": {
+        "pre": {
+          "dialogOpened": true,
+          "dialogClosedByEscape": true,
+          "popoverOpened": true,
+          "accPlainOpen": true,
+          "accBoundOpen": true,
+          "tabBSelected": "true",
+          "accStaticOpen": false,
+          "tabs2Selected": [
+            "false",
+            "true"
+          ],
+          "enterOnceDataOnce": false,
+          "dotHash": "",
+          "dotHistoryDelta": 0,
+          "popoverLeftOpen": true,
+          "counterText": "Clicked 0"
+        },
+        "post": {
+          "removed": 0,
+          "removedSample": [],
+          "addedAfterDcl": 0,
+          "attrWrites": 192,
+          "changed": [
+            {
+              "k": "tab2-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 120
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 120
+            },
+            {
+              "k": "tab2-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 120
+            },
+            {
+              "k": "tab2-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 120
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 120
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 120
+            },
+            {
+              "k": "tab-a@aria-selected",
+              "old": null,
+              "now": "true",
+              "t": 120
+            },
+            {
+              "k": "tab-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 120
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 120
+            },
+            {
+              "k": "tab-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 120
+            },
+            {
+              "k": "tab-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 120
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 120
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 120
+            },
+            {
+              "k": "enter-once-ssr@data-once",
+              "old": "",
+              "now": null,
+              "t": 134
+            },
+            {
+              "k": "dialog@open",
+              "old": null,
+              "now": "",
+              "t": 301
+            },
+            {
+              "k": "dialog@open",
+              "old": "",
+              "now": null,
+              "t": 596
+            },
+            {
+              "k": "acc-plain@open",
+              "old": null,
+              "now": "",
+              "t": 1379
+            },
+            {
+              "k": "acc-bound@open",
+              "old": null,
+              "now": "",
+              "t": 1860
+            },
+            {
+              "k": "tab-a@aria-selected",
+              "old": "true",
+              "now": "false",
+              "t": 2345
+            },
+            {
+              "k": "tab-a@tabindex",
+              "old": "0",
+              "now": "-1",
+              "t": 2345
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 2345
+            },
+            {
+              "k": "tab-b@aria-selected",
+              "old": "false",
+              "now": "true",
+              "t": 2345
+            },
+            {
+              "k": "tab-b@tabindex",
+              "old": "-1",
+              "now": "0",
+              "t": 2345
+            },
+            {
+              "k": "section@hidden",
+              "old": "",
+              "now": null,
+              "t": 2345
+            },
+            {
+              "k": "acc-static@open",
+              "old": "",
+              "now": null,
+              "t": 2422
+            },
+            {
+              "k": "tab2-a@aria-selected",
+              "old": "true",
+              "now": "false",
+              "t": 2851
+            },
+            {
+              "k": "tab2-a@tabindex",
+              "old": "0",
+              "now": "-1",
+              "t": 2851
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 2851
+            },
+            {
+              "k": "tab2-b@aria-selected",
+              "old": "false",
+              "now": "true",
+              "t": 2851
+            },
+            {
+              "k": "tab2-b@tabindex",
+              "old": "-1",
+              "now": "0",
+              "t": 2851
+            },
+            {
+              "k": "section@hidden",
+              "old": "",
+              "now": null,
+              "t": 2851
+            },
+            {
+              "k": "acc-static@open",
+              "old": null,
+              "now": "",
+              "t": 3813
+            },
+            {
+              "k": "tab2-a@aria-selected",
+              "old": "false",
+              "now": "true",
+              "t": 3813
+            },
+            {
+              "k": "enter-once-ssr@data-once",
+              "old": null,
+              "now": "",
+              "t": 3813
+            },
+            {
+              "k": "acc-bound@open",
+              "old": "",
+              "now": null,
+              "t": 3815
+            },
+            {
+              "k": "dropdown@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 3823
+            },
+            {
+              "k": "button@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 3823
+            },
+            {
+              "k": "acc-plain@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 3823
+            },
+            {
+              "k": "counter@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 3823
+            },
+            {
+              "k": "input@jsaction",
+              "old": "input:;",
+              "now": null,
+              "t": 3823
+            }
+          ],
+          "anim": [
+            {
+              "name": "yeti-enter-fade",
+              "testid": "enter-ssr",
+              "t": 211
+            },
+            {
+              "name": "yeti-enter-fade",
+              "testid": "enter-once-ssr",
+              "t": 211
+            }
+          ],
+          "t": {
+            "homeRendered": 1,
+            "popoverToggle": 3,
+            "detailsToggle": 1,
+            "counterClick": 2,
+            "input": 1
+          },
+          "marks": {
+            "appCtor": 3787,
+            "stable": 3815
+          },
+          "counterText": "Clicked 2",
+          "inputValue": "abc",
+          "mirror": "abc",
+          "accPlainOpen": true,
+          "accBoundOpen": false,
+          "tabBSelected": "true",
+          "hiddenPanels": 1,
+          "popoverOpen": true,
+          "accStaticOpen": true,
+          "tabs2Selected": [
+            "true",
+            "true"
+          ],
+          "tabs2HiddenPanels": 1,
+          "enterOnceDataOnce": true,
+          "errors": []
+        }
+      },
+      "beforeHydrationDialog": {
+        "pre": {
+          "dialogLeftOpen": true,
+          "counterText": "Clicked 0"
+        },
+        "post": {
+          "removed": 0,
+          "removedSample": [],
+          "addedAfterDcl": 0,
+          "attrWrites": 171,
+          "changed": [
+            {
+              "k": "tab2-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 153
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 153
+            },
+            {
+              "k": "tab2-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 153
+            },
+            {
+              "k": "tab2-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 153
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 153
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 153
+            },
+            {
+              "k": "tab-a@aria-selected",
+              "old": null,
+              "now": "true",
+              "t": 153
+            },
+            {
+              "k": "tab-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 153
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 153
+            },
+            {
+              "k": "tab-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 153
+            },
+            {
+              "k": "tab-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 153
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 153
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 153
+            },
+            {
+              "k": "enter-once-ssr@data-once",
+              "old": "",
+              "now": null,
+              "t": 163
+            },
+            {
+              "k": "dialog@open",
+              "old": null,
+              "now": "",
+              "t": 364
+            },
+            {
+              "k": "enter-once-ssr@data-once",
+              "old": null,
+              "now": "",
+              "t": 714
+            },
+            {
+              "k": "dropdown@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 716
+            },
+            {
+              "k": "button@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 716
+            },
+            {
+              "k": "acc-plain@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 716
+            },
+            {
+              "k": "counter@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 716
+            },
+            {
+              "k": "input@jsaction",
+              "old": "input:;",
+              "now": null,
+              "t": 716
+            }
+          ],
+          "anim": [
+            {
+              "name": "yeti-enter-fade",
+              "testid": "enter-ssr",
+              "t": 239
+            },
+            {
+              "name": "yeti-enter-fade",
+              "testid": "enter-once-ssr",
+              "t": 239
+            }
+          ],
+          "t": {
+            "homeRendered": 1
+          },
+          "marks": {
+            "appCtor": 683,
+            "stable": 716
+          },
+          "counterText": "Clicked 0",
+          "inputValue": "",
+          "mirror": "",
+          "dialogOpen": true,
+          "dialogOpenAfterEscape": false,
+          "closeHandlerRuns": 1,
+          "errors": []
+        }
+      },
+      "i18nBeforeHydration": {
+        "counterText": "Clicked 0",
+        "counterRuns": 0,
+        "errors": []
+      },
+      "defer": {
+        "before": {
+          "d-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-when": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "d-interaction": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "d-hover": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "d-viewport": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "h-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-when": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-interaction": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-hover": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-never": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-viewport": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          }
+        },
+        "after": {
+          "d-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-when": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-interaction": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-hover": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-viewport": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "h-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-when": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-interaction": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 1
+          },
+          "h-hover": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-never": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-viewport": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          }
+        },
+        "neverDialogOpened": true,
+        "clientDialogOpened": true,
+        "actionErrors": [],
+        "errors": []
+      },
+      "anim": {
+        "onceSsr": {
+          "dataOnce": true,
+          "anims": 0
+        },
+        "dialogEnter": {
+          "first": {
+            "t": 9,
+            "present": true,
+            "cls": "dialog",
+            "opacity": "1",
+            "anims": [
+              "opacity",
+              "translate"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "opacity",
+            "translate"
+          ],
+          "classes": [
+            "dialog"
+          ],
+          "minOpacity": 0.00658944,
+          "removedAtMs": null,
+          "last": {
+            "t": 405,
+            "present": true,
+            "cls": "dialog",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": false
+          }
+        },
+        "dialogLeave": {
+          "first": {
+            "t": 9,
+            "present": true,
+            "cls": "dialog t-leave-dialog",
+            "opacity": "1",
+            "anims": [
+              "translate",
+              "opacity"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "translate",
+            "opacity"
+          ],
+          "classes": [
+            "dialog t-leave-dialog",
+            null
+          ],
+          "minOpacity": 2.30014e-8,
+          "removedAtMs": 178,
+          "last": {
+            "t": 614,
+            "present": false,
+            "cls": null,
+            "opacity": null,
+            "anims": [],
+            "dataOnce": null
+          }
+        },
+        "enterClassEnter": {
+          "first": {
+            "t": 7,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "0",
+            "anims": [
+              "yeti-enter-fade"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "yeti-enter-fade"
+          ],
+          "classes": [
+            "box enter",
+            "box"
+          ],
+          "minOpacity": 0,
+          "removedAtMs": null,
+          "last": {
+            "t": 906,
+            "present": true,
+            "cls": "box",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": false
+          }
+        },
+        "enterStaticEnter": {
+          "first": {
+            "t": 4,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "0",
+            "anims": [
+              "yeti-enter-fade"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "yeti-enter-fade"
+          ],
+          "classes": [
+            "box enter"
+          ],
+          "minOpacity": 0,
+          "removedAtMs": null,
+          "last": {
+            "t": 906,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": false
+          }
+        },
+        "enterOnceEnter": {
+          "first": {
+            "t": 9,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": true
+          },
+          "anims": [],
+          "classes": [
+            "box enter"
+          ],
+          "minOpacity": 1,
+          "removedAtMs": null,
+          "last": {
+            "t": 908,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": true
+          }
+        },
+        "alert2Leave": {
+          "first": {
+            "t": 10,
+            "present": true,
+            "cls": "alert t-leave-anim",
+            "opacity": "1",
+            "anims": [
+              "t-fade-out"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "t-fade-out"
+          ],
+          "classes": [
+            "alert t-leave-anim",
+            null
+          ],
+          "minOpacity": 0.00000388863,
+          "removedAtMs": 327,
+          "last": {
+            "t": 709,
+            "present": false,
+            "cls": null,
+            "opacity": null,
+            "anims": [],
+            "dataOnce": null
+          }
+        },
+        "alertJsClose": {
+          "first": {
+            "t": 9,
+            "present": true,
+            "cls": "alert",
+            "opacity": "1",
+            "anims": [
+              "Animation"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "Animation"
+          ],
+          "classes": [
+            "alert",
+            null
+          ],
+          "minOpacity": 1,
+          "removedAtMs": 26,
+          "last": {
+            "t": 508,
+            "present": false,
+            "cls": null,
+            "opacity": null,
+            "anims": [],
+            "dataOnce": null
+          }
+        },
+        "alertAfterAngularHide": 0,
+        "alertAfterAngularShow": 1,
+        "alertErrors": [],
+        "errors": []
+      },
+      "guard": {
+        "G0_noLeaveAnywhere": {
+          "stylesAtLoad": 1,
+          "neverAtLoad": {
+            "paddingInline": "8.64375px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterHide": 0,
+          "neverAfterHide": {
+            "paddingInline": "0px",
+            "radius": "0px",
+            "bg": "rgba(0, 0, 0, 0)"
+          },
+          "stylesAfterShow": 1,
+          "errors": []
+        },
+        "G1_permanentClassLeave": {
+          "stylesAtLoad": 1,
+          "neverAtLoad": {
+            "paddingInline": "8.64375px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterHide": 0,
+          "neverAfterHide": {
+            "paddingInline": "0px",
+            "radius": "0px",
+            "bg": "rgba(0, 0, 0, 0)"
+          },
+          "stylesAfterShow": 1,
+          "errors": []
+        },
+        "G2_permanentFnLeave": {
+          "stylesAtLoad": 1,
+          "neverAtLoad": {
+            "paddingInline": "8.64375px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterHide": 1,
+          "neverAfterHide": {
+            "paddingInline": "8.64375px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterShow": 1,
+          "errors": []
+        },
+        "G3_badgeWithLeavingSibling": {
+          "stylesDuringLeave": 0,
+          "stylesAfterLeave": 0,
+          "errors": []
+        }
+      }
+    },
+    "webkit": {
+      "version": "26.6",
+      "jsOff": {
+        "cardVisible": true,
+        "cardBox": {
+          "x": 0,
+          "y": 89.328125,
+          "width": 1280,
+          "height": 168.75
+        },
+        "layoutBoxes": [
+          {
+            "x": 0,
+            "y": 282.0625,
+            "width": 414.65625,
+            "height": 65
+          },
+          {
+            "x": 432.65625,
+            "y": 282.0625,
+            "width": 414.671875,
+            "height": 65
+          },
+          {
+            "x": 865.328125,
+            "y": 282.0625,
+            "width": 414.671875,
+            "height": 65
+          }
+        ],
+        "dialogVisibleBefore": false,
+        "dropdownVisibleBefore": false,
+        "tabPanelsVisible": 2,
+        "accOpenBefore": null,
+        "dialogVisibleAfterClick": true,
+        "dialogVisibleAfterEscape": false,
+        "dropdownVisibleAfterClick": true,
+        "accOpenAfterClick": true,
+        "tabBSelected": null,
+        "urlAfterDot": "/da/#work-2"
+      },
+      "hydrateHome": {
+        "removed": 0,
+        "removedSample": [],
+        "addedAfterDcl": 0,
+        "attrWrites": 169,
+        "changed": [
+          {
+            "k": "tab2-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 109
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 109
+          },
+          {
+            "k": "tab2-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 109
+          },
+          {
+            "k": "tab2-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 109
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 109
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 109
+          },
+          {
+            "k": "tab-a@aria-selected",
+            "old": null,
+            "now": "true",
+            "t": 109
+          },
+          {
+            "k": "tab-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 109
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 109
+          },
+          {
+            "k": "tab-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 109
+          },
+          {
+            "k": "tab-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 109
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 109
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 109
+          },
+          {
+            "k": "dropdown@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 276
+          },
+          {
+            "k": "button@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 276
+          },
+          {
+            "k": "acc-plain@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 276
+          },
+          {
+            "k": "counter@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 276
+          },
+          {
+            "k": "input@jsaction",
+            "old": "input:;",
+            "now": null,
+            "t": 276
+          }
+        ],
+        "anim": [
+          {
+            "name": "yeti-enter-fade",
+            "testid": "enter-ssr",
+            "t": 125
+          }
+        ],
+        "t": {
+          "homeRendered": 1
+        },
+        "marks": {
+          "appCtor": 179,
+          "stable": 273
+        },
+        "tabState": {
+          "selected": [
+            "true",
+            "false"
+          ],
+          "hiddenPanels": 1,
+          "tabs2Selected": [
+            "true",
+            "false"
+          ],
+          "accStaticOpen": true,
+          "enterOnceDataOnce": true,
+          "enterOnceAnims": 0
+        },
+        "enterSsrAnimations": 1,
+        "afterTabClick": {
+          "hostListenerRuns": 1,
+          "hostListenerView": "1",
+          "plainListenerRuns": 0,
+          "plainFieldView": "0"
+        },
+        "counterAfterClick": "Clicked 1",
+        "afterDotClick": {
+          "plainSlideRuns": 1,
+          "plainSlidesView": "0",
+          "defaultCdRuns": 1,
+          "defaultCdView": "0",
+          "zoneLoaded": false
+        },
+        "errors": []
+      },
+      "hydratePre": {
+        "removed": 0,
+        "removedSample": [],
+        "addedAfterDcl": 0,
+        "attrWrites": 169,
+        "changed": [
+          {
+            "k": "tab2-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 93
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 93
+          },
+          {
+            "k": "tab2-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 93
+          },
+          {
+            "k": "tab2-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 93
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 93
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 93
+          },
+          {
+            "k": "tab-a@aria-selected",
+            "old": null,
+            "now": "true",
+            "t": 93
+          },
+          {
+            "k": "tab-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 93
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 93
+          },
+          {
+            "k": "tab-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 94
+          },
+          {
+            "k": "tab-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 94
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 94
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 94
+          },
+          {
+            "k": "dropdown@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 233
+          },
+          {
+            "k": "button@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 233
+          },
+          {
+            "k": "acc-plain@jsaction",
+            "old": "toggle:;",
+            "now": null,
+            "t": 233
+          },
+          {
+            "k": "counter@jsaction",
+            "old": "click:;",
+            "now": null,
+            "t": 233
+          },
+          {
+            "k": "input@jsaction",
+            "old": "input:;",
+            "now": null,
+            "t": 233
+          }
+        ],
+        "anim": [
+          {
+            "name": "yeti-enter-fade",
+            "testid": "enter-ssr",
+            "t": 87
+          }
+        ],
+        "t": {
+          "homeRendered": 1
+        },
+        "marks": {
+          "appCtor": 153,
+          "stable": 231
+        },
+        "tabState": {
+          "selected": [
+            "true",
+            "false"
+          ],
+          "hiddenPanels": 1,
+          "tabs2Selected": [
+            "true",
+            "false"
+          ],
+          "accStaticOpen": true,
+          "enterOnceDataOnce": true,
+          "enterOnceAnims": 0
+        },
+        "errors": []
+      },
+      "hydrateI18n": {
+        "removed": 1,
+        "removedSample": [
+          {
+            "tag": "main",
+            "testid": null,
+            "cls": "container stack",
+            "t": 278
+          }
+        ],
+        "addedAfterDcl": 0,
+        "attrWrites": 14,
+        "changed": [
+          {
+            "k": "tab-a@aria-selected",
+            "old": null,
+            "now": "true",
+            "t": 111
+          },
+          {
+            "k": "tab-a@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 111
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 111
+          },
+          {
+            "k": "tab-b@aria-selected",
+            "old": null,
+            "now": "false",
+            "t": 111
+          },
+          {
+            "k": "tab-b@tabindex",
+            "old": null,
+            "now": "-1",
+            "t": 111
+          },
+          {
+            "k": "section@hidden",
+            "old": null,
+            "now": "",
+            "t": 111
+          },
+          {
+            "k": "section@tabindex",
+            "old": null,
+            "now": "0",
+            "t": 111
+          }
+        ],
+        "anim": [],
+        "t": {},
+        "marks": {
+          "appCtor": 204,
+          "stable": 302
+        },
+        "tabState": {
+          "selected": [
+            null,
+            null
+          ],
+          "hiddenPanels": 0,
+          "tabs2Selected": [],
+          "accStaticOpen": null,
+          "enterOnceDataOnce": null,
+          "enterOnceAnims": 0
+        },
+        "cardTitle": "Weekend i bakkerne",
+        "cardBody": "Ti kilometer, en top og 3 udsigter.",
+        "errors": []
+      },
+      "beforeHydrationAll": {
+        "pre": {
+          "dialogOpened": true,
+          "dialogClosedByEscape": true,
+          "popoverOpened": true,
+          "accPlainOpen": true,
+          "accBoundOpen": true,
+          "tabBSelected": "true",
+          "accStaticOpen": false,
+          "tabs2Selected": [
+            "false",
+            "true"
+          ],
+          "enterOnceDataOnce": false,
+          "dotHash": "",
+          "dotHistoryDelta": 0,
+          "popoverLeftOpen": true,
+          "counterText": "Clicked 0"
+        },
+        "post": {
+          "removed": 0,
+          "removedSample": [],
+          "addedAfterDcl": 0,
+          "attrWrites": 192,
+          "changed": [
+            {
+              "k": "tab2-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 148
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 148
+            },
+            {
+              "k": "tab2-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 148
+            },
+            {
+              "k": "tab2-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 148
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 148
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 148
+            },
+            {
+              "k": "tab-a@aria-selected",
+              "old": null,
+              "now": "true",
+              "t": 148
+            },
+            {
+              "k": "tab-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 148
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 148
+            },
+            {
+              "k": "tab-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 148
+            },
+            {
+              "k": "tab-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 148
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 148
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 148
+            },
+            {
+              "k": "dialog@open",
+              "old": null,
+              "now": "",
+              "t": 332
+            },
+            {
+              "k": "dialog@open",
+              "old": "",
+              "now": null,
+              "t": 627
+            },
+            {
+              "k": "acc-plain@open",
+              "old": null,
+              "now": "",
+              "t": 1522
+            },
+            {
+              "k": "acc-bound@open",
+              "old": null,
+              "now": "",
+              "t": 2020
+            },
+            {
+              "k": "enter-once-ssr@data-once",
+              "old": "",
+              "now": null,
+              "t": 2525
+            },
+            {
+              "k": "tab-a@aria-selected",
+              "old": "true",
+              "now": "false",
+              "t": 2539
+            },
+            {
+              "k": "tab-a@tabindex",
+              "old": "0",
+              "now": "-1",
+              "t": 2539
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 2539
+            },
+            {
+              "k": "tab-b@aria-selected",
+              "old": "false",
+              "now": "true",
+              "t": 2539
+            },
+            {
+              "k": "tab-b@tabindex",
+              "old": "-1",
+              "now": "0",
+              "t": 2539
+            },
+            {
+              "k": "section@hidden",
+              "old": "",
+              "now": null,
+              "t": 2539
+            },
+            {
+              "k": "acc-static@open",
+              "old": "",
+              "now": null,
+              "t": 2664
+            },
+            {
+              "k": "tab2-a@aria-selected",
+              "old": "true",
+              "now": "false",
+              "t": 3141
+            },
+            {
+              "k": "tab2-a@tabindex",
+              "old": "0",
+              "now": "-1",
+              "t": 3141
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 3141
+            },
+            {
+              "k": "tab2-b@aria-selected",
+              "old": "false",
+              "now": "true",
+              "t": 3141
+            },
+            {
+              "k": "tab2-b@tabindex",
+              "old": "-1",
+              "now": "0",
+              "t": 3141
+            },
+            {
+              "k": "section@hidden",
+              "old": "",
+              "now": null,
+              "t": 3141
+            },
+            {
+              "k": "acc-static@open",
+              "old": null,
+              "now": "",
+              "t": 4401
+            },
+            {
+              "k": "tab2-a@aria-selected",
+              "old": "false",
+              "now": "true",
+              "t": 4401
+            },
+            {
+              "k": "enter-once-ssr@data-once",
+              "old": null,
+              "now": "",
+              "t": 4401
+            },
+            {
+              "k": "acc-bound@open",
+              "old": "",
+              "now": null,
+              "t": 4419
+            },
+            {
+              "k": "dropdown@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 4428
+            },
+            {
+              "k": "button@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 4428
+            },
+            {
+              "k": "acc-plain@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 4428
+            },
+            {
+              "k": "counter@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 4428
+            },
+            {
+              "k": "input@jsaction",
+              "old": "input:;",
+              "now": null,
+              "t": 4428
+            }
+          ],
+          "anim": [
+            {
+              "name": "yeti-enter-fade",
+              "testid": "enter-ssr",
+              "t": 136
+            },
+            {
+              "name": "yeti-enter-fade",
+              "testid": "enter-once-ssr",
+              "t": 2536
+            }
+          ],
+          "t": {
+            "homeRendered": 1,
+            "popoverToggle": 3,
+            "detailsToggle": 1,
+            "counterClick": 2,
+            "input": 1
+          },
+          "marks": {
+            "appCtor": 4337,
+            "stable": 4420
+          },
+          "counterText": "Clicked 2",
+          "inputValue": "abc",
+          "mirror": "abc",
+          "accPlainOpen": true,
+          "accBoundOpen": false,
+          "tabBSelected": "true",
+          "hiddenPanels": 1,
+          "popoverOpen": true,
+          "accStaticOpen": true,
+          "tabs2Selected": [
+            "true",
+            "true"
+          ],
+          "tabs2HiddenPanels": 1,
+          "enterOnceDataOnce": true,
+          "errors": []
+        }
+      },
+      "beforeHydrationDialog": {
+        "pre": {
+          "dialogLeftOpen": true,
+          "counterText": "Clicked 0"
+        },
+        "post": {
+          "removed": 0,
+          "removedSample": [],
+          "addedAfterDcl": 0,
+          "attrWrites": 170,
+          "changed": [
+            {
+              "k": "tab2-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 126
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 126
+            },
+            {
+              "k": "tab2-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 126
+            },
+            {
+              "k": "tab2-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 126
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 126
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 126
+            },
+            {
+              "k": "tab-a@aria-selected",
+              "old": null,
+              "now": "true",
+              "t": 126
+            },
+            {
+              "k": "tab-a@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 126
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 126
+            },
+            {
+              "k": "tab-b@aria-selected",
+              "old": null,
+              "now": "false",
+              "t": 126
+            },
+            {
+              "k": "tab-b@tabindex",
+              "old": null,
+              "now": "-1",
+              "t": 126
+            },
+            {
+              "k": "section@hidden",
+              "old": null,
+              "now": "",
+              "t": 126
+            },
+            {
+              "k": "section@tabindex",
+              "old": null,
+              "now": "0",
+              "t": 126
+            },
+            {
+              "k": "dialog@open",
+              "old": null,
+              "now": "",
+              "t": 298
+            },
+            {
+              "k": "dropdown@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 848
+            },
+            {
+              "k": "button@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 848
+            },
+            {
+              "k": "acc-plain@jsaction",
+              "old": "toggle:;",
+              "now": null,
+              "t": 848
+            },
+            {
+              "k": "counter@jsaction",
+              "old": "click:;",
+              "now": null,
+              "t": 848
+            },
+            {
+              "k": "input@jsaction",
+              "old": "input:;",
+              "now": null,
+              "t": 848
+            }
+          ],
+          "anim": [
+            {
+              "name": "yeti-enter-fade",
+              "testid": "enter-ssr",
+              "t": 115
+            }
+          ],
+          "t": {
+            "homeRendered": 1
+          },
+          "marks": {
+            "appCtor": 720,
+            "stable": 845
+          },
+          "counterText": "Clicked 0",
+          "inputValue": "",
+          "mirror": "",
+          "dialogOpen": true,
+          "dialogOpenAfterEscape": false,
+          "closeHandlerRuns": 1,
+          "errors": []
+        }
+      },
+      "i18nBeforeHydration": {
+        "counterText": "Clicked 0",
+        "counterRuns": 0,
+        "errors": []
+      },
+      "defer": {
+        "before": {
+          "d-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-when": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "d-interaction": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "d-hover": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "d-viewport": {
+            "content": false,
+            "created": false,
+            "tabsInit": null,
+            "hiddenPanels": null,
+            "clicks": 0
+          },
+          "h-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-when": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-interaction": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-hover": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-never": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-viewport": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          }
+        },
+        "after": {
+          "d-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-when": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-interaction": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-hover": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "d-viewport": {
+            "content": true,
+            "created": true,
+            "tabsInit": false,
+            "hiddenPanels": 0,
+            "clicks": 0
+          },
+          "h-immediate": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-idle": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-timer": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-when": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-interaction": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 1
+          },
+          "h-hover": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-never": {
+            "content": true,
+            "created": false,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          },
+          "h-viewport": {
+            "content": true,
+            "created": true,
+            "tabsInit": true,
+            "hiddenPanels": 1,
+            "clicks": 0
+          }
+        },
+        "neverDialogOpened": true,
+        "clientDialogOpened": true,
+        "actionErrors": [
+          "d-hover: page.hover: Timeout 5000ms exceeded."
+        ],
+        "errors": []
+      },
+      "anim": {
+        "onceSsr": {
+          "dataOnce": true,
+          "anims": 0
+        },
+        "dialogEnter": {
+          "first": {
+            "t": 26,
+            "present": true,
+            "cls": "dialog",
+            "opacity": "0.15625",
+            "anims": [
+              "opacity",
+              "translate"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "opacity",
+            "translate"
+          ],
+          "classes": [
+            "dialog"
+          ],
+          "minOpacity": 0.15625,
+          "removedAtMs": null,
+          "last": {
+            "t": 413,
+            "present": true,
+            "cls": "dialog",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": false
+          }
+        },
+        "dialogLeave": {
+          "first": {
+            "t": 17,
+            "present": true,
+            "cls": "dialog t-leave-dialog",
+            "opacity": "1",
+            "anims": [
+              "opacity",
+              "translate"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "opacity",
+            "translate"
+          ],
+          "classes": [
+            "dialog t-leave-dialog",
+            null
+          ],
+          "minOpacity": 0.004046,
+          "removedAtMs": 170,
+          "last": {
+            "t": 610,
+            "present": false,
+            "cls": null,
+            "opacity": null,
+            "anims": [],
+            "dataOnce": null
+          }
+        },
+        "enterClassEnter": {
+          "first": {
+            "t": 21,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "0.000023",
+            "anims": [
+              "yeti-enter-fade"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "yeti-enter-fade"
+          ],
+          "classes": [
+            "box enter",
+            "box"
+          ],
+          "minOpacity": 0.000023,
+          "removedAtMs": null,
+          "last": {
+            "t": 910,
+            "present": true,
+            "cls": "box",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": false
+          }
+        },
+        "enterStaticEnter": {
+          "first": {
+            "t": 44,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "0.000023",
+            "anims": [
+              "yeti-enter-fade"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "yeti-enter-fade"
+          ],
+          "classes": [
+            "box enter"
+          ],
+          "minOpacity": 0.000023,
+          "removedAtMs": null,
+          "last": {
+            "t": 910,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": false
+          }
+        },
+        "enterOnceEnter": {
+          "first": {
+            "t": 16,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": true
+          },
+          "anims": [],
+          "classes": [
+            "box enter"
+          ],
+          "minOpacity": 1,
+          "removedAtMs": null,
+          "last": {
+            "t": 905,
+            "present": true,
+            "cls": "box enter",
+            "opacity": "1",
+            "anims": [],
+            "dataOnce": true
+          }
+        },
+        "alert2Leave": {
+          "first": {
+            "t": 24,
+            "present": true,
+            "cls": "alert t-leave-anim",
+            "opacity": "0.998613",
+            "anims": [
+              "t-fade-out"
+            ],
+            "dataOnce": false
+          },
+          "anims": [
+            "t-fade-out"
+          ],
+          "classes": [
+            "alert t-leave-anim",
+            null
+          ],
+          "minOpacity": 0.000096,
+          "removedAtMs": 335,
+          "last": {
+            "t": 705,
+            "present": false,
+            "cls": null,
+            "opacity": null,
+            "anims": [],
+            "dataOnce": null
+          }
+        },
+        "alertJsClose": {
+          "first": {
+            "t": 12,
+            "present": false,
+            "cls": null,
+            "opacity": null,
+            "anims": [],
+            "dataOnce": null
+          },
+          "anims": [],
+          "classes": [
+            null
+          ],
+          "minOpacity": null,
+          "removedAtMs": 12,
+          "last": {
+            "t": 501,
+            "present": false,
+            "cls": null,
+            "opacity": null,
+            "anims": [],
+            "dataOnce": null
+          }
+        },
+        "alertAfterAngularHide": 0,
+        "alertAfterAngularShow": 1,
+        "alertErrors": [],
+        "errors": []
+      },
+      "guard": {
+        "G0_noLeaveAnywhere": {
+          "stylesAtLoad": 1,
+          "neverAtLoad": {
+            "paddingInline": "8.639999px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterHide": 0,
+          "neverAfterHide": {
+            "paddingInline": "0px",
+            "radius": "0px",
+            "bg": "rgba(0, 0, 0, 0)"
+          },
+          "stylesAfterShow": 1,
+          "errors": []
+        },
+        "G1_permanentClassLeave": {
+          "stylesAtLoad": 1,
+          "neverAtLoad": {
+            "paddingInline": "8.639999px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterHide": 0,
+          "neverAfterHide": {
+            "paddingInline": "0px",
+            "radius": "0px",
+            "bg": "rgba(0, 0, 0, 0)"
+          },
+          "stylesAfterShow": 1,
+          "errors": []
+        },
+        "G2_permanentFnLeave": {
+          "stylesAtLoad": 1,
+          "neverAtLoad": {
+            "paddingInline": "8.639999px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterHide": 1,
+          "neverAfterHide": {
+            "paddingInline": "8.639999px",
+            "radius": "9999px",
+            "bg": "oklch(0.95 0.06 145)"
+          },
+          "stylesAfterShow": 1,
+          "errors": []
+        },
+        "G3_badgeWithLeavingSibling": {
+          "stylesDuringLeave": 0,
+          "stylesAfterLeave": 0,
+          "errors": []
+        }
+      }
+    }
+  },
+  "prerenderFile": true
+}

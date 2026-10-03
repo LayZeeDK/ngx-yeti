@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Yeti buttons example</title><link rel="stylesheet" href="/yeti/yeti.css"></head><body><main>
+<!-- Yeti f52d1e8b9 src/components/buttons/docs.md first example -->
+<div class="buttons" role="group" aria-label="Form actions" data-testid="ref-action">
+	<button class="button" type="submit">Save</button>
+	<button class="button" type="button" data-emphasis="low">Cancel</button>
+	<button class="button" type="button" data-emphasis="medium" aria-busy="true" aria-disabled="true">Export</button>
+</div>
+<!-- Yeti f52d1e8b9 src/components/buttons/example.html, verbatim -->
+<div class="buttons" role="group" aria-label="Text style" data-affix data-testid="ref-toggle">
+	<button class="button" type="button" data-emphasis="medium" aria-pressed="true">Bold</button>
+	<button class="button" type="button" data-emphasis="medium" aria-pressed="false">Italic</button>
+	<button class="button" type="button" data-emphasis="medium" aria-pressed="false">Underline</button>
+</div>
+<fieldset>
+	<legend>Billing</legend>
+	<div class="buttons" data-affix>
+		<label class="button" data-emphasis="medium"><input type="radio" name="example-billing" value="monthly" checked> Monthly</label>
+		<label class="button" data-emphasis="medium"><input type="radio" name="example-billing" value="yearly"> Yearly</label>
+	</div>
+</fieldset>
+
+</main></body></html>

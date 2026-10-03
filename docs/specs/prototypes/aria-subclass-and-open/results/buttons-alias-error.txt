@@ -1,0 +1,12 @@
+Node Express server listening on http://localhost:4734
+ERROR TypeError: ctx.disabled is not a function
+    at YetiButtonS_HostBindings (file:///D:/tmp/ngx-yeti-29-buttons/ws/dist/ws/server/main.server.mjs:65306:80)
+    at definition.hostBindings (file:///D:/tmp/ngx-yeti-29-buttons/ws/dist/ws/server/main.server.mjs:16125:7)
+    at processHostBindingOpCodes (file:///D:/tmp/ngx-yeti-29-buttons/ws/dist/ws/server/main.server.mjs:11884:11)
+    at refreshView (file:///D:/tmp/ngx-yeti-29-buttons/ws/dist/ws/server/main.server.mjs:11713:5)
+    at detectChangesInView (file:///D:/tmp/ngx-yeti-29-buttons/ws/dist/ws/server/main.server.mjs:11843:5)
+    at detectChangesInViewIfAttached (file:///D:/tmp/ngx-yeti-29-buttons/ws/dist/ws/server/main.server.mjs:11826:3)
+    at detectChangesInComponent (file:///D:/tmp/ngx-yeti-29-buttons/ws/dist/ws/server/main.server.mjs:11817:5)
+    at detectChangesInChildComponents (file:///D:/tmp/ngx-yeti-29-buttons/ws/dist/ws/server/main.server.mjs:11865:5)
+    at refreshView (file:///D:/tmp/ngx-yeti-29-buttons/ws/dist/ws/server/main.server.mjs:11716:7)
+    at detectChangesInView (file:///D:/tmp/ngx-yeti-29-buttons/ws/dist/ws/server/main.server.mjs:11843:5)

@@ -1,0 +1,224 @@
+{
+  "chromium": {
+    "ref": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Enter: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Space: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Space: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter (open 1): focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Tab: focus=trigger2 state=open/-/shown shut/-/hidden",
+        "Shift+Tab: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowDown: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowUp: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "End: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Home: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Escape: focus=trigger1 state=open/-/shown shut/-/hidden"
+      ],
+      "treeWithFirstOpen": "- group:\n  - text: Does Yeti need JavaScript?\n  - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- group: Can I use my own class names?"
+    },
+    "a": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Enter: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Space: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Space: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter (open 1): focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Tab: focus=trigger2 state=open/-/shown shut/-/hidden",
+        "Shift+Tab: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowDown: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowUp: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "End: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Home: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Escape: focus=trigger1 state=open/-/shown shut/-/hidden"
+      ],
+      "treeWithFirstOpen": "- group:\n  - text: Does Yeti need JavaScript?\n  - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- group: Can I use my own class names?\n- status: true,false"
+    },
+    "b": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=-/false/hidden -/false/hidden",
+        "Enter: focus=trigger1 state=-/true/shown -/false/hidden",
+        "Enter: focus=trigger1 state=-/false/hidden -/false/hidden",
+        "Space: focus=trigger1 state=-/true/shown -/false/hidden",
+        "Space: focus=trigger1 state=-/false/hidden -/false/hidden",
+        "Enter (open 1): focus=trigger1 state=-/true/shown -/false/hidden",
+        "Tab: focus=trigger2 state=-/true/shown -/false/hidden",
+        "Shift+Tab: focus=trigger1 state=-/true/shown -/false/hidden",
+        "ArrowDown: focus=trigger2 state=-/true/shown -/false/hidden",
+        "ArrowUp: focus=trigger1 state=-/true/shown -/false/hidden",
+        "End: focus=trigger2 state=-/true/shown -/false/hidden",
+        "Home: focus=trigger1 state=-/true/shown -/false/hidden",
+        "Escape: focus=trigger1 state=-/true/shown -/false/hidden"
+      ],
+      "treeWithFirstOpen": "- heading \"Does Yeti need JavaScript?\" [level=3]:\n  - button \"Does Yeti need JavaScript?\" [expanded]\n- region \"Does Yeti need JavaScript?\":\n  - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- heading \"Can I use my own class names?\" [level=3]:\n  - button \"Can I use my own class names?\"\n- region \"Can I use my own class names?\"\n- status: true,false"
+    },
+    "b2": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=shut/false/hidden shut/false/hidden",
+        "Enter: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Enter: focus=trigger1 state=shut/false/hidden shut/false/hidden",
+        "Space: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Space: focus=trigger1 state=shut/false/hidden shut/false/hidden",
+        "Enter (open 1): focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Tab: focus=trigger2 state=open/true/shown shut/false/hidden",
+        "Shift+Tab: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "ArrowDown: focus=trigger2 state=open/true/shown shut/false/hidden",
+        "ArrowUp: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "End: focus=trigger2 state=open/true/shown shut/false/hidden",
+        "Home: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Escape: focus=trigger1 state=open/true/shown shut/false/hidden"
+      ],
+      "treeWithFirstOpen": "- group:\n  - button \"Does Yeti need JavaScript?\" [expanded]\n  - region \"Does Yeti need JavaScript?\":\n    - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- group:\n  - button \"Can I use my own class names?\"\n- status: true,false"
+    }
+  },
+  "firefox": {
+    "ref": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Enter: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Space: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Space: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter (open 1): focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Tab: focus=trigger2 state=open/-/shown shut/-/hidden",
+        "Shift+Tab: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowDown: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowUp: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "End: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Home: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Escape: focus=trigger1 state=open/-/shown shut/-/hidden"
+      ],
+      "treeWithFirstOpen": "- group:\n  - text: Does Yeti need JavaScript?\n  - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- group: Can I use my own class names?"
+    },
+    "a": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Enter: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Space: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Space: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter (open 1): focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Tab: focus=trigger2 state=open/-/shown shut/-/hidden",
+        "Shift+Tab: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowDown: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowUp: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "End: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Home: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Escape: focus=trigger1 state=open/-/shown shut/-/hidden"
+      ],
+      "treeWithFirstOpen": "- group:\n  - text: Does Yeti need JavaScript?\n  - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- group: Can I use my own class names?\n- status: true,false"
+    },
+    "b": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=-/false/hidden -/false/hidden",
+        "Enter: focus=trigger1 state=-/true/shown -/false/hidden",
+        "Enter: focus=trigger1 state=-/false/hidden -/false/hidden",
+        "Space: focus=trigger1 state=-/true/shown -/false/hidden",
+        "Space: focus=trigger1 state=-/false/hidden -/false/hidden",
+        "Enter (open 1): focus=trigger1 state=-/true/shown -/false/hidden",
+        "Tab: focus=trigger2 state=-/true/shown -/false/hidden",
+        "Shift+Tab: focus=trigger1 state=-/true/shown -/false/hidden",
+        "ArrowDown: focus=trigger2 state=-/true/shown -/false/hidden",
+        "ArrowUp: focus=trigger1 state=-/true/shown -/false/hidden",
+        "End: focus=trigger2 state=-/true/shown -/false/hidden",
+        "Home: focus=trigger1 state=-/true/shown -/false/hidden",
+        "Escape: focus=trigger1 state=-/true/shown -/false/hidden"
+      ],
+      "treeWithFirstOpen": "- heading \"Does Yeti need JavaScript?\" [level=3]:\n  - button \"Does Yeti need JavaScript?\" [expanded]\n- region \"Does Yeti need JavaScript?\":\n  - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- heading \"Can I use my own class names?\" [level=3]:\n  - button \"Can I use my own class names?\"\n- region \"Can I use my own class names?\"\n- status: true,false"
+    },
+    "b2": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=shut/false/hidden shut/false/hidden",
+        "Enter: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Enter: focus=trigger1 state=shut/false/hidden shut/false/hidden",
+        "Space: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Space: focus=trigger1 state=shut/false/hidden shut/false/hidden",
+        "Enter (open 1): focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Tab: focus=trigger2 state=open/true/shown shut/false/hidden",
+        "Shift+Tab: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "ArrowDown: focus=trigger2 state=open/true/shown shut/false/hidden",
+        "ArrowUp: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "End: focus=trigger2 state=open/true/shown shut/false/hidden",
+        "Home: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Escape: focus=trigger1 state=open/true/shown shut/false/hidden"
+      ],
+      "treeWithFirstOpen": "- group:\n  - button \"Does Yeti need JavaScript?\" [expanded]\n  - region \"Does Yeti need JavaScript?\":\n    - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- group:\n  - button \"Can I use my own class names?\"\n- status: true,false"
+    }
+  },
+  "webkit": {
+    "ref": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Enter: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Space: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Space: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter (open 1): focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Tab: focus=trigger2 state=open/-/shown shut/-/hidden",
+        "Shift+Tab: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowDown: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowUp: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "End: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Home: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Escape: focus=trigger1 state=open/-/shown shut/-/hidden"
+      ],
+      "treeWithFirstOpen": "- group:\n  - text: Does Yeti need JavaScript?\n  - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- group: Can I use my own class names?"
+    },
+    "a": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Enter: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Space: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Space: focus=trigger1 state=shut/-/hidden shut/-/hidden",
+        "Enter (open 1): focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Tab: focus=trigger2 state=open/-/shown shut/-/hidden",
+        "Shift+Tab: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowDown: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "ArrowUp: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "End: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Home: focus=trigger1 state=open/-/shown shut/-/hidden",
+        "Escape: focus=trigger1 state=open/-/shown shut/-/hidden"
+      ],
+      "treeWithFirstOpen": "- group:\n  - text: Does Yeti need JavaScript?\n  - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- group: Can I use my own class names?\n- status: true,false"
+    },
+    "b": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=-/false/hidden -/false/hidden",
+        "Enter: focus=trigger1 state=-/true/shown -/false/hidden",
+        "Enter: focus=trigger1 state=-/false/hidden -/false/hidden",
+        "Space: focus=trigger1 state=-/true/shown -/false/hidden",
+        "Space: focus=trigger1 state=-/false/hidden -/false/hidden",
+        "Enter (open 1): focus=trigger1 state=-/true/shown -/false/hidden",
+        "Tab: focus=trigger2 state=-/true/shown -/false/hidden",
+        "Shift+Tab: focus=trigger1 state=-/true/shown -/false/hidden",
+        "ArrowDown: focus=trigger2 state=-/true/shown -/false/hidden",
+        "ArrowUp: focus=trigger1 state=-/true/shown -/false/hidden",
+        "End: focus=trigger2 state=-/true/shown -/false/hidden",
+        "Home: focus=trigger1 state=-/true/shown -/false/hidden",
+        "Escape: focus=trigger1 state=-/true/shown -/false/hidden"
+      ],
+      "treeWithFirstOpen": "- heading \"Does Yeti need JavaScript?\" [level=3]:\n  - button \"Does Yeti need JavaScript?\" [expanded]\n- region \"Does Yeti need JavaScript?\":\n  - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- heading \"Can I use my own class names?\" [level=3]:\n  - button \"Can I use my own class names?\"\n- region \"Can I use my own class names?\"\n- status: true,false"
+    },
+    "b2": {
+      "log": [
+        "focus trigger1: focus=trigger1 state=shut/false/hidden shut/false/hidden",
+        "Enter: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Enter: focus=trigger1 state=shut/false/hidden shut/false/hidden",
+        "Space: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Space: focus=trigger1 state=shut/false/hidden shut/false/hidden",
+        "Enter (open 1): focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Tab: focus=trigger2 state=open/true/shown shut/false/hidden",
+        "Shift+Tab: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "ArrowDown: focus=trigger2 state=open/true/shown shut/false/hidden",
+        "ArrowUp: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "End: focus=trigger2 state=open/true/shown shut/false/hidden",
+        "Home: focus=trigger1 state=open/true/shown shut/false/hidden",
+        "Escape: focus=trigger1 state=open/true/shown shut/false/hidden"
+      ],
+      "treeWithFirstOpen": "- group:\n  - button \"Does Yeti need JavaScript?\" [expanded]\n  - region \"Does Yeti need JavaScript?\":\n    - paragraph: Almost never. A handful of optional modules exist and nothing depends on them.\n- group:\n  - button \"Can I use my own class names?\"\n- status: true,false"
+    }
+  }
+}

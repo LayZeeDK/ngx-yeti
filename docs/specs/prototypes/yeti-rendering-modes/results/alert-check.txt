@@ -1,0 +1,3 @@
+chromium {"token":".15s","parsed":0.15,"animateOptions":{"duration":0.15,"fill":"forwards"},"closedAtMs":73}
+firefox {"token":".15s","parsed":0.15,"animateOptions":{"duration":0.15,"fill":"forwards"},"closedAtMs":14}
+webkit {"token":".15s","parsed":0.15,"animateOptions":{"duration":0.15,"fill":"forwards"},"closedAtMs":153}

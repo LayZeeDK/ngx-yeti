@@ -1,0 +1,6 @@
+/* Yeti from the workspace package, then a theme: token values on :root, after Yeti (theming.md:11, :117-127). */
+@import 'yeti-css';
+:root {
+  --yeti-hue-primary: 30;
+  --yeti-button-radius: var(--yeti-radius-full);
+}

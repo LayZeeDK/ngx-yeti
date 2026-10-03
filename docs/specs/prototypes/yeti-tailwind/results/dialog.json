@@ -1,0 +1,107 @@
+{
+  "chromium/Y0": {
+    "marginTop": "18px",
+    "marginLeft": "571.578px",
+    "left": 572,
+    "top": 18,
+    "width": 137
+  },
+  "chromium/TY": {
+    "marginTop": "18px",
+    "marginLeft": "0px",
+    "left": 0,
+    "top": 18,
+    "width": 137
+  },
+  "chromium/YT": {
+    "marginTop": "0px",
+    "marginLeft": "0px",
+    "left": 0,
+    "top": 0,
+    "width": 40
+  },
+  "chromium/S1": {
+    "marginTop": "18px",
+    "marginLeft": "0px",
+    "left": 0,
+    "top": 18,
+    "width": 137
+  },
+  "chromium/S3": {
+    "marginTop": "18px",
+    "marginLeft": "571.578px",
+    "left": 572,
+    "top": 18,
+    "width": 137
+  },
+  "firefox/Y0": {
+    "marginTop": "18px",
+    "marginLeft": "571.567px",
+    "left": 572,
+    "top": 18,
+    "width": 137
+  },
+  "firefox/TY": {
+    "marginTop": "18px",
+    "marginLeft": "0px",
+    "left": 0,
+    "top": 18,
+    "width": 137
+  },
+  "firefox/YT": {
+    "marginTop": "0px",
+    "marginLeft": "0px",
+    "left": 0,
+    "top": 0,
+    "width": 40
+  },
+  "firefox/S1": {
+    "marginTop": "18px",
+    "marginLeft": "0px",
+    "left": 0,
+    "top": 18,
+    "width": 137
+  },
+  "firefox/S3": {
+    "marginTop": "18px",
+    "marginLeft": "571.567px",
+    "left": 572,
+    "top": 18,
+    "width": 137
+  },
+  "webkit/Y0": {
+    "marginTop": "18px",
+    "marginLeft": "572.578125px",
+    "left": 573,
+    "top": 18,
+    "width": 135
+  },
+  "webkit/TY": {
+    "marginTop": "18px",
+    "marginLeft": "0px",
+    "left": 0,
+    "top": 18,
+    "width": 135
+  },
+  "webkit/YT": {
+    "marginTop": "0px",
+    "marginLeft": "0px",
+    "left": 0,
+    "top": 0,
+    "width": 40
+  },
+  "webkit/S1": {
+    "marginTop": "18px",
+    "marginLeft": "0px",
+    "left": 0,
+    "top": 18,
+    "width": 135
+  },
+  "webkit/S3": {
+    "marginTop": "18px",
+    "marginLeft": "572.578125px",
+    "left": 573,
+    "top": 18,
+    "width": 135
+  }
+}

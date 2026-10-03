@@ -1,0 +1,157 @@
+dev s/plain/once/ctor chromium: jsOn300 unstyled frames: load=0/125 resetA=0/96
+dev s/plain/once/ctor chromium: jsOn0 unstyled frames: load=0/127 resetA=0/96
+dev s/plain/once/ctor firefox: jsOn300 unstyled frames: load=0/413 resetA=0/97
+dev s/plain/once/ctor firefox: jsOn0 unstyled frames: load=0/127 resetA=0/99
+dev s/plain/once/ctor webkit: jsOn300 unstyled frames: load=0/117 resetA=0/103
+dev s/plain/once/ctor webkit: jsOn0 unstyled frames: load=0/115 resetA=0/100
+dev s/plain/once/host chromium+firefox: jsOn300 unstyled frames: load=0/124 resetA=0/96
+dev s/plain/once/host chromium+firefox: jsOn0 unstyled frames: load=0/127 resetA=0/96
+dev s/plain/once/host webkit: jsOn300 unstyled frames: load=0/123 resetA=19/104(cardA)
+dev s/plain/once/host webkit: jsOn0 unstyled frames: load=0/99 resetA=0/104
+dev s/plain/once/late chromium+firefox: jsOn300 unstyled frames: load=0/124 arm=0/54 resetA=0/95
+dev s/plain/once/late chromium+firefox: jsOn0 unstyled frames: load=0/126 arm=0/54 resetA=0/95
+dev s/plain/once/late webkit: jsOn300 unstyled frames: load=0/119 arm=0/56 resetA=16/106(cardA)
+dev s/plain/once/late webkit: jsOn0 unstyled frames: load=0/123 arm=0/62 resetA=0/100
+dev s/plain/none/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/125
+dev s/plain/none/ctor chromium+firefox+webkit: jsOn0 unstyled frames: load=0/129
+dev s/plain/server/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/125
+dev s/plain/server/ctor chromium+firefox+webkit: jsOn0 unstyled frames: load=0/127
+dev s/plain/client/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/125 resetA=0/96
+dev s/plain/client/ctor chromium+firefox+webkit: jsOn0 unstyled frames: load=0/127 resetA=0/95
+dev s/plain/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/126 resetA=0/94
+dev s/plain/both/ctor chromium+firefox+webkit: jsOn0 unstyled frames: load=0/128 resetA=0/96
+dev s/plain/reset/ctor chromium: jsOn300 unstyled frames: load=0/124 resetA=0/95
+dev s/plain/reset/ctor chromium: jsOn0 unstyled frames: load=0/127 resetA=0/94
+dev s/plain/reset/ctor firefox: jsOn300 unstyled frames: load=0/129 resetA=0/96
+dev s/plain/reset/ctor firefox: jsOn0 unstyled frames: load=0/133 resetA=0/100
+dev s/plain/reset/ctor webkit: jsOn300 unstyled frames: load=0/124 resetA=0/105
+dev s/plain/reset/ctor webkit: jsOn0 unstyled frames: load=0/122 resetA=0/104
+dev s/on/none/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123 interact=0/99
+dev s/on/server/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124 interact=0/99
+dev s/on/client/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123 interact=0/111 resetB=0/95
+dev s/on/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124 interact=0/96 resetB=0/94
+dev s/never/none/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/126
+dev s/never/server/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124 resetB=0/94
+dev s/never/client/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/126
+dev s/never/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124 resetB=0/93
+dev p/plain/none/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/126
+dev p/plain/none/ctor chromium+firefox+webkit: jsOn0 unstyled frames: load=0/128
+dev p/plain/server/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123
+dev p/plain/server/ctor chromium+firefox+webkit: jsOn0 unstyled frames: load=0/129
+dev p/plain/client/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/125 resetA=0/94
+dev p/plain/client/ctor chromium+firefox+webkit: jsOn0 unstyled frames: load=0/127 resetA=0/94
+dev p/plain/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123 resetA=0/94
+dev p/plain/both/ctor chromium+firefox+webkit: jsOn0 unstyled frames: load=0/127 resetA=0/93
+dev p/plain/reset/ctor chromium: jsOn300 unstyled frames: load=0/124 resetA=0/94
+dev p/plain/reset/ctor chromium: jsOn0 unstyled frames: load=0/127 resetA=0/96
+dev p/plain/reset/ctor firefox: jsOn300 unstyled frames: load=0/120 resetA=0/99
+dev p/plain/reset/ctor firefox: jsOn0 unstyled frames: load=0/131 resetA=0/100
+dev p/plain/reset/ctor webkit: jsOn300 unstyled frames: load=0/125 resetA=0/105
+dev p/plain/reset/ctor webkit: jsOn0 unstyled frames: load=0/125 resetA=0/104
+dev p/on/none/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123 interact=0/103
+dev p/on/server/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/122 interact=0/100
+dev p/on/client/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124 interact=0/105 resetB=0/94
+dev p/on/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124 interact=0/98 resetB=0/93
+dev p/never/none/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123
+dev p/never/server/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/125 resetB=0/94
+dev p/never/client/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124 resetB=0/93
+dev p/never/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124 resetB=0/93
+dev s/plain/client/host chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123 resetA=0/92
+dev s/plain/client/effect chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123 resetA=0/94
+dev s/plain/client/listener chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123 click=0/52
+dev s/plain/client/anr chromium+firefox+webkit: jsOn300 unstyled frames: load=0/125
+dev s/plain/client/late chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123 arm=0/53 resetA=0/93
+dev s/plain/server/host chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124
+dev s/plain/server/effect chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123
+prod s/plain/once/ctor chromium: jsOn300 unstyled frames: load=0/124 resetA=0/93
+prod s/plain/once/ctor chromium: jsOn0 unstyled frames: load=0/125 resetA=0/93
+prod s/plain/once/ctor firefox: jsOn300 unstyled frames: load=0/126 resetA=0/99
+prod s/plain/once/ctor firefox: jsOn0 unstyled frames: load=1/125(cardA) resetA=0/98
+prod s/plain/once/ctor webkit: jsOn300 unstyled frames: load=0/126 resetA=0/107
+prod s/plain/once/ctor webkit: jsOn0 unstyled frames: load=0/124 resetA=0/103
+prod s/plain/once/host chromium+firefox: jsOn300 unstyled frames: load=0/124 resetA=0/99
+prod s/plain/once/host chromium+firefox: jsOn0 unstyled frames: load=0/127 resetA=0/101
+prod s/plain/once/host webkit: jsOn300 unstyled frames: load=0/123 resetA=19/101(cardA)
+prod s/plain/once/host webkit: jsOn0 unstyled frames: load=0/121 resetA=0/90
+prod s/plain/once/late chromium: jsOn300 unstyled frames: load=0/125 arm=0/57 resetA=0/95
+prod s/plain/once/late chromium: jsOn0 unstyled frames: load=0/125 arm=0/54 resetA=0/94
+prod s/plain/once/late firefox: jsOn300 unstyled frames: load=2/125(cardA) arm=0/56 resetA=0/97
+prod s/plain/once/late firefox: jsOn0 unstyled frames: load=0/126 arm=0/56 resetA=0/98
+prod s/plain/once/late webkit: jsOn300 unstyled frames: load=0/124 arm=0/62 resetA=18/101(cardA)
+prod s/plain/once/late webkit: jsOn0 unstyled frames: load=0/123 arm=0/62 resetA=0/103
+prod s/plain/none/ctor chromium+webkit: jsOn300 unstyled frames: load=0/125
+prod s/plain/none/ctor chromium+webkit: jsOn0 unstyled frames: load=0/127
+prod s/plain/none/ctor firefox: jsOn300 unstyled frames: load=1/126(cardA)
+prod s/plain/none/ctor firefox: jsOn0 unstyled frames: load=0/129
+prod s/plain/server/ctor chromium+webkit: jsOn300 unstyled frames: load=0/125
+prod s/plain/server/ctor chromium+webkit: jsOn0 unstyled frames: load=0/127
+prod s/plain/server/ctor firefox: jsOn300 unstyled frames: load=1/127(cardA)
+prod s/plain/server/ctor firefox: jsOn0 unstyled frames: load=0/128
+prod s/plain/client/ctor chromium+webkit: jsOn300 unstyled frames: load=0/124 resetA=0/94
+prod s/plain/client/ctor chromium+webkit: jsOn0 unstyled frames: load=0/125 resetA=0/95
+prod s/plain/client/ctor firefox: jsOn300 unstyled frames: load=1/126(cardA) resetA=0/97
+prod s/plain/client/ctor firefox: jsOn0 unstyled frames: load=0/127 resetA=0/99
+prod s/plain/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124 resetA=0/95
+prod s/plain/both/ctor chromium+firefox+webkit: jsOn0 unstyled frames: load=0/126 resetA=0/95
+prod s/plain/reset/ctor chromium: jsOn300 unstyled frames: load=0/124 resetA=0/95
+prod s/plain/reset/ctor chromium: jsOn0 unstyled frames: load=0/126 resetA=0/95
+prod s/plain/reset/ctor firefox: jsOn300 unstyled frames: load=0/112 resetA=0/109
+prod s/plain/reset/ctor firefox: jsOn0 unstyled frames: load=0/126 resetA=0/79
+prod s/plain/reset/ctor webkit: jsOn300 unstyled frames: load=0/125 resetA=0/104
+prod s/plain/reset/ctor webkit: jsOn0 unstyled frames: load=0/124 resetA=0/104
+prod s/on/none/ctor chromium: jsOn300 unstyled frames: load=0/126 interact=0/102
+prod s/on/none/ctor firefox: jsOn300 unstyled frames: load=1/125(cardA,cardB) interact=0/110
+prod s/on/none/ctor webkit: jsOn300 unstyled frames: load=0/125 interact=0/105
+prod s/on/server/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/122 interact=0/102
+prod s/on/client/ctor chromium+webkit: jsOn300 unstyled frames: load=0/123 interact=0/104 resetB=0/93
+prod s/on/client/ctor firefox: jsOn300 unstyled frames: load=1/123(cardA,cardB) interact=0/108 resetB=0/96
+prod s/on/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/125 interact=0/98 resetB=0/93
+prod s/never/none/ctor chromium+webkit: jsOn300 unstyled frames: load=0/125
+prod s/never/none/ctor firefox: jsOn300 unstyled frames: load=1/127(cardA,cardB)
+prod s/never/server/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/125 resetB=0/94
+prod s/never/client/ctor chromium+webkit: jsOn300 unstyled frames: load=0/125
+prod s/never/client/ctor firefox: jsOn300 unstyled frames: load=2/127(cardA,cardB)
+prod s/never/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/125 resetB=0/93
+prod p/plain/none/ctor chromium+webkit: jsOn300 unstyled frames: load=0/125
+prod p/plain/none/ctor chromium+webkit: jsOn0 unstyled frames: load=0/127
+prod p/plain/none/ctor firefox: jsOn300 unstyled frames: load=2/128(cardA)
+prod p/plain/none/ctor firefox: jsOn0 unstyled frames: load=1/128(cardA)
+prod p/plain/server/ctor chromium+webkit: jsOn300 unstyled frames: load=0/126
+prod p/plain/server/ctor chromium+webkit: jsOn0 unstyled frames: load=0/127
+prod p/plain/server/ctor firefox: jsOn300 unstyled frames: load=1/126(cardA)
+prod p/plain/server/ctor firefox: jsOn0 unstyled frames: load=0/129
+prod p/plain/client/ctor chromium+webkit: jsOn300 unstyled frames: load=0/126 resetA=0/95
+prod p/plain/client/ctor chromium+webkit: jsOn0 unstyled frames: load=0/127 resetA=0/95
+prod p/plain/client/ctor firefox: jsOn300 unstyled frames: load=1/125(cardA) resetA=0/97
+prod p/plain/client/ctor firefox: jsOn0 unstyled frames: load=0/129 resetA=0/96
+prod p/plain/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/125 resetA=0/94
+prod p/plain/both/ctor chromium+firefox+webkit: jsOn0 unstyled frames: load=0/126 resetA=0/94
+prod p/plain/reset/ctor chromium: jsOn300 unstyled frames: load=0/124 resetA=0/93
+prod p/plain/reset/ctor chromium: jsOn0 unstyled frames: load=0/126 resetA=0/93
+prod p/plain/reset/ctor firefox: jsOn300 unstyled frames: load=0/126 resetA=0/100
+prod p/plain/reset/ctor firefox: jsOn0 unstyled frames: load=0/128 resetA=0/99
+prod p/plain/reset/ctor webkit: jsOn300 unstyled frames: load=0/126 resetA=0/104
+prod p/plain/reset/ctor webkit: jsOn0 unstyled frames: load=0/128 resetA=0/103
+prod p/on/none/ctor chromium+webkit: jsOn300 unstyled frames: load=0/124 interact=0/100
+prod p/on/none/ctor firefox: jsOn300 unstyled frames: load=2/124(cardA,cardB) interact=0/104
+prod p/on/server/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124 interact=0/103
+prod p/on/client/ctor chromium+webkit: jsOn300 unstyled frames: load=0/123 interact=0/103 resetB=0/93
+prod p/on/client/ctor firefox: jsOn300 unstyled frames: load=1/123(cardA,cardB) interact=0/109 resetB=0/95
+prod p/on/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123 interact=0/98 resetB=0/93
+prod p/never/none/ctor chromium+webkit: jsOn300 unstyled frames: load=0/124
+prod p/never/none/ctor firefox: jsOn300 unstyled frames: load=2/126(cardA,cardB)
+prod p/never/server/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/125 resetB=0/94
+prod p/never/client/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/127 resetB=0/93
+prod p/never/both/ctor chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124 resetB=0/94
+prod s/plain/client/host chromium+webkit: jsOn300 unstyled frames: load=0/123 resetA=0/94
+prod s/plain/client/host firefox: jsOn300 unstyled frames: load=1/125(cardA) resetA=0/97
+prod s/plain/client/effect chromium+firefox+webkit: jsOn300 unstyled frames: load=0/123 resetA=0/94
+prod s/plain/client/listener chromium+webkit: jsOn300 unstyled frames: load=0/127 click=0/52
+prod s/plain/client/listener firefox: jsOn300 unstyled frames: load=1/125(cardA) click=0/57
+prod s/plain/client/anr chromium+webkit: jsOn300 unstyled frames: load=0/124
+prod s/plain/client/anr firefox: jsOn300 unstyled frames: load=2/131(cardA)
+prod s/plain/client/late chromium+webkit: jsOn300 unstyled frames: load=0/125 arm=0/54 resetA=0/93
+prod s/plain/client/late firefox: jsOn300 unstyled frames: load=1/124(cardA) arm=0/58 resetA=0/96
+prod s/plain/server/host chromium+firefox+webkit: jsOn300 unstyled frames: load=0/124
+prod s/plain/server/effect chromium+webkit: jsOn300 unstyled frames: load=0/126
+prod s/plain/server/effect firefox: jsOn300 unstyled frames: load=1/125(cardA)

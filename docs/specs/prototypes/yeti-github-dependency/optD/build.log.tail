@@ -1,0 +1,12 @@
+❯ Building...
+✔ Building...
+Initial chunk files | Names         |  Raw size | Estimated transfer size
+main-YTWMP46K.js    | main          | 218.39 kB |                60.13 kB
+styles-75RZNMEY.css | styles        |   1.62 kB |               452 bytes
+
+                    | Initial total | 220.00 kB |                60.58 kB
+
+Application bundle generation complete. [6.470 seconds] - 2026-10-01T16:47:37.780Z
+
+Output location: D:\tmp\ngx-yeti-21\optD\dist\base
+

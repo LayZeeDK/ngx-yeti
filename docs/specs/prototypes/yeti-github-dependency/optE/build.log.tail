@@ -1,0 +1,15 @@
+✔ Building...
+Initial chunk files | Names         |  Raw size | Estimated transfer size
+main-OGVWPRZ4.js    | main          | 218.39 kB |                60.13 kB
+styles-75RZNMEY.css | styles        |   1.62 kB |               452 bytes
+
+                    | Initial total | 220.00 kB |                60.58 kB
+
+Application bundle generation complete. [2.427 seconds] - 2026-10-01T16:50:01.669Z
+
+Output location: D:\tmp\ngx-yeti-21\optE\dist\base
+
+
+real	0m9.946s
+user	0m0.199s
+sys	0m0.274s

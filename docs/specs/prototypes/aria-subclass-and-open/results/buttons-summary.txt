@@ -1,0 +1,105 @@
+##### chromium
+-- jsOff  axe: not run (axe needs page JS)
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- prehydration  axe: 0
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- hydrated  axe: 0
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- never  axe: 0
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- never: ArrowRight from Save -> focus Save
+-- keys hydrated: {"c":{"afterRight":"Cancel -1,0,-1","pressedAfterSpace":"true,true,false"},"s":{"afterRight":"Cancel -1,0,-1","pressedAfterSpace":"true,true,false"}}
+-- frames vs flips: [frame 1041] ; 1171 c-toggle role toolbar->group ; 1171 s-toggle role toolbar->group ; [frame 1174] ; 1185 c-action/Save tabindex 0->-1 ; 1185 c-action/Save tabindex -1->0 ; 1185 c-toggle role group->toolbar ; 1186 s-action/Save tabindex 0->-1 ; 1186 s-action/Save tabindex -1->0 ; 1186 s-toggle role group->toolbar ; [frame 1190]
+-- before release: 0 attribute records
+-- hydration: 76 records on 56 attributes; 18 took another value (sequence server -> each write):
+   c-toggle role: toolbar -> group -> toolbar
+   s-toggle role: toolbar -> group -> toolbar
+   c-action/Save tabindex: 0 -> -1 -> 0 -> 0
+   c-toggle/Bold tabindex: 0 -> -1 -> 0 -> 0
+   s-action/Save tabindex: 0 -> -1 -> 0 -> 0
+   s-toggle/Bold tabindex: 0 -> -1 -> 0 -> 0
+   ids rewritten: 12
+-- console (2): log: Angular is running in development mode. | log: Angular hydrated 3 component(s) and 41 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+-- console never (2): log: Angular is running in development mode. | log: Angular hydrated 2 component(s) and 9 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+##### firefox
+-- jsOff  axe: not run (axe needs page JS)
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- prehydration  axe: 0
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- hydrated  axe: 0
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- never  axe: 0
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- never: ArrowRight from Save -> focus Save
+-- keys hydrated: {"c":{"afterRight":"Cancel -1,0,-1","pressedAfterSpace":"true,true,false"},"s":{"afterRight":"Cancel -1,0,-1","pressedAfterSpace":"true,true,false"}}
+-- frames vs flips: [frame 1504] ; 1650 c-toggle role toolbar->group ; 1650 s-toggle role toolbar->group ; 1659 c-action/Save tabindex 0->-1 ; 1659 c-action/Save tabindex -1->0 ; 1659 c-toggle role group->toolbar ; 1659 s-action/Save tabindex 0->-1 ; 1659 s-action/Save tabindex -1->0 ; 1659 s-toggle role group->toolbar ; [frame 1660]
+-- before release: 0 attribute records
+-- hydration: 76 records on 56 attributes; 18 took another value (sequence server -> each write):
+   c-toggle role: toolbar -> group -> toolbar
+   s-toggle role: toolbar -> group -> toolbar
+   c-action/Save tabindex: 0 -> -1 -> 0 -> 0
+   c-toggle/Bold tabindex: 0 -> -1 -> 0 -> 0
+   s-action/Save tabindex: 0 -> -1 -> 0 -> 0
+   s-toggle/Bold tabindex: 0 -> -1 -> 0 -> 0
+   ids rewritten: 12
+-- console (2): log: Angular is running in development mode. | log: Angular hydrated 3 component(s) and 41 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+-- console never (2): log: Angular is running in development mode. | log: Angular hydrated 2 component(s) and 9 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+##### webkit
+-- jsOff  axe: not run (axe needs page JS)
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- prehydration  axe: 0
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- hydrated  axe: 0
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- never  axe: 0
+   c-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   c-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+   s-action  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,true] pressed=[,,]
+   s-toggle  role=toolbar tabindex=[0,-1,-1] aria-disabled=[false,false,false] pressed=[true,false,false]
+-- never: ArrowRight from Save -> focus Save
+-- keys hydrated: {"c":{"afterRight":"Cancel -1,0,-1","pressedAfterSpace":"true,true,false"},"s":{"afterRight":"Cancel -1,0,-1","pressedAfterSpace":"true,true,false"}}
+-- frames vs flips: [frame 1191] ; 1391 c-toggle role toolbar->group ; 1391 s-toggle role toolbar->group ; 1414 c-action/Save tabindex 0->-1 ; 1414 c-action/Save tabindex -1->0 ; 1414 c-toggle role group->toolbar ; 1414 s-action/Save tabindex 0->-1 ; 1414 s-action/Save tabindex -1->0 ; 1414 s-toggle role group->toolbar ; [frame 1424]
+-- before release: 0 attribute records
+-- hydration: 76 records on 56 attributes; 18 took another value (sequence server -> each write):
+   c-toggle role: toolbar -> group -> toolbar
+   s-toggle role: toolbar -> group -> toolbar
+   c-action/Save tabindex: 0 -> -1 -> 0 -> 0
+   c-toggle/Bold tabindex: 0 -> -1 -> 0 -> 0
+   s-action/Save tabindex: 0 -> -1 -> 0 -> 0
+   s-toggle/Bold tabindex: 0 -> -1 -> 0 -> 0
+   ids rewritten: 12
+-- console (2): log: Angular is running in development mode. | log: Angular hydrated 3 component(s) and 41 node(s), 0 component(s) were skipped. 0 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.
+-- console never (2): log: Angular is running in development mode. | log: Angular hydrated 2 component(s) and 9 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration. Learn more at https://v22.angular.dev/guide/hydration.

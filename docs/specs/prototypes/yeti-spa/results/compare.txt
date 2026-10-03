@@ -1,0 +1,161 @@
+
+# F1.direct-load /tabs: tabs1
+  all: "tab-a:null,tab-b:null | panel-a:shown,panel-b:shown"
+
+# F1.direct-load /tabs: enter1 data-once still set
+  all: true
+
+# F1.direct-load /tabs: toc1 after scrolling to h2
+  all: "toc1-h1:null,toc1-h2:null"
+
+# F1.routed /other -> /tabs: tabs1
+  all: "tab-a:null,tab-b:null | panel-a:shown,panel-b:shown"
+
+# F1.routed: enter1 data-once still set
+  all: true
+
+# F1.routed: toc1 after scrolling to h2
+  all: "toc1-h1:null,toc1-h2:null"
+
+# F1.routed: tabs1 after clicking tab B
+  all: "tab-a:false,tab-b:true | panel-a:hidden,panel-b:shown"
+
+# F1.routed: events for that click
+  all: ["yeti:select@tabs1:tab-b"]
+
+# F1.routed: tabs1 after ArrowLeft
+  all: "tab-a:true,tab-b:false | panel-a:shown,panel-b:hidden"
+
+# F1.@if: tabs-if after toggle
+  all: "if-a:null,if-b:null | if-pa:shown,if-pb:shown"
+
+# F1.@if: enter-if data-once still set
+  all: true
+
+# F1.@defer: tabs-defer after timer
+  all: "df-a:null,df-b:null | df-pa:shown,df-pb:shown"
+
+# F2.href="#t-target": url / reloaded / route shown
+  all: "/sub/#t-target / true / Home page"
+
+# F2.href="tabs#t-target": url / reloaded / route shown
+  all: "/sub/tabs#t-target / false / Tabs page"
+
+# F2.href="tabs#t-target": tabs1
+  all: "tab-a:false,tab-b:true | panel-a:hidden,panel-b:shown"
+
+# F2.routerLink [] fragment: url / reloaded / route shown
+  all: "/sub/tabs#t-target / false / Tabs page"
+
+# F2.routerLink [] fragment: tabs1
+  all: "tab-a:null,tab-b:null | panel-a:shown,panel-b:shown"
+
+# F2.toc href="#h1": url / reloaded / route shown
+  all: "/sub/#h1 / true / Home page"
+
+# F2.toc2 (path hrefs "tabs#h1"): after scrolling to h2
+  all: "toc2-h1:null,toc2-h2:null"
+
+# F3.shell menu: open after routerLink inside it
+  all: true
+
+# F3.route popover: open popovers left after its route is destroyed
+  all: 0
+
+# F3.shell dialog: open after routerLink inside it / route shown
+  all: "true / Tabs page"
+
+# F3.shell dialog: main is inert to clicks (elementFromPoint at h1 is inside dialog or backdrop)
+  all: "dialog"
+
+# F4.alert removed by alert.js
+  all: true
+
+# F4.after @if off/on: alert back / tabs-if
+  all: "true / if-a:null,if-b:null | if-pa:shown,if-pb:shown"
+
+# F4.errors
+  all: []
+
+# F5.fix=none: listeners at load -> after 6 navigations
+  chromium: "{\"document.pointerdown\":2,\"document.command\":1,\"document.click\":4,\"document.keydown\":1,\"window.hashchange\":2} -> {\"document.pointerdown\":2,\"document.command\":1,\"document.click\":4,\"document.keydown\":1,\"window.hashchange\":2}"
+  firefox: undefined
+  webkit: undefined
+
+# F5.fix=rerun: listeners at load -> after 6 navigations
+  chromium: "{\"document.pointerdown\":2,\"document.command\":1,\"document.click\":5,\"document.keydown\":2,\"window.hashchange\":3} -> {\"document.pointerdown\":2,\"document.command\":1,\"document.click\":11,\"document.keydown\":8,\"window.hashchange\":9}"
+  firefox: undefined
+  webkit: undefined
+
+# R1.routed: tabs1
+  all: "tab-a:true,tab-b:false | panel-a:shown,panel-b:hidden"
+
+# R1.routed: enter1 data-once still set
+  all: false
+
+# R1.routed: toc1 after scroll
+  all: "toc1-h1:null,toc1-h2:true"
+
+# R1.routed: toc2 (path hrefs) after scroll
+  all: "toc2-h1:null,toc2-h2:null"
+
+# R1.click tab B after 2 runs: events
+  chromium: ["yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b"]
+  firefox: ["yeti:current@toc1","yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b"]
+  webkit: ["yeti:current@toc1","yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b"]
+
+# R1.click tab B after 6 runs: events
+  all: ["yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b","yeti:select@tabs1:tab-b"]
+
+# R1.hashchange: events
+  all: []
+
+# R1.@if before manual rerun: tabs-if
+  all: "if-a:null,if-b:null | if-pa:shown,if-pb:shown"
+
+# R1.@if after manual rerun: tabs-if / tabs-defer
+  all: "if-a:true,if-b:false | if-pa:shown,if-pb:hidden || df-a:true,df-b:false | df-pa:shown,df-pb:hidden"
+
+# R2.shell menu: open after routerLink inside it
+  all: false
+
+# R2.shell dialog: open after routerLink / focus
+  all: "false / dlg-btn"
+
+# R3.fragment-hash frag-plain: url / reloaded / route shown / scrollY>0
+  all: "/sub/tabs?fix=fragment-hash#t-target / false / Tabs page / true"
+
+# R3.fragment-hash: tabs1 / events
+  all: "tab-a:false,tab-b:true | panel-a:hidden,panel-b:shown / yeti:select@tabs1:tab-b"
+
+# R3.fragment-hash toc1-h1: url / reloaded / route shown / scrollY>0
+  all: "/sub/tabs?fix=fragment-hash#h1 / false / Tabs page / true"
+
+# R3.fragment-router frag-plain: url / reloaded / route shown / scrollY>0
+  all: "/sub/tabs?fix=fragment-router#t-target / false / Tabs page / true"
+
+# R3.fragment-router: tabs1 / events
+  all: "tab-a:null,tab-b:null | panel-a:shown,panel-b:shown / "
+
+# R3.fragment-router toc1-h1: url / reloaded / route shown / scrollY>0
+  all: "/sub/tabs?fix=fragment-router#h1 / false / Tabs page / true"
+
+# R4.routed: tabs-own
+  all: "own-a:true,own-b:false | own-pa:shown,own-pb:hidden | own=own-a"
+
+# R4.routed: own-enter data-once still set
+  all: false
+
+# R4.routed: toc-own after scroll
+  all: "toco-h1:null,toco-h2:true"
+
+# R4.click own-b: tabs-own / yeti events
+  chromium: "own-a:false,own-b:true | own-pa:hidden,own-pb:shown | own=own-b / "
+  firefox: "own-a:false,own-b:true | own-pa:hidden,own-pb:shown | own=own-b / yeti:current@toc-own"
+  webkit: "own-a:false,own-b:true | own-pa:hidden,own-pb:shown | own=own-b / yeti:current@toc-own"
+
+# R4.ArrowLeft: tabs-own
+  all: "own-a:true,own-b:false | own-pa:shown,own-pb:hidden | own=own-a"
+
+# R4.hashchange to a target in panel B while directive holds A (tabs.js reveal still global)
+  all: "own-a:false,own-b:true | own-pa:hidden,own-pb:shown | own=own-a / yeti:select@tabs-own:own-b"

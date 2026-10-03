@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PROTOTYPE yeti-spa (ticket 20)</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    // PROTOTYPE probes: a reload changes the marker; every yeti:* event is logged.
+    window.__marker = Math.random();
+    window.__events = [];
+    for (const name of ['yeti:select', 'yeti:current', 'yeti:open', 'yeti:close', 'yeti:slide']) {
+      document.addEventListener(name, (e) => window.__events.push({ name, target: e.target.id || e.target.className, tab: e.detail && e.detail.tab && e.detail.tab.id }));
+    }
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+  <!-- Yeti's install guide, "A module": one script tag each, loaded anywhere in the page. -->
+  <script type="module" src="yeti/js/tabs.js"></script>
+  <script type="module" src="yeti/js/toc.js"></script>
+  <script type="module" src="yeti/js/enter.js"></script>
+  <script type="module" src="yeti/js/hover.js"></script>
+  <script type="module" src="yeti/js/dialog.js"></script>
+  <script type="module" src="yeti/js/carousel.js"></script>
+  <script type="module" src="yeti/js/alert.js"></script>
+</body>
+</html>

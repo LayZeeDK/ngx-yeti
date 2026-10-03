@@ -1,0 +1,65 @@
+=== ref
+group ""
+  DisclosureTriangleGrouped "Does Yeti need JavaScript?" expanded=true
+    StaticText "Does Yeti need JavaScript?"
+      InlineTextBox "Does Yeti need JavaScript?"
+  paragraph ""
+    StaticText "Almost never. A handful of optional modules exist and nothing depends on them."
+      InlineTextBox "Almost never. A handful of optional modules exist and nothing depends on them."
+group ""
+  DisclosureTriangleGrouped "Can I use my own class names?" expanded=false
+    StaticText "Can I use my own class names?"
+      InlineTextBox "Can I use my own class names?"
+=== a
+group ""
+  DisclosureTriangleGrouped "Does Yeti need JavaScript?" expanded=true
+    StaticText "Does Yeti need JavaScript?"
+      InlineTextBox "Does Yeti need JavaScript?"
+  paragraph ""
+    StaticText "Almost never. A handful of optional modules exist and nothing depends on them."
+      InlineTextBox "Almost never. A handful of optional modules exist and nothing depends on them."
+group ""
+  DisclosureTriangleGrouped "Can I use my own class names?" expanded=false
+    StaticText "Can I use my own class names?"
+      InlineTextBox "Can I use my own class names?"
+=== c
+generic ""
+  group ""
+    button "Does Yeti need JavaScript?" expanded=true
+      StaticText "Does Yeti need JavaScript?"
+        InlineTextBox "Does Yeti need JavaScript?"
+    region "Does Yeti need JavaScript?"
+      StaticText "Almost never. A handful of optional modules exist and nothing depends on them."
+        InlineTextBox "Almost never. A handful of optional modules exist and nothing depends on them."
+  group ""
+    button "Can I use my own class names?" expanded=false
+      StaticText "Can I use my own class names?"
+        InlineTextBox "Can I use my own class names?"
+=== d
+group ""
+  DisclosureTriangleGrouped "Does Yeti need JavaScript?" expanded=true
+    heading "Does Yeti need JavaScript?" level=3
+      StaticText "Does Yeti need JavaScript?"
+        InlineTextBox "Does Yeti need JavaScript?"
+  paragraph ""
+    StaticText "Almost never. A handful of optional modules exist and nothing depends on them."
+      InlineTextBox "Almost never. A handful of optional modules exist and nothing depends on them."
+group ""
+  DisclosureTriangleGrouped "Can I use my own class names?" expanded=false
+    heading "Can I use my own class names?" level=3
+      StaticText "Can I use my own class names?"
+        InlineTextBox "Can I use my own class names?"
+=== dr
+group ""
+  DisclosureTriangleGrouped "Does Yeti need JavaScript?" expanded=true
+    heading "Does Yeti need JavaScript?" level=3
+      StaticText "Does Yeti need JavaScript?"
+        InlineTextBox "Does Yeti need JavaScript?"
+  paragraph ""
+    StaticText "Almost never. A handful of optional modules exist and nothing depends on them."
+      InlineTextBox "Almost never. A handful of optional modules exist and nothing depends on them."
+group ""
+  DisclosureTriangleGrouped "Can I use my own class names?" expanded=false
+    heading "Can I use my own class names?" level=3
+      StaticText "Can I use my own class names?"
+        InlineTextBox "Can I use my own class names?"

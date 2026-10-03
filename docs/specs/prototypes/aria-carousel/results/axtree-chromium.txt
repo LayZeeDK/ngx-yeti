@@ -1,0 +1,77 @@
+=== Y js=true
+heading "Yeti example.html (f52d1e8b9), verbatim" 
+region "Featured work" roledescription=carousel
+group "Slides" focusable=true
+list "" 
+listitem "" 
+listitem "" 
+listitem "" 
+heading "A trail map" 
+heading "A field guide" 
+heading "A season of posters" 
+link "Slide 1" focusable=true
+link "Slide 2" focusable=true
+link "Slide 3" focusable=true
+axe heading-order: <h3>A trail map</h3>
+=== A js=true
+heading "A: ticket 25 row 29" 
+region "Featured work" roledescription=carousel
+group "Slides" focusable=true
+list "" 
+button "Previous slide" focusable=true
+button "Next slide" focusable=true
+group "1 of 3" roledescription=slide
+group "2 of 3" roledescription=slide
+group "3 of 3" roledescription=slide
+listitem "" 
+listitem "" 
+listitem "" 
+heading "A trail map" 
+heading "A field guide" 
+heading "A season of posters" 
+link "Slide 1" focusable=true
+link "Slide 2" focusable=true
+link "Slide 3" focusable=true
+axe aria-allowed-role: <article role="group" aria-roledescription="slide" data-surface="raised" data-border="" da | <article role="group" aria-roledescription="slide" data-surface="raised" data-border="" da | <article role="group" aria-roledescription="slide" data-surface="raised" data-border="" da
+axe heading-order: <h3>A trail map</h3>
+=== A js=false
+heading "A: ticket 25 row 29" 
+region "Featured work" roledescription=carousel
+group "Slides" focusable=true
+list "" 
+button "Previous slide" focusable=true
+button "Next slide" focusable=true
+group "1 of 3" roledescription=slide
+group "2 of 3" roledescription=slide
+group "3 of 3" roledescription=slide
+listitem "" 
+listitem "" 
+listitem "" 
+heading "A trail map" 
+heading "A field guide" 
+heading "A season of posters" 
+link "Slide 1" focusable=true
+link "Slide 2" focusable=true
+link "Slide 3" focusable=true
+=== B js=true
+heading "B: Aria Tabs" 
+region "Featured work" roledescription=carousel
+group "Slides" focusable=true
+tablist "Choose a slide" focusable=true
+tabpanel "Slide 1" focusable=true
+tab "Slide 1" focusable=true selected=true
+tab "Slide 2" focusable=true selected=false
+tab "Slide 3" focusable=true selected=false
+heading "A trail map" 
+axe aria-allowed-role: <article role="tabpanel" ngtabpanel="" data-surface="raised" data-border="" data-slide="" 
+axe heading-order: <h3>A trail map</h3>
+=== B js=false
+heading "B: Aria Tabs" 
+region "Featured work" roledescription=carousel
+group "Slides" focusable=true
+tablist "Choose a slide" focusable=true
+tabpanel "Slide 1" focusable=true
+tab "Slide 1" focusable=true selected=true
+tab "Slide 2" focusable=true selected=false
+tab "Slide 3" focusable=true selected=false
+heading "A trail map" 

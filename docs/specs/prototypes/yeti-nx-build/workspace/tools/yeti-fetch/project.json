@@ -1,0 +1,13 @@
+{
+  "name": "yeti-fetch",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "targets": {
+    "yeti-build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/yeti.pin", "{projectRoot}/fetch-yeti.mjs"],
+      "outputs": ["{workspaceRoot}/.yeti/dist"],
+      "options": { "command": "node tools/yeti-fetch/fetch-yeti.mjs" }
+    }
+  }
+}

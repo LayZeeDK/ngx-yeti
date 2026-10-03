@@ -1,0 +1,12 @@
+❯ Building...
+✔ Building...
+Initial chunk files | Names         |  Raw size | Estimated transfer size
+main-W2O45BGN.js    | main          | 218.39 kB |                60.13 kB
+styles-75RZNMEY.css | styles        |   1.62 kB |               452 bytes
+
+                    | Initial total | 220.00 kB |                60.58 kB
+
+Application bundle generation complete. [3.288 seconds] - 2026-10-01T16:44:48.425Z
+
+Output location: D:\tmp\ngx-yeti-21\optC\dist\base
+

@@ -1,0 +1,38 @@
+# 86. Spec: progress (component)
+
+Type: task
+Status: resolved
+Blocked by: 25, 26, 39, 40, 41, 42
+Labels: wayfinder:task
+Map: ../map.md
+
+## Question
+
+What is the Angular API of Yeti's `progress` component, and what does its spec say? Its decisions are already made in the records: its row in `building-blocks.md` Part 2 (and the "Aria decisions" section where it applies), its rows in [Decide: how the package maps each of Yeti's `data-*` attributes](26-decide-yeti-data-attributes-mapping.md), its item file under [ADR 0060](../adr/0060-item-styles-are-counted-links-to-the-consumers-yeti-build.md), its ledger rows, and the shared specs it links to.
+
+## How to work it
+
+Write `specs/progress.md` with the `/to-spec` template and the map's Spec shape note, from the records only. The spec decides nothing a record has not decided. Anything it needs and no record settles goes under the ticket's `### Open` for the orchestrator. Append an `## Answer` that links the spec.
+
+### Open
+
+Four points no record settles. Point 1 is HIGH impact with MEDIUM confidence, so it carries the trap-quadrant record (map, Standing rulings, 2026-10-03).
+
+1. **How the consumer binds the value, so the server HTML is right** (HIGH impact, MEDIUM confidence; trap quadrant). Spec usage rule 3, section 10, and the layer-3 recorded case.
+   - **Question.** A `progress` is indeterminate exactly when it has no `value` attribute, and Yeti styles that state through `:indeterminate`. Records leave `value` and `max` to the consumer (ADR 0003 point 3; Part 2 row 36 names only `variant`, `size`, and `scroll`), but none says how to bind them. The DOM emulation bundled in `@angular/platform-server` (read in 21.0.6 in this repository's `node_modules`, `fesm2022/init.mjs`) defines `HTMLProgressElement` with only `max` reflected, so a `[value]="v()"` property binding is inferred to render no `value` attribute on the server. The server HTML would then paint Yeti's moving stripes until hydration, and with JavaScript off forever, which breaks the JavaScript-off guarantee and the "same DOM" hydration constraint. A property also cannot be unset to return to indeterminate in the browser (`value = null` sets 0).
+   - **Option A (recommended): a usage rule, `[attr.value]` with `null` for unknown work, and `max` static or `[attr.max]`.** Approve: it needs no new input, keeps `value` native and the consumer's as ADR 0003 point 3 and Part 2 row 36 say, renders on the server, and gives the indeterminate state by `null`. A layer-3 case records what `[value]` renders at 22.2, and the fixture-app e2e asserts the determinate bar is never `:indeterminate` from first paint to hydration.
+   - **Option B: a `value` input (and `max`) on `YetiProgress`, binding `[attr.value]` itself.** A consumer's `[value]` would then reach the directive's input, so the property-binding trap disappears. Dismiss: ADR 0003's considered options rejected "The directive owns native state too", Part 2 row 36 and ticket 26 name three inputs, and a `value` input is an `output`-kind HTML-named input that would also capture a static `value="40"` as a string, needing `numberAttribute` and a `null` story.
+   - **Option C: no rule; document only that the bar is right after hydration.** Dismiss: it accepts wrong first paint and a JavaScript-off failure the map's ruling (ADR 0011 consequences) does not allow.
+   - **Evidence and confidence.** The `value`-absent rule is WHATWG's `progress` definition (HIGH). The emulation's missing reflection is read in 21.0.6, not 22.2, and not run (MEDIUM). That `[attr.value]` renders on the server is how every attribute binding renders (HIGH).
+   - **To overrule.** For B: add `value: number | null | undefined` (and `max`) inputs with `numberAttribute` to section 4, make section 2's native row an `output`-kind input row, replace usage rule 3 with "bind `[value]`", amend Part 2 row 36, and record the change against ADR 0003 point 3. If the layer-3 recorded case shows `[value]` does render the attribute at 22.2, keep A but relax usage rule 3 to allow `[value]` for determinate-only bars. Decided 2026-10-03 in ticket 50, decision 179 (orchestrator, full AFK mode).
+2. **WCAG 2.2.2 and the indeterminate stripes** (MEDIUM impact, MEDIUM confidence). Spec usage rule 9 and section 7. Yeti repeats the sweep `--yeti-motion-iterations` times, `infinite` by default, and one cycle under reduced motion. Ticket 17 left the same question open for the spinner (research section 2.5 and section 7). **Recommendation:** no package code and no pause control: the stripes are a loading indicator shown while the work runs, Yeti's reduced-motion collapse stops them for users who ask, and usage rule 9 requires the consumer to remove the bar or give it a value when the work ends. Decide it once with the spinner spec (ticket 88) so the two items give one answer. To overrule: add a ledger row owned by `progress` (and `spinner`) and either a usage rule capping the iterations with `--yeti-motion-iterations` on the bar or a package rule; neither needs a directive change. Decided 2026-10-03 in ticket 50, decision 180 (orchestrator, full AFK mode).
+3. **Announcing completion (WCAG 4.1.3)** (LOW impact, MEDIUM confidence). Spec usage rule 8. The bar's value changes are not a live region, and the package renders no strings (building-blocks 1.10). **Recommendation:** the usage rule as written: completion and failure go in a consumer status message (an `alert` with `role="status"`), and the package adds no live region and no `LiveAnnouncer` (building-blocks 1.2 lists `LiveAnnouncer` as considered and not used). To overrule: remove usage rule 8 and the 4.1.3 row's reference to it. Decided 2026-10-03 in ticket 50, decision 181 (orchestrator, full AFK mode).
+4. **Forced colours on the reading bar** (LOW impact, MEDIUM confidence). Spec section 7. Ledger A11Y-1e names the native bar only. The reading bar's `::before` fill is a background that forced colours replaces (inferred, not measured), but the bar is `aria-hidden` decoration that mirrors the scroll position the scrollbar already shows. **Recommendation:** the A11Y-1e rule covers `progress.progress` only; layer 4 records the reading bar's forced-colours screenshot. To overrule: extend the rule to `.progress[data-scroll]::before` with a system colour, and turn the recorded case into an assertion; A11Y-1e's "Item" stays `progress`. Decided 2026-10-03 in ticket 50, decision 182 (orchestrator, full AFK mode).
+
+## Answer
+
+Resolved 2026-10-03 by Claude Opus 5.5. Spec: [specs/progress.md](../specs/progress.md).
+
+One item directive, `YetiProgress` on `progress[yetiProgress]` and `div[yetiProgress]` (`exportAs: 'yetiProgress'`, entry point `ngx-yeti/progress`), binding the static class `progress`, the presence attribute `data-ngx-yeti-item-progress`, and `data-variant`, `data-size`, and `data-scroll` from `variant: YetiVariant`, `size: YetiSizeControl` (`inert`), and `scroll: boolean` (ticket 26 rows 134 to 136). Native platform, level 1, types only; no Module, no Aria, no CDK (Part 2 row 36). It calls `injectYetiItemStyles('progress')` last in its constructor. `value`, `max`, the name, the **Visible value**, and the reading bar's `aria-hidden` stay the consumer's, as usage rules asserted in every story (ADR 0015 point 4). The spec owns ledger A11Y-1e: one forced-colours rule on the native bar in `@layer ngx-yeti`, after Material's progress bar, proven in layer 4 by a comparison with the accessibility stylesheet left out. `meter` is out of scope: Yeti's fill pseudo-elements do not apply to it and the selector does not match it.
+
+Counts: 50 user stories, 4 open points (one HIGH impact with MEDIUM confidence, with its options record; none blocks the spec).

@@ -1,0 +1,24 @@
+/* The always-group, in Yeti's order: layers first, tokens, base, shared attributes.
+   Resolved at the consumer's build against the consumer's own yeti-css build. */
+@import 'yeti-css/css/layers.css';
+@import 'yeti-css/css/tokens/scale.css';
+@import 'yeti-css/css/tokens/space.css';
+@import 'yeti-css/css/tokens/type.css';
+@import 'yeti-css/css/tokens/color.css';
+@import 'yeti-css/css/tokens/tone.css';
+@import 'yeti-css/css/tokens/motion.css';
+@import 'yeti-css/css/tokens/surface.css';
+@import 'yeti-css/css/tokens/components.css';
+@import 'yeti-css/css/base/reset.css';
+@import 'yeti-css/css/base/typography.css';
+@import 'yeti-css/css/base/prose.css';
+@import 'yeti-css/css/base/controls.css';
+@import 'yeti-css/css/base/media.css';
+@import 'yeti-css/css/base/transitions.css';
+@import 'yeti-css/css/layouts/attributes.css';
+
+/* Probe only: a leave class for animate.leave. */
+.leaving {
+  opacity: 0;
+  transition: opacity 400ms linear;
+}

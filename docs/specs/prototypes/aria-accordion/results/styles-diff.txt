@@ -1,0 +1,333 @@
+##### chromium
+--- a stylesClosed: 2 lines
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- a stylesOpen: 2 lines
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- a selectors (open): {".accordion":1,".accordion > details + details":1,".accordion > details > summary":2,".accordion > details > summary:hover":2,".accordion > details > summary:focus-visible":2,".accordion > details[open] > summary":1,".accordion > details > :not(summary)":2,".accordion > details > :not(summary):last-child":2,"details > summary":2,"details > summary::after":2,"details[open] > summary::after":1,"details":2,"details[open]":1,"details::details-content":2}
+--- b stylesClosed: 38 lines
+   item.display: grid -> block
+   item.grid-template-rows: 60.9375px 0px -> none
+   item2.display: grid -> block
+   item2.border-top-width: 1px -> 0px
+   item2.border-top-style: solid -> none
+   item2.grid-template-rows: 60.9375px 0px -> none
+   trigger.display: flex -> inline-block
+   trigger.padding-top: 17.4167px -> 10.3982px
+   trigger.padding-left: 17.4167px -> 13.4574px
+   trigger.border-top-width: 0px -> 1px
+   trigger.border-top-style: none -> solid
+   trigger.border-bottom-width: 0px -> 1px
+   trigger.border-bottom-style: none -> solid
+   trigger.border-top-left-radius: 0px -> 4.35417px
+   trigger.background-color: oklch(0.8892 0.02 250) -> oklch(0.97 0.02 250)
+   trigger.font-weight: 600 -> 700
+   trigger.font-size: 17.4167px -> 29.1725px
+   trigger.cursor: pointer -> default
+   trigger.list-style-type: none -> disc
+   trigger.width: 998px -> 389.672px
+   triggerAfter.display: block -> inline
+   triggerAfter.margin-left: 733.266px -> 0px
+   triggerAfter.border-bottom-width: 2px -> 0px
+   triggerAfter.border-bottom-style: solid -> none
+   triggerAfter.font-weight: 600 -> 700
+   triggerAfter.font-size: 17.4167px -> 29.1725px
+   triggerAfter.cursor: pointer -> default
+   triggerAfter.list-style-type: none -> disc
+   triggerAfter.width: 8.70312px -> auto
+   triggerAfter.content: "" -> none
+   triggerAfter.rotate: 45deg -> none
+   panel.margin-top: 17.4167px -> 0px
+   panel.margin-left: 17.4167px -> 0px
+   panel.margin-bottom: 17.4167px -> 0px
+   panel.width: 656.953px -> 998px
+   content: missing
+   triggerHeight 60.9375 -> 56.328125
+   accordionHeight 124.875 -> 114.65625
+--- b stylesOpen: 38 lines
+   item.display: grid -> block
+   item.grid-template-rows: 61.9375px 60.9375px -> none
+   item2.display: grid -> block
+   item2.border-top-width: 1px -> 0px
+   item2.border-top-style: solid -> none
+   item2.grid-template-rows: 60.9375px 0px -> none
+   trigger.display: flex -> inline-block
+   trigger.padding-top: 17.4167px -> 10.3982px
+   trigger.padding-left: 17.4167px -> 13.4574px
+   trigger.border-top-width: 0px -> 1px
+   trigger.border-top-style: none -> solid
+   trigger.border-top-left-radius: 0px -> 4.35417px
+   trigger.background-color: oklch(0.822 0.02 250) -> oklch(0.97 0.02 250)
+   trigger.font-weight: 600 -> 700
+   trigger.font-size: 17.4167px -> 29.1725px
+   trigger.cursor: pointer -> default
+   trigger.list-style-type: none -> disc
+   trigger.width: 998px -> 389.672px
+   triggerAfter.display: block -> inline
+   triggerAfter.margin-left: 733.266px -> 0px
+   triggerAfter.border-bottom-width: 2px -> 0px
+   triggerAfter.border-bottom-style: solid -> none
+   triggerAfter.font-weight: 600 -> 700
+   triggerAfter.font-size: 17.4167px -> 29.1725px
+   triggerAfter.cursor: pointer -> default
+   triggerAfter.list-style-type: none -> disc
+   triggerAfter.width: 8.70312px -> auto
+   triggerAfter.content: "" -> none
+   triggerAfter.rotate: -135deg -> none
+   panel.margin-top: 17.4167px -> 0px
+   panel.margin-left: 17.4167px -> 0px
+   panel.margin-bottom: 17.4167px -> 0px
+   panel.width: 656.953px -> 998px
+   content.margin-top: 17.4167px -> 0px
+   content.margin-left: 17.4167px -> 0px
+   content.margin-bottom: 17.4167px -> 0px
+   triggerHeight 61.9375 -> 56.328125
+   accordionHeight 186.8125 -> 140.78125
+--- b selectors (open): {".accordion":1,".accordion > details + details":0,".accordion > details > summary":0,".accordion > details > summary:hover":0,".accordion > details > summary:focus-visible":0,".accordion > details[open] > summary":0,".accordion > details > :not(summary)":0,".accordion > details > :not(summary):last-child":0,"details > summary":0,"details > summary::after":0,"details[open] > summary::after":0,"details":0,"details[open]":0,"details::details-content":0}
+--- b2 stylesClosed: 4 lines
+   panel.width: 656.953px -> 963.188px
+   content: missing
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- b2 stylesOpen: 6 lines
+   panel.width: 656.953px -> 963.188px
+   content.margin-top: 17.4167px -> 0px
+   content.margin-left: 17.4167px -> 0px
+   content.margin-bottom: 17.4167px -> 0px
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- b2 selectors (open): {".accordion":1,".accordion > details + details":1,".accordion > details > summary":2,".accordion > details > summary:hover":2,".accordion > details > summary:focus-visible":2,".accordion > details[open] > summary":1,".accordion > details > :not(summary)":2,".accordion > details > :not(summary):last-child":2,"details > summary":2,"details > summary::after":2,"details[open] > summary::after":1,"details":2,"details[open]":1,"details::details-content":2}
+--- b3 stylesClosed: 4 lines
+   panel.width: 656.953px -> 963.188px
+   content: missing
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- b3 stylesOpen: 6 lines
+   panel.width: 656.953px -> 963.188px
+   content.margin-top: 17.4167px -> 0px
+   content.margin-left: 17.4167px -> 0px
+   content.margin-bottom: 17.4167px -> 0px
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- b3 selectors (open): {".accordion":1,".accordion > details + details":1,".accordion > details > summary":2,".accordion > details > summary:hover":2,".accordion > details > summary:focus-visible":2,".accordion > details[open] > summary":1,".accordion > details > :not(summary)":2,".accordion > details > :not(summary):last-child":2,"details > summary":2,"details > summary::after":2,"details[open] > summary::after":1,"details":2,"details[open]":1,"details::details-content":2}
+--- ref selectors (open): {".accordion":1,".accordion > details + details":1,".accordion > details > summary":2,".accordion > details > summary:hover":2,".accordion > details > summary:focus-visible":2,".accordion > details[open] > summary":1,".accordion > details > :not(summary)":2,".accordion > details > :not(summary):last-child":2,"details > summary":2,"details > summary::after":2,"details[open] > summary::after":1,"details":2,"details[open]":1,"details::details-content":2}
+--- b heading {"display":"block","padding-top":"0px","padding-left":"0px","margin-top":"0px","margin-left":"0px","margin-bottom":"0px","border-top-width":"0px","border-top-style":"none","border-bottom-width":"0px","border-bottom-style":"none","border-top-left-radius":"0px","background-color":"rgba(0, 0, 0, 0)","font-weight":"700","font-size":"29.1725px","cursor":"auto","list-style-type":"disc","outline-offset":"0px","grid-template-rows":"none","overflow-x":"visible","width":"998px"}
+##### firefox
+--- a stylesClosed: 2 lines
+   triggerHeight 60.94999694824219 -> 60.94999694824219
+   accordionHeight 124.89999389648438 -> 124.89999389648438
+--- a stylesOpen: 2 lines
+   triggerHeight 61.94999694824219 -> 61.94999694824219
+   accordionHeight 186.85000610351562 -> 186.85000610351562
+--- b stylesClosed: 38 lines
+   item.display: grid -> block
+   item.grid-template-rows: 60.95px 0px -> none
+   item2.display: grid -> block
+   item2.border-top-width: 1px -> 0px
+   item2.border-top-style: solid -> none
+   item2.grid-template-rows: 60.95px 0px -> none
+   trigger.display: flex -> inline-block
+   trigger.padding-top: 17.4167px -> 10.4px
+   trigger.padding-left: 17.4167px -> 13.45px
+   trigger.border-top-width: 0px -> 1px
+   trigger.border-top-style: none -> solid
+   trigger.border-bottom-width: 0px -> 1px
+   trigger.border-bottom-style: none -> solid
+   trigger.border-top-left-radius: 0px -> 4.35417px
+   trigger.background-color: oklch(0.8892 0.02 250) -> oklch(0.97 0.02 250)
+   trigger.font-weight: 600 -> 700
+   trigger.font-size: 17.4063px -> 29.1875px
+   trigger.cursor: pointer -> default
+   trigger.list-style-type: none -> disc
+   trigger.width: 998px -> 389.783px
+   triggerAfter.display: block -> inline
+   triggerAfter.margin-left: 733.367px -> 0px
+   triggerAfter.border-bottom-width: 2px -> 0px
+   triggerAfter.border-bottom-style: solid -> none
+   triggerAfter.font-weight: 600 -> 700
+   triggerAfter.font-size: 17.4063px -> 29.1875px
+   triggerAfter.cursor: pointer -> default
+   triggerAfter.list-style-type: none -> disc
+   triggerAfter.width: 8.7px -> auto
+   triggerAfter.content: "" -> none
+   triggerAfter.rotate: 45deg -> none
+   panel.margin-top: 17.4167px -> 0px
+   panel.margin-left: 17.4167px -> 0px
+   panel.margin-bottom: 17.4167px -> 0px
+   panel.width: 656.833px -> 998px
+   content: missing
+   triggerHeight 60.94999694824219 -> 56.366668701171875
+   accordionHeight 124.89999389648438 -> 114.73333740234375
+--- b stylesOpen: 38 lines
+   item.display: grid -> block
+   item.grid-template-rows: 61.95px 60.95px -> none
+   item2.display: grid -> block
+   item2.border-top-width: 1px -> 0px
+   item2.border-top-style: solid -> none
+   item2.grid-template-rows: 60.95px 0px -> none
+   trigger.display: flex -> inline-block
+   trigger.padding-top: 17.4167px -> 10.4px
+   trigger.padding-left: 17.4167px -> 13.45px
+   trigger.border-top-width: 0px -> 1px
+   trigger.border-top-style: none -> solid
+   trigger.border-top-left-radius: 0px -> 4.35417px
+   trigger.background-color: oklch(0.822 0.02 250) -> oklch(0.97 0.02 250)
+   trigger.font-weight: 600 -> 700
+   trigger.font-size: 17.4063px -> 29.1875px
+   trigger.cursor: pointer -> default
+   trigger.list-style-type: none -> disc
+   trigger.width: 998px -> 389.783px
+   triggerAfter.display: block -> inline
+   triggerAfter.margin-left: 733.367px -> 0px
+   triggerAfter.border-bottom-width: 2px -> 0px
+   triggerAfter.border-bottom-style: solid -> none
+   triggerAfter.font-weight: 600 -> 700
+   triggerAfter.font-size: 17.4063px -> 29.1875px
+   triggerAfter.cursor: pointer -> default
+   triggerAfter.list-style-type: none -> disc
+   triggerAfter.width: 8.7px -> auto
+   triggerAfter.content: "" -> none
+   triggerAfter.rotate: -135deg -> none
+   panel.margin-top: 17.4167px -> 0px
+   panel.margin-left: 17.4167px -> 0px
+   panel.margin-bottom: 17.4167px -> 0px
+   panel.width: 656.833px -> 998px
+   content.margin-top: 17.4167px -> 0px
+   content.margin-left: 17.4167px -> 0px
+   content.margin-bottom: 17.4167px -> 0px
+   triggerHeight 61.94999694824219 -> 56.366668701171875
+   accordionHeight 186.85000610351562 -> 140.85000610351562
+--- b2 stylesClosed: 4 lines
+   panel.width: 656.833px -> 963.167px
+   content: missing
+   triggerHeight 60.94999694824219 -> 60.94999694824219
+   accordionHeight 124.89999389648438 -> 124.89999389648438
+--- b2 stylesOpen: 6 lines
+   panel.width: 656.833px -> 963.167px
+   content.margin-top: 17.4167px -> 0px
+   content.margin-left: 17.4167px -> 0px
+   content.margin-bottom: 17.4167px -> 0px
+   triggerHeight 61.94999694824219 -> 61.94999694824219
+   accordionHeight 186.85000610351562 -> 186.85000610351562
+--- b3 stylesClosed: 4 lines
+   panel.width: 656.833px -> 963.167px
+   content: missing
+   triggerHeight 60.94999694824219 -> 60.94999694824219
+   accordionHeight 124.89999389648438 -> 124.89999389648438
+--- b3 stylesOpen: 6 lines
+   panel.width: 656.833px -> 963.167px
+   content.margin-top: 17.4167px -> 0px
+   content.margin-left: 17.4167px -> 0px
+   content.margin-bottom: 17.4167px -> 0px
+   triggerHeight 61.94999694824219 -> 61.94999694824219
+   accordionHeight 186.85000610351562 -> 186.85000610351562
+##### webkit
+--- a stylesClosed: 2 lines
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- a stylesOpen: 2 lines
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- b stylesClosed: 38 lines
+   item.display: grid -> block
+   item.grid-template-rows: 60.9375px 0px -> none
+   item2.display: grid -> block
+   item2.border-top-width: 1px -> 0px
+   item2.border-top-style: solid -> none
+   item2.grid-template-rows: 60.9375px 0px -> none
+   trigger.display: flex -> inline-block
+   trigger.padding-top: 17.416666px -> 10.398164px
+   trigger.padding-left: 17.416666px -> 13.45739px
+   trigger.border-top-width: 0px -> 1px
+   trigger.border-top-style: none -> solid
+   trigger.border-bottom-width: 0px -> 1px
+   trigger.border-bottom-style: none -> solid
+   trigger.border-top-left-radius: 0px -> 4.354167px
+   trigger.background-color: oklch(0.8892 0.02 250) -> oklch(0.97 0.02 250)
+   trigger.font-weight: 600 -> 700
+   trigger.font-size: 17.416666px -> 29.172485px
+   trigger.cursor: pointer -> default
+   trigger.list-style-type: none -> disc
+   trigger.width: 998px -> 409.9375px
+   triggerAfter.display: block -> inline
+   triggerAfter.margin-left: 713.546875px -> 0px
+   triggerAfter.border-bottom-width: 2px -> 0px
+   triggerAfter.border-bottom-style: solid -> none
+   triggerAfter.font-weight: 600 -> 700
+   triggerAfter.font-size: 17.416666px -> 29.172485px
+   triggerAfter.cursor: pointer -> default
+   triggerAfter.list-style-type: none -> disc
+   triggerAfter.width: 8.703125px -> auto
+   triggerAfter.content: "" -> none
+   triggerAfter.rotate: 45deg -> none
+   panel.margin-top: 17.40625px -> 0px
+   panel.margin-left: 17.40625px -> 0px
+   panel.margin-bottom: 17.40625px -> 0px
+   panel.width: 678.03125px -> 998px
+   content: missing
+   triggerHeight 60.9375 -> 56.328125
+   accordionHeight 124.875 -> 114.65625
+--- b stylesOpen: 38 lines
+   item.display: grid -> block
+   item.grid-template-rows: 61.9375px 60.9375px -> none
+   item2.display: grid -> block
+   item2.border-top-width: 1px -> 0px
+   item2.border-top-style: solid -> none
+   item2.grid-template-rows: 60.9375px 0px -> none
+   trigger.display: flex -> inline-block
+   trigger.padding-top: 17.416666px -> 10.398164px
+   trigger.padding-left: 17.416666px -> 13.45739px
+   trigger.border-top-width: 0px -> 1px
+   trigger.border-top-style: none -> solid
+   trigger.border-top-left-radius: 0px -> 4.354167px
+   trigger.background-color: oklch(0.822 0.02 250) -> oklch(0.97 0.02 250)
+   trigger.font-weight: 600 -> 700
+   trigger.font-size: 17.416666px -> 29.172485px
+   trigger.cursor: pointer -> default
+   trigger.list-style-type: none -> disc
+   trigger.width: 998px -> 409.9375px
+   triggerAfter.display: block -> inline
+   triggerAfter.margin-left: 713.546875px -> 0px
+   triggerAfter.border-bottom-width: 2px -> 0px
+   triggerAfter.border-bottom-style: solid -> none
+   triggerAfter.font-weight: 600 -> 700
+   triggerAfter.font-size: 17.416666px -> 29.172485px
+   triggerAfter.cursor: pointer -> default
+   triggerAfter.list-style-type: none -> disc
+   triggerAfter.width: 8.703125px -> auto
+   triggerAfter.content: "" -> none
+   triggerAfter.rotate: -135deg -> none
+   panel.margin-top: 17.40625px -> 0px
+   panel.margin-left: 17.40625px -> 0px
+   panel.margin-bottom: 17.40625px -> 0px
+   panel.width: 678.03125px -> 998px
+   content.margin-top: 17.40625px -> 0px
+   content.margin-left: 17.40625px -> 0px
+   content.margin-bottom: 17.40625px -> 0px
+   triggerHeight 61.9375 -> 56.328125
+   accordionHeight 186.8125 -> 140.78125
+--- b2 stylesClosed: 4 lines
+   panel.width: 678.03125px -> 963.1875px
+   content: missing
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- b2 stylesOpen: 6 lines
+   panel.width: 678.03125px -> 963.1875px
+   content.margin-top: 17.40625px -> 0px
+   content.margin-left: 17.40625px -> 0px
+   content.margin-bottom: 17.40625px -> 0px
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125
+--- b3 stylesClosed: 4 lines
+   panel.width: 678.03125px -> 963.1875px
+   content: missing
+   triggerHeight 60.9375 -> 60.9375
+   accordionHeight 124.875 -> 124.875
+--- b3 stylesOpen: 6 lines
+   panel.width: 678.03125px -> 963.1875px
+   content.margin-top: 17.40625px -> 0px
+   content.margin-left: 17.40625px -> 0px
+   content.margin-bottom: 17.40625px -> 0px
+   triggerHeight 61.9375 -> 61.9375
+   accordionHeight 186.8125 -> 186.8125

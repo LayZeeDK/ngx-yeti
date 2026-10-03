@@ -5,3 +5,6 @@
 /.nx/workspace-data
 package-lock.json
 .angular
+
+# Verbatim records copied from the planning repository.
+/docs/specs

@@ -1,0 +1,62 @@
+<section data-m="base">
+  <h1>Heading one</h1>
+  <h2>Heading two</h2>
+  <p>Paragraph with <a href="#x">a link</a>, <strong>strong</strong>, <code>code</code>.</p>
+  <ul><li>List item one</li><li>List item two</li></ul>
+  <ol><li>Ordered one</li></ol>
+  <blockquote>Quote</blockquote>
+  <hr />
+  <button type="button">Plain button</button>
+  <input type="text" value="text" aria-label="text" />
+  <select aria-label="select"><option>One</option></select>
+  <textarea aria-label="area">area</textarea>
+  <table><tr><th>H</th><td>D</td></tr></table>
+  <details open><summary>Summary</summary><p>Details body</p></details>
+  <pre>pre text</pre>
+</section>
+
+<section data-m="yeti">
+  <a class="button" href="#b">Link button</a>
+  <button class="button" type="button" data-variant="primary">Primary</button>
+  <span class="badge" data-variant="success">Badge</span>
+  <div class="alert" role="status" data-variant="success"><div><strong>Saved.</strong> Live.</div></div>
+  <div class="stack"><h3>Stack heading</h3><p>Stack paragraph</p></div>
+  <div class="cluster"><span>One</span><span>Two</span></div>
+  <div class="stack"><div class="center" data-m="center-in-stack">Center in stack</div></div>
+  <!-- name collisions: grid, table, container, hidden -->
+  <ul class="grid" data-min="2xs" data-columns="3" role="list" data-m="grid">
+    <li class="box" data-surface="raised" data-border>One</li>
+    <li class="box" data-surface="raised" data-border>Two</li>
+    <li class="box" data-surface="raised" data-border>Three</li>
+  </ul>
+  <table class="table" data-striped data-m="table">
+    <caption>Summits</caption>
+    <thead><tr><th scope="col">Peak</th><th scope="col" data-numeric>Height</th></tr></thead>
+    <tbody><tr><td>Ben Nevis</td><td data-numeric>1,345</td></tr></tbody>
+  </table>
+  <div class="container" data-m="container"><p>In a Yeti container</p></div>
+  <p hidden data-m="hidden-attr">hidden attribute</p>
+</section>
+
+<section data-m="utils-on-yeti">
+  <button class="button p-8 mt-4 bg-red-500 text-white block" type="button" data-m="button-utils">Button with utilities</button>
+  <div class="alert px-10 bg-emerald-200 text-emerald-900 inline-flex" role="status" data-m="alert-utils"><div>Alert with utilities</div></div>
+  <div class="stack gap-10 hidden" data-m="stack-hidden"><p>stack hidden</p></div>
+  <p class="text-xl font-bold underline" data-m="p-utils">Paragraph with utilities</p>
+</section>
+
+<section data-m="tw">
+  <div class="p-4 m-2 bg-sky-500 text-white rounded-lg shadow-md font-bold" data-m="tw-box">Tailwind box</div>
+  <button class="px-4 py-2 border border-gray-300 rounded" type="button" data-m="tw-button">Tailwind button</button>
+  <ul class="list-disc pl-6" data-m="tw-list"><li>tw list</li></ul>
+  <h2 class="text-3xl font-semibold" data-m="tw-h2">Tailwind h2</h2>
+  <div class="flex gap-4" data-m="tw-flex"><span>a</span><span>b</span></div>
+  <a class="text-blue-600 hover:underline" href="#t" data-m="tw-link">Tailwind link</a>
+  <div class="bg-white text-black dark:bg-slate-900 dark:text-white" data-m="tw-dark">dark variant</div>
+</section>
+
+<section data-m="tokens">
+  <div data-m="tok-tw" style="color: var(--color-red-500); padding: calc(var(--spacing) * 4)">Tailwind tokens in inline style</div>
+  <div data-m="tok-yeti" style="color: var(--yeti-color-primary); background: var(--yeti-color-primary-subtle)">Yeti tokens in inline style</div>
+  <div class="bg-(--yeti-color-primary) text-(--yeti-on-primary) p-4" data-m="tok-yeti-in-tw">Yeti token via Tailwind arbitrary value</div>
+</section>

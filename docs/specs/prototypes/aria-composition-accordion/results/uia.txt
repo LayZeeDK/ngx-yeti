@@ -1,0 +1,80 @@
+=== firefox /d
+window: UIAPROBE d - Nightly class=MozillaWindowClass fw=Gecko
+      Group [gruppe] ""
+    Group [gruppe] ""
+      Group [gruppe] ""
+      Group [gruppe] ""
+        Document [dokument] ""
+          Group [hoved] ""
+            Group [gruppe] ""
+              Button [knap] "Does Yeti need JavaScript?" expand=Expanded
+                Text [overskrift] "Does Yeti need JavaScript?"
+              Text [tekst] "Almost never. A handful of optional modules exist and nothing depends on them."
+            Group [gruppe] ""
+              Button [knap] "Can I use my own class names?" expand=Collapsed
+                Text [overskrift] "Can I use my own class names?"
+=== firefox /d-role
+window: UIAPROBE d-role - Nightly class=MozillaWindowClass fw=Gecko
+      Group [gruppe] ""
+    Group [gruppe] ""
+      Group [gruppe] ""
+      Group [gruppe] ""
+        Document [dokument] ""
+          Group [hoved] ""
+            Group [gruppe] ""
+              Button [knap] "Does Yeti need JavaScript?" expand=Expanded
+                Text [tekst] "Does Yeti need JavaScript?"
+              Text [tekst] "Almost never. A handful of optional modules exist and nothing depends on them."
+            Group [gruppe] ""
+              Button [knap] "Can I use my own class names?" expand=Collapsed
+                Text [overskrift] "Can I use my own class names?"
+=== firefox /c
+window: UIAPROBE c - Nightly class=MozillaWindowClass fw=Gecko
+=== chromium /d
+window: UIAPROBE d - Google Chrome for Testing class=Chrome_WidgetWin_1 fw=Win32
+              Group [gruppe] ""
+=== chromium /d-role
+window: UIAPROBE d-role - Google Chrome for Testing class=Chrome_WidgetWin_1 fw=Win32
+              Group [gruppe] ""
+=== chromium /c
+window: UIAPROBE c - Google Chrome for Testing class=Chrome_WidgetWin_1 fw=Win32
+              Group [gruppe] ""
+=== webkit /d
+window: UIAPROBE d [WebKit] class=Playwright fw=Win32
+=== webkit /d-role
+window: UIAPROBE d-role [WebKit] class=Playwright fw=Win32
+=== webkit /c
+window: UIAPROBE c [WebKit] class=Playwright fw=Win32
+=== firefox /d-role (rerun, 5 s settle)
+=== firefox /c (rerun, 5 s settle)
+        Document [dokument] ""
+          Group [hoved] ""
+            Group [gruppe] ""
+              Group [gruppe] ""
+                Group [gruppe] ""
+                  Button [knap] "Does Yeti need JavaScript?" expand=Expanded
+                  Group [omr†de] "Does Yeti need JavaScript?"
+                    Text [tekst] "Almost never. A handful of optional modules exist and nothing depends on them."
+                Group [gruppe] ""
+                  Button [knap] "Can I use my own class names?" expand=Collapsed
+              Group [status] ""
+            Group [gruppe] ""
+              Group [gruppe] ""
+                Button [knap] "Does Yeti need JavaScript?" expand=Collapsed
+              Group [gruppe] ""
+=== firefox /d-role (rerun, 5 s settle)
+        Document [dokument] ""
+          Group [hoved] ""
+            Group [gruppe] ""
+              Button [knap] "Does Yeti need JavaScript?" expand=Expanded
+                Text [tekst] "Does Yeti need JavaScript?"
+              Text [tekst] "Almost never. A handful of optional modules exist and nothing depends on them."
+            Group [gruppe] ""
+              Button [knap] "Can I use my own class names?" expand=Collapsed
+                Text [overskrift] "Can I use my own class names?"
+            Group [status] ""
+            Group [gruppe] ""
+              Button [knap] "Does Yeti need JavaScript?" expand=Collapsed
+                Text [overskrift] "Does Yeti need JavaScript?"
+            Group [gruppe] ""
+              Button [knap] "Can I use my own class names?" expand=Collapsed

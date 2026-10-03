@@ -1,0 +1,33 @@
+---
+status: accepted
+---
+
+# The package replaces Yeti's optional modules; none is loaded beside it
+
+Recorded by [Decide: which architecture principles and building-blocks rules carry over](../issues/09-decide-inherited-principles-and-building-blocks.md). New for Yeti: no record of `.scratch/next-foundation-specs/` covers it, because Foundation's jQuery plugins were never a candidate for loading beside the old package. It restates nothing a user ruling already says; the user's standing ruling 37 ("Make sure we utilize Angular Aria and CDK where possible to replace Yeti's JavaScript modules") asks for replacement where Aria and CDK fit, and this record extends the replacement to every module, for the reasons below.
+
+Yeti's ten optional modules are 760 lines, about 412 of code ([Research: Yeti's JavaScript modules and what Angular adds](../issues/03-research-yeti-javascript-and-angular.md)). Each is optional by contract (`src/guides/stability.md`, "Module file names ... and that each is optional"), and every component works without its module as far as the platform carries it. In an Angular application they fail in measured ways ([Prototype: Yeti's modules in a single-page Angular app](../issues/20-prototype-yeti-in-single-page-apps.md), three engines, production build under `<base href="/sub/">`):
+
+- `tabs.js`, `toc.js`, and `enter.js` scan the document once at load, which is before Angular bootstraps, so they miss even the first route, and every `@if`, `@for`, `@defer`, and route change after it.
+- `tabs.js` writes `aria-selected`, `tabIndex`, and `hidden` on elements Angular may own, and hydration writes static attributes back over what a module did before load ([Prototype: Yeti under SSR, hydration, `@defer`, event replay, and `animate.enter` and `animate.leave`](../issues/18-prototype-yeti-rendering-modes.md)).
+- Re-running a module after each render fixes the routed cases but adds document `click` and `keydown` and window `hashchange` listeners on every run, so one tab click fires N+1 `yeti:select`, and it needs the modules served unbundled.
+- `alert.js` reads `--yeti-duration-fast` with `parseFloat` and passes the number to `animate()` as milliseconds; a production build writes the token as `.15s`, so the fade lasts 0.15 ms (`upstream-bugs.md` Y1, measured).
+- No `yeti:*` event replays, and a template cannot bind one ([Research: binding Yeti's `yeti:*` events in Angular templates](../issues/16-research-yeti-events-in-angular-templates.md)).
+
+We decided that the package owns every behaviour a Yeti module has, in Angular's form, and that a consumer loads none of Yeti's modules beside the package. Each directive sets up its own element when it is created, in whatever rendering mode, and tears down what it created on destroy. The platform features the modules lean on stay in the markup: `details`, `popover` and `popovertarget`, invoker commands and `showModal()`, scroll snap, `form method="dialog"` ([ADR 0003](0003-directives-set-yetis-class-attributes-and-markers.md) point 5). What a module added on top is the directive's: the selection and arrow keys of `tabs.js`, the backdrop click and the focus return of `dialog.js`, the hover intent of `hover.js`, the fill of `range.js` ([ADR 0004](0004-yeti-tokens-are-a-consumer-stylesheet-surface.md) exception 1), the current mark of `toc.js`, the once-only arrival of `enter.js`, the history-free dots of `carousel.js`, the fade of `alert.js`, and the validity marks of `validate.js` through Angular's forms ([Research: what `validate.js` does, and replacing it with Angular Signal Forms](../issues/19-research-yeti-validate-and-signal-forms.md)). `demo.js` is docs tooling; [Decide: the spec list](../issues/11-decide-spec-list.md) says whether the `demo` item is specified at all.
+
+Each spec names the module it replaces and, line by line, what of that module's behaviour it keeps, changes, or removes, so the replacement is checkable against the pinned commit.
+
+## Considered options
+
+- **Load Yeti's modules as Yeti documents, and add directives beside them.** Rejected on the measurements above: the load-once modules miss Angular-rendered DOM, the writing modules fight bindings and hydration, and a directive beside `tabs.js` would have to `preventDefault` to keep the module out while its global hash reveal still changes owned tabs behind the directive's state (ticket 20).
+- **Re-run each module's setup after each render.** Rejected: measured N+1 events per run, unbundled modules as a deployment requirement, and still no typed outputs or server-rendered state.
+- **Replace only the load-once modules and keep the delegated ones (`alert`, `carousel`, `dialog`, `hover`, `validate`) and the observed one (`range`).** Rejected: the delegated modules do see later elements, but `dialog.js` and `hover.js` would stay open across a `routerLink` navigation inside the shell (ticket 20), `validate.js` never runs under an Angular form directive (ticket 19), `alert.js` has the minified-token bug, and a consumer would have to know which half to load. One rule is cheaper to document and test than a split.
+
+## Consequences
+
+- Every spec of an item with a module has a "Module replaced" subsection in its contract mapping, and the behaviour that was in a module is tested by the package's own layers rather than assumed.
+- A `yeti:*` event becomes an `output()` of the directive that would have dispatched it, named without the prefix and typed by the event's `detail` keys, which are frozen (`stability.md`, "Event names"). The directive does not also dispatch the DOM event; a consumer who needs the DOM event for non-Angular code says so in an issue, and that is a later decision.
+- The single-page-application behaviour the modules lack is the package's: closing a top-layer panel in the persistent shell on `NavigationStart` with focus back on the opener, and fragment links that work under `<base href>` (ticket 20 measured both; [Decide: the building-blocks map for every ngx-yeti item](../issues/25-decide-building-blocks-map.md) places them).
+- `hover.js` has an end Yeti wrote down: `interestfor` (`hover.js:11-13`, `dropdown/docs.md:40`). It is not in Baseline 2025, so the package's hover directive keeps `hover.js`'s behaviour until a pin move or a target move makes `interestfor` usable, at which point the directive maps `data-trigger="hover"` to the attribute and the behaviour is deleted.
+- The replacement rows go to `ledger.md` only where the package adds something Yeti's module did not do (focus-out close, Escape on the tooltip, `aria-orientation`); a like-for-like replacement is not a ledger row.

@@ -1,0 +1,290 @@
+{
+  "chromium/1100/Y0": {
+    "width": 1100,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/1100/T": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "normal",
+    "marginLeft": "0px"
+  },
+  "chromium/1100/TY": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/1100/YT": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/1100/S1": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/1100/S1n": {
+    "width": 1100,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/1100/S3": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/1100/S3n": {
+    "width": 1100,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/600/Y0": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/600/T": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "normal",
+    "marginLeft": "0px"
+  },
+  "chromium/600/TY": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/600/YT": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/600/S1": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/600/S1n": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/600/S3": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "chromium/600/S3n": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/1100/Y0": {
+    "width": 1100,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/1100/T": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "normal",
+    "marginLeft": "0px"
+  },
+  "firefox/1100/TY": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/1100/YT": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/1100/S1": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/1100/S1n": {
+    "width": 1100,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/1100/S3": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/1100/S3n": {
+    "width": 1100,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/600/Y0": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/600/T": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "normal",
+    "marginLeft": "0px"
+  },
+  "firefox/600/TY": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/600/YT": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/600/S1": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/600/S1n": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/600/S3": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "firefox/600/S3n": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/1100/Y0": {
+    "width": 1100,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/1100/T": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "normal",
+    "marginLeft": "0px"
+  },
+  "webkit/1100/TY": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/1100/YT": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/1100/S1": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/1100/S1n": {
+    "width": 1100,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/1100/S3": {
+    "width": 1024,
+    "maxWidth": "1024px",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/1100/S3n": {
+    "width": 1100,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/600/Y0": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/600/T": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "normal",
+    "marginLeft": "0px"
+  },
+  "webkit/600/TY": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/600/YT": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/600/S1": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/600/S1n": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/600/S3": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  },
+  "webkit/600/S3n": {
+    "width": 600,
+    "maxWidth": "none",
+    "containerType": "inline-size",
+    "marginLeft": "0px"
+  }
+}

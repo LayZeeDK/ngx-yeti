@@ -1,0 +1,286 @@
+{
+  "name": "ws",
+  "$schema": "node_modules/nx/schemas/project-schema.json",
+  "includedScripts": [],
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "./src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/ws",
+        "browser": "./src/main.ts",
+        "tsConfig": "tsconfig.app.json",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "public"
+          },
+          {
+            "glob": "yeti.js",
+            "input": "node_modules/yeti-css/dist",
+            "output": "yeti"
+          }
+        ],
+        "styles": [
+          "./src/styles.css"
+        ],
+        "server": "src/main.server.ts",
+        "ssr": {
+          "entry": "src/server.ts"
+        },
+        "outputMode": "server",
+        "polyfills": [
+          "@angular/localize/init"
+        ]
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        },
+        "none": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "outputPath": "dist/none",
+          "fileReplacements": [
+            {
+              "replace": "src/app/mode/providers.ts",
+              "with": "src/app/mode/providers.none.ts"
+            }
+          ]
+        },
+        "plain": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "outputPath": "dist/plain",
+          "fileReplacements": []
+        },
+        "noreplay": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "outputPath": "dist/noreplay",
+          "fileReplacements": [
+            {
+              "replace": "src/app/mode/providers.ts",
+              "with": "src/app/mode/providers.noreplay.ts"
+            }
+          ]
+        },
+        "replay": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "outputPath": "dist/replay",
+          "fileReplacements": [
+            {
+              "replace": "src/app/mode/providers.ts",
+              "with": "src/app/mode/providers.replay.ts"
+            }
+          ]
+        },
+        "explicit": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "outputPath": "dist/explicit",
+          "fileReplacements": [
+            {
+              "replace": "src/app/mode/providers.ts",
+              "with": "src/app/mode/providers.explicit.ts"
+            }
+          ]
+        },
+        "zone": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "outputPath": "dist/zone",
+          "fileReplacements": [
+            {
+              "replace": "src/app/mode/providers.ts",
+              "with": "src/app/mode/providers.zone.ts"
+            }
+          ],
+          "polyfills": [
+            "zone.js",
+            "@angular/localize/init"
+          ]
+        },
+        "i18n-off": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "outputPath": "dist/i18n-off",
+          "fileReplacements": [],
+          "localize": [
+            "da"
+          ]
+        },
+        "i18n-on": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all",
+          "outputPath": "dist/i18n-on",
+          "fileReplacements": [
+            {
+              "replace": "src/app/mode/providers.ts",
+              "with": "src/app/mode/providers.i18n.ts"
+            }
+          ],
+          "localize": [
+            "da"
+          ]
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
+      "configurations": {
+        "production": {
+          "buildTarget": "ws:build:production"
+        },
+        "development": {
+          "buildTarget": "ws:build:development"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": [
+          "./src"
+        ]
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "ws:build",
+        "staticFilePath": "dist/ws/browser",
+        "spa": true
+      }
+    },
+    "extract-i18n": {
+      "executor": "@angular/build:extract-i18n",
+      "options": {
+        "buildTarget": "ws:build:production",
+        "outputPath": "src/locale"
+      }
+    }
+  },
+  "i18n": {
+    "sourceLocale": "en-US",
+    "locales": {
+      "da": "src/locale/messages.da.xlf"
+    }
+  }
+}

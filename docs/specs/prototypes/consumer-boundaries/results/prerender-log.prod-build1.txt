@@ -1,0 +1,13 @@
+[EH handleError] probe ctor cardA
+[EH onViewError] probe ctor cardB boundary=yes
+[EH onViewError] probe ctor cardA boundary=yes
+[EH handleError] probe ctor cardA
+[EH onViewError] probe ctor cardB boundary=yes
+[EH handleError] Cannot read properties of null (reading 'componentOffset')
+[EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes
+[EH handleError] probe ctor cardA
+[EH onViewError] probe ctor cardB boundary=yes
+[EH onViewError] probe ctor cardA boundary=yes
+[EH handleError] probe ctor cardA
+[EH onViewError] probe ctor cardB boundary=yes
+[EH onViewError] probe ctor cardA boundary=yes

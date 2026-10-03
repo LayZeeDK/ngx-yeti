@@ -1,0 +1,43 @@
+=== chromium /a: open=true aria-expanded=null inert=no out=false,true
+  --- release main.js
+  564 attr details open=
+  568 toggle Can I us closed->open open=true
+=== chromium /c-noinert: open=false aria-expanded=false inert=no out=false,false
+  --- release main.js
+  557 attr details open=
+  561 attr summary aria-expanded=false
+  561 attr p inert=null
+  561 attr p inert=null
+  561 attr details open=null
+  561 attr summary aria-expanded=false
+  561 attr p inert=null
+  561 attr p inert=null
+  565 toggle Can I us closed->closed open=false
+=== firefox /a: open=true aria-expanded=null inert=no out=false,true
+  15 attr details open=
+  22 toggle Can I us closed->open open=true
+  --- release main.js
+=== firefox /c-noinert: open=true aria-expanded=true inert=no out=false,true
+  13 attr details open=
+  19 toggle Can I us closed->open open=true
+  --- release main.js
+  591 attr summary aria-expanded=false
+  591 attr p inert=null
+  591 attr p inert=null
+  591 attr details open=
+  591 attr summary aria-expanded=true
+=== webkit /a: open=true aria-expanded=null inert=no out=false,true
+  --- release main.js
+  565 attr details open=
+  571 toggle Can I us closed->open open=true
+=== webkit /c-noinert: open=false aria-expanded=false inert=no out=false,false
+  --- release main.js
+  628 attr details open=
+  639 attr summary aria-expanded=false
+  639 attr p inert=null
+  639 attr p inert=null
+  639 attr details open=null
+  639 attr summary aria-expanded=false
+  639 attr p inert=null
+  639 attr p inert=null
+  644 toggle Can I us closed->closed open=false

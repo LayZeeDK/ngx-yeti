@@ -1,0 +1,44 @@
+{
+  "name": "@ws/source",
+  "version": "0.0.0",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "@angular/aria": "~22.2.1",
+    "@angular/cdk": "~22.2.1",
+    "@angular/common": "~22.2.1",
+    "@angular/compiler": "~22.2.1",
+    "@angular/core": "~22.2.1",
+    "@angular/forms": "~22.2.1",
+    "@angular/platform-browser": "~22.2.1",
+    "@angular/platform-server": "~22.2.1",
+    "@angular/router": "~22.2.1",
+    "@angular/ssr": "~22.2.1",
+    "express": "^4.21.2",
+    "rxjs": "~7.8.0",
+    "yeti-css": "file:../../ngx-yeti-18/yeti/yeti-css-7.0.0-alpha.0.tgz"
+  },
+  "devDependencies": {
+    "@angular-devkit/core": "~22.2.1",
+    "@angular-devkit/schematics": "~22.2.1",
+    "@angular/build": "~22.2.1",
+    "@angular/cli": "~22.2.1",
+    "@angular/compiler-cli": "~22.2.1",
+    "@axe-core/playwright": "^4.10.0",
+    "@nx/angular": "23.2.1",
+    "@nx/js": "23.2.1",
+    "@nx/web": "23.2.1",
+    "@nx/workspace": "23.2.1",
+    "@schematics/angular": "~22.2.1",
+    "@swc/helpers": "~0.5.18",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.0.0",
+    "nx": "23.2.1",
+    "playwright": "1.63.0",
+    "tslib": "^2.3.0",
+    "typescript": "~6.0.3"
+  },
+  "nx": {
+    "includedScripts": []
+  }
+}

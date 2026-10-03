@@ -1,0 +1,16 @@
+firefox Y0 light errors 0 card styles 1 0 1 layers yeti
+firefox Y light errors 0 card styles 1 0 1 layers properties,yeti
+firefox T light errors 0 card styles 0 0 0 layers properties,theme,base,components,utilities
+firefox TY light errors 0 card styles 1 0 1 layers properties,theme,base,components,utilities,yeti
+firefox YT light errors 0 card styles 1 0 1 layers properties,yeti,theme,base,components,utilities
+firefox S1 light errors 0 card styles 1 0 1 layers properties,theme,base,yeti,components,utilities
+firefox S1n light errors 0 card styles 1 0 1 layers properties,theme,base,yeti,components,utilities
+firefox S3 light errors 0 card styles 1 0 1 layers properties,theme,yeti,utilities
+firefox Y0 dark errors 0 card styles 1 0 1 layers yeti
+firefox Y dark errors 0 card styles 1 0 1 layers properties,yeti
+firefox T dark errors 0 card styles 0 0 0 layers properties,theme,base,components,utilities
+firefox TY dark errors 0 card styles 1 0 1 layers properties,theme,base,components,utilities,yeti
+firefox YT dark errors 0 card styles 1 0 1 layers properties,yeti,theme,base,components,utilities
+firefox S1 dark errors 0 card styles 1 0 1 layers properties,theme,base,yeti,components,utilities
+firefox S1n dark errors 0 card styles 1 0 1 layers properties,theme,base,yeti,components,utilities
+firefox S3 dark errors 0 card styles 1 0 1 layers properties,theme,yeti,utilities

@@ -1,0 +1,624 @@
+# Ticket 37 probe summary, dev build
+
+## s/plain/once/ctor
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: Cannot read properties of null (reading 'componentOffset')
+  jsOn300 unstyled frames: load=0/125 resetA=0/96
+  jsOn300 link events: 59 add badge; 59 add card
+  jsOn300 card/fallback DOM: 392 add cardA; 586 add fallbackA; 2704 remove fallbackA; 2704 add fallbackA | marks: 2617 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 28 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes
+  jsOn0 load: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: Cannot read properties of null (reading 'componentOffset')
+  jsOn0 unstyled frames: load=0/127 resetA=0/96
+  jsOn0 link events: 40 add badge; 40 add card
+  jsOn0 card/fallback DOM: 59 add cardA; 268 add fallbackA; 2376 remove fallbackA; 2376 add fallbackA | marks: 2306 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 28 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes
+  replay: clicked=countA scriptLoadedBefore=false/false -> countA=A clicks 0 countB=null [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+firefox:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: can't access property "componentOffset", tNode is null
+  jsOn300 unstyled frames: load=0/413 resetA=0/97
+  jsOn300 link events: 71 add badge; 71 add card
+  jsOn300 card/fallback DOM: 578 add cardA; 827 add fallbackA; 7977 remove fallbackA; 7977 add fallbackA | marks: 7807 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 28 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] can't access property "componentOffset", tNode is null boundary=yes
+  jsOn0 load: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: can't access property "componentOffset", tNode is null
+  jsOn0 unstyled frames: load=0/127 resetA=0/99
+  jsOn0 link events: 56 add badge; 56 add card
+  jsOn0 card/fallback DOM: 140 add cardA; 408 add fallbackA; 2634 remove fallbackA; 2634 add fallbackA | marks: 2513 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 28 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] can't access property "componentOffset", tNode is null boundary=yes
+  replay: clicked=countA scriptLoadedBefore=false/false -> countA=A clicks 0 countB=null [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: null is not an object (evaluating 'tNode.componentOffset')
+  jsOn300 unstyled frames: load=0/117 resetA=0/103
+  jsOn300 link events: 108 add badge; 108 add card
+  jsOn300 card/fallback DOM: 725 add cardA; 1254 add fallbackA; 3413 remove fallbackA; 3413 add fallbackA | marks: 3265 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 28 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] null is not an object (evaluating 'tNode.componentOffset') boundary=yes
+  jsOn0 load: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: null is not an object (evaluating 'tNode.componentOffset')
+  jsOn0 unstyled frames: load=0/115 resetA=0/100
+  jsOn0 link events: 54 add badge; 54 add card
+  jsOn0 card/fallback DOM: 81 add cardA; 555 add fallbackA; 2811 remove fallbackA; 2811 add fallbackA | marks: 2595 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 28 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] null is not an object (evaluating 'tNode.componentOffset') boundary=yes
+  replay: clicked=countA scriptLoadedBefore=false/false -> countA=A clicks 0 countB=null [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+
+## s/plain/once/host
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium+firefox:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe host cardA
+  jsOn300 after_resetA: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=onViewError: probe host cardA
+  jsOn300 unstyled frames: load=0/124 resetA=0/96
+  jsOn300 link events: 45 add badge; 45 add card; 583 remove card; 2663 add card
+  jsOn300 card/fallback DOM: 366 add cardA; 575 remove cardA; 575 add fallbackA; 2663 remove fallbackA; 2663 add cardA | marks: 2599 resetA
+  jsOn300 console: warning: [EH onViewError] probe host cardA boundary=yes || log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped. 
+  jsOn0 load: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe host cardA
+  jsOn0 after_resetA: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=onViewError: probe host cardA
+  jsOn0 unstyled frames: load=0/127 resetA=0/96
+  jsOn0 link events: 41 add badge; 41 add card; 286 remove card; 2377 add card
+  jsOn0 card/fallback DOM: 67 add cardA; 278 remove cardA; 278 add fallbackA; 2377 remove fallbackA; 2377 add cardA | marks: 2311 resetA
+  jsOn0 console: warning: [EH onViewError] probe host cardA boundary=yes || log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped. 
+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe host cardA
+  jsOn300 after_resetA: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=onViewError: probe host cardA
+  jsOn300 unstyled frames: load=0/123 resetA=19/104(cardA)
+  jsOn300 link events: 100 add badge; 100 add card; 906 remove card; 3055 add card
+  jsOn300 card/fallback DOM: 459 add cardA; 888 remove cardA; 888 add fallbackA; 3055 remove fallbackA; 3055 add cardA | marks: 2902 resetA
+  jsOn300 console: warning: [EH onViewError] probe host cardA boundary=yes || log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped. 
+  jsOn0 load: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe host cardA
+  jsOn0 after_resetA: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=onViewError: probe host cardA
+  jsOn0 unstyled frames: load=0/99 resetA=0/104
+  jsOn0 link events: 47 add badge; 47 add card; 812 remove card; 2866 add card
+  jsOn0 card/fallback DOM: 74 add cardA; 785 remove cardA; 785 add fallbackA; 2866 remove fallbackA; 2866 add cardA | marks: 2705 resetA
+  jsOn0 console: warning: [EH onViewError] probe host cardA boundary=yes || log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped. 
+
+## s/plain/once/late
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium+firefox:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 afterArm: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe late cardA
+  jsOn300 after_resetA: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=onViewError: probe late cardA
+  jsOn300 unstyled frames: load=0/124 arm=0/54 resetA=0/95
+  jsOn300 link events: 30 add badge; 30 add card; 2645 remove card; 3518 add card
+  jsOn300 card/fallback DOM: 353 add cardA; 2639 remove cardA; 2639 add fallbackA; 3518 remove fallbackA; 3518 add cardA | marks: 2546 arm; 3456 resetA
+  jsOn300 console: log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe late cardA boundary=yes
+  jsOn0 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn0 afterArm: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe late cardA
+  jsOn0 after_resetA: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=onViewError: probe late cardA
+  jsOn0 unstyled frames: load=0/126 arm=0/54 resetA=0/95
+  jsOn0 link events: 44 add badge; 44 add card; 2433 remove card; 3307 add card
+  jsOn0 card/fallback DOM: 66 add cardA; 2425 remove cardA; 2425 add fallbackA; 3307 remove fallbackA; 3307 add cardA | marks: 2336 arm; 3244 resetA
+  jsOn0 console: log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe late cardA boundary=yes
+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 afterArm: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe late cardA
+  jsOn300 after_resetA: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=onViewError: probe late cardA
+  jsOn300 unstyled frames: load=0/119 arm=0/56 resetA=16/106(cardA)
+  jsOn300 link events: 54 add badge; 54 add card; 2935 remove card; 4098 add card
+  jsOn300 card/fallback DOM: 369 add cardA; 2916 remove cardA; 2916 add fallbackA; 4098 remove fallbackA; 4098 add cardA | marks: 2744 arm; 3743 resetA
+  jsOn300 console: log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe late cardA boundary=yes
+  jsOn0 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn0 afterArm: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe late cardA
+  jsOn0 after_resetA: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=onViewError: probe late cardA
+  jsOn0 unstyled frames: load=0/123 arm=0/62 resetA=0/100
+  jsOn0 link events: 47 add badge; 47 add card; 2623 remove card; 3550 add card
+  jsOn0 card/fallback DOM: 72 add cardA; 2613 remove cardA; 2613 add fallbackA; 3550 remove fallbackA; 3550 add cardA | marks: 2463 arm; 3439 resetA
+  jsOn0 console: log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe late cardA boundary=yes
+
+## s/plain/none/ctor
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/125
+  jsOn300 link events: 43 add badge; 43 add card
+  jsOn300 card/fallback DOM: 371 add cardA | marks: 
+  jsOn300 console: log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped. 
+  jsOn0 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn0 unstyled frames: load=0/129
+  jsOn0 link events: 32 add badge; 32 add card
+  jsOn0 card/fallback DOM: 48 add cardA | marks: 
+  jsOn0 console: log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped. 
+  replay: clicked=countA scriptLoadedBefore=false/false -> countA=A clicks 1 countB=null [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+
+## s/plain/server/ctor
+server: status=200 [fallbackA] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":1} ngh=true
+server log: [EH onViewError] probe ctor cardA boundary=yes
+chromium+firefox+webkit:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/125
+  jsOn300 link events: 33 add badge; 33 add card
+  jsOn300 card/fallback DOM: 362 add fallbackA; 27629 remove fallbackA; 27629 add cardA | marks: 
+  jsOn300 console: log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped. 
+  jsOn0 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn0 unstyled frames: load=0/127
+  jsOn0 link events: 44 add badge; 44 add card
+  jsOn0 card/fallback DOM: 61 add fallbackA; 270 remove fallbackA; 270 add cardA | marks: 
+  jsOn0 console: log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped. 
+  replay: clicked=resetA scriptLoadedBefore=false/false -> countA=A clicks 0 countB=null [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+
+## s/plain/client/ctor
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: probe ctor cardA
+  jsOn300 unstyled frames: load=0/125 resetA=0/96
+  jsOn300 link events: 47 add badge; 47 add card
+  jsOn300 card/fallback DOM: 365 add cardA; 547 add fallbackA; 2643 remove fallbackA; 2643 add fallbackA | marks: 2574 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 28 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe ctor cardA boundary=yes
+  jsOn0 load: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: probe ctor cardA
+  jsOn0 unstyled frames: load=0/127 resetA=0/95
+  jsOn0 link events: 37 add badge; 37 add card
+  jsOn0 card/fallback DOM: 55 add cardA; 245 add fallbackA; 2345 remove fallbackA; 2345 add fallbackA | marks: 2283 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 28 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe ctor cardA boundary=yes
+  replay: clicked=countA scriptLoadedBefore=false/false -> countA=A clicks 0 countB=null [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+
+## s/plain/both/ctor
+server: status=200 [fallbackA] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":1} ngh=true
+server log: [EH onViewError] probe ctor cardA boundary=yes
+chromium+firefox+webkit:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: probe ctor cardA
+  jsOn300 unstyled frames: load=0/126 resetA=0/94
+  jsOn300 link events: 24 add badge; 24 add card
+  jsOn300 card/fallback DOM: 344 add fallbackA; 515 remove fallbackA; 515 add fallbackA; 2595 remove fallbackA; 2595 add fallbackA | marks: 2543 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe ctor cardA boundary=yes
+  jsOn0 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: probe ctor cardA
+  jsOn0 unstyled frames: load=0/128 resetA=0/96
+  jsOn0 link events: 33 add badge; 33 add card
+  jsOn0 card/fallback DOM: 61 add fallbackA; 270 remove fallbackA; 270 add fallbackA; 2368 remove fallbackA; 2368 add fallbackA | marks: 2311 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe ctor cardA boundary=yes
+  replay: clicked=resetA scriptLoadedBefore=false/false -> countA=null countB=null [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+
+## s/plain/reset/ctor
+server: status=200 [fallbackA] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":1} ngh=true
+server log: [EH onViewError] probe ctor cardA boundary=yes
+chromium:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: Cannot read properties of null (reading 'componentOffset')
+  jsOn300 unstyled frames: load=0/124 resetA=0/95
+  jsOn300 link events: 29 add badge; 29 add card
+  jsOn300 card/fallback DOM: 351 add fallbackA; 532 remove fallbackA; 532 add fallbackA; 2620 remove fallbackA; 2620 add fallbackA | marks: 2557 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes
+  jsOn0 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: Cannot read properties of null (reading 'componentOffset')
+  jsOn0 unstyled frames: load=0/127 resetA=0/94
+  jsOn0 link events: 30 add badge; 30 add card
+  jsOn0 card/fallback DOM: 47 add fallbackA; 250 remove fallbackA; 250 add fallbackA; 2340 remove fallbackA; 2340 add fallbackA | marks: 2281 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes
+  replay: clicked=resetA scriptLoadedBefore=false/false -> countA=null countB=null [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+firefox:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: can't access property "componentOffset", tNode is null
+  jsOn300 unstyled frames: load=0/129 resetA=0/96
+  jsOn300 link events: 61 add badge; 61 add card
+  jsOn300 card/fallback DOM: 431 add fallbackA; 544 remove fallbackA; 544 add fallbackA; 2828 remove fallbackA; 2828 add fallbackA | marks: 2680 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] can't access property "componentOffset", tNode is null boundary=yes
+  jsOn0 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: can't access property "componentOffset", tNode is null
+  jsOn0 unstyled frames: load=0/133 resetA=0/100
+  jsOn0 link events: 49 add badge; 49 add card
+  jsOn0 card/fallback DOM: 130 add fallbackA; 404 remove fallbackA; 404 add fallbackA; 2627 remove fallbackA; 2627 add fallbackA | marks: 2494 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] can't access property "componentOffset", tNode is null boundary=yes
+  replay: clicked=resetA scriptLoadedBefore=false/false -> countA=null countB=null [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+webkit:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: null is not an object (evaluating 'tNode.componentOffset')
+  jsOn300 unstyled frames: load=0/124 resetA=0/105
+  jsOn300 link events: 47 add badge; 47 add card
+  jsOn300 card/fallback DOM: 371 add fallbackA; 773 remove fallbackA; 773 add fallbackA; 2940 remove fallbackA; 2940 add fallbackA | marks: 2799 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] null is not an object (evaluating 'tNode.componentOffset') boundary=yes
+  jsOn0 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: null is not an object (evaluating 'tNode.componentOffset')
+  jsOn0 unstyled frames: load=0/122 resetA=0/104
+  jsOn0 link events: 32 add badge; 32 add card
+  jsOn0 card/fallback DOM: 52 add fallbackA; 338 remove fallbackA; 338 add fallbackA; 2503 remove fallbackA; 2503 add fallbackA | marks: 2365 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] null is not an object (evaluating 'tNode.componentOffset') boundary=yes
+  replay: clicked=resetA scriptLoadedBefore=false/false -> countA=null countB=null [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+
+## s/on/none/ctor
+server: status=200 [cardA,countA,cardB,countB] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1,ngx-yeti-card-1,ngx-yeti-label-2 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":3,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 afterInteract: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/123 interact=0/99
+  jsOn300 link events: 38 add badge; 38 add card
+  jsOn300 card/fallback DOM: 362 add cardA; 362 add cardB | marks: 4544 interact
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 2 defer block(s) were configured to use incremental hydration. 
+  replay: clicked=countA,countB scriptLoadedBefore=false/false -> countA=A clicks 1 countB=B clicks 1 [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+
+## s/on/server/ctor
+server: status=200 [fallbackB] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":2} ngh=true
+server log: [EH handleError] probe ctor cardA || [EH onViewError] probe ctor cardB boundary=yes
+chromium+firefox+webkit:
+  js off: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-2:18px dupIds=0 unresolved=0
+  jsOn300 afterInteract: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-2:18px;cardB#ngx-yeti-card-3:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/124 interact=0/99
+  jsOn300 link events: 41 add badge; 41 add card
+  jsOn300 card/fallback DOM: 359 add fallbackB; 543 add cardA; 2664 remove fallbackB; 2664 add cardB | marks: 2524 interact
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration. 
+  replay: clicked=resetB scriptLoadedBefore=false/false -> countA=A clicks 0 countB=B clicks 0 [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-3:18px;cardB#ngx-yeti-card-2:18px dupIds=0 unresolved=0
+
+## s/on/client/ctor
+server: status=200 [cardA,countA,cardB,countB] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1,ngx-yeti-card-1,ngx-yeti-label-2 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":3,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 afterInteract: [cardA,countA,cardB,countB,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=handleError: probe ctor cardA | onViewError: probe ctor cardB | onViewError: probe ctor cardB
+  jsOn300 after_resetB: [cardA,countA,cardB,countB,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=handleError: probe ctor cardA | onViewError: probe ctor cardB | onViewError: probe ctor cardB | onViewError: probe ctor cardB
+  jsOn300 unstyled frames: load=0/123 interact=0/111 resetB=0/95
+  jsOn300 link events: 27 add badge; 27 add card
+  jsOn300 card/fallback DOM: 347 add cardA; 347 add cardB; 2746 add fallbackB; 2859 remove fallbackB; 2859 add fallbackB; 4441 remove fallbackB; 4441 add fallbackB | marks: 2535 interact; 4383 resetB
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 2 defer block(s) were configured to use incremental hydration.  || error: [EH handleError] probe ctor cardA || warning: [EH onViewError] probe ctor cardB boundary=yes || warning: [EH onViewError] probe ctor cardB boundary=yes || warning: [EH onViewError] probe ctor cardB boundary=yes
+  replay: clicked=countA,countB scriptLoadedBefore=false/false -> countA=A clicks 0 countB=B clicks 0 [cardA,countA,cardB,countB,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=handleError: probe ctor cardA | onViewError: probe ctor cardB
+
+## s/on/both/ctor
+server: status=200 [fallbackB] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":2} ngh=true
+server log: [EH handleError] probe ctor cardA || [EH onViewError] probe ctor cardB boundary=yes
+chromium+firefox+webkit:
+  js off: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA
+  jsOn300 afterInteract: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA | onViewError: probe ctor cardB
+  jsOn300 after_resetB: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA | onViewError: probe ctor cardB | onViewError: probe ctor cardB
+  jsOn300 unstyled frames: load=0/124 interact=0/96 resetB=0/94
+  jsOn300 link events: 29 add badge; 29 add card
+  jsOn300 card/fallback DOM: 352 add fallbackB; 5260 remove fallbackB; 5260 add fallbackB; 6842 remove fallbackB; 6842 add fallbackB | marks: 5176 interact; 6778 resetB
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration.  || error: [EH handleError] probe ctor cardA || warning: [EH onViewError] probe ctor cardB boundary=yes || warning: [EH onViewError] probe ctor cardB boundary=yes
+  replay: clicked=resetB scriptLoadedBefore=false/false -> countA=null countB=null [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardB | handleError: probe ctor cardA
+
+## s/never/none/ctor
+server: status=200 [cardA,countA,cardB,countB] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1,ngx-yeti-card-1,ngx-yeti-label-2 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":3,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/126
+  jsOn300 link events: 31 add badge; 31 add card
+  jsOn300 card/fallback DOM: 356 add cardA; 356 add cardB | marks: 
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 2 defer block(s) were configured to use incremental hydration. 
+  replay: clicked=countA,countB scriptLoadedBefore=false/false -> countA=A clicks 0 countB=B clicks 0 [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+
+## s/never/server/ctor
+server: status=200 [fallbackB] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":2} ngh=true
+server log: [EH handleError] probe ctor cardA || [EH onViewError] probe ctor cardB boundary=yes
+chromium+firefox+webkit:
+  js off: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-2:18px dupIds=0 unresolved=0
+  jsOn300 after_resetB: [cardA,countA,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-2:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/124 resetB=0/94
+  jsOn300 link events: 40 add badge; 40 add card
+  jsOn300 card/fallback DOM: 359 add fallbackB; 551 add cardA | marks: 2562 resetB
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration. 
+  replay: clicked=resetB scriptLoadedBefore=false/false -> countA=A clicks 0 countB=null [cardA,countA,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-2:18px dupIds=0 unresolved=0
+
+## s/never/client/ctor
+server: status=200 [cardA,countA,cardB,countB] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1,ngx-yeti-card-1,ngx-yeti-label-2 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":3,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/126
+  jsOn300 link events: 38 add badge; 38 add card
+  jsOn300 card/fallback DOM: 359 add cardA; 359 add cardB | marks: 
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 2 defer block(s) were configured to use incremental hydration. 
+  replay: clicked=countA,countB scriptLoadedBefore=false/false -> countA=A clicks 0 countB=B clicks 0 [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+
+## s/never/both/ctor
+server: status=200 [fallbackB] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":2} ngh=true
+server log: [EH handleError] probe ctor cardA || [EH onViewError] probe ctor cardB boundary=yes
+chromium+firefox+webkit:
+  js off: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA
+  jsOn300 after_resetB: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA
+  jsOn300 unstyled frames: load=0/124 resetB=0/93
+  jsOn300 link events: 24 add badge; 24 add card
+  jsOn300 card/fallback DOM: 352 add fallbackB | marks: 3081 resetB
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration.  || error: [EH handleError] probe ctor cardA
+  replay: clicked=resetB scriptLoadedBefore=false/false -> countA=null countB=null [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA
+
+## p/plain/none/ctor
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/126
+  jsOn300 link events: 23 add badge; 23 add card
+  jsOn300 card/fallback DOM: 340 add cardA | marks: 
+  jsOn300 console: log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped. 
+  jsOn0 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn0 unstyled frames: load=0/128
+  jsOn0 link events: 18 add badge; 18 add card
+  jsOn0 card/fallback DOM: 37 add cardA | marks: 
+  jsOn0 console: log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped. 
+  replay: clicked=countA scriptLoadedBefore=false/false -> countA=A clicks 1 countB=null [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+
+## p/plain/server/ctor
+server: status=200 [fallbackA] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":1} ngh=true
+chromium+firefox+webkit:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/123
+  jsOn300 link events: 27 add badge; 27 add card
+  jsOn300 card/fallback DOM: 346 add fallbackA; 542 remove fallbackA; 542 add cardA | marks: 
+  jsOn300 console: log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped. 
+  jsOn0 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn0 unstyled frames: load=0/129
+  jsOn0 link events: 22 add badge; 22 add card
+  jsOn0 card/fallback DOM: 46 add fallbackA; 260 remove fallbackA; 260 add cardA | marks: 
+  jsOn0 console: log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped. 
+  replay: clicked=resetA scriptLoadedBefore=false/false -> countA=A clicks 0 countB=null [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+
+## p/plain/client/ctor
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: probe ctor cardA
+  jsOn300 unstyled frames: load=0/125 resetA=0/94
+  jsOn300 link events: 26 add badge; 26 add card
+  jsOn300 card/fallback DOM: 343 add cardA; 524 add fallbackA; 2593 remove fallbackA; 2593 add fallbackA | marks: 2541 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 28 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe ctor cardA boundary=yes
+  jsOn0 load: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: probe ctor cardA
+  jsOn0 unstyled frames: load=0/127 resetA=0/94
+  jsOn0 link events: 20 add badge; 20 add card
+  jsOn0 card/fallback DOM: 37 add cardA; 218 add fallbackA; 2310 remove fallbackA; 2310 add fallbackA | marks: 2254 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 28 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe ctor cardA boundary=yes
+  replay: clicked=countA scriptLoadedBefore=false/false -> countA=A clicks 0 countB=null [cardA,countA,fallbackA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+
+## p/plain/both/ctor
+server: status=200 [fallbackA] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":1} ngh=true
+chromium+firefox+webkit:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: probe ctor cardA
+  jsOn300 unstyled frames: load=0/123 resetA=0/94
+  jsOn300 link events: 23 add badge; 23 add card
+  jsOn300 card/fallback DOM: 348 add fallbackA; 502 remove fallbackA; 502 add fallbackA; 2576 remove fallbackA; 2576 add fallbackA | marks: 2518 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe ctor cardA boundary=yes
+  jsOn0 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: probe ctor cardA
+  jsOn0 unstyled frames: load=0/127 resetA=0/93
+  jsOn0 link events: 19 add badge; 19 add card
+  jsOn0 card/fallback DOM: 39 add fallbackA; 221 remove fallbackA; 221 add fallbackA; 2295 remove fallbackA; 2295 add fallbackA | marks: 2244 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe ctor cardA boundary=yes
+  replay: clicked=resetA scriptLoadedBefore=false/false -> countA=null countB=null [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+
+## p/plain/reset/ctor
+server: status=200 [fallbackA] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":1} ngh=true
+chromium:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: Cannot read properties of null (reading 'componentOffset')
+  jsOn300 unstyled frames: load=0/124 resetA=0/94
+  jsOn300 link events: 22 add badge; 22 add card
+  jsOn300 card/fallback DOM: 352 add fallbackA; 502 remove fallbackA; 502 add fallbackA; 2582 remove fallbackA; 2582 add fallbackA | marks: 2530 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes
+  jsOn0 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: Cannot read properties of null (reading 'componentOffset')
+  jsOn0 unstyled frames: load=0/127 resetA=0/96
+  jsOn0 link events: 18 add badge; 18 add card
+  jsOn0 card/fallback DOM: 32 add fallbackA; 5327 remove fallbackA; 5327 add fallbackA; 7488 remove fallbackA; 7488 add fallbackA | marks: 7392 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] Cannot read properties of null (reading 'componentOffset') boundary=yes
+  replay: clicked=resetA scriptLoadedBefore=false/false -> countA=null countB=null [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+firefox:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: can't access property "componentOffset", tNode is null
+  jsOn300 unstyled frames: load=0/120 resetA=0/99
+  jsOn300 link events: 36 add badge; 36 add card
+  jsOn300 card/fallback DOM: 401 add fallbackA; 544 remove fallbackA; 544 add fallbackA; 2743 remove fallbackA; 2743 add fallbackA | marks: 2623 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] can't access property "componentOffset", tNode is null boundary=yes
+  jsOn0 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: can't access property "componentOffset", tNode is null
+  jsOn0 unstyled frames: load=0/131 resetA=0/100
+  jsOn0 link events: 29 add badge; 29 add card
+  jsOn0 card/fallback DOM: 105 add fallbackA; 303 remove fallbackA; 303 add fallbackA; 2632 remove fallbackA; 2632 add fallbackA | marks: 2376 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] can't access property "componentOffset", tNode is null boundary=yes
+  replay: clicked=resetA scriptLoadedBefore=false/false -> countA=null countB=null [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+webkit:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn300 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: null is not an object (evaluating 'tNode.componentOffset')
+  jsOn300 unstyled frames: load=0/125 resetA=0/105
+  jsOn300 link events: 16 add badge; 16 add card
+  jsOn300 card/fallback DOM: 333 add fallbackA; 582 remove fallbackA; 582 add fallbackA; 2740 remove fallbackA; 2740 add fallbackA | marks: 2604 resetA
+  jsOn300 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] null is not an object (evaluating 'tNode.componentOffset') boundary=yes
+  jsOn0 load: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+  jsOn0 after_resetA: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA | onViewError: null is not an object (evaluating 'tNode.componentOffset')
+  jsOn0 unstyled frames: load=0/125 resetA=0/104
+  jsOn0 link events: 14 add badge; 14 add card
+  jsOn0 card/fallback DOM: 35 add fallbackA; 286 remove fallbackA; 286 add fallbackA; 2435 remove fallbackA; 2435 add fallbackA | marks: 2306 resetA
+  jsOn0 console: warning: [EH onViewError] probe ctor cardA boundary=yes || log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] null is not an object (evaluating 'tNode.componentOffset') boundary=yes
+  replay: clicked=resetA scriptLoadedBefore=false/false -> countA=null countB=null [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardA
+
+## p/on/none/ctor
+server: status=200 [cardA,countA,cardB,countB] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1,ngx-yeti-card-1,ngx-yeti-label-2 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":3,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 afterInteract: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/123 interact=0/103
+  jsOn300 link events: 29 add badge; 29 add card
+  jsOn300 card/fallback DOM: 360 add cardA; 360 add cardB | marks: 7567 interact
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 2 defer block(s) were configured to use incremental hydration. 
+  replay: clicked=countA,countB scriptLoadedBefore=false/false -> countA=A clicks 1 countB=B clicks 1 [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+
+## p/on/server/ctor
+server: status=200 [fallbackB] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-2:18px dupIds=0 unresolved=0
+  jsOn300 afterInteract: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-2:18px;cardB#ngx-yeti-card-3:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/122 interact=0/100
+  jsOn300 link events: 30 add badge; 30 add card
+  jsOn300 card/fallback DOM: 346 add fallbackB; 529 add cardA; 2649 remove fallbackB; 2649 add cardB | marks: 2505 interact
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration. 
+  replay: clicked=resetB scriptLoadedBefore=false/false -> countA=A clicks 0 countB=B clicks 0 [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-3:18px;cardB#ngx-yeti-card-2:18px dupIds=0 unresolved=0
+
+## p/on/client/ctor
+server: status=200 [cardA,countA,cardB,countB] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1,ngx-yeti-card-1,ngx-yeti-label-2 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":3,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 afterInteract: [cardA,countA,cardB,countB,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=handleError: probe ctor cardA | onViewError: probe ctor cardB | onViewError: probe ctor cardB
+  jsOn300 after_resetB: [cardA,countA,cardB,countB,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=handleError: probe ctor cardA | onViewError: probe ctor cardB | onViewError: probe ctor cardB | onViewError: probe ctor cardB
+  jsOn300 unstyled frames: load=0/124 interact=0/105 resetB=0/94
+  jsOn300 link events: 23 add badge; 23 add card
+  jsOn300 card/fallback DOM: 338 add cardA; 338 add cardB; 2650 add fallbackB; 2762 remove fallbackB; 2762 add fallbackB; 4326 remove fallbackB; 4326 add fallbackB | marks: 2516 interact; 4268 resetB
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 2 defer block(s) were configured to use incremental hydration.  || error: [EH handleError] probe ctor cardA || warning: [EH onViewError] probe ctor cardB boundary=yes || warning: [EH onViewError] probe ctor cardB boundary=yes || warning: [EH onViewError] probe ctor cardB boundary=yes
+  replay: clicked=countA,countB scriptLoadedBefore=false/false -> countA=A clicks 0 countB=B clicks 0 [cardA,countA,cardB,countB,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0 eh=handleError: probe ctor cardA | onViewError: probe ctor cardB
+
+## p/on/both/ctor
+server: status=200 [fallbackB] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA
+  jsOn300 afterInteract: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA | onViewError: probe ctor cardB
+  jsOn300 after_resetB: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA | onViewError: probe ctor cardB | onViewError: probe ctor cardB
+  jsOn300 unstyled frames: load=0/124 interact=0/98 resetB=0/93
+  jsOn300 link events: 24 add badge; 24 add card
+  jsOn300 card/fallback DOM: 347 add fallbackB; 2641 remove fallbackB; 2641 add fallbackB; 4215 remove fallbackB; 4215 add fallbackB | marks: 2538 interact; 4161 resetB
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration.  || error: [EH handleError] probe ctor cardA || warning: [EH onViewError] probe ctor cardB boundary=yes || warning: [EH onViewError] probe ctor cardB boundary=yes
+  replay: clicked=resetB scriptLoadedBefore=false/false -> countA=null countB=null [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=onViewError: probe ctor cardB | handleError: probe ctor cardA
+
+## p/never/none/ctor
+server: status=200 [cardA,countA,cardB,countB] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1,ngx-yeti-card-1,ngx-yeti-label-2 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":3,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/123
+  jsOn300 link events: 21 add badge; 21 add card
+  jsOn300 card/fallback DOM: 343 add cardA; 343 add cardB | marks: 
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 2 defer block(s) were configured to use incremental hydration. 
+  replay: clicked=countA,countB scriptLoadedBefore=false/false -> countA=A clicks 0 countB=B clicks 0 [cardA,countA,cardB,countB] links=badge,card cards=cardA#ngx-yeti-card-0:18px;cardB#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+
+## p/never/server/ctor
+server: status=200 [fallbackB] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-2:18px dupIds=0 unresolved=0
+  jsOn300 after_resetB: [cardA,countA,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-2:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/125 resetB=0/94
+  jsOn300 link events: 21 add badge; 21 add card
+  jsOn300 card/fallback DOM: 356 add fallbackB; 540 add cardA | marks: 2556 resetB
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration. 
+  replay: clicked=resetB scriptLoadedBefore=false/false -> countA=A clicks 0 countB=null [cardA,countA,fallbackB] links=badge,card cards=cardA#ngx-yeti-card-2:18px dupIds=0 unresolved=0
+
+## p/never/client/ctor
+server: status=200 [fallbackB] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA
+  jsOn300 after_resetB: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA
+  jsOn300 unstyled frames: load=0/124 resetB=0/93
+  jsOn300 link events: 19 add badge; 19 add card
+  jsOn300 card/fallback DOM: 343 add fallbackB | marks: 2508 resetB
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration.  || error: [EH handleError] probe ctor cardA
+  replay: clicked=resetB scriptLoadedBefore=false/false -> countA=null countB=null [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA
+
+## p/never/both/ctor
+server: status=200 [fallbackB] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":1,"ngx-yeti-card-":2} ngh=true
+chromium+firefox+webkit:
+  js off: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA
+  jsOn300 after_resetB: [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA
+  jsOn300 unstyled frames: load=0/124 resetB=0/93
+  jsOn300 link events: 20 add badge; 20 add card
+  jsOn300 card/fallback DOM: 340 add fallbackB | marks: 2508 resetB
+  jsOn300 console: log: Angular hydrated 2 component(s) and 35 node(s), 0 component(s) were skipped. 1 defer block(s) were configured to use incremental hydration.  || error: [EH handleError] probe ctor cardA
+  replay: clicked=resetB scriptLoadedBefore=false/false -> countA=null countB=null [fallbackB] links=badge,card cards=- dupIds=0 unresolved=0 eh=handleError: probe ctor cardA
+
+## s/plain/client/host
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe host cardA
+  jsOn300 after_resetA: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe host cardA | onViewError: probe host cardA
+  jsOn300 unstyled frames: load=0/123 resetA=0/92
+  jsOn300 link events: 40 add badge; 40 add card; 517 remove card; 2596 add card; 2600 remove card
+  jsOn300 card/fallback DOM: 363 add cardA; 509 remove cardA; 509 add fallbackA; 2596 remove fallbackA; 2596 add cardA; 2596 remove cardA; 2596 add fallbackA | marks: 2523 resetA
+  jsOn300 console: warning: [EH onViewError] probe host cardA boundary=yes || log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe host cardA boundary=yes
+
+## s/plain/client/effect
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe effect cardA
+  jsOn300 after_resetA: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe effect cardA | onViewError: probe effect cardA
+  jsOn300 unstyled frames: load=0/123 resetA=0/94
+  jsOn300 link events: 38 add badge; 38 add card; 542 remove card; 2596 add card; 2604 remove card
+  jsOn300 card/fallback DOM: 359 add cardA; 535 remove cardA; 535 add fallbackA; 2596 remove fallbackA; 2596 add cardA; 2596 remove cardA; 2596 add fallbackA | marks: 2539 resetA
+  jsOn300 console: warning: [EH onViewError] probe effect cardA boundary=yes || log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe effect cardA boundary=yes
+
+## s/plain/client/listener
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 afterClick: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=handleError: probe listener cardA
+  jsOn300 unstyled frames: load=0/123 click=0/52
+  jsOn300 link events: 40 add badge; 40 add card
+  jsOn300 card/fallback DOM: 357 add cardA | marks: 2519 click
+  jsOn300 console: log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped.  || error: [EH handleError] probe listener cardA
+
+## s/plain/client/anr
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0 eh=handleError: probe anr cardA
+  jsOn300 unstyled frames: load=0/125
+  jsOn300 link events: 25 add badge; 25 add card
+  jsOn300 card/fallback DOM: 339 add cardA | marks: 
+  jsOn300 console: error: [EH handleError] probe anr cardA || log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped. 
+
+## s/plain/client/late
+server: status=200 [cardA,countA] links=badge,card ids=ngx-yeti-label-0,ngx-yeti-card-0,ngx-yeti-label-1 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+chromium+firefox+webkit:
+  js off: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-0:18px dupIds=0 unresolved=0
+  jsOn300 afterArm: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe late cardA
+  jsOn300 after_resetA: [fallbackA] links=badge cards=- dupIds=0 unresolved=0 eh=onViewError: probe late cardA | onViewError: probe late cardA
+  jsOn300 unstyled frames: load=0/123 arm=0/53 resetA=0/93
+  jsOn300 link events: 41 add badge; 41 add card; 2613 remove card; 3453 add card; 3462 remove card
+  jsOn300 card/fallback DOM: 354 add cardA; 2605 remove cardA; 2605 add fallbackA; 3453 remove fallbackA; 3453 add cardA; 3453 remove cardA; 3453 add fallbackA | marks: 2514 arm; 3405 resetA
+  jsOn300 console: log: Angular hydrated 2 component(s) and 34 node(s), 0 component(s) were skipped.  || warning: [EH onViewError] probe late cardA boundary=yes || warning: [EH onViewError] probe late cardA boundary=yes
+
+## s/plain/server/host
+server: status=200 [fallbackA] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+server log: [EH onViewError] probe host cardA boundary=yes
+chromium+firefox+webkit:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/124
+  jsOn300 link events: 24 add badge; 24 add card
+  jsOn300 card/fallback DOM: 339 add fallbackA; 482 remove fallbackA; 482 add cardA | marks: 
+  jsOn300 console: log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped. 
+
+## s/plain/server/effect
+server: status=200 [fallbackA] links=badge,card ids=ngx-yeti-label-0 dupIds=0 unresolved=0 seed={"ngx-yeti-label-":2,"ngx-yeti-card-":1} ngh=true
+server log: [EH onViewError] probe effect cardA boundary=yes
+chromium+firefox+webkit:
+  js off: [fallbackA] links=badge,card cards=- dupIds=0 unresolved=0
+  jsOn300 load: [cardA,countA] links=badge,card cards=cardA#ngx-yeti-card-1:18px dupIds=0 unresolved=0
+  jsOn300 unstyled frames: load=0/123
+  jsOn300 link events: 25 add badge; 25 add card
+  jsOn300 card/fallback DOM: 341 add fallbackA; 485 remove fallbackA; 485 add cardA | marks: 
+  jsOn300 console: log: Angular hydrated 2 component(s) and 27 node(s), 0 component(s) were skipped. 

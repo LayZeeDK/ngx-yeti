@@ -1,0 +1,5 @@
+6837:    "node_modules/yeti-css": {
+6838-      "version": "7.0.0-alpha.0",
+6839-      "resolved": "git+file:///d:/tmp/ngx-yeti-21/yeti-local#126dd49fe15a3f1d946313c051d489bccc10b792",
+6840-      "license": "FSL-1.1-MIT",
+6841-      "engines": {

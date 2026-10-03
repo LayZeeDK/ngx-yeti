@@ -1,0 +1,37 @@
+firefox s/plain/once/ctor jsOn300.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","cardA","countA","fallbackA","resetA"],["badge","card"],[["cardA","ngx-yeti-card-0"]],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", tNode is null"],"A clicks 0",null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","cardA","countA","fallbackA","resetA"],["badge","card"],[["cardA","ngx-yeti-card-0"]],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", e is null"],"A clicks 0",null]
+firefox s/plain/once/ctor jsOn0.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","cardA","countA","fallbackA","resetA"],["badge","card"],[["cardA","ngx-yeti-card-0"]],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", tNode is null"],"A clicks 0",null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","cardA","countA","fallbackA","resetA"],["badge","card"],[["cardA","ngx-yeti-card-0"]],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", e is null"],"A clicks 0",null]
+firefox s/plain/reset/ctor jsOn300.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", tNode is null"],null,null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", e is null"],null,null]
+firefox s/plain/reset/ctor jsOn0.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", tNode is null"],null,null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", e is null"],null,null]
+firefox p/plain/reset/ctor jsOn300.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", tNode is null"],null,null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", e is null"],null,null]
+firefox p/plain/reset/ctor jsOn0.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", tNode is null"],null,null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: can't access property \"componentOffset\", e is null"],null,null]
+webkit s/plain/once/ctor jsOn300.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","cardA","countA","fallbackA","resetA"],["badge","card"],[["cardA","ngx-yeti-card-0"]],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'tNode.componentOffset')"],"A clicks 0",null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","cardA","countA","fallbackA","resetA"],["badge","card"],[["cardA","ngx-yeti-card-0"]],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'e.componentOffset')"],"A clicks 0",null]
+webkit s/plain/once/ctor jsOn0.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","cardA","countA","fallbackA","resetA"],["badge","card"],[["cardA","ngx-yeti-card-0"]],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'tNode.componentOffset')"],"A clicks 0",null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","cardA","countA","fallbackA","resetA"],["badge","card"],[["cardA","ngx-yeti-card-0"]],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'e.componentOffset')"],"A clicks 0",null]
+webkit s/plain/reset/ctor jsOn300.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'tNode.componentOffset')"],null,null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'e.componentOffset')"],null,null]
+webkit s/plain/reset/ctor jsOn0.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'tNode.componentOffset')"],null,null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'e.componentOffset')"],null,null]
+webkit p/plain/reset/ctor jsOn300.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'tNode.componentOffset')"],null,null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'e.componentOffset')"],null,null]
+webkit p/plain/reset/ctor jsOn0.after_resetA:
+  dev =[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'tNode.componentOffset')"],null,null]
+  prod=[["badge","outLabel","outLabelled","arm","i18nOut","fallbackA","resetA"],["badge","card"],[],[],[],["onViewError: probe ctor cardA","onViewError: null is not an object (evaluating 'e.componentOffset')"],null,null]
+12 differences

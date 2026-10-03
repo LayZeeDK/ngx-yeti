@@ -1,0 +1,15 @@
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mCould not resolve "yeti-css/css/components/alert/alert.css"[0m
+
+    src/styles.css:1:8:
+[37m      1 │ @import [32m'yeti-css/css/components/alert/alert.css'[37m;
+        ╵         [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  The module "./dist/css/components/alert/alert.css" was not found on the file system:
+
+    node_modules/yeti-css/package.json:25:15:
+[37m      25 │     "./css/*": [32m"./dist/css/*"[37m,
+         ╵                [32m~~~~~~~~~~~~~~[0m
+
+  You can mark the path "yeti-css/css/components/alert/alert.css" as external to exclude it from the bundle, which will remove this error and leave the unresolved path in the bundle.
+
+
