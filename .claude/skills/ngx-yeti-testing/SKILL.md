@@ -66,7 +66,7 @@ Locally, every browser layer runs Chromium only: Playwright's browsers are x64 u
 
 Ticket 93 reruns layers 2 and 4 at the Baseline 2025 floor in `.github/workflows/floor.yml` (weekly, on `release/**`, and by hand); a failure blocks a release, not a pull request. Two variables select the floor engines, and both are cache inputs:
 
-- `FLOOR_CHROMIUM_PATH=<chrome.exe>` runs `nx test ngx-yeti` and both e2e projects in Chromium only, on that browser. Install it with `npx @puppeteer/browsers install chrome@141.0.7390.54 --path <dir>`; the command prints the path.
+- `FLOOR_CHROMIUM_PATH=<chrome.exe>` runs `nx test ngx-yeti` and both e2e projects in Chromium only, on that browser. Install it with `npx @puppeteer/browsers install chrome@141.0.7390.54 --path <dir>`; the command prints the path. This replaces ticket 93's Playwright 1.56.1 alias: the Storybook gallery needs `mount(storyId)`, which Playwright 1.63 ships and 1.56.1 lacks, and ticket 27 measured Chrome for Testing 141 by `executablePath` working with Playwright 1.63 (commit e3e0b20).
 - `FLOOR_FIREFOX=true` runs `nx test ngx-yeti` in Firefox 145 through WebdriverIO, which downloads the browser itself.
 
 Edge 141 is the Chromium 141 engine; Safari 26.2 has no runner and is held by the static checks: `.browserslistrc` and the `css/use-baseline` and `baseline-js/use-baseline` lint rules at Baseline 2025. Use a newer feature only with the fallback its spec names, behind a described disable comment.
