@@ -78,6 +78,12 @@
         "staticFilePath": "dist/apps/yeti-app/browser",
         "spa": true
       }
+    },
+    "typecheck": {
+      "executor": "angular-typechecker:typecheck",
+      "options": {
+        "tsConfig": "apps/yeti-app/tsconfig.json"
+      }
     }
   }
 }

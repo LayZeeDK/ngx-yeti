@@ -43,6 +43,12 @@
       "options": {
         "port": 4400
       }
+    },
+    "typecheck": {
+      "executor": "angular-typechecker:typecheck",
+      "options": {
+        "tsConfig": "packages/ngx-yeti/tsconfig.json"
+      }
     }
   }
 }
