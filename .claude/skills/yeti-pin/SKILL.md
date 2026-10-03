@@ -1,0 +1,53 @@
+---
+name: yeti-pin
+description: 'This skill should be used when code, tests, or stories read Yeti (yeti-css), when a build fails because vendor/yeti/dist is missing, or when asked to "move the Yeti pin", "update Yeti", "read the Yeti manifest", "use a Yeti token", "look up Yeti''s docs for an item", or "why is yeti-css not a dependency", "Cannot find module ''yeti-css/manifest''", "yeti-build". Covers the vendored Yeti package, its yeti-build target, which Yeti files package code may read, the token rules, and the gated pin move of ADR 0006.'
+---
+
+# The vendored Yeti
+
+Yeti (`yeti-css`, Foundation 7) has no npm release. The workspace vendors its source at one `develop` commit, the pin `f52d1e8b93de5bbde322480ba77d5be26c49b0ef` (ADR 0006, `docs/specs/adr/0006-yeti-pinned-develop-commit-vendored-and-gated.md`).
+
+## Layout
+
+- `vendor/yeti/` holds exactly the files of `git archive <pin> src bin schema package.json package-lock.json LICENSE README.md`, plus `COMMIT` with the full sha. Never edit a file there; a pin move replaces the whole tree.
+- It is the npm workspace package `yeti-css`, so `node_modules/yeti-css` links to it and imports resolve through Yeti's `exports` map: `yeti-css/manifest`, `yeti-css/tokens`, `yeti-css/css/<path>`.
+- `.nxignore` hides `vendor/yeti/package.json` from Nx, which would otherwise turn Yeti's 13 scripts (its `test` among them) into workspace targets. `tools/yeti/nx-plugin.mjs` defines the `yeti-css` project with one target.
+
+## Building Yeti
+
+```sh
+npx nx yeti-build yeti-css
+```
+
+It runs Yeti's `node bin/build.js`, writes `vendor/yeti/dist/` (git-ignored), and is cached on `src`, `bin`, `schema`, and Yeti's build tools. Yeti's own validator runs inside it, so a build is also Yeti's check (ADR 0014 point 5).
+
+A target that reads `dist/` must depend on it. `ngx-yeti` has `implicitDependencies: ["yeti-css"]`, and its Storybook, test, typecheck, and lint targets depend on `^yeti-build`. A new project that reads `yeti-css` gets the same two settings. A "cannot find module 'yeti-css/manifest'" error means a target is missing that dependency.
+
+## What package code may read
+
+- Package code reads Yeti only through `yeti-css/manifest` and `yeti-css/tokens` (ADR 0006 point 7), and only at build or test time: the package ships no Yeti file and declares no `yeti-css` dependency (ADR 0060). Lint enforces it: `yeti-css` is a non-buildable project, so an import of it from `ngx-yeti` source fails `@nx/enforce-module-boundaries`, while specs and stories may import it. Data an item needs at run time is generated into package source at build time.
+- At build time, the package reads `yeti-css/css/yeti.css` for the item order and `yeti.d.ts`, of which it ships a generated copy, `yeti-types.ts` (ADR 0006 2026-10-02 notes; ADR 0060 point 10). Input types import Yeti's vocabulary types from that copy, never from `yeti-css`.
+- The package ships none of Yeti's CSS and declares no `yeti-css` dependency or peer dependency; the consumer brings a build of Yeti at the pin (ADR 0060).
+- Never read or write a private `--_yeti-*` token (ADR 0004). The one exception is the demo spec's two edge tokens.
+
+## Tokens in tests
+
+No test depends on a public token's default value (ADR 0006 point 7). Compare against the token at run time instead: style a probe element with `inline-size: var(--yeti-space-md)` and compare computed sizes. A contrast assertion checks the WCAG ratio, never a colour value (ADR 0015 point 3).
+
+## Reading Yeti
+
+- `vendor/yeti/src/guides/*.md`: Yeti's own guides (theming, components, stability, migrating).
+- `vendor/yeti/src/<kind>/<item>/`: each item's `<item>.css`, `docs.md`, `example.html` (Yeti's own markup, a starting point for stories), and `manifest.json`. `<kind>` is `layouts`, `recipes`, `components`, or `utilities`.
+- `vendor/yeti/dist/yeti.manifest.json` after a build: `components` maps 49 item names to their class, `attributes` (name, vocabulary, values, default), markers, and `js[].events`. The specs' Contract mapping sections map these names to directive inputs and outputs.
+- Specs cite Yeti as `Y/<path>:<line>` at the pin. For `src/`, `bin/`, and `schema/`, `vendor/yeti/<path>` is the same file. `Y/dist/...` exists only after `yeti-build`. `Y/test/...` is not vendored: read it at `https://github.com/foundation/yeti/blob/f52d1e8b93de5bbde322480ba77d5be26c49b0ef/<path>`.
+
+## Moving the pin
+
+A pin move is one commit, and only a trigger in ADR 0006 point 5 starts one: a Yeti fix for a bug the package works around, a Yeti addition a spec needs, or a `v7.0.0-beta.0` tag or npm release. A new `develop` commit is not a trigger. Steps:
+
+1. Check that the target commit is on `develop` and Yeti's CI passed on it.
+2. `node tools/yeti/vendor-yeti.mjs <new full sha>` replaces `vendor/yeti` and `COMMIT`.
+3. In a full Yeti clone checked out at the new pin, run `node bin/frozen.js <old full sha>`; it compares that ref with HEAD through `surfaceAt` and `compareSurfaces` and exits 1 on a break. Resolve each break in the same commit; add each addition the package exposes to its union (ADR 0005).
+4. Diff what `frozen.js` does not read: `package.json` `exports` and `engines`, `schema/`, event `detail` keys and targets in the manifests, public token defaults in `src/tokens/tokens.json`, and the README's browser support.
+5. Regenerate `yeti-types.ts` and the rank table with the generator the setup spec adds, rerun ADR 0080's `NgxYeti` collision test against the names `dist/yeti.d.ts` exports, check that the 32 vocabulary types still resolve, then run `npm run check`, the builds, and both e2e projects.
+6. The commit message names both shas and `frozen.js`'s summary line. A break that reaches the public API ships only on an Angular major (ADR 0017).
