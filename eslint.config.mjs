@@ -1,10 +1,72 @@
 import path from 'node:path';
+import eslintComments from '@eslint-community/eslint-plugin-eslint-comments/configs';
 import nx from '@nx/eslint-plugin';
+import vitest from '@vitest/eslint-plugin';
 import angular from 'angular-eslint';
 import storybook from 'eslint-plugin-storybook';
 import tseslint from 'typescript-eslint';
 
 const typeScriptFiles = ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'];
+
+// Playwright e2e specs share the *.spec.ts suffix, so only Vitest projects
+// spread this.
+export const vitestConfig = [
+  {
+    files: ['**/*.spec.ts'],
+    ...vitest.configs.recommended,
+    rules: {
+      ...vitest.configs.recommended.rules,
+      'vitest/consistent-each-for': 'error',
+      'vitest/consistent-test-it': 'error',
+      'vitest/consistent-vitest-vi': 'error',
+      'vitest/hoisted-apis-on-top': 'error',
+      'vitest/max-nested-describe': 'error',
+      'vitest/no-alias-methods': 'error',
+      'vitest/no-conditional-in-test': 'error',
+      'vitest/no-conditional-tests': 'error',
+      'vitest/no-disabled-tests': 'error',
+      'vitest/no-large-snapshots': 'error',
+      'vitest/no-test-prefixes': 'error',
+      'vitest/no-test-return-statement': 'error',
+      'vitest/padding-around-all': 'error',
+      'vitest/prefer-comparison-matcher': 'error',
+      'vitest/prefer-describe-function-title': 'error',
+      'vitest/prefer-each': 'error',
+      'vitest/prefer-equality-matcher': 'error',
+      'vitest/prefer-expect-resolves': 'error',
+      'vitest/prefer-expect-type-of': 'error',
+      'vitest/prefer-lowercase-title': 'error',
+      'vitest/prefer-mock-promise-shorthand': 'error',
+      'vitest/prefer-snapshot-hint': 'error',
+      'vitest/prefer-spy-on': 'error',
+      'vitest/prefer-strict-boolean-matchers': 'error',
+      'vitest/prefer-strict-equal': 'error',
+      'vitest/prefer-to-be': 'error',
+      'vitest/prefer-to-be-object': 'error',
+      'vitest/prefer-to-contain': 'error',
+      'vitest/prefer-to-have-been-called-times': 'error',
+      'vitest/prefer-to-have-length': 'error',
+      'vitest/prefer-todo': 'error',
+      'vitest/prefer-vi-mocked': 'error',
+      'vitest/require-awaited-expect-poll': 'error',
+      'vitest/require-mock-type-parameters': 'error',
+      'vitest/require-to-throw-message': 'error',
+      'vitest/require-top-level-describe': 'error',
+      'vitest/no-hooks': 'error',
+      'vitest/valid-title': ['error', { allowArguments: true }],
+      'vitest/prefer-expect-assertions': [
+        'error',
+        { onlyFunctionsWithAsyncKeyword: true },
+      ],
+      'vitest/max-expects': ['error', { max: 10 }],
+      'vitest/consistent-test-filename': [
+        'error',
+        { pattern: '.*\\.spec\\.[tj]sx?$' },
+      ],
+      '@typescript-eslint/explicit-function-return-type': 'off',
+    },
+  },
+];
 
 export const angularConfig = [
   ...angular.configs.tsAll.map((config) => ({ ...config, files: ['**/*.ts'] })),
@@ -54,6 +116,41 @@ export default [
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+  },
+  eslintComments.recommended,
+  {
+    rules: {
+      '@eslint-community/eslint-comments/require-description': 'error',
+    },
+  },
+  {
+    files: typeScriptFiles,
+    rules: {
+      '@typescript-eslint/consistent-type-assertions': [
+        'error',
+        { assertionStyle: 'never' },
+      ],
+      '@typescript-eslint/consistent-type-imports': [
+        'error',
+        { prefer: 'type-imports', fixStyle: 'inline-type-imports' },
+      ],
+      '@typescript-eslint/consistent-type-exports': [
+        'error',
+        { fixMixedExportsWithInlineTypeSpecifier: true },
+      ],
+      '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          allowExpressions: true,
+          allowTypedFunctionExpressions: true,
+          allowHigherOrderFunctions: true,
+        },
+      ],
+      // Its fix writes `x!`, which no-non-null-assertion bans, and
+      // assertionStyle 'never' already bans the `as` form it targets.
+      '@typescript-eslint/non-nullable-type-assertion-style': 'off',
     },
   },
   ...storybook.configs['flat/recommended'],
