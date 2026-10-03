@@ -111,6 +111,11 @@
           "tsConfig": "{projectRoot}/tsconfig.json",
           "maxWarnings": 0,
           "strict": true
+        }
+      },
+      {
+        "filter": {
+          "projects": ["tag:type:lib", "tag:type:app", "tag:type:testing"]
         },
         "configurations": {
           "spec": {
@@ -120,7 +125,7 @@
       },
       {
         "filter": {
-          "projects": ["tag:type:lib"]
+          "projects": ["tag:type:lib", "tag:type:testing"]
         },
         "configurations": {
           "src": {

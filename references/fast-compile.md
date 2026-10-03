@@ -19,7 +19,7 @@ These targets use the Angular compiler with type checking:
 
 ## What typecheck covers
 
-`typecheck` runs `angular-typechecker` over the solution `tsconfig.json` of each Angular project. It follows the references to the source, spec, and Storybook configs, so one run checks sources, templates, extended diagnostics, specs, stories, and the Vite and Vitest configs. `nx.json` defines the target once for every project, keyed on the `type:lib`, `type:app`, and `storybook` tags.
+`typecheck` runs `angular-typechecker` over the solution `tsconfig.json` of each Angular project. It follows the references to the source, spec, and Storybook configs, so one run checks sources, templates, extended diagnostics, specs, stories, and the Vite and Vitest configs. `nx.json` defines the target once for every project, keyed on the `type:lib`, `type:app`, `type:testing`, and `storybook` tags.
 
 Configurations check one tsconfig: `-c src` for the library or application source, `-c spec` for specs, and `-c stories` for stories. The names are the same in every project, so `npm run typecheck -- -c spec` checks the specs of all projects. A project without the requested configuration runs its whole check. `typecheck` without a configuration is the gate for `check`, `affected`, and CI.
 
