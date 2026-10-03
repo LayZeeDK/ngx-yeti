@@ -1,0 +1,47 @@
+name: Browser floor
+
+# Ticket 93 (docs/specs/issues/93-decide-testing-at-the-browser-floor.md):
+# layers 2 and 4 at the Baseline 2025 floor of ADR 0002, weekly and on release
+# branches. A failure blocks a release, not a pull request. Safari 26.2 has no
+# runner; Edge 141 is covered by Chromium 141.
+on:
+  schedule:
+    - cron: '0 4 * * 1'
+  push:
+    branches: ['release/**']
+  workflow_dispatch:
+
+env:
+  CHROME_FLOOR_VERSION: 141.0.7390.54
+
+jobs:
+  chromium-141:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install-deps chromium
+      - name: Install Chrome for Testing at the floor
+        run: |
+          path=$(npx --yes @puppeteer/browsers install "chrome@$CHROME_FLOOR_VERSION" --path "$RUNNER_TEMP/floor" | awk '{print $2}')
+          echo "FLOOR_CHROMIUM_PATH=$path" >> "$GITHUB_ENV"
+      - run: npx nx run-many -t test e2e -p ngx-yeti ngx-yeti-e2e yeti-app-e2e
+
+  firefox-145:
+    runs-on: ubuntu-latest
+    env:
+      FLOOR_FIREFOX: 'true'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install-deps firefox
+      # WebdriverIO downloads Firefox 145 and geckodriver itself.
+      - run: npx nx test ngx-yeti
