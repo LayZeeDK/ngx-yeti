@@ -36,6 +36,7 @@
     },
     "test": {
       "command": "vitest run --config vitest.unit.config.mts",
+      "dependsOn": ["^yeti-build"],
       "options": {
         "cwd": "{projectRoot}"
       },
@@ -59,7 +60,12 @@
         "port": 4401
       }
     },
-    "typecheck": {},
+    "typecheck": {
+      "dependsOn": ["^yeti-build"]
+    },
+    "lint": {
+      "dependsOn": ["^yeti-build"]
+    },
     "build-fast": {
       "command": "vite build --config vite.lib.config.mts",
       "options": {
