@@ -4,8 +4,6 @@ import { type Page } from '@playwright/test';
 import axe from 'axe-core';
 import { noScriptPages } from './fixtures';
 
-type AxeViolations = Awaited<ReturnType<AxeBuilder['analyze']>>['violations'];
-
 /**
  * With JavaScript disabled, Playwright still evaluates scripts, but timers
  * never fire, so `axe.run` never settles (measured in Chromium and WebKit).
@@ -23,7 +21,8 @@ const microtaskTimers = `window.setTimeout = (callback) => {
 export const axeRunsWithoutJavaScript = (browserName: string): boolean =>
   browserName !== 'firefox';
 
-export async function axeViolations(page: Page): Promise<AxeViolations> {
+/** One `id: help (targets)` line per violation, like `ngx-yeti-e2e`. */
+export async function axeViolations(page: Page): Promise<string[]> {
   const browserName = page.context().browser()?.browserType().name() ?? '';
 
   if (noScriptPages.has(page) && !axeRunsWithoutJavaScript(browserName)) {
@@ -41,5 +40,8 @@ export async function axeViolations(page: Page): Promise<AxeViolations> {
     .withTags([...wcagTags])
     .analyze();
 
-  return violations;
+  return violations.map(
+    ({ id, help, nodes }) =>
+      `${id}: ${help} (${nodes.map(({ target }) => target.join(' ')).join(', ')})`,
+  );
 }

@@ -90,19 +90,19 @@ for (const { kind, prefix } of routeKinds) {
 }
 
 test.describe('the axe helper', () => {
-  async function violationIdsWithImageMissingAlt(
-    page: Page,
-  ): Promise<string[]> {
+  async function violationsWithImageMissingAlt(page: Page): Promise<string[]> {
     await page.goto('highlight');
     await page.locator('main').evaluate((main) => {
       main.append(document.createElement('img'));
     });
 
-    return (await axeViolations(page)).map(({ id }) => id);
+    return axeViolations(page);
   }
 
   test('reports a violation with JavaScript on', async ({ page }) => {
-    expect(await violationIdsWithImageMissingAlt(page)).toContain('image-alt');
+    expect(await violationsWithImageMissingAlt(page)).toContainEqual(
+      expect.stringMatching(/^image-alt: /),
+    );
   });
 
   test('reports a violation with JavaScript off', async ({
@@ -111,8 +111,8 @@ test.describe('the axe helper', () => {
   }) => {
     test.skip(!axeRunsWithoutJavaScript(browserName), noAxeWithoutJavaScript);
 
-    expect(await violationIdsWithImageMissingAlt(noScriptPage)).toContain(
-      'image-alt',
+    expect(await violationsWithImageMissingAlt(noScriptPage)).toContainEqual(
+      expect.stringMatching(/^image-alt: /),
     );
   });
 });
