@@ -77,10 +77,17 @@ Every story fails its test on any axe violation of the WCAG 2.2 AA tags, and on 
 
 ## Browser support
 
-The package targets Baseline 2025: Chrome and Edge 141, Firefox 145, and Safari 26.2 ([ADR 0002](docs/specs/adr/0002-browser-target-baseline-2025.md)). Two checks hold that floor:
+The package targets Baseline 2025: Chrome and Edge 141, Firefox 145, and Safari 26.2 ([ADR 0002](docs/specs/adr/0002-browser-target-baseline-2025.md)). `.browserslistrc` sets that floor for the Angular builds, and ESLint fails on CSS or TypeScript newer than Baseline 2025.
 
-- `.browserslistrc` sets it for the Angular builds, and ESLint fails on CSS or TypeScript newer than Baseline 2025.
-- `.github/workflows/floor.yml` reruns the browser tests at the floor for every pull request and every push to `main`: Chromium 141 (Chrome for Testing), Firefox 145 (through WebdriverIO) and Playwright's Firefox 146.0.1 for the Fixture app e2e, and WebKit 26.4 (Playwright 1.59.1 in its container image, the earliest WebKit not below Safari 26.2). No CI runner offers Safari 26.2 itself, and Edge 141 is the Chromium 141 engine.
+Every pull request and every push to `main` runs the browser tests in these browsers:
+
+| Browser      | At the floor (`floor.yml`)                                                                        | Current release (`ci.yml`)                                                  |
+| ------------ | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Chrome, Edge | Chrome for Testing 141: unit tests, both e2e projects                                             | Playwright's Chromium: every layer                                          |
+| Firefox      | Firefox 145 through WebdriverIO: unit tests. Playwright 1.58.2's Firefox 146.0.1: Fixture app e2e | Playwright's Firefox: every layer                                           |
+| Safari       | Playwright 1.59.1's WebKit 26.4: unit tests, Fixture app e2e                                      | Playwright's WebKit: every layer. Real Safari on `macos-latest`: unit tests |
+
+Edge 141 is the Chromium 141 engine. No Playwright release bundles Firefox 145 or WebKit 26.2, so those columns use the earliest builds that are not older. No GitHub runner ships Safari 26.2; every macOS image ships Safari 26.6. The Storybook e2e needs Playwright 1.62 or later, so at the floor it runs in Chromium only.
 
 ## Yeti
 
