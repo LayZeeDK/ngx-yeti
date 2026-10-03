@@ -1,6 +1,7 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
+import { browserProjects } from '../../tools/playwright/browser-projects.mjs';
 
 const configuration =
   process.env['FIXTURE_CONFIGURATION'] === 'production'
@@ -8,32 +9,6 @@ const configuration =
     : 'development';
 const port = configuration === 'production' ? 4311 : 4310;
 const baseURL = `http://localhost:${String(port)}/sub/`;
-
-const chromiumFloor = process.env['FLOOR_CHROMIUM_PATH'];
-
-const chromium = {
-  name: 'chromium',
-  use: {
-    ...devices['Desktop Chrome'],
-    ...(chromiumFloor && { launchOptions: { executablePath: chromiumFloor } }),
-  },
-};
-const firefox = { name: 'firefox', use: { ...devices['Desktop Firefox'] } };
-const webkit = { name: 'webkit', use: { ...devices['Desktop Safari'] } };
-
-function projects(): (typeof chromium | typeof firefox | typeof webkit)[] {
-  if (process.env['FLOOR_WEBKIT']) {
-    return [webkit];
-  }
-
-  if (process.env['FLOOR_FIREFOX_E2E']) {
-    return [firefox];
-  }
-
-  return process.env['CI'] && !chromiumFloor
-    ? [chromium, firefox, webkit]
-    : [chromium];
-}
 
 /**
  * Generated as a .mts file so Node forces ESM regardless of workspace
@@ -57,5 +32,5 @@ export default defineConfig({
     timeout: 300_000,
     cwd: workspaceRoot,
   },
-  projects: projects(),
+  projects: browserProjects(),
 });
