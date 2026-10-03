@@ -8,6 +8,7 @@ import { playwright } from '@vitest/browser-playwright';
 export default defineConfig({
   test: {
     coverage: {
+      provider: 'istanbul',
       reportsDirectory: path.join(
         import.meta.dirname,
         '../../coverage/packages/ngx-yeti',
@@ -29,7 +30,11 @@ export default defineConfig({
             enabled: true,
             headless: true,
             provider: playwright(),
-            instances: [{ browser: 'chromium' }],
+            instances: [
+              { browser: 'chromium' },
+              { browser: 'firefox' },
+              { browser: 'webkit' },
+            ],
           },
         },
       },
