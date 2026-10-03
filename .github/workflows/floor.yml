@@ -75,6 +75,9 @@ jobs:
     container: mcr.microsoft.com/playwright:v1.58.2-noble
     env:
       FLOOR_FIREFOX_E2E: 'true'
+      # GitHub runs the container as root with HOME owned by the image's
+      # pwuser, and Firefox refuses to start as root in another user's home.
+      HOME: /root
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
