@@ -90,7 +90,9 @@
           }
         ],
         "options": {
-          "tsConfig": "{projectRoot}/tsconfig.json"
+          "tsConfig": "{projectRoot}/tsconfig.json",
+          "maxWarnings": 0,
+          "strict": true
         },
         "configurations": {
           "spec": {
