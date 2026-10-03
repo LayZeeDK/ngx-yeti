@@ -25,6 +25,9 @@
         },
         {
           "env": "FLOOR_WEBKIT"
+        },
+        {
+          "env": "FLOOR_FIREFOX_E2E"
         }
       ]
     }

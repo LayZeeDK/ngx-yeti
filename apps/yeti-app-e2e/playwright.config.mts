@@ -18,6 +18,22 @@ const chromium = {
     ...(chromiumFloor && { launchOptions: { executablePath: chromiumFloor } }),
   },
 };
+const firefox = { name: 'firefox', use: { ...devices['Desktop Firefox'] } };
+const webkit = { name: 'webkit', use: { ...devices['Desktop Safari'] } };
+
+function projects(): (typeof chromium | typeof firefox | typeof webkit)[] {
+  if (process.env['FLOOR_WEBKIT']) {
+    return [webkit];
+  }
+
+  if (process.env['FLOOR_FIREFOX_E2E']) {
+    return [firefox];
+  }
+
+  return process.env['CI'] && !chromiumFloor
+    ? [chromium, firefox, webkit]
+    : [chromium];
+}
 
 /**
  * Generated as a .mts file so Node forces ESM regardless of workspace
@@ -41,13 +57,5 @@ export default defineConfig({
     timeout: 300_000,
     cwd: workspaceRoot,
   },
-  projects: process.env['FLOOR_WEBKIT']
-    ? [{ name: 'webkit', use: { ...devices['Desktop Safari'] } }]
-    : process.env['CI'] && !chromiumFloor
-      ? [
-          chromium,
-          { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-          { name: 'webkit', use: { ...devices['Desktop Safari'] } },
-        ]
-      : [chromium],
+  projects: projects(),
 });

@@ -80,7 +80,7 @@ Every story fails its test on any axe violation of the WCAG 2.2 AA tags, and on 
 The package targets Baseline 2025: Chrome and Edge 141, Firefox 145, and Safari 26.2 ([ADR 0002](docs/specs/adr/0002-browser-target-baseline-2025.md)). Two checks hold that floor:
 
 - `.browserslistrc` sets it for the Angular builds, and ESLint fails on CSS or TypeScript newer than Baseline 2025.
-- `.github/workflows/floor.yml` reruns the browser tests at the floor for every pull request and every push to `main`: Chromium 141 (Chrome for Testing), Firefox 145 (through WebdriverIO), and WebKit 26.4 (Playwright 1.59.1 in its container image, the earliest WebKit not below Safari 26.2). No CI runner offers Safari 26.2 itself, and Edge 141 is the Chromium 141 engine.
+- `.github/workflows/floor.yml` reruns the browser tests at the floor for every pull request and every push to `main`: Chromium 141 (Chrome for Testing), Firefox 145 (through WebdriverIO) and Playwright's Firefox 146.0.1 for the Fixture app e2e, and WebKit 26.4 (Playwright 1.59.1 in its container image, the earliest WebKit not below Safari 26.2). No CI runner offers Safari 26.2 itself, and Edge 141 is the Chromium 141 engine.
 
 ## Yeti
 

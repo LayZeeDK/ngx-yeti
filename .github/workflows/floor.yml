@@ -66,3 +66,22 @@ jobs:
       - run: npm install --no-save playwright@1.59.1 @playwright/test@1.59.1
       # The Storybook e2e needs mount(storyId), which Playwright 1.62 added.
       - run: npx nx run-many -t test e2e -p ngx-yeti yeti-app-e2e
+
+  firefox-146-e2e:
+    runs-on: ubuntu-latest
+    # Playwright 1.58.2 bundles Firefox 146.0.1, the earliest Playwright
+    # Firefox not below 145; 1.57 bundles 144. Stock Firefox 145 runs only
+    # through WebdriverIO, which covers layer 2 in the firefox-145 job.
+    container: mcr.microsoft.com/playwright:v1.58.2-noble
+    env:
+      FLOOR_FIREFOX_E2E: 'true'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save playwright@1.58.2 @playwright/test@1.58.2
+      # The Storybook e2e needs mount(storyId), which Playwright 1.62 added.
+      - run: npx nx e2e yeti-app-e2e
