@@ -22,9 +22,9 @@ const config: StorybookConfig = {
     const plugins = (config.plugins ?? []).flat();
     const analogIndex = plugins.findIndex(isAnalogPlugin);
 
-    // The framework preset offers no fastCompile option, so swap its Analog
-    // plugins for an equivalent set.
-    if (analogIndex !== -1) {
+    // The framework preset offers no fastCompile option, so the `fast`
+    // configurations swap its Analog plugins for an equivalent set.
+    if (process.env['ANGULAR_FAST_COMPILE'] === 'true' && analogIndex !== -1) {
       const fastCompilePlugins = angular({
         fastCompile: true,
         jit: true,

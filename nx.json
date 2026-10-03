@@ -44,7 +44,14 @@
     },
     "build-storybook": {
       "cache": true,
-      "inputs": ["default", "^production", "storybook"]
+      "inputs": ["default", "^production", "storybook"],
+      "configurations": {
+        "fast": {
+          "env": {
+            "ANGULAR_FAST_COMPILE": "true"
+          }
+        }
+      }
     },
     "test-storybook": {
       "cache": true,
@@ -64,7 +71,14 @@
           "env": "CI"
         }
       ],
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"]
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "configurations": {
+        "fast": {
+          "env": {
+            "ANGULAR_FAST_COMPILE": "true"
+          }
+        }
+      }
     },
     "typecheck-watch": {
       "continuous": true,
@@ -130,7 +144,23 @@
           }
         }
       }
-    ]
+    ],
+    "storybook": {
+      "configurations": {
+        "fast": {
+          "env": {
+            "ANGULAR_FAST_COMPILE": "true"
+          }
+        }
+      }
+    },
+    "static-storybook": {
+      "configurations": {
+        "fast": {
+          "buildTarget": "build-storybook:fast"
+        }
+      }
+    }
   },
   "plugins": [
     {
