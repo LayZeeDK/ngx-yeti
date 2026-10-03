@@ -60,7 +60,7 @@ The file suffix routes a spec to its Vitest project (`packages/ngx-yeti/vitest.u
 
 ## Engines
 
-Locally, every browser layer runs Chromium only: Playwright's browsers are x64 under emulation on the Windows on Arm machine. With `CI` set (GitHub sets it), layers 1, 2, and 4 run Chromium, Firefox, and WebKit. To run the three engines locally once, prefix the command with `CI=true`. Real Safari runs in the `safari` job of `.github/workflows/ci.yml` on `macos-26`: `SAFARI=true` runs `nx test ngx-yeti` in the image's Safari (26.6.2 in September 2026) through WebdriverIO and `safaridriver`, headed because `safaridriver` has no headless mode. Playwright cannot drive branded Safari, so stories and e2e run in Playwright's WebKit only. The Safari version moves with the macOS image.
+Locally, every browser layer runs Chromium only: Playwright's browsers are x64 under emulation on the Windows on Arm machine. With `CI` set (GitHub sets it), layers 1, 2, and 4 run Chromium, Firefox, and WebKit. To run the three engines locally once, prefix the command with `CI=true`. Real Safari runs in the `safari` job of `.github/workflows/ci.yml` on `macos-latest`: `SAFARI=true` runs `nx test ngx-yeti` in the image's Safari (26.6.2 in September 2026) through WebdriverIO and `safaridriver`, headed because `safaridriver` has no headless mode. Playwright cannot drive branded Safari, so stories and e2e run in Playwright's WebKit only. The Safari version moves with the macOS image.
 
 ## The browser floor
 

@@ -25,10 +25,11 @@ jobs:
       - run: npx nx run-many -t e2e
 
   safari:
-    # Real Safari, as the macOS image ships it (26.6 in September 2026).
+    # Real Safari, as the macOS image ships it (26.6 on every macOS image in
+    # September 2026), so the newest image label is as good as any.
     # Playwright cannot drive branded Safari, so only the browser unit tests
     # run here; the WebKit jobs cover stories and e2e.
-    runs-on: macos-26
+    runs-on: macos-latest
     env:
       SAFARI: 'true'
     steps:
