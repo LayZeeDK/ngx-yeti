@@ -64,6 +64,11 @@ export const vitestConfig = [
         { pattern: '.*\\.spec\\.[tj]sx?$' },
       ],
       '@typescript-eslint/explicit-function-return-type': 'off',
+      // The base rule reports vi.mocked(obj.method) and
+      // expect(obj.method).toHaveBeenCalled(), the forms prefer-vi-mocked and
+      // prefer-spy-on produce. The vitest variant exempts both.
+      '@typescript-eslint/unbound-method': 'off',
+      'vitest/unbound-method': 'error',
     },
   },
 ];
@@ -93,6 +98,10 @@ export const angularConfig = [
       // Reading a signal is a call expression.
       '@angular-eslint/template/no-call-expression': 'off',
       '@angular-eslint/template/i18n': 'off',
+      // Recommends [style.x], which no-inline-styles bans.
+      '@angular-eslint/template/prefer-style-binding': 'off',
+      // Checks only *ngFor, which prefer-control-flow bans.
+      '@angular-eslint/template/use-track-by-function': 'off',
     },
   },
 ];
@@ -140,6 +149,8 @@ export default [
         { fixMixedExportsWithInlineTypeSpecifier: true },
       ],
       '@typescript-eslint/consistent-type-definitions': ['error', 'interface'],
+      // Deprecated; no-empty-object-type covers it.
+      '@typescript-eslint/no-empty-interface': 'off',
       '@typescript-eslint/explicit-function-return-type': [
         'error',
         {
