@@ -75,7 +75,7 @@ Files in `packages/ngx-yeti/<item>/src/`:
 
 Another entry point is imported by its package path (`ngx-yeti/<other>`), never by a relative path. No `@defer` in package templates (ADR 0011 clause 10).
 
-Naming (ADR 0012, ADR 0080): selectors `yeti` + camelCase (`[yetiCard]`), `exportAs` the class name with a lowercase first letter, classes `Yeti` + PascalCase item and part. A class whose name equals a name exported by Yeti's `dist/yeti.d.ts` takes `NgxYeti` instead (six today: `NgxYetiColumns`, `NgxYetiAttention`, `NgxYetiEnter`, `NgxYetiLift`, `NgxYetiPrint`, `NgxYetiPaint`). Runtime names the package writes into the page start with `ngx-yeti`: `--ngx-yeti-*`, `@layer ngx-yeti`, `data-ngx-yeti-*`, ids `ngx-yeti-<item>-<n>`.
+Naming (ADR 0012, ADR 0080): selectors `yeti` + camelCase (`[yetiCard]`), `exportAs` the class name with a lowercase first letter, classes `Yeti` + PascalCase item and part. A class whose name equals a name exported by Yeti's `dist/yeti.d.ts` takes `NgxYeti` instead; ADR 0080 lists the collisions at the pin, and the `yeti-pin` skill reruns that check on a pin move. Runtime names the package writes into the page start with `ngx-yeti`: `--ngx-yeti-*`, `@layer ngx-yeti`, `data-ngx-yeti-*`, ids `ngx-yeti-<item>-<n>`.
 
 ## Other skills
 

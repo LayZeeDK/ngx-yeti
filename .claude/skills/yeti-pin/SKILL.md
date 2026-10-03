@@ -5,13 +5,13 @@ description: 'This skill should be used when code, tests, or stories read Yeti (
 
 # The vendored Yeti
 
-Yeti (`yeti-css`, Foundation 7) has no npm release. The workspace vendors its source at one `develop` commit, the pin `f52d1e8b93de5bbde322480ba77d5be26c49b0ef` (ADR 0006, `docs/specs/adr/0006-yeti-pinned-develop-commit-vendored-and-gated.md`).
+Yeti (`yeti-css`, Foundation 7) has no npm release. The workspace vendors its source at one `develop` commit, the pin, whose full sha is in `vendor/yeti/COMMIT` (ADR 0006, `docs/specs/adr/0006-yeti-pinned-develop-commit-vendored-and-gated.md`).
 
 ## Layout
 
 - `vendor/yeti/` holds exactly the files of `git archive <pin> src bin schema package.json package-lock.json LICENSE README.md`, plus `COMMIT` with the full sha. Never edit a file there; a pin move replaces the whole tree.
 - It is the npm workspace package `yeti-css`, so `node_modules/yeti-css` links to it and imports resolve through Yeti's `exports` map: `yeti-css/manifest`, `yeti-css/tokens`, `yeti-css/css/<path>`.
-- `.nxignore` hides `vendor/yeti/package.json` from Nx, which would otherwise turn Yeti's 13 scripts (its `test` among them) into workspace targets. `tools/yeti/nx-plugin.mjs` defines the `yeti-css` project with one target.
+- `.nxignore` hides `vendor/yeti/package.json` from Nx, which would otherwise turn Yeti's npm scripts (its `test` among them) into workspace targets. `tools/yeti/nx-plugin.mjs` defines the `yeti-css` project with one target.
 
 ## Building Yeti
 
@@ -19,7 +19,7 @@ Yeti (`yeti-css`, Foundation 7) has no npm release. The workspace vendors its so
 npx nx yeti-build yeti-css
 ```
 
-It runs Yeti's `node bin/build.js`, writes `vendor/yeti/dist/` (git-ignored), and is cached on `src`, `bin`, `schema`, and Yeti's build tools. Yeti's own validator runs inside it, so a build is also Yeti's check (ADR 0014 point 5).
+It runs Yeti's `node bin/build.js`, writes `vendor/yeti/dist/` (git-ignored), and is cached on the files of `vendor/yeti`, `COMMIT` among them, so a pin move always rebuilds, and on Yeti's build tools. Yeti's own validator runs inside it, so a build is also Yeti's check (ADR 0014 point 5).
 
 A target that reads `dist/` must depend on it. `nx.json` `targetDefaults` give the Storybook, test, typecheck, lint, application build, dev-server, and unit-test targets a `^yeti-build` dependency, which reaches `yeti-css` through any project in between. A project that reads `yeti-css` declares `implicitDependencies: ["yeti-css"]`, as `ngx-yeti` and `yeti-app` do. A "cannot find module 'yeti-css/manifest'" error means a target is missing that dependency, or the worktree case below.
 
@@ -40,8 +40,8 @@ No test depends on a public token's default value (ADR 0006 point 7). Compare ag
 
 - `vendor/yeti/src/guides/*.md`: Yeti's own guides (theming, components, stability, migrating).
 - `vendor/yeti/src/<kind>/<item>/`: each item's `<item>.css`, `docs.md`, `example.html` (Yeti's own markup, a starting point for stories), and `manifest.json`. `<kind>` is `layouts`, `recipes`, `components`, or `utilities`.
-- `vendor/yeti/dist/yeti.manifest.json` after a build: `components` maps 49 item names to their class, `attributes` (name, vocabulary, values, default), markers, and `js[].events`. The specs' Contract mapping sections map these names to directive inputs and outputs.
-- Specs cite Yeti as `Y/<path>:<line>` at the pin. For `src/`, `bin/`, and `schema/`, `vendor/yeti/<path>` is the same file. `Y/dist/...` exists only after `yeti-build`. `Y/test/...` is not vendored: read it at `https://github.com/foundation/yeti/blob/f52d1e8b93de5bbde322480ba77d5be26c49b0ef/<path>`.
+- `vendor/yeti/dist/yeti.manifest.json` after a build: `components` maps each item name to its class, `attributes` (name, vocabulary, values, default), markers, and `js[].events`. The specs' Contract mapping sections map these names to directive inputs and outputs.
+- Specs cite Yeti as `Y/<path>:<line>` at the pin. For `src/`, `bin/`, and `schema/`, `vendor/yeti/<path>` is the same file. `Y/dist/...` exists only after `yeti-build`. `Y/test/...` is not vendored: read it at `https://github.com/foundation/yeti/blob/<pin>/<path>`, with the sha from `vendor/yeti/COMMIT`.
 
 ## Moving the pin
 
@@ -51,5 +51,6 @@ A pin move is one commit, and only a trigger in ADR 0006 point 5 starts one: a Y
 2. `node tools/yeti/vendor-yeti.mjs <new full sha>` replaces `vendor/yeti` and `COMMIT`.
 3. In a full Yeti clone checked out at the new pin, run `node bin/frozen.js <old full sha>`; it compares that ref with HEAD through `surfaceAt` and `compareSurfaces` and exits 1 on a break. Resolve each break in the same commit; add each addition the package exposes to its union (ADR 0005).
 4. Diff what `frozen.js` does not read: `package.json` `exports` and `engines`, `schema/`, event `detail` keys and targets in the manifests, public token defaults in `src/tokens/tokens.json`, and the README's browser support.
-5. Regenerate `yeti-types.ts` and the rank table with the generator the setup spec adds, rerun ADR 0080's `NgxYeti` collision test against the names `dist/yeti.d.ts` exports, check that the 32 vocabulary types still resolve, then run `npm run check`, the builds, and both e2e projects.
-6. The commit message names both shas and `frozen.js`'s summary line. A break that reaches the public API ships only on an Angular major (ADR 0017).
+5. Regenerate `yeti-types.ts` and the rank table with the generator the setup spec adds, rerun ADR 0080's `NgxYeti` collision test against the names `dist/yeti.d.ts` exports, check that every vocabulary type still resolves, then run `npm run check`, the builds, and both e2e projects. `packages/ngx-yeti/src/yeti-manifest.node.spec.ts` pins the manifest's component count and fails when a pin move changes it.
+6. Update every file outside `docs/specs` and `vendor/yeti` that names the old sha, such as `packages/ngx-yeti/README.md`: `rg --hidden <old full sha> --glob '!docs/specs/**' --glob '!vendor/**' --glob '!.git/**'`.
+7. The commit message names both shas and `frozen.js`'s summary line. A break that reaches the public API ships only on an Angular major (ADR 0017).

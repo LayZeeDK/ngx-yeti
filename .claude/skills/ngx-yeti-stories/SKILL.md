@@ -57,7 +57,7 @@ const meta: Meta<YetiBadge> = {
 
 ## How stories load Yeti
 
-The preview imports `.storybook/styles.css`, the setup spec's global stylesheet (the `@layer yeti, ngx-yeti;` statement and Yeti's 16 always-loaded files). `staticDirs` serves the built Yeti CSS under `yeti-css/`, as an application's `assets` entry does. An item's own CSS file loads through its directive (`injectYetiItemStyles`), never through a story import. Yeti is built before any Storybook target runs (`^yeti-build`).
+The preview imports `.storybook/styles.css`, the setup spec's global stylesheet (the `@layer yeti, ngx-yeti;` statement and Yeti's always-loaded files in the setup spec's order). `staticDirs` serves the built Yeti CSS under `yeti-css/`, as an application's `assets` entry does. An item's own CSS file loads through its directive (`injectYetiItemStyles`), never through a story import. Yeti is built before any Storybook target runs (`^yeti-build`).
 
 ## Colour schemes
 
