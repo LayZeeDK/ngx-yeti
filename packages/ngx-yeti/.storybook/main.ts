@@ -7,11 +7,42 @@ const config: StorybookConfig = {
     name: '@storybook/angular-vite',
     options: {},
   },
-  async viteFinal(config) {
+  async viteFinal(config, { configDir }) {
     const { mergeConfig } = await import('vite');
+    const { default: angular } = await import('@analogjs/vite-plugin-angular');
     const { findNodeModulesRoots } = await import(
       '@storybook/angular-vite/vitest'
     );
+    const isAnalogPlugin = (plugin: unknown) =>
+      typeof plugin === 'object' &&
+      plugin !== null &&
+      'name' in plugin &&
+      typeof plugin.name === 'string' &&
+      /^@?analogjs[-/]/.test(plugin.name);
+    const plugins = (config.plugins ?? []).flat();
+    const analogIndex = plugins.findIndex(isAnalogPlugin);
+
+    // The framework preset offers no fastCompile option, so swap its Analog
+    // plugins for an equivalent set.
+    if (analogIndex !== -1) {
+      const fastCompilePlugins = angular({
+        fastCompile: true,
+        jit: true,
+        liveReload: false,
+        tsconfig: `${configDir}/tsconfig.json`,
+        inlineStylesExtension: 'css',
+      }).map((plugin) =>
+        plugin.name === '@analogjs/vite-plugin-angular-fast-compile'
+          ? { ...plugin, enforce: 'pre' as const }
+          : plugin,
+      );
+
+      config.plugins = [
+        ...plugins.slice(0, analogIndex).filter((p) => !isAnalogPlugin(p)),
+        ...fastCompilePlugins,
+        ...plugins.slice(analogIndex).filter((p) => !isAnalogPlugin(p)),
+      ];
+    }
 
     // Vite stops its workspace root search at this library's package.json,
     // which leaves the workspace node_modules outside `server.fs.allow`.
