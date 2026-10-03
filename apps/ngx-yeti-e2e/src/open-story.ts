@@ -3,7 +3,10 @@ import { type Locator, type Page } from '@playwright/test';
 declare global {
   interface Window {
     __STORYBOOK_PREVIEW__?: {
-      currentRender?: { renderOptions?: { autoplay?: boolean } };
+      currentRender?: {
+        phase?: string;
+        renderOptions?: { autoplay?: boolean };
+      };
     };
   }
 }
@@ -33,25 +36,50 @@ export async function openStory(page: Page, storyId: string): Promise<Locator> {
       document.body.classList.contains('sb-show-errordisplay'),
   );
 
-  const { error, autoplay } = await page.evaluate(() => ({
-    error: document.body.classList.contains('sb-show-errordisplay')
-      ? (document.getElementById('error-message')?.textContent ?? 'unknown')
-      : null,
-    autoplay:
-      window.__STORYBOOK_PREVIEW__?.currentRender?.renderOptions?.autoplay,
-  }));
+  await throwIfStoryErrored(page, storyId);
 
-  if (error !== null) {
-    throw new Error(`openStory('${storyId}'): Storybook shows "${error}".`);
+  const { autoplay, phase } = await page.evaluate(() => {
+    const render = window.__STORYBOOK_PREVIEW__?.currentRender;
+
+    return { autoplay: render?.renderOptions?.autoplay, phase: render?.phase };
+  });
+
+  if (autoplay === undefined || phase === undefined) {
+    throw new Error(
+      `openStory('${storyId}'): cannot read Storybook's render state; window.__STORYBOOK_PREVIEW__ changed shape.`,
+    );
   }
 
-  if (autoplay !== false) {
+  if (autoplay) {
     throw new Error(
       `openStory('${storyId}'): Storybook ran the play function; embed=true no longer turns autoplay off.`,
     );
   }
 
+  // sb-show-main appears before the story renders; afterEach, where the
+  // console.error gate runs, ends later.
+  await page.waitForFunction(
+    (donePhases) =>
+      donePhases.includes(
+        window.__STORYBOOK_PREVIEW__?.currentRender?.phase ?? '',
+      ),
+    ['finished', 'errored', 'aborted'],
+  );
+  await throwIfStoryErrored(page, storyId);
+
   return page.locator('#storybook-root');
+}
+
+async function throwIfStoryErrored(page: Page, storyId: string): Promise<void> {
+  const error = await page.evaluate(() =>
+    document.body.classList.contains('sb-show-errordisplay')
+      ? (document.getElementById('error-message')?.textContent ?? 'unknown')
+      : null,
+  );
+
+  if (error !== null) {
+    throw new Error(`openStory('${storyId}'): Storybook shows "${error}".`);
+  }
 }
 
 function hasStory(index: unknown, storyId: string): boolean {
