@@ -23,6 +23,9 @@ jobs:
       - run: npx prettier --check .
       - run: npx nx run-many -t lint typecheck test test-storybook build
       - run: npx nx run-many -t e2e
+      - run: npx nx e2e yeti-app-e2e
+        env:
+          FIXTURE_CONFIGURATION: production
 
   safari:
     # Real Safari, as the macOS image ships it (26.6 on every macOS image in
