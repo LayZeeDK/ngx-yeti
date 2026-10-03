@@ -54,6 +54,11 @@
         "port": 4400
       }
     },
+    "static-storybook": {
+      "options": {
+        "port": 4401
+      }
+    },
     "typecheck": {},
     "build-fast": {
       "command": "vite build --config vite.lib.config.mts",
