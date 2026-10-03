@@ -22,7 +22,7 @@ These targets use the Angular compiler with type checking:
 
 Configurations check one tsconfig: `-c src` for the library or application source, `-c spec` for specs, and `-c stories` for stories. The names are the same in every project, so `npm run typecheck -- -c spec` checks the specs of all projects. A project without the requested configuration runs its whole check. `typecheck` without a configuration is the gate for `check`, `affected`, and CI.
 
-`typecheck-watch` reruns `typecheck` through `nx watch` whenever the project or a project it depends on changes. Run it beside `serve` or `storybook`. It takes a configuration as `--args=--configuration=<name>`, and `npm run typecheck:watch` starts it for every project.
+`typecheck-watch` reruns `typecheck` through `nx watch` whenever the project or a project it depends on changes. Run it beside `serve` or `storybook`. It takes a configuration as `--args=--configuration=<name>`, and `npm run typecheck-watch` starts it for every project.
 
 Template errors appear only in `typecheck`. For example, `<yeti-nope />` in a template passes `test` and fails `typecheck` with `NG8001`. Angular skips its runtime unknown-element and unknown-property checks for AOT-compiled components, so `errorOnUnknownElements` in `setupTestBed` cannot replace `typecheck`.
 
