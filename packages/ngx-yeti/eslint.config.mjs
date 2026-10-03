@@ -50,19 +50,20 @@ export default [
           style: 'camelCase',
         },
       ],
+      // ADR 0080 note: figure[yetiDemo] and YetiFieldError are attribute
+      // components.
       '@angular-eslint/component-selector': [
         'error',
-        {
-          type: 'element',
-          prefix: 'yeti',
-          style: 'kebab-case',
-        },
+        [
+          { type: 'element', prefix: 'yeti', style: 'kebab-case' },
+          { type: 'attribute', prefix: 'yeti', style: 'camelCase' },
+        ],
       ],
     },
   },
   {
-    files: ['src/**/*.ts'],
-    ignores: ['src/**/*.spec.ts', 'src/**/*.stories.ts'],
+    files: ['src/**/*.ts', '*/src/**/*.ts'],
+    ignores: ['**/*.spec.ts', '**/*.stories.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
