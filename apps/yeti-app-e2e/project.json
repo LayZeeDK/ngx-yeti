@@ -11,9 +11,18 @@
         "default",
         "^production",
         "^{projectRoot}/tsconfig*.json",
-        { "externalDependencies": ["@playwright/test"] },
-        { "env": "FIXTURE_CONFIGURATION" },
-        { "env": "CI" }
+        {
+          "externalDependencies": ["@playwright/test"]
+        },
+        {
+          "env": "FIXTURE_CONFIGURATION"
+        },
+        {
+          "env": "CI"
+        },
+        {
+          "env": "FLOOR_CHROMIUM_PATH"
+        }
       ]
     }
   }
