@@ -1,9 +1,5 @@
 {
   "extends": "../../tsconfig.base.json",
-  "compilerOptions": {
-    "target": "es2022",
-    "module": "preserve"
-  },
   "files": [],
   "include": [],
   "references": [
