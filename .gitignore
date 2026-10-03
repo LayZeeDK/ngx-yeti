@@ -55,3 +55,6 @@ vitest.config.*.timestamp*
 
 .vitest/
 .vitest-attachments/
+
+# Written by Yeti's own build (bin/gen-llms.js); not part of the vendored source.
+/vendor/yeti/docs/
