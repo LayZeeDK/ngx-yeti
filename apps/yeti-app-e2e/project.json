@@ -5,31 +5,5 @@
   "sourceRoot": "apps/yeti-app-e2e/src",
   "implicitDependencies": ["yeti-app"],
   "// targets": "to see all targets run: nx show project yeti-app-e2e --web",
-  "targets": {
-    "e2e": {
-      "inputs": [
-        "default",
-        "^production",
-        "^{projectRoot}/tsconfig*.json",
-        {
-          "externalDependencies": ["@playwright/test"]
-        },
-        {
-          "env": "FIXTURE_CONFIGURATION"
-        },
-        {
-          "env": "CI"
-        },
-        {
-          "env": "FLOOR_CHROMIUM_PATH"
-        },
-        {
-          "env": "FLOOR_WEBKIT"
-        },
-        {
-          "env": "FLOOR_FIREFOX_E2E"
-        }
-      ]
-    }
-  }
+  "targets": {}
 }

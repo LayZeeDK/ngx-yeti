@@ -27,6 +27,28 @@
           "vite"
         ]
       }
+    ],
+    "e2e": [
+      "default",
+      "storybook",
+      {
+        "externalDependencies": ["@playwright/test"]
+      },
+      {
+        "env": "FIXTURE_CONFIGURATION"
+      },
+      {
+        "env": "CI"
+      },
+      {
+        "env": "FLOOR_CHROMIUM_PATH"
+      },
+      {
+        "env": "FLOOR_WEBKIT"
+      },
+      {
+        "env": "FLOOR_FIREFOX_E2E"
+      }
     ]
   },
   "targetDefaults": {
@@ -174,26 +196,7 @@
       }
     },
     "e2e": {
-      "inputs": [
-        "default",
-        "^production",
-        "^{projectRoot}/tsconfig*.json",
-        {
-          "externalDependencies": ["@playwright/test"]
-        },
-        {
-          "env": "CI"
-        },
-        {
-          "env": "FLOOR_CHROMIUM_PATH"
-        },
-        {
-          "env": "FLOOR_WEBKIT"
-        },
-        {
-          "env": "FLOOR_FIREFOX_E2E"
-        }
-      ]
+      "inputs": ["e2e", "^default"]
     },
     "@angular/build:dev-server": {
       "dependsOn": ["^yeti-build"]
@@ -203,6 +206,9 @@
     },
     "lint": {
       "dependsOn": ["^yeti-build"]
+    },
+    "e2e-ci--**/*": {
+      "inputs": ["e2e", "^default"]
     }
   },
   "plugins": [
