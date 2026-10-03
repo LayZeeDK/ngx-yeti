@@ -54,11 +54,13 @@ Each task below belongs to one future change. Delete its bullet in that change.
 
 One secondary entry point per item, plus `styles`, `generated-ids`, `fragment-links`, `navigation-close`, and the type-only `events`; the primary entry point `ngx-yeti` is types-only (building-blocks 1.3 and Part 2 row 50; `docs/specs/specs/events.md`; ADR 0011 clause 10).
 
-Create each entry point with the generator, which writes `packages/ngx-yeti/<item>/ng-package.json`, `<item>/src/index.ts`, and the `ngx-yeti/<item>` path alias in `tsconfig.base.json`:
+Create each entry point with the generator, never by hand:
 
 ```sh
 npx nx g @nx/angular:library-secondary-entry-point --library=ngx-yeti --name=<item> --skipModule
 ```
+
+It writes `packages/ngx-yeti/<item>/ng-package.json`, `<item>/src/index.ts`, the `ngx-yeti/<item>` path alias in `tsconfig.base.json`, and the entry's lines in `packages/ngx-yeti/tsconfig.lib.json`: `<item>/src/**/*.ts` in `include` and `<item>/`-prefixed copies of the spec and story patterns in `exclude`. An entry point made by hand lacks those lines, so `nx typecheck ngx-yeti -c src` does not check its source.
 
 Files in `packages/ngx-yeti/<item>/src/`:
 
