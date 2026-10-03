@@ -1,25 +1,22 @@
-import { expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { expectNoAxeViolations } from './axe';
-import { test } from './gallery';
+import { openStory } from './open-story';
 
 test.describe('NgxYeti stories', () => {
-  test('mount renders the story', async ({ mount }) => {
-    const root = await mount('src-lib-ngx-yeti--heading');
+  test('openStory renders the story', async ({ page }) => {
+    const root = await openStory(page, 'src-lib-ngx-yeti--heading');
 
     await expect(root.getByText('ngx-yeti works!')).toBeVisible();
   });
 
-  test('mount fails on an unknown story id', async ({ mount }) => {
-    await expect(mount('src-lib-ngx-yeti--missing')).rejects.toThrow(
-      "mount('src-lib-ngx-yeti--missing'): the Storybook build has no story with this id.",
+  test('openStory fails on an unknown story id', async ({ page }) => {
+    await expect(openStory(page, 'src-lib-ngx-yeti--missing')).rejects.toThrow(
+      "openStory('src-lib-ngx-yeti--missing'): the Storybook build has no story with this id.",
     );
   });
 
-  test('has no axe violations in the dark colour scheme', async ({
-    mount,
-    page,
-  }) => {
-    await mount('src-lib-ngx-yeti--primary');
+  test('has no axe violations in the dark colour scheme', async ({ page }) => {
+    await openStory(page, 'src-lib-ngx-yeti--primary');
     const html = page.locator('html');
     const lightBackground = await html.evaluate(
       (element) => getComputedStyle(element).backgroundColor,

@@ -13,11 +13,27 @@ const chromium = {
     ...(chromiumFloor && { launchOptions: { executablePath: chromiumFloor } }),
   },
 };
+const firefox = { name: 'firefox', use: { ...devices['Desktop Firefox'] } };
+const webkit = { name: 'webkit', use: { ...devices['Desktop Safari'] } };
+
+function projects(): (typeof chromium | typeof firefox | typeof webkit)[] {
+  if (process.env['FLOOR_WEBKIT']) {
+    return [webkit];
+  }
+
+  if (process.env['FLOOR_FIREFOX_E2E']) {
+    return [firefox];
+  }
+
+  return process.env['CI'] && !chromiumFloor
+    ? [chromium, firefox, webkit]
+    : [chromium];
+}
 
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
   use: {
-    baseURL: `${storybookURL}/iframe.html?embed=true`,
+    baseURL: `${storybookURL}/`,
     trace: 'on-first-retry',
   },
   // The plain `nx run` form lets @nx/playwright infer the static-storybook
@@ -29,12 +45,5 @@ export default defineConfig({
     cwd: workspaceRoot,
     timeout: 180_000,
   },
-  projects:
-    process.env['CI'] && !chromiumFloor
-      ? [
-          chromium,
-          { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-          { name: 'webkit', use: { ...devices['Desktop Safari'] } },
-        ]
-      : [chromium],
+  projects: projects(),
 });

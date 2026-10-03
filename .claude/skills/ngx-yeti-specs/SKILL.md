@@ -23,7 +23,7 @@ Each spec is long (30 to 100 KB). Read its Testing Decisions and Implementation 
 - A dated note (`- 2026-10-03: ...`) supersedes the earlier text of its own record.
 - A later dated decision supersedes an earlier one elsewhere. Ticket 50 (`issues/50-decide-open-points-of-the-specs.md`) and ticket 93 are the orchestrator's decisions under the user's full-AFK ruling, not the user's; each records how to overrule it.
 - `architecture-guide.md` ranks below every record (README).
-- The workspace's test configuration and the `ngx-yeti-testing` skill win over the Stack column of `building-blocks.md` 1.12, which predates ADR 0014's 2026-10-03 notes and ticket 93. Its stale points: a static fixture app served by a file server (the fixture is a server build with Prerender and Server routes), layer 1 in Chromium only (three engines in CI), layer 2 under `@angular/build:unit-test` (a Vitest command), `mount(storyId, props?)` (no props yet), and the floor "not yet decided" (ticket 93 decided it).
+- The workspace's test configuration and the `ngx-yeti-testing` skill win over the Stack column of `building-blocks.md` 1.12, which predates ADR 0014's 2026-10-03 notes and ticket 93. Its stale points: a static fixture app served by a file server (the fixture is a server build with Prerender and Server routes), layer 1 in Chromium only (three engines in CI), layer 2 under `@angular/build:unit-test` (a Vitest command), `mount(storyId, props?)` (stories open through `openStory(page, id)`, without props), and the floor "not yet decided" (ticket 93 decided it).
 - A spec that asserts CSS `:hover` in a play function moves that assertion to layer 2 or 4 (`ngx-yeti-stories` skill).
 
 ## Order of work
