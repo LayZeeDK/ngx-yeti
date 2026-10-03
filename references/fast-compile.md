@@ -20,6 +20,8 @@ These targets use the Angular compiler with type checking:
 
 `typecheck` runs `angular-typechecker` over each Angular project's solution `tsconfig.json`. It follows the references to the library, spec, and Storybook configs, so one run checks sources, templates, extended diagnostics, specs, stories, and the Vite and Vitest configs.
 
+`typecheck-watch` reruns `typecheck` through `nx watch` whenever the project or a project it depends on changes. Run it beside `serve` or `storybook` for type feedback while you work. It reuses the cached result when nothing relevant changed.
+
 Template errors appear only in `typecheck`. For example, `<yeti-nope />` in a template passes `test` and fails `typecheck` with `NG8001`. Angular skips its runtime unknown-element and unknown-property checks for AOT-compiled components, so `errorOnUnknownElements` in `setupTestBed` cannot replace `typecheck`.
 
 ## What fastCompile does not do
@@ -37,14 +39,19 @@ Analog reports that `fastCompile` passes about 91% of Angular's conformance suit
 
 ## Measurements
 
-Measured on 2026-10-03 with `vitest bench`, interleaved rounds, on scaffolded projects with almost no code. Startup dominates at this size, so the gaps are small.
+Measured on 2026-10-03 with `vitest bench`: two interleaved rounds, the machine otherwise idle, on scaffolded projects with almost no code. Startup dominates at this size, so expect larger gaps as code grows. Means:
 
-| Task                                            | Without fastCompile | With fastCompile |
-| ----------------------------------------------- | ------------------- | ---------------- |
-| `yeti-analog` `vite build`                      | 7.7 s               | 5.6 s            |
-| `yeti-analog` `vitest run`                      | 5.1 s               | 3.5 s            |
-| `ngx-yeti` Storybook build                      | 6.5 s               | 5.5 s            |
-| `nx test ngx-yeti`                              | 6.0 s               | 5.0 s            |
-| `nx build ngx-yeti` vs `nx build-fast ngx-yeti` | 4.4 s               | 4.2 s            |
+| Task                                                  | Without fastCompile | With fastCompile |
+| ----------------------------------------------------- | ------------------- | ---------------- |
+| `yeti-analog` dev server, first rendered page         | 4.3 s               | 3.3 s            |
+| `ngx-yeti` Storybook dev server, first compiled story | 4.6 s               | 3.6 s            |
+| `yeti-analog` `vite build` with prerendering          | 17.9 s              | 15.3 s           |
+| `yeti-analog` `vitest run`                            | 3.4 s               | 2.5 s            |
+| `ngx-yeti` Storybook build                            | 5.6 s               | 4.5 s            |
+| `ngx-yeti` story tests in three browsers              | 10.4 s              | 9.4 s            |
+| `nx test ngx-yeti`                                    | 4.9 s               | 3.9 s            |
+| `nx build ngx-yeti` vs `nx build-fast ngx-yeti`       | 3.3 s               | 3.3 s            |
 
-`typecheck` takes 4 to 6 s per project and runs beside these targets. `build-fast` gains little because the `ngc` declaration pass takes most of its time.
+`typecheck` takes 4 to 5 s per project and runs beside these targets. `build-fast` gains nothing because the `ngc` declaration pass takes most of its time.
+
+To benchmark a tool from `vitest bench`, remove the `VITEST*` and `NODE_ENV` variables from the environment of the spawned command. Otherwise Analog runs in test mode: the dev server renders with the browser bootstrap and crashes with `window is not defined`, and builds measure the wrong compile.
