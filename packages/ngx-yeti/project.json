@@ -92,7 +92,12 @@
           ]
         }
       ],
-      "outputs": ["{workspaceRoot}/dist/fast/{projectRoot}"]
+      "outputs": ["{workspaceRoot}/dist/fast/{projectRoot}"],
+      "configurations": {
+        "js": {
+          "command": "vite build --config vite.lib.config.mts --mode js"
+        }
+      }
     },
     "typecheck-watch": {}
   }

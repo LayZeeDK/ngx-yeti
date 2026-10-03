@@ -23,7 +23,7 @@ const typingsFile = 'types/ngx-yeti.d.ts';
 const isExternal = (id: string): boolean =>
   !/^[./\0]/.test(id) && !isAbsolute(id);
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   root: projectRoot,
   // In production mode Analog defines `ngDevMode`, `ngJitMode` and
   // `ngServerMode`. A library leaves them to the consuming application.
@@ -31,7 +31,9 @@ export default defineConfig({
   publicDir: false,
   plugins: [
     angular({ tsconfig, fastCompile: true, fastCompileMode: 'partial' }),
-    angularPackage(),
+    // `--mode js` compiles the JavaScript only, for a compile check that runs
+    // beside `nx typecheck`.
+    ...(mode === 'js' ? [] : [angularPackage()]),
   ],
   build: {
     outDir: join(projectRoot, '../../dist/fast/packages/ngx-yeti'),
@@ -49,7 +51,7 @@ export default defineConfig({
       experimental: { attachDebugInfo: 'none' },
     },
   },
-});
+}));
 
 /** Emits the rest of the package beside the FESM: typings, manifest, docs. */
 function angularPackage(): Plugin {
