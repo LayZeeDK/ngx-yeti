@@ -30,11 +30,15 @@ export default defineConfig({
             enabled: true,
             headless: true,
             provider: playwright(),
-            instances: [
-              { browser: 'chromium' },
-              { browser: 'firefox' },
-              { browser: 'webkit' },
-            ],
+            // Local browsers are x64 under emulation on Windows on Arm, so only
+            // CI runs all three engines (ADR 0014, Consequences).
+            instances: process.env['CI']
+              ? [
+                  { browser: 'chromium' },
+                  { browser: 'firefox' },
+                  { browser: 'webkit' },
+                ]
+              : [{ browser: 'chromium' }],
           },
         },
       },
