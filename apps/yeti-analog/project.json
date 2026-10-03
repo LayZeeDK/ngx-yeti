@@ -4,24 +4,13 @@
   "projectType": "application",
   "prefix": "app",
   "sourceRoot": "apps/yeti-analog/src",
-  "tags": [],
+  "tags": ["type:app"],
   "targets": {
     "build": {
       "outputs": ["{workspaceRoot}/dist/apps/yeti-analog"]
     },
     "typecheck": {
-      "executor": "angular-typechecker:typecheck",
-      "options": {
-        "tsConfig": "apps/yeti-analog/tsconfig.json"
-      },
-      "configurations": {
-        "app": {
-          "tsConfig": "apps/yeti-analog/tsconfig.app.json"
-        },
-        "spec": {
-          "tsConfig": "apps/yeti-analog/tsconfig.spec.json"
-        }
-      }
+      "executor": "angular-typechecker:typecheck"
     },
     "typecheck-watch": {}
   }

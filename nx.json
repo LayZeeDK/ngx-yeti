@@ -71,28 +71,69 @@
       ],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"]
     },
-    "angular-typechecker:typecheck": {
-      "cache": true,
-      "outputs": [],
-      "inputs": [
-        "default",
-        "{projectRoot}/tsconfig*.json",
-        "{projectRoot}/package.json",
-        "{workspaceRoot}/tsconfig.base.json",
-        "^default",
-        {
-          "dependentTasksOutputFiles": "**/*.{d.ts,d.cts,d.mts,tsbuildinfo}",
-          "transitive": true
-        },
-        {
-          "externalDependencies": ["typescript", "@angular/compiler-cli"]
-        }
-      ]
-    },
     "typecheck-watch": {
       "continuous": true,
       "command": "nx watch --projects={projectName} --includeDependencies --initialRun -- nx typecheck {projectName}"
-    }
+    },
+    "typecheck": [
+      {
+        "executor": "angular-typechecker:typecheck",
+        "cache": true,
+        "outputs": [],
+        "inputs": [
+          "default",
+          "{projectRoot}/tsconfig*.json",
+          "{projectRoot}/package.json",
+          "{workspaceRoot}/tsconfig.base.json",
+          "^default",
+          {
+            "dependentTasksOutputFiles": "**/*.{d.ts,d.cts,d.mts,tsbuildinfo}",
+            "transitive": true
+          },
+          {
+            "externalDependencies": ["typescript", "@angular/compiler-cli"]
+          }
+        ],
+        "options": {
+          "tsConfig": "{projectRoot}/tsconfig.json"
+        },
+        "configurations": {
+          "spec": {
+            "tsConfig": "{projectRoot}/tsconfig.spec.json"
+          }
+        }
+      },
+      {
+        "filter": {
+          "projects": ["tag:type:lib"]
+        },
+        "configurations": {
+          "src": {
+            "tsConfig": "{projectRoot}/tsconfig.lib.json"
+          }
+        }
+      },
+      {
+        "filter": {
+          "projects": ["tag:type:app"]
+        },
+        "configurations": {
+          "src": {
+            "tsConfig": "{projectRoot}/tsconfig.app.json"
+          }
+        }
+      },
+      {
+        "filter": {
+          "projects": ["tag:storybook"]
+        },
+        "configurations": {
+          "stories": {
+            "tsConfig": "{projectRoot}/.storybook/tsconfig.json"
+          }
+        }
+      }
+    ]
   },
   "plugins": [
     {
