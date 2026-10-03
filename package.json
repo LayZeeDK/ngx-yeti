@@ -11,6 +11,7 @@
     "build-storybook": "nx run-many -t build-storybook",
     "lint": "nx run-many -t lint",
     "typecheck": "nx run-many -t typecheck",
+    "typecheck:watch": "nx run-many -t typecheck-watch",
     "test": "nx run-many -t test",
     "test:storybook": "nx run-many -t test-storybook",
     "e2e": "nx run-many -t e2e",
