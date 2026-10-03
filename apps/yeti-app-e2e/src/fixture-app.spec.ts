@@ -18,12 +18,12 @@ for (const { kind, prefix } of routeKinds) {
         'Angular logs hydration diagnostics in development mode only',
       );
 
-      const hydration = watchHydration(page);
+      const expectCleanHydration = watchHydration(page);
 
       await page.goto(`${prefix}highlight`);
 
       await expect(page.getByText('Highlighted text')).toBeVisible();
-      await hydration.expectClean();
+      await expectCleanHydration();
     });
 
     test.describe('with JavaScript off', () => {

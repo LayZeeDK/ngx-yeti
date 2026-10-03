@@ -7,11 +7,8 @@ import { expect, type Page } from '@playwright/test';
 const hydrationSummary =
   /^Angular hydrated \d+ component\(s\) and \d+ node\(s\), \d+ component\(s\) were skipped\./;
 
-export interface HydrationWatch {
-  expectClean(): Promise<void>;
-}
-
-export function watchHydration(page: Page): HydrationWatch {
+/** Returns a function that expects a clean hydration. */
+export function watchHydration(page: Page): () => Promise<void> {
   const messages: string[] = [];
 
   page.on('console', (message) => {
@@ -21,17 +18,15 @@ export function watchHydration(page: Page): HydrationWatch {
     messages.push(error.message);
   });
 
-  return {
-    async expectClean(): Promise<void> {
-      await expect
-        .poll(() => messages.find((text) => hydrationSummary.test(text)), {
-          message: 'Angular logs its development-mode hydration summary',
-        })
-        .toContain(', 0 component(s) were skipped.');
-      expect(
-        messages.filter((text) => /NG05\d\d/.test(text)),
-        'no NG05xx hydration message',
-      ).toEqual([]);
-    },
+  return async () => {
+    await expect
+      .poll(() => messages.find((text) => hydrationSummary.test(text)), {
+        message: 'Angular logs its development-mode hydration summary',
+      })
+      .toContain(', 0 component(s) were skipped.');
+    expect(
+      messages.filter((text) => /NG05\d\d/.test(text)),
+      'no NG05xx hydration message',
+    ).toEqual([]);
   };
 }

@@ -7,10 +7,7 @@ const mainBundle = /\/main(-[0-9A-Z]+)?\.js$/;
  * holds back `DOMContentLoaded`.
  */
 export async function holdBackMainBundle(page: Page): Promise<() => void> {
-  let release: () => void = () => undefined;
-  const released = new Promise<void>((resolve) => {
-    release = resolve;
-  });
+  const { promise: released, resolve } = Promise.withResolvers();
 
   await page.route(mainBundle, async (route) => {
     await released;
@@ -18,6 +15,6 @@ export async function holdBackMainBundle(page: Page): Promise<() => void> {
   });
 
   return () => {
-    release();
+    resolve(undefined);
   };
 }
