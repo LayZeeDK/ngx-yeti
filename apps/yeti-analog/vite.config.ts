@@ -22,7 +22,10 @@ export default defineConfig({
   plugins: [
     // Nx runs inferred targets from the project root, but Analog resolves
     // its dependencies and Nitro output from the workspace root.
-    analog({ workspaceRoot: path.join(import.meta.dirname, '../..') }),
+    analog({
+      workspaceRoot: path.join(import.meta.dirname, '../..'),
+      fastCompile: true,
+    }),
   ],
   test: {
     globals: true,
