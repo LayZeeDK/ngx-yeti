@@ -31,6 +31,10 @@ jobs:
         run: |
           path=$(npx --no-install @puppeteer/browsers install "chrome@$CHROME_FLOOR_VERSION" --path "$RUNNER_TEMP/floor" | awk '{print $2}')
           echo "FLOOR_CHROMIUM_PATH=$path" >> "$GITHUB_ENV"
+      # Each e2e web server starts its own Nx process, and Nx shares no
+      # discrete task between processes; built once here, yeti-build is a
+      # cache hit in all of them instead of racing over dist/.
+      - run: npx nx run yeti-css:yeti-build
       - run: npx nx run-many -t test e2e -p ngx-yeti ngx-yeti-e2e yeti-app-e2e
 
   firefox-145:
@@ -64,6 +68,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm install --no-save playwright@1.59.1 @playwright/test@1.59.1
+      # Each e2e web server starts its own Nx process, and Nx shares no
+      # discrete task between processes; built once here, yeti-build is a
+      # cache hit in all of them instead of racing over dist/.
+      - run: npx nx run yeti-css:yeti-build
       - run: npx nx run-many -t test e2e -p ngx-yeti ngx-yeti-e2e yeti-app-e2e
 
   firefox-146-e2e:
@@ -85,4 +93,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm install --no-save playwright@1.58.2 @playwright/test@1.58.2
+      # Each e2e web server starts its own Nx process, and Nx shares no
+      # discrete task between processes; built once here, yeti-build is a
+      # cache hit in all of them instead of racing over dist/.
+      - run: npx nx run yeti-css:yeti-build
       - run: npx nx run-many -t e2e -p ngx-yeti-e2e yeti-app-e2e
