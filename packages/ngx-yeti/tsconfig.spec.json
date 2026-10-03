@@ -8,6 +8,7 @@
     "src/**/*.ts",
     "src/**/*.d.ts",
     "vitest.config.mts",
-    "vitest.unit.config.mts"
+    "vitest.unit.config.mts",
+    "vite.lib.config.mts"
   ]
 }

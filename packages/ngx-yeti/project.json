@@ -58,6 +58,30 @@
       "options": {
         "tsConfig": "packages/ngx-yeti/tsconfig.json"
       }
+    },
+    "build-fast": {
+      "command": "vite build --config vite.lib.config.mts",
+      "options": {
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "production",
+        "^production",
+        "{workspaceRoot}/tsconfig.base.json",
+        {
+          "externalDependencies": [
+            "vite",
+            "@analogjs/vite-plugin-angular",
+            "@angular/compiler",
+            "@angular/compiler-cli",
+            "typescript",
+            "rolldown",
+            "rolldown-plugin-dts"
+          ]
+        }
+      ],
+      "outputs": ["{workspaceRoot}/dist/fast/{projectRoot}"]
     }
   }
 }
