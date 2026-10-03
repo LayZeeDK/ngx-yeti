@@ -65,6 +65,9 @@
       "continuous": true,
       "executor": "@angular/build:dev-server",
       "defaultConfiguration": "development",
+      "options": {
+        "servePath": "/sub/"
+      },
       "configurations": {
         "production": {
           "buildTarget": "yeti-app:build:production"
