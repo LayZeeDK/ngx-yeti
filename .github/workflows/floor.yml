@@ -1,8 +1,8 @@
 name: Browser floor
 
 # Layers 2 and 4 at the Baseline 2025 floor of ADR 0002 on every pull request
-# and push to main. Safari 26.2 has no runner; Edge 141 is the Chromium 141
-# engine.
+# and every push to main or release/**. Safari 26.2 has no runner; Edge 141
+# is the Chromium 141 engine.
 on:
   pull_request:
   push:
