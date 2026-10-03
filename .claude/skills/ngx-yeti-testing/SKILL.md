@@ -25,7 +25,6 @@ The file suffix routes a spec to its Vitest project (`packages/ngx-yeti/vitest.u
 | `wcagTags`                                                      | The six axe tags of every accessibility check                                                                                           |
 | `parseColor`, `composite`, `relativeLuminance`, `contrastRatio` | Exact WCAG contrast from computed styles (`ngx-yeti-accessibility` skill)                                                               |
 | `replayShapedEvent(event)`                                      | Patches an event as Angular's replay does (`preventDefault()` throws after running), to prove a handler changes state before calling it |
-| `loadYetiManifest()`                                            | Yeti's manifest at the pin, typed by Yeti's own declarations                                                                            |
 
 `@ngx-yeti/testing/server` holds Node-only helpers: `renderServer(rootComponent, { providers, hydrationFeatures, url, document })` renders through `renderApplication` with `provideServerRendering()` and `provideClientHydration(withI18nSupport())` and resolves the page HTML. Calls started together must pass the same `hydrationFeatures`, because Angular keeps i18n hydration support in a process-wide flag.
 
@@ -39,7 +38,7 @@ The file suffix routes a spec to its Vitest project (`packages/ngx-yeti/vitest.u
 ## Layer 3
 
 - Every item has `<item>.ssr.spec.ts`: a fixture component with one `i18n` text (building-blocks 1.11 decision 11), rendered with `renderServer()`, asserting the server HTML. `packages/ngx-yeti/src/lib/highlight/highlight.ssr.spec.ts` is the pattern.
-- The contract check (ADR 0014 point 3) reads `loadYetiManifest()` and asserts every class, attribute, marker, value, and event the spec maps has its input, union member, or output, and that no union holds a value the manifest lacks. The first item spec designs the per-item API in a `*.node.spec.ts`; later specs reuse it.
+- The contract check (ADR 0014 point 3) reads `yeti-css/manifest` (typed by Yeti's own declarations) and asserts every class, attribute, marker, value, and event the spec maps has its input, union member, or output, and that no union holds a value the manifest lacks. The first item spec designs the per-item API in a `*.node.spec.ts`; later specs reuse it. `packages/ngx-yeti/src/yeti-manifest.node.spec.ts` already pins the manifest's 49 components.
 
 ## Layer 4
 
