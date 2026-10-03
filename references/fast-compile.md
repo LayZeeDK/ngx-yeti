@@ -4,12 +4,12 @@ Most Angular compiles in this workspace use Analog `fastCompile`. It compiles in
 
 ## Which targets compile with fastCompile
 
-| Project       | Targets                                          | Config                                                                                                                                                                |
-| ------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ngx-yeti`    | `test`                                           | `packages/ngx-yeti/vitest.unit.config.mts`, AOT (`jit: false`)                                                                                                        |
-| `ngx-yeti`    | `storybook`, `build-storybook`, `test-storybook` | `viteFinal` in `packages/ngx-yeti/.storybook/main.ts` swaps the Analog plugins that `@storybook/angular-vite` adds, because the framework has no `fastCompile` option |
-| `ngx-yeti`    | `build-fast` (experimental)                      | `packages/ngx-yeti/vite.lib.config.mts`                                                                                                                               |
-| `yeti-analog` | `build`, `serve`, `test`                         | `analog({ fastCompile: true })` in `apps/yeti-analog/vite.config.ts`                                                                                                  |
+| Project       | Targets                                                           | Config                                                                                                                                                                |
+| ------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ngx-yeti`    | `test`                                                            | `packages/ngx-yeti/vitest.unit.config.mts`, AOT (`jit: false`)                                                                                                        |
+| `ngx-yeti`    | `storybook`, `build-storybook`, `test-storybook`                  | `viteFinal` in `packages/ngx-yeti/.storybook/main.ts` swaps the Analog plugins that `@storybook/angular-vite` adds, because the framework has no `fastCompile` option |
+| `ngx-yeti`    | `build-fast` (experimental), `build-fast -c js` (JavaScript only) | `packages/ngx-yeti/vite.lib.config.mts`                                                                                                                               |
+| `yeti-analog` | `build`, `serve`, `test`                                          | `analog({ fastCompile: true })` in `apps/yeti-analog/vite.config.ts`                                                                                                  |
 
 These targets use the Angular compiler with type checking:
 
@@ -18,9 +18,11 @@ These targets use the Angular compiler with type checking:
 
 ## What typecheck covers
 
-`typecheck` runs `angular-typechecker` over each Angular project's solution `tsconfig.json`. It follows the references to the library, spec, and Storybook configs, so one run checks sources, templates, extended diagnostics, specs, stories, and the Vite and Vitest configs.
+`typecheck` runs `angular-typechecker` over the solution `tsconfig.json` of each Angular project. It follows the references to the source, spec, and Storybook configs, so one run checks sources, templates, extended diagnostics, specs, stories, and the Vite and Vitest configs. `nx.json` defines the target once for every project, keyed on the `type:lib`, `type:app`, and `storybook` tags.
 
-`typecheck-watch` reruns `typecheck` through `nx watch` whenever the project or a project it depends on changes. Run it beside `serve` or `storybook` for type feedback while you work. It reuses the cached result when nothing relevant changed.
+Configurations check one tsconfig: `-c src` for the library or application source, `-c spec` for specs, and `-c stories` for stories. The names are the same in every project, so `npm run typecheck -- -c spec` checks the specs of all projects. A project without the requested configuration runs its whole check. `typecheck` without a configuration is the gate for `check`, `affected`, and CI.
+
+`typecheck-watch` reruns `typecheck` through `nx watch` whenever the project or a project it depends on changes. Run it beside `serve` or `storybook`. It takes a configuration as `--args=--configuration=<name>`, and `npm run typecheck:watch` starts it for every project.
 
 Template errors appear only in `typecheck`. For example, `<yeti-nope />` in a template passes `test` and fails `typecheck` with `NG8001`. Angular skips its runtime unknown-element and unknown-property checks for AOT-compiled components, so `errorOnUnknownElements` in `setupTestBed` cannot replace `typecheck`.
 
@@ -34,24 +36,12 @@ Analog reports that `fastCompile` passes about 91% of Angular's conformance suit
 ## Gotchas no config file explains
 
 - Nx runs inferred targets from the project root. Analog resolves its server dependencies and Nitro output from `process.cwd()`, so `apps/yeti-analog/vite.config.ts` passes `workspaceRoot`. Without it, prerendering fails with `window is not defined` and Nitro writes inside the app folder.
+- `yeti-analog` names the `typecheck` executor in its `project.json`. Without it, the `tsc` typecheck that `@nx/vite/plugin` infers keeps its executor and ignores the `nx.json` defaults.
 - `vitest.unit.config.mts` is separate from `vitest.config.mts` because Vitest loads every project's plugins, even with `--project`. Sharing the file loads Storybook into each unit test run and costs about one second.
 - The `production` named input excludes `{projectRoot}/vitest.*` and `src/test-setup.ts`, and `@nx/dependency-checks` ignores `vite.lib.config.mts`. Otherwise the lint rule demands test and build tools as peer dependencies of `ngx-yeti`.
 
-## Measurements
+## What the split costs and gains
 
-Measured on 2026-10-03 with `vitest bench`: two interleaved rounds, the machine otherwise idle, on scaffolded projects with almost no code. Startup dominates at this size, so expect larger gaps as code grows. Means:
+On these scaffolds, fastCompile shortens dev server starts, builds, and test runs by about 10 to 35%. Running a fastCompile task beside its `typecheck` configuration finishes about as fast as the regular type-checking task, or up to 20% slower for the smallest tasks, because both processes pay startup. The split grows more slowly with code size and reaches parity for the library build at 150 components. Storybook gains type checking for stories at no extra wall-clock time. [The benchmarks](../docs/benchmarks/fast-compile.md) have the numbers and the method.
 
-| Task                                                  | Without fastCompile | With fastCompile |
-| ----------------------------------------------------- | ------------------- | ---------------- |
-| `yeti-analog` dev server, first rendered page         | 4.3 s               | 3.3 s            |
-| `ngx-yeti` Storybook dev server, first compiled story | 4.6 s               | 3.6 s            |
-| `yeti-analog` `vite build` with prerendering          | 17.9 s              | 15.3 s           |
-| `yeti-analog` `vitest run`                            | 3.4 s               | 2.5 s            |
-| `ngx-yeti` Storybook build                            | 5.6 s               | 4.5 s            |
-| `ngx-yeti` story tests in three browsers              | 10.4 s              | 9.4 s            |
-| `nx test ngx-yeti`                                    | 4.9 s               | 3.9 s            |
-| `nx build ngx-yeti` vs `nx build-fast ngx-yeti`       | 3.3 s               | 3.3 s            |
-
-`typecheck` takes 4 to 5 s per project and runs beside these targets. `build-fast` gains nothing because the `ngc` declaration pass takes most of its time.
-
-To benchmark a tool from `vitest bench`, remove the `VITEST*` and `NODE_ENV` variables from the environment of the spawned command. Otherwise Analog runs in test mode: the dev server renders with the browser bootstrap and crashes with `window is not defined`, and builds measure the wrong compile.
+To benchmark a tool from `vitest bench`, remove the `VITEST*` and `NODE_ENV` variables from the environment of the spawned command. Otherwise Analog runs in test mode: the dev server crashes with `window is not defined`, and builds take a different path.

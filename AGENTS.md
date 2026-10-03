@@ -26,6 +26,6 @@
 
 Targets that compile with Analog `fastCompile` never type-check. A green `test`, `build-fast`, Storybook target, or `yeti-analog` build says nothing about types or templates. Run `nx typecheck` beside them. `npm run check` and `npm run affected` do both.
 
-Run `nx typecheck-watch <project>` beside `serve` or `storybook` for type feedback while you work.
+Run `nx typecheck-watch <project>` beside `serve` or `storybook` for type feedback while you work. To check one tsconfig, add `-c src`, `-c spec`, or `-c stories` to `nx typecheck`.
 
 Read `references/fast-compile.md` before you change a Vite, Vitest, or Storybook config, add an Angular project, or move a target onto or off `fastCompile`.
