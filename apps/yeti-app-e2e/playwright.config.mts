@@ -41,8 +41,9 @@ export default defineConfig({
     timeout: 300_000,
     cwd: workspaceRoot,
   },
-  projects:
-    process.env['CI'] && !chromiumFloor
+  projects: process.env['FLOOR_WEBKIT']
+    ? [{ name: 'webkit', use: { ...devices['Desktop Safari'] } }]
+    : process.env['CI'] && !chromiumFloor
       ? [
           chromium,
           { name: 'firefox', use: { ...devices['Desktop Firefox'] } },

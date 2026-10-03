@@ -47,3 +47,22 @@ jobs:
       - run: npx playwright install-deps firefox
       # WebdriverIO downloads Firefox 145 and geckodriver itself.
       - run: npx nx test ngx-yeti
+
+  webkit-26-4:
+    runs-on: ubuntu-latest
+    # Playwright 1.59.1 bundles WebKit 26.4, the earliest label not below
+    # Safari 26.2. A Playwright release drives only its own WebKit build, so
+    # the job runs in that release's image and installs the same release.
+    container: mcr.microsoft.com/playwright:v1.59.1-noble
+    env:
+      FLOOR_WEBKIT: 'true'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save playwright@1.59.1 @playwright/test@1.59.1
+      # The Storybook e2e needs mount(storyId), which Playwright 1.62 added.
+      - run: npx nx run-many -t test e2e -p ngx-yeti yeti-app-e2e

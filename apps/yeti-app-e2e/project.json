@@ -22,6 +22,9 @@
         },
         {
           "env": "FLOOR_CHROMIUM_PATH"
+        },
+        {
+          "env": "FLOOR_WEBKIT"
         }
       ]
     }

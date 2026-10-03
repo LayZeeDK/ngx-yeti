@@ -52,6 +52,9 @@
         },
         {
           "env": "FLOOR_FIREFOX"
+        },
+        {
+          "env": "FLOOR_WEBKIT"
         }
       ],
       "outputs": ["{workspaceRoot}/coverage/unit/{projectRoot}"]

@@ -24,6 +24,12 @@ function browserEngines(): Pick<
     };
   }
 
+  // Playwright 1.59.1, whose WebKit is the earliest labelled at or above
+  // Safari 26.2; the floor job installs it in place of the current release.
+  if (process.env['FLOOR_WEBKIT'] === 'true') {
+    return { provider: playwright(), instances: [{ browser: 'webkit' }] };
+  }
+
   if (chromiumFloor) {
     return {
       provider: playwright({
