@@ -12,12 +12,14 @@ export default defineConfig({
   },
   server: {
     port: 4300,
+    strictPort: true,
     fs: {
       allow: ['.'],
     },
   },
   preview: {
     port: 4300,
+    strictPort: true,
   },
   plugins: [
     // Nx runs inferred targets from the project root, but Analog resolves
