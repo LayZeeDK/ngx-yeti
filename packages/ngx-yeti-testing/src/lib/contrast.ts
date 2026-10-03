@@ -27,30 +27,24 @@ export function parseColor(value: string): SrgbColor {
     return parseHex(css, value);
   }
 
-  const match = /^([a-z]+)\(([^()]*)\)$/.exec(css);
+  const [, name, channelPart, alphaPart] =
+    /^([a-z]+)\(([^()/]*)(?:\/([^()/]*))?\)$/.exec(css) ?? [];
 
-  if (match === null) {
-    throw new Error(`Unsupported colour: ${value}`);
-  }
-
-  const [, name = '', body = ''] = match;
-  const [channelPart = '', alphaPart, extra] = body.split('/');
-
-  if (extra !== undefined) {
+  if (name === undefined || channelPart === undefined) {
     throw new Error(`Unsupported colour: ${value}`);
   }
 
   const tokens = channelPart.split(/[\s,]+/).filter((token) => token !== '');
   const isRgb = name === 'rgb' || name === 'rgba';
-  const legacyAlpha =
-    isRgb && alphaPart === undefined && tokens.length === 4
-      ? tokens.pop()
-      : undefined;
-  const alphaToken = alphaPart?.trim() ?? legacyAlpha;
+  // Legacy `rgba(r, g, b, a)` carries the alpha as a fourth channel.
+  const hasLegacyAlpha =
+    isRgb && alphaPart === undefined && tokens.length === 4;
+  const channelTokens = hasLegacyAlpha ? tokens.slice(0, 3) : tokens;
+  const alphaToken = hasLegacyAlpha ? tokens.at(-1) : alphaPart?.trim();
   const alpha = alphaToken === undefined ? 1 : parsePercentable(alphaToken, 1);
 
   if (isRgb) {
-    const [r, g, b] = channels(tokens, 3, value);
+    const [r, g, b] = threeChannels(channelTokens, value);
 
     return srgb(
       parsePercentable(r, 255) / 255,
@@ -61,7 +55,7 @@ export function parseColor(value: string): SrgbColor {
   }
 
   if (name === 'oklab') {
-    const [l, a, b] = channels(tokens, 3, value);
+    const [l, a, b] = threeChannels(channelTokens, value);
 
     return fromOklab(
       parsePercentable(l, 1),
@@ -72,7 +66,7 @@ export function parseColor(value: string): SrgbColor {
   }
 
   if (name === 'oklch') {
-    const [l, c, h] = channels(tokens, 3, value);
+    const [l, c, h] = threeChannels(channelTokens, value);
     const chroma = parsePercentable(c, oklabPercentScale);
     const hue = (parseHue(h) * Math.PI) / 180;
 
@@ -85,15 +79,20 @@ export function parseColor(value: string): SrgbColor {
   }
 
   if (name === 'color') {
-    const [space, r, g, b] = channels(tokens, 4, value);
+    const [space, ...rest] = channelTokens;
+    const [r, g, b] = threeChannels(rest, value);
 
     if (space !== 'srgb' && space !== 'srgb-linear') {
       throw new Error(`Unsupported colour space: ${value}`);
     }
 
-    const rgb = [r, g, b].map((channel) => parsePercentable(channel, 1));
-    const [red = 0, green = 0, blue = 0] =
-      space === 'srgb-linear' ? rgb.map(encodeChannel) : rgb;
+    const transfer =
+      space === 'srgb-linear'
+        ? encodeChannel
+        : (channel: number): number => channel;
+    const red = transfer(parsePercentable(r, 1));
+    const green = transfer(parsePercentable(g, 1));
+    const blue = transfer(parsePercentable(b, 1));
 
     return srgb(red, green, blue, alpha);
   }
@@ -163,40 +162,46 @@ function toColor(color: SrgbColor | string): SrgbColor {
   return typeof color === 'string' ? parseColor(color) : color;
 }
 
-function channels(
+function threeChannels(
   tokens: readonly string[],
-  count: number,
   value: string,
-): string[] {
-  if (tokens.length !== count) {
-    throw new Error(`Expected ${String(count)} channels in ${value}`);
+): readonly [string, string, string] {
+  const [first, second, third, ...extra] = tokens;
+
+  if (
+    first === undefined ||
+    second === undefined ||
+    third === undefined ||
+    extra.length > 0
+  ) {
+    throw new Error(`Expected 3 channels in ${value}`);
   }
 
-  return [...tokens];
+  return [first, second, third];
 }
 
-function parseNumber(token: string | undefined): number {
+function parseNumber(token: string): number {
   if (token === 'none') {
     return 0;
   }
 
   const number = Number(token);
 
-  if (token === undefined || token === '' || !Number.isFinite(number)) {
-    throw new Error(`Unsupported colour channel: ${String(token)}`);
+  if (token === '' || !Number.isFinite(number)) {
+    throw new Error(`Unsupported colour channel: ${token}`);
   }
 
   return number;
 }
 
-function parsePercentable(token: string | undefined, scale: number): number {
-  return token?.endsWith('%') === true
+function parsePercentable(token: string, scale: number): number {
+  return token.endsWith('%')
     ? (parseNumber(token.slice(0, -1)) / 100) * scale
     : parseNumber(token);
 }
 
-function parseHue(token: string | undefined): number {
-  return token?.endsWith('deg') === true
+function parseHue(token: string): number {
+  return token.endsWith('deg')
     ? parseNumber(token.slice(0, -3))
     : parseNumber(token);
 }
@@ -209,11 +214,15 @@ function parseHex(css: string, value: string): SrgbColor {
   }
 
   const full = digits.length <= 4 ? digits.replace(/./g, '$&$&') : digits;
-  const [r = 0, g = 0, b = 0, alpha = 255] = (full.match(/../g) ?? []).map(
-    (pair) => Number.parseInt(pair, 16),
-  );
+  const channel = (index: number): number =>
+    Number.parseInt(full.slice(index * 2, index * 2 + 2), 16) / 255;
 
-  return srgb(r / 255, g / 255, b / 255, alpha / 255);
+  return srgb(
+    channel(0),
+    channel(1),
+    channel(2),
+    full.length === 8 ? channel(3) : 1,
+  );
 }
 
 function fromOklab(

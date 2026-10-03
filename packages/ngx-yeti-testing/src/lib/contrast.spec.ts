@@ -124,6 +124,9 @@ describe(parseColor, () => {
     'hsl(0 0% 0%)',
     'color(display-p3 1 0 0)',
     'rgb(1 2)',
+    'rgb(1 2 3 4 / 1)',
+    'rgb(0 0 0 / 1 / 1)',
+    'color(srgb 1 0)',
     'red',
     '#12',
   ])('rejects %s', (css) => {
