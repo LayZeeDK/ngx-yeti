@@ -88,6 +88,10 @@
           "externalDependencies": ["typescript", "@angular/compiler-cli"]
         }
       ]
+    },
+    "typecheck-watch": {
+      "continuous": true,
+      "command": "nx watch --projects={projectName} --includeDependencies --initialRun -- nx typecheck {projectName}"
     }
   },
   "plugins": [

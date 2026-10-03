@@ -84,6 +84,7 @@
       "options": {
         "tsConfig": "apps/yeti-app/tsconfig.json"
       }
-    }
+    },
+    "typecheck-watch": {}
   }
 }

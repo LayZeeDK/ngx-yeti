@@ -82,6 +82,7 @@
         }
       ],
       "outputs": ["{workspaceRoot}/dist/fast/{projectRoot}"]
-    }
+    },
+    "typecheck-watch": {}
   }
 }
