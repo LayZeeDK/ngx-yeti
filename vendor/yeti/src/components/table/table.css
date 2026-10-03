@@ -1,0 +1,58 @@
+/* Table: the element styled in place. It stays a table for assistive tech;
+   a wide one scrolls inside a scroller. */
+@layer yeti.components {
+	.table {
+		inline-size: 100%;
+		border-collapse: collapse;
+		font-size: var(--_yeti-size-text);
+	}
+	.table:not([data-size]) { --_yeti-size-text: var(--yeti-text-md); --_yeti-size-space: var(--yeti-space-sm); }
+	.table > caption {
+		padding-block: var(--_yeti-size-space);
+		text-align: start;
+		font-weight: var(--yeti-weight-strong);
+	}
+	.table :is(th, td) {
+		padding: var(--_yeti-size-space) var(--yeti-space-sm);
+		text-align: start;
+		vertical-align: top;
+		border-block-end: var(--yeti-border-width) solid var(--yeti-table-border);
+	}
+	.table > thead th {
+		font-weight: var(--yeti-weight-strong);
+		border-block-end-color: var(--yeti-color-border-strong);
+	}
+	.table [data-numeric] {
+		text-align: end;
+	}
+	/* data-nowrap on the table keeps every cell's line; on a single th/td it
+	   keeps that one cell's line. A wide result goes in a scroller. */
+	.table[data-nowrap] :is(th, td), .table :is(th, td)[data-nowrap] { white-space: nowrap; }
+	/* data-fixed shares the width equally between the columns, whatever their
+	   content, which is what a comparison reads across; a width on a first-row
+	   cell still sets that column's, and the rest share what is left. */
+	.table[data-fixed] { table-layout: fixed; }
+	/* data-align on a cell aligns that cell; on a row, the row's cells. The
+	   row's rule is lowered with :where so a cell's own data-align, or its
+	   data-numeric, still wins. */
+	.table :is(th, td)[data-align="start"] { text-align: start; }
+	.table :is(th, td)[data-align="center"] { text-align: center; }
+	.table :is(th, td)[data-align="end"] { text-align: end; }
+	.table tr:where([data-align="start"]) > :is(th, td) { text-align: start; }
+	.table tr:where([data-align="center"]) > :is(th, td) { text-align: center; }
+	.table tr:where([data-align="end"]) > :is(th, td) { text-align: end; }
+	.table[data-striped] > tbody > tr:nth-child(even) { background-color: var(--yeti-table-stripe); }
+	.table[data-hover] > tbody > tr:hover { background-color: var(--yeti-color-surface-sunken); }
+	.table[data-border] :is(th, td) { border: var(--yeti-border-width) solid var(--yeti-table-border); }
+	.table[data-border] > thead th { border-block-end-color: var(--yeti-color-border-strong); }
+	/* A head pinned with data-sticky is painted with the page's surface, so
+	   the rows passing under it do not show through. A collapsed border
+	   belongs to the table and stays behind when the head moves, so the rule
+	   under the head is drawn as an inset shadow on its cells instead, and
+	   travels with them. */
+	.table > thead[data-sticky] th {
+		background-color: var(--yeti-color-surface);
+		border-block-end-color: transparent;
+		box-shadow: inset 0 calc(-1 * var(--yeti-border-width)) var(--yeti-color-border-strong);
+	}
+}

@@ -1,0 +1,124 @@
+/* Figures, code, rules, quotes, and disclosures. */
+@layer yeti.base {
+	figcaption {
+		font-size: var(--yeti-text-sm);
+		color: var(--yeti-color-text-muted);
+		font-stretch: var(--yeti-stretch-small);
+	}
+
+	code, kbd, samp {
+		font-family: var(--yeti-font-mono);
+		font-size: 0.9em;
+		padding: 0.1em 0.3em;
+		border-radius: var(--yeti-radius-sm);
+		background-color: var(--yeti-color-surface-raised);
+	}
+
+	pre {
+		font-family: var(--yeti-font-mono);
+		/* Code is read line by line rather than as a paragraph, and a block of
+		   it is nearly always set below the body size, where the body's leading
+		   formula loosens rather than tightens. A ratio keeps it even. */
+		line-height: var(--yeti-leading-sm);
+		padding: var(--yeti-space-md);
+		border-radius: var(--yeti-radius-md);
+		background-color: var(--yeti-color-surface-raised);
+		overflow-x: auto;
+	}
+	pre code {
+		padding: 0;
+		border-radius: 0;
+		background-color: transparent;
+		font-size: inherit;
+	}
+
+	hr {
+		border: 0;
+		border-block-start: var(--yeti-border-width) solid var(--yeti-color-border);
+	}
+
+	/* The bar is heavier than the border width on purpose, so a quotation reads
+	   as set off and not as boxed. A theme changes it with a blockquote rule in
+	   its yeti.theme layer. */
+	blockquote {
+		padding-inline: var(--yeti-space-md);
+		border-inline-start: 4px solid var(--yeti-color-border-strong);
+	}
+
+	/* A caption under a quotation is an attribution, and the dash is what says
+	   so. It is generated with empty alternative text, the way the breadcrumbs
+	   separator is, so the name is announced and the dash is not. Only in a
+	   figure, and only after the quotation: a caption under a picture is a
+	   caption. The muted color and the small size are already every
+	   figcaption's, at the top of this file. */
+	figure > blockquote + figcaption::before {
+		content: "— " / "";
+	}
+
+	/* A disclosure. details and summary already open, close, take the keyboard
+	   and announce their state, so all that is left is the look: the accordion
+	   had it first, and it lives here now, which is what makes a lone details
+	   on an unclassed page read like one inside a set. The accordion keeps only
+	   what turns a column of them into one object. */
+	details > summary {
+		display: flex;
+		align-items: center;
+		gap: var(--yeti-space-sm);
+		padding: var(--yeti-space-sm);
+		font-weight: var(--yeti-weight-strong);
+		cursor: pointer;
+		/* The chevron below replaces the browser's marker. list-style covers
+		   every engine except WebKit, which draws it from its own pseudo. */
+		list-style: none;
+	}
+	details > summary::-webkit-details-marker { display: none; }
+
+	/* The chevron: a square with two borders, turned. It points down when
+	   the panel is shut and up when it is open. */
+	details > summary::after {
+		content: "";
+		inline-size: 0.5em;
+		block-size: 0.5em;
+		margin-inline-start: auto;
+		border-block-end: 2px solid currentColor;
+		border-inline-end: 2px solid currentColor;
+		rotate: 45deg;
+		translate: 0 -0.15em;
+		transition: rotate var(--yeti-duration-fast) var(--yeti-ease);
+	}
+	details[open] > summary::after {
+		rotate: -135deg;
+		translate: 0 0.1em;
+	}
+
+	/* The panel grows open rather than appearing. A details cannot animate its
+	   own height to auto in every engine, because the keywords that make auto
+	   interpolable are Chromium's alone, but a grid row measured in fr can, and
+	   that works everywhere. The summary takes the first row and the generated
+	   panel the second, so the transition runs on that row's size; the panel
+	   clips its overflow so the content is revealed rather than squashed.
+	   content-visibility has to come along discretely, or the panel would blink
+	   out at the start of a collapse instead of shrinking. The duration is a
+	   token because a rule in this layer outranks the reset's reduced-motion
+	   rule, but never the value it resolves.
+
+	   A fade alone was the first attempt and it read as a flash: the content
+	   arrived at full height instantly and only its opacity moved, so the row
+	   jumped and strobed at the same time. */
+	details {
+		display: grid;
+		grid-template-rows: auto 0fr;
+		/* Without this the summary's row swells by a dozen pixels part way
+		   through and settles back, because an fr row is a share of the grid's
+		   leftover space and the auto row above it takes part in that sum while
+		   the share is being interpolated. Packing the rows to the start takes
+		   the summary out of the calculation, so only the panel moves. */
+		align-content: start;
+		transition: grid-template-rows var(--yeti-duration-base) var(--yeti-ease);
+	}
+	details[open] { grid-template-rows: auto 1fr; }
+	details::details-content {
+		overflow: hidden;
+		transition: content-visibility var(--yeti-duration-base) allow-discrete;
+	}
+}

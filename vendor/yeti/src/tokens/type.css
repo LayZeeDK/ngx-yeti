@@ -1,0 +1,65 @@
+/* Type sizes are the same steps as space. Body is md. */
+@layer yeti.base {
+	:root {
+		--yeti-text-xs: var(--_yeti-step--2);
+		--yeti-text-sm: var(--_yeti-step--1);
+		--yeti-text-md: var(--_yeti-step-0);
+		--yeti-text-lg: var(--_yeti-step-1);
+		--yeti-text-xl: var(--_yeti-step-2);
+		--yeti-text-2xl: var(--_yeti-step-3);
+		--yeti-text-3xl: var(--_yeti-step-4);
+		--yeti-text-display: var(--_yeti-step-5);
+
+		/* Line height: one em plus half the base. Near 1.5 at body size,
+		   tighter as the size grows, because the added space stays constant. */
+		--yeti-leading-md: calc(1em + 0.5 * var(--_yeti-base));
+		/* A plain ratio, for text that is set smaller than the body and wants
+		   its leading to shrink with it. The formula above adds a constant, so
+		   below body size its ratio grows instead: a code block at 0.85rem
+		   comes out near 1.66, which is why code set that way reads airy. */
+		--yeti-leading-sm: 1.5;
+		--yeti-leading-tight: 1.15;
+		--yeti-measure: 70ch;
+		/* Between one item of a prose list and the next. Not on the space scale,
+		   which is geometric and tied to the type steps: its smallest step is
+		   already two thirds of a line, and a list wants a hair of separation
+		   rather than a gap. Prose rhythm, like the measure above it. */
+		--yeti-list-gap: 0.25rem;
+		/* The space around a section heading in flow: a wide step before it,
+		   from what the last section said, and a small one after, so the
+		   heading belongs to the text it opens. Read by base's flow and by the
+		   breakout, which counts them from its own row gap. Set on :root for a
+		   whole site, or on one container for one long read. */
+		--yeti-heading-space-before: var(--yeti-space-xl);
+		--yeti-heading-space-after: var(--yeti-space-sm);
+		/* A lede is set one step up from the body and on a shorter line. The two
+		   go together: ch is a unit of the font, so a theme that changes the size
+		   changes what the count is worth. */
+		--yeti-lede-size: var(--yeti-text-lg);
+		--yeti-lede-measure: 50ch;
+
+		/* Links: --yeti-link-color and --yeti-link-color-hover are read with a
+		   fallback and never declared, like --yeti-base, so the primary they
+		   fall back to is the one where the link is, and a section that sets
+		   its own primary colors its own links. A theme whose primary is a
+		   light brand color points them at the hue's text step instead, since
+		   a link is text and has to read on the page. */
+
+		/* The width axis of a variable font: narrow labels, a wide title, one
+		   family. normal until a theme with such a face says otherwise. */
+		--yeti-stretch-text: normal;
+		--yeti-stretch-heading: normal;
+		/* The third role a variable-width face is set in: captions, small
+		   print, a bar's links, a badge. The text width unless a theme
+		   narrows it. */
+		--yeti-stretch-small: var(--yeti-stretch-text);
+
+		/* Display type is often set a touch tighter than text: one value for
+		   every heading level and the billboard, in em so a large heading
+		   loses more than a small one. A page can set it on one level. */
+		--yeti-tracking-heading: normal;
+
+		--yeti-font-sans: system-ui, sans-serif;
+		--yeti-font-mono: ui-monospace, monospace;
+	}
+}

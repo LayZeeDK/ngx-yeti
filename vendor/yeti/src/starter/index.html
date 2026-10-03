@@ -1,0 +1,101 @@
+<!doctype html>
+<!-- Jumps and focused controls stop below the bar: this is the bar's own height, so it follows the type scale.
+     The bar is its row (the control size, or a link's line box, 1.5 × the body size, plus its padding, whichever is taller), its own padding and border, and a little air. -->
+<html lang="en" style="--yeti-scroll-padding: calc(max(var(--yeti-control-size), 1.5 * var(--yeti-text-md) + 2 * var(--yeti-space-xs)) + 2 * var(--yeti-space-sm) + var(--yeti-border-width) + var(--yeti-space-xs))">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Your site</title>
+	<meta name="description" content="One sentence about this page, for search results and link previews.">
+	<!-- Yeti, then your theme. Moved out of the package, link the CDN copy instead:
+	     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/yeti-css@7/dist/yeti.css"> -->
+	<link rel="stylesheet" href="../yeti.css">
+	<!-- Your theme: the essential settings, all commented out until you edit them. -->
+	<link rel="stylesheet" href="theme.css">
+	<!-- Optional modules. The page works with none of them; the nav needs none. -->
+	<!-- A table of contents that follows the reader: -->
+	<!-- <script type="module" src="../js/toc.js"></script> -->
+	<!-- A dialog's backdrop and focus return: -->
+	<!-- <script type="module" src="../js/dialog.js"></script> -->
+	<!-- Tabs with roving focus and arrow keys: -->
+	<!-- <script type="module" src="../js/tabs.js"></script> -->
+	<!-- A form's validation messages: -->
+	<!-- <script type="module" src="../js/validate.js"></script> -->
+	<!-- Or every module in one file: -->
+	<!-- <script type="module" src="../yeti.js"></script> -->
+</head>
+<body class="shell" data-gap="xl">
+	<a href="#content">Skip to content</a>
+
+	<!-- A page-top bar sits on the edge; everything else that sticks keeps the offset. -->
+	<nav class="nav" aria-label="Site" data-threshold="md" data-sticky style="--yeti-sticky-offset: 0">
+		<a href="./" data-brand>Your site</a>
+		<button type="button" popovertarget="site-menu" aria-label="Menu"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+		<ul id="site-menu" popover role="list">
+			<li data-close><button type="button" popovertarget="site-menu" popovertargetaction="hide" aria-label="Close">&times;</button></li>
+			<li><a href="#features">Features</a></li>
+			<li><a href="#about">About</a></li>
+			<li><a href="#contact">Contact</a></li>
+		</ul>
+		<div data-actions><a class="button" href="#contact" data-size="sm">Get in touch</a></div>
+	</nav>
+
+	<main id="content" class="stack" data-gap="3xl">
+		<section class="center" aria-labelledby="headline">
+			<div class="hero" data-threshold="md" data-gap="xl" data-height="md">
+				<div>
+					<h1 id="headline">Say what the site is for, in one line</h1>
+					<p class="lede">A sentence or two that tells a visitor why they should keep reading.</p>
+					<div class="cluster" data-gap="sm">
+						<a class="button" href="#contact">The one thing to do</a>
+						<a class="button" href="#features" data-emphasis="medium">Something else</a>
+					</div>
+				</div>
+				<figure>
+					<img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 3'%3E%3Crect width='4' height='3' fill='%23889'/%3E%3C/svg%3E" alt="A placeholder: replace it with your own picture" width="800" height="600">
+				</figure>
+			</div>
+		</section>
+
+		<section id="features" class="center" aria-labelledby="features-heading">
+			<div class="stack" data-gap="lg">
+				<h2 id="features-heading">Three things worth knowing</h2>
+				<div class="grid">
+					<article class="card">
+						<h3>The first</h3>
+						<p>A card holds one idea: a heading, a sentence or two, and a link if there is more to read.</p>
+					</article>
+					<article class="card">
+						<h3>The second</h3>
+						<p>The grid fits as many cards to a row as there is room for, and wraps the rest.</p>
+					</article>
+					<article class="card">
+						<h3>The third</h3>
+						<p>Nothing here is set by the page's width: every layout answers to its own container.</p>
+					</article>
+				</div>
+			</div>
+		</section>
+
+		<section id="about" class="center" data-max="md" aria-labelledby="about-heading">
+			<h2 id="about-heading">About</h2>
+			<p>Running text needs no classes at all. Headings, paragraphs, <a href="#features">links</a>, <strong>strong words</strong> and lists take their size and spacing from the base, and your theme's values.</p>
+			<ul>
+				<li>Edit the values in <code>theme.css</code> first.</li>
+				<li>Then delete what this page does not need.</li>
+				<li>Write your own CSS last, and only for what is left.</li>
+			</ul>
+			<blockquote>
+				<p>A quotation is set off from the text by a bar at its start.</p>
+			</blockquote>
+		</section>
+	</main>
+
+	<footer id="contact" class="box" data-surface="raised">
+		<div class="cluster" data-justify="between">
+			<small>&copy; Your name</small>
+			<a href="mailto:hello@example.com">hello@example.com</a>
+		</div>
+	</footer>
+</body>
+</html>

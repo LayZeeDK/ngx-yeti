@@ -1,0 +1,139 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "hero",
+  "kind": "recipe",
+  "group": "Page Layouts",
+  "description": "Fills the viewport's height with copy on one side and a figure on the other, centered, and stacks them below a container width; the one-class form of a cover holding columns.",
+  "class": "hero",
+  "attributes": [
+    {
+      "name": "data-threshold",
+      "type": "enum",
+      "vocabulary": "width",
+      "default": "lg",
+      "description": "The container width below which copy and figure become rows."
+    },
+    {
+      "name": "data-gap",
+      "type": "enum",
+      "vocabulary": "gap",
+      "default": "lg",
+      "description": "Space between copy and figure."
+    },
+    {
+      "name": "data-ratio",
+      "type": "enum",
+      "vocabulary": "ratio",
+      "default": "4/3",
+      "description": "The figure's aspect ratio."
+    },
+    {
+      "name": "data-align",
+      "type": "enum",
+      "vocabulary": "align",
+      "default": "center",
+      "description": "Vertical alignment of copy and figure when side by side."
+    },
+    {
+      "name": "data-side",
+      "type": "enum",
+      "vocabulary": "side",
+      "description": "Put the figure at the start or the end of the row regardless of source order. Once stacked, source order rules: write the copy first to meet the headline first on a phone. Moves it visually only; reading order stays as written."
+    },
+    {
+      "name": "data-height",
+      "type": "enum",
+      "vocabulary": "height",
+      "default": "full",
+      "description": "The band's least height: a stop of the height scale, half the viewport, or the whole of it, as a cover takes it. Content taller than the band grows it."
+    }
+  ],
+  "classes": [],
+  "children": [
+    {
+      "selector": "> *",
+      "min": 2,
+      "max": 2,
+      "description": "Exactly two: the copy and the figure (an img, video, or picture, or an element wrapping one); the copy (the body) must not have an img, video, or picture as a direct child (it would be taken for a second figure). A figure with a figcaption keeps its caption below the picture."
+    },
+    { "selector": "> [data-span]", "min": 0, "max": 2, "description": "A child that takes several shares of the row: data-span=\"3\" beside a \"2\" is three fifths. Below the threshold both stack full width." }
+  ],
+  "markers": [
+    { "name": "data-min", "type": "enum", "vocabulary": "width-or-none", "on": "> *", "description": "The narrowest this child may get while the two share a row; the other gives way. Stacked, it has no effect." },
+    { "name": "data-span", "type": "enum", "vocabulary": "span", "on": "> *", "description": "How many shares of the row this child takes; the other child's default is 1." }
+  ],
+  "tokens": [
+    {
+      "name": "--yeti-cover-height",
+      "public": true,
+      "description": "The least height with no data-height, and at data-height=\"full\"."
+    },
+    {
+      "name": "--yeti-width-lg",
+      "public": true,
+      "description": "The default threshold."
+    },
+    {
+      "name": "--yeti-space-lg",
+      "public": true,
+      "description": "The default gap."
+    },
+    {
+      "name": "--yeti-space-sm",
+      "public": true,
+      "description": "The gap between the copy's children."
+    },
+    {
+      "name": "--yeti-text-sm",
+      "public": true,
+      "description": "Text size of the caption."
+    },
+    {
+      "name": "--yeti-color-text-muted",
+      "public": true,
+      "description": "The caption."
+    },
+    {
+      "name": "--_yeti-gap",
+      "public": false
+    },
+    {
+      "name": "--_yeti-threshold",
+      "public": false
+    },
+    {
+      "name": "--_yeti-align",
+      "public": false
+    },
+    {
+      "name": "--_yeti-aspect",
+      "public": false
+    },
+    {
+      "name": "--_yeti-height",
+      "public": false
+    }
+  ],
+  "a11y": {
+    "requiredAttributes": [],
+    "keyboard": [],
+    "notes": "When the hero is the page's opening, keep the h1 inside the copy and write the copy first: data-side changes where the figure sits in the row, not where it is read, and not the stacked order."
+  },
+  "js": null,
+  "support": {
+    "unguarded": [
+      "flexbox gap",
+      "aspect-ratio",
+      "object-fit",
+      ":has()",
+      "dvh units"
+    ],
+    "guarded": []
+  },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": {
+    "height": "xl",
+    "resize": "both"
+  }
+}

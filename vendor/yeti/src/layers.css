@@ -1,0 +1,7 @@
+/* The cascade layer order for Yeti. Declared once, here, and imported first.
+   Every rule Yeti ships lives inside one of these sublayers. A user's plain,
+   unlayered CSS beats all of them by default. Yeti ships nothing in
+   yeti.theme; a theme's element rules go there, above the base they restyle
+   and below every layout, component and utility, so a theme's bare `a` or `p`
+   rule never reaches what a layout or component defines. */
+@layer yeti.reset, yeti.base, yeti.theme, yeti.layouts, yeti.components, yeti.utilities;

@@ -1,0 +1,63 @@
+/* Lift: the element rises a little and its shadow deepens while the pointer
+   is on it or a keyboard is inside it. The one piece of motion in the
+   framework that is not a one-shot, which is what makes its reduced-motion
+   answer different from everything else's. */
+@layer yeti.utilities {
+	.lift {
+		/* Color is in the list because a lifted thing is nearly always tinted
+		   on the same hover, and transition is a shorthand: a consumer adding its
+		   own color transition would replace this one and stop the shadow
+		   animating, which is exactly what happened the first time this was used.
+		   Listing the four here means a consumer sets colors and nothing else. */
+		transition:
+			translate var(--yeti-lift-duration) var(--yeti-lift-ease),
+			scale var(--yeti-lift-duration) var(--yeti-lift-ease),
+			box-shadow var(--yeti-lift-duration) var(--yeti-lift-ease),
+			background-color var(--yeti-lift-duration) var(--yeti-lift-ease),
+			border-color var(--yeti-lift-duration) var(--yeti-lift-ease);
+	}
+	/* :has(:focus-visible) as well as :focus-visible, because the thing that
+	   takes focus is usually inside: a card's stretched link, a button in a
+	   tile. Without it the lift is a pointer-only affordance and a reader
+	   tabbing through the same page never sees which card they are on. */
+	.lift:hover,
+	.lift:focus-visible,
+	.lift:has(:focus-visible) {
+		/* translate rather than transform, so a lifted element that is also
+		   scaled or rotated by its own component keeps that. */
+		translate: 0 calc(-1 * var(--yeti-lift-distance));
+		box-shadow: var(--yeti-lift-shadow);
+	}
+	/* data-lift="scale": the element grows a little instead of rising, for a
+	   tile in a grid where a rise would break the row's line. The shadow
+	   still deepens; reduced motion takes the growth to one the way it takes
+	   the distance to zero. */
+	/* Its own layer, always, so the growth scales one bitmap of the tile
+	   rather than re-laying its text at every fractional size along the way,
+	   which snapped the glyphs from pixel to pixel and read as the heading
+	   moving inside a box that was not. The rise has no such problem: a
+	   translate by whole pixels moves the text with the box. A few tiles on
+	   a layer each is a small price; a whole page of them is the one case
+	   to think about, and a page of growing tiles is already the wrong page. */
+	.lift[data-lift="scale"] { will-change: scale; }
+	.lift[data-lift="scale"]:hover,
+	.lift[data-lift="scale"]:focus-visible,
+	.lift[data-lift="scale"]:has(:focus-visible) {
+		translate: none;
+		scale: var(--yeti-lift-scale);
+	}
+
+	/* Reduced motion is handled in tokens/components.css by taking
+	   --yeti-lift-distance to zero, not by collapsing a duration. Collapsing
+	   the duration is the idiom everywhere else in Yeti because everywhere
+	   else the animation runs once and ends: a 0.01ms run is the end state,
+	   arrived at instantly, which is exactly what was asked for. A hover is
+	   not that. Its end state is four pixels up, so a collapsed duration
+	   still moves the element, just with the smooth part removed, and the
+	   result is a box that jumps out from under the cursor on every pass and
+	   drops back the moment it leaves. That is more startling than the
+	   animation it replaced. With the distance at zero the element does not
+	   move at all and the deeper shadow carries the whole hover, which is a
+	   change of appearance rather than of position, and the transition that
+	   is left has nothing to animate but the shadow. */
+}

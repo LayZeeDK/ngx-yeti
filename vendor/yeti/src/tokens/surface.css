@@ -1,0 +1,29 @@
+/* Surfaces and controls: the widths, weights, shadows, and control sizes
+   that components read. Every value here is a theme's to change. */
+@layer yeti.base {
+	:root {
+		--yeti-border-width: 1px;
+
+		--yeti-weight-normal: 400;
+		--yeti-weight-strong: 600;
+		/* Headings and strong text. Kept apart from strong so a theme can set
+		   labels and buttons at 600 and leave display text at 700, or the reverse. */
+		--yeti-weight-bold: 700;
+
+		/* Shadows are one color and two offsets, so a theme can retune either. */
+		--yeti-shadow-color: light-dark(oklch(0 0 0 / 0.14), oklch(0 0 0 / 0.55));
+		--yeti-shadow-sm: 0 1px 2px var(--yeti-shadow-color);
+		--yeti-shadow-md: 0 4px 12px var(--yeti-shadow-color);
+
+		/* Controls: the smallest a button or input gets, and its corner. */
+		--yeti-control-size: 2.5rem;
+		--yeti-control-radius: var(--yeti-radius-sm);
+		/* Not the divider color. A text field, an unchecked box and an off
+		   switch are identified by this border alone, so it has to clear 3:1
+		   against the surface; the divider sits at 1.4:1 and is meant to. */
+		--yeti-control-border: light-dark(oklch(0.58 var(--_yeti-c-neutral) var(--yeti-hue-neutral)), oklch(0.55 var(--_yeti-c-neutral) var(--yeti-hue-neutral)));
+		--yeti-control-surface: var(--yeti-color-surface);
+		--yeti-control-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23808080' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+		--yeti-opacity-muted: 0.6;
+	}
+}

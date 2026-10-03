@@ -1,0 +1,79 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "overlay",
+  "kind": "layout",
+  "group": "Boxes and Stacks",
+  "description": "Holds one child over the rest, centered, without pushing anything around; the parent is the box it covers.",
+  "class": "overlay",
+  "attributes": [
+    {
+      "name": "data-gap",
+      "type": "enum",
+      "vocabulary": "gap",
+      "default": "md",
+      "description": "The least space kept between the held child and the edges of the box."
+    },
+    {
+      "name": "data-fixed",
+      "type": "boolean",
+      "description": "Center the held child over the viewport instead of this box, and keep it there while the page scrolls."
+    }
+  ],
+  "classes": [],
+  "children": [
+    {
+      "selector": "> *",
+      "min": 2,
+      "max": null,
+      "description": "The content underneath, in normal flow, and one held child."
+    },
+    {
+      "selector": "> [data-over]",
+      "min": 1,
+      "max": 1,
+      "description": "Exactly one child carries data-over; it leaves the flow and is centered over the box."
+    }
+  ],
+  "markers": [
+    {
+      "name": "data-over",
+      "type": "boolean",
+      "on": "> *",
+      "description": "Lifts the child out of the flow and centers it over the box; exactly one child carries it."
+    },
+    {
+      "name": "data-fill",
+      "type": "boolean",
+      "on": "> [data-over]",
+      "description": "On the same child: cover the box rather than sit centred in it, which is what a veil, a dimmer or a loading state wants. Positioning only, so a veil that wants its own content centred puts a layout inside itself."
+    }
+  ],
+  "tokens": [
+    {
+      "name": "--yeti-space-md",
+      "public": true,
+      "description": "The default edge gap."
+    },
+    {
+      "name": "--_yeti-gap",
+      "public": false
+    }
+  ],
+  "a11y": {
+    "requiredAttributes": [],
+    "keyboard": [],
+    "notes": "Positioning only. The held child stays in reading order where it is in the source. A held child that interrupts the page needs focus management and a way to dismiss it, which the dialog and tooltip components provide; use those rather than this primitive alone for anything modal."
+  },
+  "js": null,
+  "support": {
+    "unguarded": [
+      "translate property"
+    ],
+    "guarded": []
+  },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": {
+    "height": "lg"
+  }
+}

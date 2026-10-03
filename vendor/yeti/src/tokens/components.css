@@ -1,0 +1,201 @@
+/* Per-component overrides. Each defaults to a global token; a theme that
+   wants pill buttons or square cards sets one line here. */
+@layer yeti.base {
+	:root {
+		--yeti-button-radius: var(--yeti-radius-md);
+		--yeti-button-weight: var(--yeti-weight-strong);
+		--yeti-button-padding: 2;
+		/* Block padding as a multiple of the size's space step, like the inline
+		   one. A quarter step: small enough that a one-line label at any size
+		   is still held by the minimum height, so a button keeps matching a
+		   field; a wrapped label gets air, and a theme raises it. */
+		--yeti-button-padding-block: 0.25;
+
+		--yeti-badge-radius: var(--yeti-radius-full);
+		--yeti-badge-weight: var(--yeti-weight-strong);
+
+		--yeti-card-radius: var(--yeti-radius-md);
+		--yeti-card-padding: var(--yeti-space-md);
+		--yeti-card-gap: var(--yeti-space-sm);
+		--yeti-card-border: var(--yeti-color-border);
+		--yeti-card-surface: var(--yeti-color-surface-raised);
+
+		--yeti-field-gap: var(--yeti-space-xs);
+		/* An off switch: the track's fill and border, and the thumb. */
+		--yeti-switch-track: var(--yeti-control-border);
+		--yeti-switch-thumb: var(--yeti-control-surface);
+
+		--yeti-table-stripe: var(--yeti-color-surface-sunken);
+		--yeti-table-border: var(--yeti-color-border);
+
+		--yeti-nav-padding: var(--yeti-space-sm) var(--yeti-space-md);
+		--yeti-nav-radius: var(--yeti-radius-sm);
+		--yeti-nav-border: var(--yeti-color-border);
+		--yeti-nav-surface: var(--yeti-color-surface);
+		--yeti-nav-panel: var(--yeti-color-surface-raised);
+		/* The brand is a wordmark; a theme sets it apart from the links here. */
+		--yeti-nav-brand-weight: var(--yeti-weight-strong);
+		--yeti-nav-brand-size: 1em;
+		/* Plain links in the bar: the bar's own color unless a theme says
+		   otherwise. The current and hovered links keep the variant's tints. */
+		--yeti-nav-link: currentColor;
+
+		--yeti-breadcrumbs-separator: "/";
+
+		--yeti-pagination-radius: var(--yeti-radius-md);
+
+		--yeti-alert-radius: var(--yeti-radius-md);
+		--yeti-alert-padding: var(--yeti-space-md);
+
+		--yeti-progress-radius: var(--yeti-radius-full);
+
+		--yeti-spinner-duration: 0.8s;
+		--yeti-spinner-width: 0.15em;
+
+		--yeti-accordion-border: var(--yeti-color-border);
+		--yeti-accordion-padding: var(--yeti-space-md);
+		--yeti-accordion-surface: var(--yeti-color-surface);
+		/* Mixed toward the text color rather than picked off the surface ramp,
+		   because the ramp's own steps are too small to read here: a summary and
+		   its answer came out three hundredths of a lightness apart in dark and
+		   the rows vanished into the panel. Mixing toward text also moves the
+		   right way in both schemes on its own, darkening the row in light and
+		   lifting it in dark, and a theme that restyles surface or text gets a
+		   header that still works without touching these. */
+		--yeti-accordion-summary: color-mix(in oklch, var(--yeti-accordion-surface) 88%, var(--yeti-color-text));
+		--yeti-accordion-summary-hover: color-mix(in oklch, var(--yeti-accordion-surface) 80%, var(--yeti-color-text));
+
+		--yeti-tabs-border: var(--yeti-color-border);
+		--yeti-tabs-padding: var(--yeti-space-sm) var(--yeti-space-md);
+
+		--yeti-dropdown-surface: var(--yeti-color-surface-raised);
+		--yeti-dropdown-radius: var(--yeti-radius-md);
+		--yeti-dropdown-padding: var(--yeti-space-xs);
+		--yeti-dropdown-min: 12rem;
+		/* Read by hover.js, not by CSS: the pause before a hover-triggered panel
+		   opens, and the grace after the pointer leaves. */
+		--yeti-dropdown-open-delay: 100ms;
+		--yeti-dropdown-close-delay: 200ms;
+
+		--yeti-dialog-surface: var(--yeti-color-surface-raised);
+		--yeti-dialog-radius: var(--yeti-radius-lg);
+		--yeti-dialog-padding: var(--yeti-space-lg);
+		/* Black, not the text color. A backdrop's job is to dim what is behind
+		   it, and mixing the text color inverts with the theme: on a dark
+		   theme the text is near-white, so the wash came out at brightness 227
+		   over a page at 16 and lit the page up instead of dimming it. */
+		--yeti-dialog-backdrop: color-mix(in oklch, black 60%, transparent);
+
+		--yeti-tooltip-surface: var(--yeti-color-text);
+		--yeti-tooltip-text: var(--yeti-color-surface);
+		--yeti-tooltip-radius: var(--yeti-radius-sm);
+
+		--yeti-carousel-dot: var(--yeti-color-border-strong);
+		--yeti-carousel-dot-size: 0.75rem;
+		--yeti-carousel-scroll: smooth;
+
+		/* On-page nav. Smooth by default, and a token rather than a plain
+		   declaration for the reason the carousel's is one: a components-layer
+		   scroll-behavior outranks the reset's reduced-motion rule, so the
+		   preference has to reach the page through something the media query
+		   below can collapse. */
+		--yeti-toc-scroll: smooth;
+
+		/* The rows' block padding: a control's density by default, a book's
+		   contents page sets it smaller. */
+		--yeti-toc-padding: var(--yeti-space-xs);
+
+		/* Per element, not per theme: the filled share of a range's track. */
+		--yeti-range-value: 0%;
+
+		/* Demo: a live example in a box the reader can drag. The heights are
+		   what a frame gets, since a frame cannot size to its content. */
+		--yeti-demo-border: var(--yeti-color-border);
+		--yeti-demo-radius: var(--yeti-radius-md);
+		--yeti-demo-label: var(--yeti-color-surface-sunken);
+
+		/* Enter: the one-shot arrival. 600ms is longer than any transition in the
+		   framework on purpose; an entrance the reader is meant to notice has to
+		   outlast the glance that finds it, and the same 600ms is what the
+		   foundationcss.com homepage had arrived at by hand. The rise is 2rem,
+		   far enough to read as arriving from below and short enough that the
+		   element never starts outside its own row. The scale stops at 0.94
+		   rather than something smaller because a card that starts at half size
+		   reads as a zoom, which is a different gesture. */
+		--yeti-enter-duration: 600ms;
+		--yeti-enter-distance: 2rem;
+		--yeti-enter-scale: 0.94;
+		/* The gap between one staggered child and the next. A theme slows the
+		   whole run down by raising this one number, since every child's delay
+		   is a multiple of it. */
+		--yeti-enter-stagger: 200ms;
+		/* How long the whole run waits before the first child moves. Zero by
+		   default, because an entrance that hesitates reads as a stall; a page
+		   that would rather paint first before anything moves raises it. */
+		--yeti-enter-delay: 0s;
+		/* Its own curve, not the shared one, for the same reason as the
+		   durations: a page that wants a different feel for an entrance than
+		   for a hover has to be able to say so without moving both. */
+		--yeti-enter-ease: var(--yeti-ease);
+
+		/* Lift: how far a card rises under the pointer, and the shadow it casts
+		   from up there. Reduced motion takes the distance to zero below and
+		   leaves the shadow, which is why the two are separate tokens. */
+		--yeti-lift-distance: 0.125rem;
+		/* How much a tile grows at data-lift="scale"; reduced motion takes it to one. */
+		--yeti-lift-scale: 1.02;
+		--yeti-lift-shadow: var(--yeti-shadow-md);
+		/* Its own duration rather than the shared fast one, because a hover on
+		   a large tile wants longer than a hover on a control, and a consumer
+		   that changes a card's colors on the same hover has to be able to
+		   match this exactly or the two halves arrive apart. */
+		--yeti-lift-duration: var(--yeti-duration-fast);
+		--yeti-lift-ease: var(--yeti-ease);
+
+		/* Attention: one pulse or one shake over 600ms, the same length as an
+		   entrance, because both are a single gesture the reader has to catch.
+		   The shake's throw is deliberately small: a wobble says "look here",
+		   while a wide swing says "wrong", and only a field's error should say
+		   that. */
+		--yeti-attention-duration: 600ms;
+		--yeti-attention-distance: 0.35rem;
+		--yeti-attention-scale: 1.06;
+
+		/* Billboard: the container width at which a billboard reaches the top
+		   of its pair. A divisor, not a breakpoint. The growth rate of the
+		   line is the pair's own maximum over this width, so a pair that ends
+		   higher grows faster and every pair arrives at its ceiling in the
+		   same box; a theme that moves this moves all twenty-eight together.
+		   The token keeps the name the attribute has, --yeti-fit-width, both
+		   because public token names are frozen and because it is the fit
+		   width it describes rather than the class that reads it. */
+		--yeti-fit-width: var(--yeti-width-md);
+	}
+
+	/* The ring reads a token so the preference reaches it: a components-layer
+	   animation beats the reset's reduced-motion rule, but not the value it
+	   resolves. The same idiom as motion.css. */
+	@media (prefers-reduced-motion: reduce) {
+		:root {
+			--yeti-spinner-duration: 0.01ms;
+			--yeti-carousel-scroll: auto;
+			--yeti-toc-scroll: auto;
+			--yeti-enter-duration: 0.01ms;
+			/* The step goes with the duration. A collapsed duration alone would
+			   still hand the third card a 400ms wait and then pop it into place,
+			   which is a staggered arrival with the smooth part taken out. */
+			--yeti-enter-stagger: 0s;
+			/* A delayed element that is invisible for three seconds is the opposite of less motion. */
+			--yeti-enter-delay: 0s;
+			--yeti-attention-duration: 0.01ms;
+			/* A hover lift is the one piece of motion here that is not a one-shot,
+			   and collapsing its duration is the wrong answer: the element would
+			   still move a quarter of a rem, just instantly, so every pass of the
+			   pointer becomes a flinch under the cursor. Reduced motion takes the
+			   movement away instead and leaves the deepened shadow to carry the
+			   whole hover, which is a change of appearance and not of position. */
+			--yeti-lift-distance: 0rem;
+			--yeti-lift-scale: 1;
+		}
+	}
+}

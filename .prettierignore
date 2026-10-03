@@ -8,3 +8,6 @@ package-lock.json
 
 # Verbatim records copied from the planning repository.
 /docs/specs
+
+# Yeti source vendored at the pin by tools/yeti/vendor-yeti.mjs.
+/vendor

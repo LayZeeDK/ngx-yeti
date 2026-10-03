@@ -1,0 +1,47 @@
+/* Cluster: a wrapping row. Items keep their own width and the gap holds on
+   both axes when they wrap. */
+@layer yeti.layouts {
+	.cluster {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: var(--_yeti-align);
+		justify-content: var(--_yeti-justify);
+		gap: var(--_yeti-gap);
+	}
+	.cluster:not([data-gap]) { --_yeti-gap: var(--yeti-space-md); }
+	.cluster:not([data-align]) { --_yeti-align: center; }
+	.cluster:not([data-justify]) { --_yeti-justify: flex-start; }
+	.cluster > * { margin: 0; }
+
+	/* data-threshold: a column when the cluster's own content box is narrower
+	   than the threshold, the wrapping row at or above it. Only a thresholded
+	   cluster is a container, so any other cluster still sizes to its content;
+	   a thresholded one cannot, and belongs in a block that has a width.
+	   A container query styles descendants and never the container itself,
+	   so the column is made by the items: each takes the whole row, which
+	   stacks them full width with the gap between, as flex-direction: column
+	   with align-items: stretch would. Thresholds are the width tokens'
+	   defaults, literal because a container condition cannot read a token. */
+	.cluster[data-threshold] { container-type: inline-size; }
+	@container (inline-size < 12rem) {
+		.cluster[data-threshold="2xs"] > * { flex-basis: 100%; }
+	}
+	@container (inline-size < 16rem) {
+		.cluster[data-threshold="xs"] > * { flex-basis: 100%; }
+	}
+	@container (inline-size < 24rem) {
+		.cluster[data-threshold="sm"] > * { flex-basis: 100%; }
+	}
+	@container (inline-size < 32rem) {
+		.cluster[data-threshold="md"] > * { flex-basis: 100%; }
+	}
+	@container (inline-size < 48rem) {
+		.cluster[data-threshold="lg"] > * { flex-basis: 100%; }
+	}
+	@container (inline-size < 64rem) {
+		.cluster[data-threshold="xl"] > * { flex-basis: 100%; }
+	}
+	@container (inline-size < 80rem) {
+		.cluster[data-threshold="2xl"] > * { flex-basis: 100%; }
+	}
+}

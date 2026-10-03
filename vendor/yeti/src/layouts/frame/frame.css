@@ -1,0 +1,29 @@
+/* Frame: a fixed aspect-ratio crop. Media fills and is cropped; anything
+   else is centered. */
+@layer yeti.layouts {
+	.frame {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		aspect-ratio: var(--_yeti-aspect);
+		overflow: hidden;
+	}
+	.frame:not([data-ratio]) { --_yeti-aspect: 16 / 9; }
+	/* picture counts as media, as it does in media, hero and card, so the
+	   recipe built from a frame renders the same as the one-class form. An
+	   embedded document is media too here: a map, a video from somewhere else,
+	   a PDF. It is the commonest thing anyone puts in a fixed ratio, and it is
+	   the reason Foundation 6's .responsive-embed existed. */
+	.frame > :is(img, video, picture, iframe, embed, object),
+	.frame > picture > img {
+		inline-size: 100%;
+		block-size: 100%;
+		/* object-fit crops the children that have an intrinsic size of their
+		   own; an embedded document has none, and the two sizes above are what
+		   fill the box for it. */
+		object-fit: cover;
+		/* An iframe is the one child here a browser may hand a border of its
+		   own, and the frame is meant to be the only edge. */
+		border: 0;
+	}
+}

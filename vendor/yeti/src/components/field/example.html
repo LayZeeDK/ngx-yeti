@@ -1,0 +1,27 @@
+<div class="stack" data-gap="lg">
+	<div class="field">
+		<label for="email">Email</label>
+		<input id="email" type="email" required aria-describedby="email-hint email-error">
+		<p id="email-hint" data-hint>We only use it to sign you in.</p>
+		<p id="email-error" data-error>Enter an address with an @ in it.</p>
+	</div>
+	<div class="field">
+		<input id="dark" type="checkbox" role="switch">
+		<label for="dark">Dark mode</label>
+	</div>
+	<div class="field">
+		<label for="quality">Quality</label>
+		<output for="quality" aria-hidden="true"></output>
+		<input id="quality" type="range" min="0" max="100" value="70">
+	</div>
+	<fieldset class="field">
+		<legend>Notify me by</legend>
+		<div class="field"><input id="n-email" type="checkbox" name="notify" value="email" checked><label for="n-email">Email</label></div>
+		<div class="field"><input id="n-sms" type="checkbox" name="notify" value="sms"><label for="n-sms">Text message</label></div>
+	</fieldset>
+	<fieldset class="field">
+		<legend>Plan</legend>
+		<div class="field"><input id="plan-free" type="radio" name="plan" value="free" checked><label for="plan-free">Free</label></div>
+		<div class="field"><input id="plan-pro" type="radio" name="plan" value="pro"><label for="plan-pro">Pro</label></div>
+	</fieldset>
+</div>

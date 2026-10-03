@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "badge",
+  "kind": "component",
+  "group": "Feedback",
+  "description": "A small inline label for a status or a count, tinted by a hue.",
+  "class": "badge",
+  "attributes": [
+    { "name": "data-variant", "type": "enum", "vocabulary": "variant", "default": "primary", "description": "Which hue tints the badge." },
+    { "name": "data-emphasis", "type": "enum", "vocabulary": "emphasis", "default": "medium", "description": "medium is a subtle tint with dark text, high a solid fill, low text alone." },
+    { "name": "data-size", "type": "enum", "vocabulary": "size-control", "default": "md", "description": "The text size the badge sits beside; the badge renders one step smaller." }
+  ],
+  "classes": [],
+  "children": [
+    { "selector": "> svg", "min": 0, "max": 1, "description": "An optional icon, sized to the text." }
+  ],
+  "tokens": [
+    { "name": "--yeti-badge-radius", "public": true, "description": "Corner radius; full makes a pill." },
+    { "name": "--yeti-badge-weight", "public": true, "description": "Text weight." },
+    { "name": "--yeti-stretch-small", "public": true, "description": "font-stretch of the badge." },
+    { "name": "--yeti-space-xs", "public": true, "description": "Gap between the icon and the text." },
+    { "name": "--yeti-leading-tight", "public": true, "description": "Line height." },
+    { "name": "--yeti-border-width", "public": true, "description": "Border width." },
+    { "name": "--yeti-color-primary", "public": true, "description": "The default variant's color, when data-variant is absent." },
+    { "name": "--yeti-color-primary-subtle", "public": true, "description": "The default variant's tint." },
+    { "name": "--yeti-color-primary-soft", "public": true, "description": "The default variant's soft stop." },
+    { "name": "--yeti-color-primary-strong", "public": true, "description": "The default variant's strong stop." },
+    { "name": "--yeti-color-primary-text", "public": true, "description": "The default variant's text color." },
+    { "name": "--yeti-on-primary", "public": true, "description": "Text on the default variant's color." },
+    { "name": "--yeti-text-md", "public": true, "description": "Text size when data-size is absent." },
+    { "name": "--yeti-space-sm", "public": true, "description": "The space step when data-size is absent." },
+    { "name": "--_yeti-variant", "public": false },
+    { "name": "--_yeti-variant-subtle", "public": false },
+    { "name": "--_yeti-variant-text", "public": false },
+    { "name": "--_yeti-on-variant", "public": false },
+    { "name": "--_yeti-size-text", "public": false },
+    { "name": "--_yeti-variant-soft", "public": false },
+    { "name": "--_yeti-variant-strong", "public": false },
+    { "name": "--_yeti-size-space", "public": false }
+  ],
+  "a11y": { "requiredAttributes": [], "keyboard": [], "notes": "A badge is text. If the color carries meaning, the text must carry it too. A count that belongs to a control goes into that control's accessible name, not beside it." },
+  "js": null,
+  "support": { "unguarded": ["inline flexbox"], "guarded": [] },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": { "height": "sm" }
+}

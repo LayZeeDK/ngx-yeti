@@ -1,0 +1,58 @@
+/* Flow rhythm for unclassed content. The one place base adds space, and
+   only between siblings in flow; no element sets its own outer margin.
+   Every rule here is scoped to direct children of a flow container, so
+   layouts and other containers are untouched. Layouts in later layers
+   replace this with their own gap. */
+@layer yeti.base {
+	:is(body, main, article, section, aside, header, footer, blockquote, figure, dd, li, details, fieldset, dialog) > * + * {
+		margin-block-start: var(--yeti-space-md);
+	}
+
+	/* A heading hugs what follows it. */
+	:is(body, main, article, section, aside, header, footer, blockquote, figure, dd, li, details, fieldset, dialog) > :is(h1, h2, h3, h4, h5, h6) + * {
+		margin-block-start: var(--yeti-heading-space-after);
+	}
+
+	/* Major headings open up from the content before them. */
+	:is(body, main, article, section, aside, header, footer, blockquote, figure, dd, li, details, fieldset) > :not(h1, h2, h3, h4, h5, h6) + :is(h2, h3) {
+		margin-block-start: var(--yeti-heading-space-before);
+	}
+
+	/* Measure: prose never runs wider than a comfortable line. */
+	p, li, dd, dt, blockquote, figcaption, h1, h2, h3, h4, h5, h6 {
+		max-inline-size: var(--yeti-measure);
+	}
+
+	:is(ul, ol):not([role="list"]) {
+		padding-inline-start: var(--yeti-space-lg);
+	}
+
+	/* Only a list that is prose. The reset already reads role="list" as the
+	   sign that a list is layout, and every list component carries it, so
+	   scoping here means none of them has to zero this again. */
+	:is(ul, ol):not([role="list"]) > li + li {
+		/* A hair, not a gap: a list is meant to read denser than prose, and the
+		   space scale's smallest step is already two thirds of a line, which
+		   spaces items like short paragraphs. */
+		margin-block-start: var(--yeti-list-gap);
+	}
+
+	/* A definition list. The flow rule at the top of this file deliberately
+	   does not list dl as a flow container: a term and its definition are one
+	   pair, so the space goes between pairs and not between every line. */
+	dt {
+		font-weight: var(--yeti-weight-strong);
+	}
+	dd {
+		margin-inline-start: var(--yeti-space-md);
+	}
+	dl > dt:not(:first-child) {
+		margin-block-start: var(--yeti-space-sm);
+	}
+	/* The other legal shape of the same list: each pair wrapped in a div,
+	   where the term is no longer a child of the dl and the rule above cannot
+	   see it. */
+	dl > div + div {
+		margin-block-start: var(--yeti-space-sm);
+	}
+}

@@ -1,0 +1,43 @@
+/* Page transitions: the crossfade a browser draws between one document and the
+   next, re-timed onto Yeti's tokens.
+ 
+   Yeti does not turn this on. Cross-document view transitions are not Baseline
+   — Firefox ignores the at-rule as of this writing, where the navigation
+   simply snaps — and the README's rule is that a feature below Baseline is
+   guarded rather than assumed. There is no guard to put it behind either:
+   @view-transition is an at-rule with no element to select, so it cannot be
+   scoped to a class the way every other opt-in in Yeti is. A site turns it on
+   itself, in its own stylesheet, with one rule:
+ 
+       @view-transition { navigation: auto; }
+ 
+   Both documents have to carry it and they have to be same-origin, which for a
+   site built on one stylesheet means it is on everywhere or nowhere.
+ 
+   What is here is the part that is easy to get wrong. The browser's own
+   crossfade is already the right animation, and it blends the two snapshots
+   correctly, which a hand-written pair of opacity keyframes does not: those dip
+   through the page background at the halfway point unless they also carry
+   mix-blend-mode. So this changes when it runs and nothing about what it does.
+ 
+   Re-timing it is also the only way to honour a reader who has asked for less
+   motion. The reset's universal selector cannot reach a ::view-transition
+   pseudo-element, and no selector at all reaches the at-rule, so the collapsed
+   --yeti-page-duration in tokens/motion.css is what stills the crossfade. That
+   is the same bargain every Yeti component makes: the duration collapses, the
+   end state still applies, and the reader arrives on the new page at once
+   instead of watching it fade in.
+ 
+   A site that writes its own view-transition animations should read the same
+   two tokens, or it opts back out of that. */
+@layer yeti.base {
+	/* Longhands, not a shorthand: the browser supplies animation-name and the
+	   keyframes, and this leaves both alone. An author-origin longhand outranks
+	   the user-agent sheet's shorthand, so the name survives and only the
+	   timing changes. */
+	::view-transition-old(root),
+	::view-transition-new(root) {
+		animation-duration: var(--yeti-page-duration);
+		animation-timing-function: var(--yeti-page-ease);
+	}
+}

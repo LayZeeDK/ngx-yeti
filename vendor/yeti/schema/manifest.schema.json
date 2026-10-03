@@ -1,0 +1,138 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://foundationcss.com/yeti/schema/manifest.json",
+  "title": "Yeti component manifest",
+  "description": "Describes one Yeti layout, component, or utility: its identity class, configuration attributes, expected children, tokens, accessibility contract, optional JS module, and browser support notes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "kind", "description", "class", "attributes", "classes", "children", "tokens", "a11y", "js", "support", "since", "example"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "Must equal the folder name. Unique across the framework." },
+    "kind": { "enum": ["layout", "recipe", "component", "utility"] },
+    "group": { "type": "string", "pattern": "\\S", "description": "The docs nav group this page belongs to. Optional; the kind's own name is the fallback. Grouping by job is for a reader hunting for something, while kind stays the architectural fact." },
+    "description": { "type": "string", "pattern": "\\S", "description": "One sentence, used verbatim in docs and the MCP server." },
+    "class": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$", "description": "The identity class. Must equal name." },
+    "attributes": { "type": "array", "items": { "$ref": "#/$defs/attribute" } },
+    "classes": { "type": "array", "items": { "$ref": "#/$defs/modifierClass" } },
+    "children": { "type": "array", "items": { "$ref": "#/$defs/child" } },
+    "markers": { "type": "array", "items": { "$ref": "#/$defs/marker" }, "description": "data-* attributes that descendants carry, not the root: a child's span, a cell's alignment. Optional; an absent list is empty." },
+    "tokens": { "type": "array", "items": { "$ref": "#/$defs/token" } },
+    "a11y": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requiredAttributes", "keyboard"],
+      "properties": {
+        "role": { "type": "string" },
+        "requiredAttributes": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+        "keyboard": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "action"],
+            "properties": { "key": { "type": "string" }, "action": { "type": "string" } }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+    "js": {
+      "type": ["array", "null"],
+      "minItems": 1,
+      "description": "The optional modules this component ships, in load order. null when it ships none; one entry is the usual case, and field ships two.",
+      "items": { "$ref": "#/$defs/module" }
+    },
+    "support": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unguarded", "guarded"],
+      "properties": {
+        "unguarded": { "type": "array", "items": { "type": "string" } },
+        "guarded": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "since": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "example": { "const": "example.html" },
+    "demo": { "type": "object", "additionalProperties": false, "description": "How the docs frame this component's example: the preview box's height (lg when absent), its starting width (the full column when absent), whether the reader can pull it taller, and whether the example bleeds to the frame's edge.", "properties": { "height": { "enum": ["sm", "md", "lg", "xl"] }, "width": { "enum": ["xs", "sm", "md", "lg", "xl", "2xl"] }, "resize": { "enum": ["width", "both"] }, "bleed": { "type": "boolean", "description": "Drop the frame body's padding, so the example reaches the frame's edge." } } }
+  },
+  "$defs": {
+    "attribute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "description"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^data-[a-z][a-z0-9-]*$" },
+        "type": { "enum": ["enum", "boolean", "number", "string"] },
+        "values": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true },
+        "vocabulary": { "type": "string", "description": "Name of a list in schema/vocabulary.json; resolved into values at load. Mutually exclusive with values." },
+        "default": { "type": ["string", "number", "boolean"] },
+        "description": { "type": "string" }
+      }
+    },
+    "modifierClass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "description"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[a-z][a-z0-9-]*$" },
+        "type": { "const": "boolean" },
+        "description": { "type": "string" }
+      }
+    },
+    "child": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["selector"],
+      "properties": {
+        "selector": { "type": "string", "description": "Relative to the root: '> *', '> tag', '> .class', '> tag.class', '> [attr]', '> tag[attr]', '> .class[attr]' (optionally '[attr=\"value\"]', and '*' matches any tag), or the same without '>' for descendants." },
+        "min": { "type": "integer", "minimum": 0 },
+        "max": { "type": ["integer", "null"], "minimum": 0 },
+        "description": { "type": "string" }
+      }
+    },
+    "marker": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "description"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^data-[a-z][a-z0-9-]*$" },
+        "type": { "enum": ["enum", "boolean", "string"], "description": "A string marker carries free text, such as a name the CSS shows through attr()." },
+        "values": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true },
+        "vocabulary": { "type": "string", "description": "Name of a list in schema/vocabulary.json; resolved into values at load. Mutually exclusive with values." },
+        "on": { "type": "string", "description": "Which descendants carry it, as a child selector: '> *', '> li', '> [data-track] > *'. Documentation only." },
+        "description": { "type": "string" }
+      }
+    },
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["module", "optional"],
+      "properties": {
+        "module": { "type": "string", "description": "Path relative to the component folder." },
+        "optional": { "const": true },
+        "events": { "type": "array", "items": { "$ref": "#/$defs/event" }, "description": "The events this module dispatches. Optional; an absent list means none." }
+      }
+    },
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "description"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^yeti:[a-z]+$", "description": "The event type, in Yeti's own namespace." },
+        "detail": { "type": "string", "description": "The shape of event.detail, written as it would be destructured: \"{ tab, panel }\". Absent when the event carries none." },
+        "description": { "type": "string", "pattern": "\\S", "description": "One sentence: what happened, and which element it is dispatched on." }
+      }
+    },
+    "token": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "public"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^--_?[a-z][a-z0-9-]*$" },
+        "public": { "type": "boolean", "description": "Public tokens are the theming API and appear in docs. Internal ones may change between minors." },
+        "description": { "type": "string" }
+      }
+    }
+  }
+}

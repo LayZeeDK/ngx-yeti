@@ -1,0 +1,48 @@
+{
+  "$comment": "Named value lists shared across manifests. A manifest attribute references one with \"vocabulary\": \"<name>\". validate checks that src/layouts/attributes.css has a rule for every value of every mapped vocabulary.",
+  "gap": ["none", "xs", "sm", "md", "lg", "xl", "2xl", "3xl", "xs-sm", "xs-md", "xs-lg", "xs-xl", "xs-2xl", "xs-3xl", "sm-md", "sm-lg", "sm-xl", "sm-2xl", "sm-3xl", "md-lg", "md-xl", "md-2xl", "md-3xl", "lg-xl", "lg-2xl", "lg-3xl", "xl-2xl", "xl-3xl", "2xl-3xl"],
+  "align": ["start", "center", "end", "stretch", "baseline"],
+  "justify": ["start", "center", "end", "between", "around", "evenly"],
+  "width": ["2xs", "xs", "sm", "md", "lg", "xl", "2xl"],
+  "width-or-none": ["none", "2xs", "xs", "sm", "md", "lg", "xl", "2xl"],
+  "ratio": ["1/1", "4/3", "3/2", "16/9", "21/9"],
+  "columns": ["1", "2", "3", "4", "5", "6"],
+  "side": ["start", "end"],
+  "self": ["start", "center", "end", "stretch"],
+  "variant": ["primary", "secondary", "success", "warning", "alert", "danger", "neutral", "black", "white"],
+  "emphasis": ["high", "medium", "low"],
+  "size-control": ["sm", "md", "lg"],
+  "shape": ["slant", "curve", "wave"],
+  "surface": ["base", "raised", "sunken"],
+  "paint": ["primary", "secondary", "success", "warning", "alert", "neutral", "white", "black", "grey", "grey-0", "grey-10", "grey-20", "grey-30", "grey-40", "grey-50", "grey-60", "grey-70", "grey-80", "grey-90", "grey-100"],
+  "edge": ["top", "bottom", "both"],
+  "span": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+  "tracks": ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+  "start": ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+  "rows": ["2", "3", "4", "5", "6"],
+  "panel": ["sheet", "drawer", "screen"],
+  "trigger": [
+    "click",
+    "hover"
+  ],
+  "resize": [
+    "width",
+    "both"
+  ],
+  "height": [
+    "sm",
+    "md",
+    "lg",
+    "xl",
+    "half",
+    "full"
+  ],
+  "placement": ["top", "bottom", "start", "end"],
+  "orientation": ["horizontal", "vertical"],
+  "slides": ["1", "2", "3", "4"],
+  "enter": ["fade", "rise", "fall", "slide", "scale"],
+  "attention": ["pulse", "shake"],
+  "lift": ["rise", "scale"],
+  "print": ["only", "none"],
+  "fit": ["xs-sm", "xs-md", "xs-lg", "xs-xl", "xs-2xl", "xs-3xl", "xs-display", "sm-md", "sm-lg", "sm-xl", "sm-2xl", "sm-3xl", "sm-display", "md-lg", "md-xl", "md-2xl", "md-3xl", "md-display", "lg-xl", "lg-2xl", "lg-3xl", "lg-display", "xl-2xl", "xl-3xl", "xl-display", "2xl-3xl", "2xl-display", "3xl-display"]
+}

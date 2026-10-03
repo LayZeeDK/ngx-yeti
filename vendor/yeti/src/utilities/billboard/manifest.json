@@ -1,0 +1,99 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "billboard",
+  "kind": "utility",
+  "group": "Content",
+  "description": "Sizes display text to the container it is in, clamped between two steps of the type scale, so a headline fills the board it is on.",
+  "class": "billboard",
+  "attributes": [
+    {
+      "name": "data-fit",
+      "type": "enum",
+      "vocabulary": "fit",
+      "default": "md-3xl",
+      "description": "The two ends of the clamp, as a pair of type steps: the smallest the line may set and the largest."
+    }
+  ],
+  "classes": [],
+  "children": [],
+  "markers": [],
+  "tokens": [
+    {
+      "name": "--yeti-fit-width",
+      "public": true,
+      "description": "The container width at which a fitted line reaches the top of its pair; below it the size is in proportion."
+    },
+    {
+      "name": "--yeti-tracking-heading",
+      "public": true,
+      "description": "letter-spacing of the billboard."
+    },
+    {
+      "name": "--yeti-text-xs",
+      "public": true,
+      "description": "The xs end of a pair."
+    },
+    {
+      "name": "--yeti-text-sm",
+      "public": true,
+      "description": "The sm end of a pair."
+    },
+    {
+      "name": "--yeti-text-md",
+      "public": true,
+      "description": "The md end of a pair, and the floor when no pair is given."
+    },
+    {
+      "name": "--yeti-text-lg",
+      "public": true,
+      "description": "The lg end of a pair."
+    },
+    {
+      "name": "--yeti-text-xl",
+      "public": true,
+      "description": "The xl end of a pair."
+    },
+    {
+      "name": "--yeti-text-2xl",
+      "public": true,
+      "description": "The 2xl end of a pair."
+    },
+    {
+      "name": "--yeti-text-3xl",
+      "public": true,
+      "description": "The 3xl end of a pair, and the ceiling when no pair is given."
+    },
+    {
+      "name": "--yeti-text-display",
+      "public": true,
+      "description": "The display end of a pair, the largest step there is."
+    },
+    {
+      "name": "--_yeti-fit-min",
+      "public": false
+    },
+    {
+      "name": "--_yeti-fit-max",
+      "public": false
+    }
+  ],
+  "a11y": {
+    "requiredAttributes": [],
+    "keyboard": [],
+    "notes": "The clamp is the accessibility story. A size that is only a container unit has no floor and no ceiling: it shrinks past legibility in a narrow column and runs off the top of a wide screen, and a reader who zooms gets neither end back. The floor and the ceiling here are steps of the type scale, set in rem, so a larger default font size raises the floor and a fitted line can never fall below a legible step; the middle of the ramp, between the two ends, follows the container instead. Use it on a line, not on prose: body copy has a comfortable size that is not a percentage of a column."
+  },
+  "js": null,
+  "support": {
+    "unguarded": [
+      "container query units",
+      "clamp()",
+      "atan2() and tan()"
+    ],
+    "guarded": []
+  },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": {
+    "height": "md"
+  }
+}

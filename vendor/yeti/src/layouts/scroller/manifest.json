@@ -1,0 +1,37 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "scroller",
+  "kind": "layout",
+  "group": "Grids and Rows",
+  "description": "Lays its children out in a single row that scrolls horizontally.",
+  "class": "scroller",
+  "attributes": [
+    { "name": "data-gap", "type": "enum", "vocabulary": "gap", "default": "md", "description": "Space between items." },
+    { "name": "data-width", "type": "enum", "vocabulary": "width", "description": "Give every item this width instead of its natural one." },
+    { "name": "data-snap", "type": "boolean", "description": "Snap each item's start edge into place as the track scrolls." },
+    { "name": "data-justify", "type": "enum", "values": ["start", "center", "end"], "description": "Where each item settles along the track when data-snap is set: its start edge, its center, or its end. Nothing without data-snap." }
+  ],
+  "classes": [],
+  "children": [
+    { "selector": "> *", "min": 1, "max": null, "description": "The items. None shrinks; the track scrolls instead. A single wide item (a table, an image) is legal: the scroller then just gives that one item horizontal overflow." }
+  ],
+  "tokens": [
+    { "name": "--yeti-space-md", "public": true, "description": "The default gap." },
+    { "name": "--_yeti-gap", "public": false },
+    { "name": "--_yeti-snap", "public": false }
+  ],
+  "a11y": {
+    "role": "region",
+    "requiredAttributes": ["tabindex", "aria-label | aria-labelledby"],
+    "keyboard": [
+      { "key": "Tab", "action": "Focuses the track so the arrow keys can scroll it." },
+      { "key": "ArrowLeft / ArrowRight", "action": "Scroll the track." }
+    ],
+    "notes": "A scrollable region must be reachable from the keyboard: give it tabindex=\"0\", role=\"region\", and a name with aria-label."
+  },
+  "js": null,
+  "support": { "unguarded": ["flexbox gap", "scroll snap", "overscroll-behavior"], "guarded": [] },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": { "height": "xl" }
+}

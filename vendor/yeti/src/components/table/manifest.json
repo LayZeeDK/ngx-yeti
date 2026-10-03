@@ -1,0 +1,47 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "table",
+  "kind": "component",
+  "group": "Content",
+  "description": "A data table styled in place: header rule, row lines, optional stripes, hover, and cell borders, with numeric columns that line up.",
+  "class": "table",
+  "attributes": [
+    { "name": "data-size", "type": "enum", "vocabulary": "size-control", "default": "md", "description": "Cell padding and text size; sm is the compact table." },
+    { "name": "data-striped", "type": "boolean", "description": "Tint every other body row." },
+    { "name": "data-hover", "type": "boolean", "description": "Tint the row under the pointer." },
+    { "name": "data-border", "type": "boolean", "description": "Borders around every cell instead of lines between rows, as a box draws its border." },
+    { "name": "data-nowrap", "type": "boolean", "description": "Every cell keeps its line; put the table in a scroller." },
+    { "name": "data-fixed", "type": "boolean", "description": "Fixed table layout: the columns share the width equally, whatever their content. A width on a first-row header cell makes that column wider and the rest share what is left." }
+  ],
+  "classes": [],
+  "children": [
+    { "selector": "> caption", "min": 0, "max": 1, "description": "The table's title." },
+    { "selector": "> thead", "min": 0, "max": 1, "description": "The header row. With data-sticky it pins at --yeti-sticky-offset as the rows scroll under it, painted with the surface and carrying its rule." },
+    { "selector": "> tbody", "min": 1, "max": null, "description": "The rows." },
+    { "selector": "[data-numeric]", "min": 0, "max": null, "description": "A cell (or header cell) of numbers: end-aligned with tabular figures." }
+  ],
+  "markers": [
+    { "name": "data-numeric", "type": "boolean", "on": "*", "description": "Tabular figures, so digits line up, on any element; on a table's cells and headers the column is end-aligned too." },
+    { "name": "data-nowrap", "type": "boolean", "on": "th, td", "description": "This cell keeps its line." },
+    { "name": "data-align", "type": "enum", "values": ["start", "center", "end"], "on": "th, td, tr", "description": "Aligns the text of this cell, or of every cell in this row. A cell's own data-align or data-numeric outranks its row's." }
+  ],
+  "tokens": [
+    { "name": "--yeti-table-stripe", "public": true, "description": "Fill of even rows with data-striped." },
+    { "name": "--yeti-table-border", "public": true, "description": "Row and cell borders." },
+    { "name": "--yeti-color-border-strong", "public": true, "description": "The rule under the header." },
+    { "name": "--yeti-text-md", "public": true, "description": "Text size when data-size is absent." },
+    { "name": "--yeti-space-sm", "public": true, "description": "The space step when data-size is absent; a cell's inline padding follows it." },
+    { "name": "--yeti-weight-strong", "public": true, "description": "Weight of the caption and of header cells." },
+    { "name": "--yeti-border-width", "public": true, "description": "Width of the row rules, and of every cell border with data-border." },
+    { "name": "--yeti-color-surface", "public": true, "description": "Background of the head cells when the head is pinned with data-sticky." },
+    { "name": "--yeti-color-surface-sunken", "public": true, "description": "Background of a row under the pointer with data-hover." },
+    { "name": "--_yeti-size-text", "public": false },
+    { "name": "--_yeti-size-space", "public": false }
+  ],
+  "a11y": { "requiredAttributes": [], "keyboard": [], "notes": "Give the table a caption, or aria-label / aria-labelledby. Header cells carry scope=\"col\" or scope=\"row\". A table wider than its container goes inside a scroller with tabindex=\"0\" and a label; the table itself never changes shape, so it stays a table for assistive tech." },
+  "js": null,
+  "support": { "unguarded": ["logical properties", "font-variant-numeric"], "guarded": [] },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": { "height": "xl" }
+}

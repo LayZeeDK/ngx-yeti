@@ -1,0 +1,26 @@
+/* Visually hidden: words that are there for a screen reader and not for the
+   eye. Two words, where every other identity in the framework is one, because
+   a one-word name that reads as the wrong thing is worse than a long one:
+   hidden is the platform's attribute, and the attribute takes the element out
+   of the accessibility tree along with the page and leaves a reader with
+   nothing. This leaves it in the tree and takes it out of sight, which is the
+   only reason it exists.
+   The old clip-rect recipe, with clip-path where the deprecated clip property
+   used to be. Every line of it is load-bearing: absolute takes the box out of
+   the flow so it cannot open a gap in the line it sits in; the pixel of size
+   is there because a zero-size box is dropped outright by some engines and a
+   dropped box is a dropped announcement; overflow and the clip leave nothing
+   to paint; and nowrap stops a long string being wrapped into a
+   one-character column, which some screen readers then read out letter by
+   letter. display: none and visibility: hidden are shorter and would do the
+   one thing this must never do. */
+@layer yeti.utilities {
+	.visually-hidden {
+		position: absolute;
+		inline-size: 1px;
+		block-size: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+}

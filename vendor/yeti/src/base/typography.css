@@ -1,0 +1,109 @@
+/* Typography defaults for bare HTML. Every value is a token. */
+@layer yeti.base {
+	html {
+		font-family: var(--yeti-font-sans);
+		color: var(--yeti-color-text);
+		background-color: var(--yeti-color-surface);
+		/* Where a scroll-into-view stops; see --yeti-scroll-padding. */
+		scroll-padding-block-start: var(--yeti-scroll-padding);
+		/* The browser's own form colours follow the palette: a bare checkbox,
+		   radio, range or progress takes the primary. The caret is left at
+		   auto on purpose: it follows the text it sits in, which is what a
+		   dark band or a forced-dark section needs, and a root value would
+		   not. */
+		accent-color: var(--yeti-color-primary);
+	}
+
+	/* Type size lives on body, not html, so rem keeps the visitor's root
+	   default and every rem-based token resolves the same on every element. */
+	body {
+		font-size: var(--yeti-text-md);
+		line-height: var(--yeti-leading-md);
+		font-stretch: var(--yeti-stretch-text);
+	}
+
+	h1, h2, h3, h4, h5, h6 {
+		font-weight: var(--yeti-weight-bold);
+		line-height: var(--yeti-leading-tight);
+		font-stretch: var(--yeti-stretch-heading);
+		letter-spacing: var(--yeti-tracking-heading);
+		text-wrap: balance;
+	}
+	h1 { font-size: var(--yeti-text-3xl); }
+	h2 { font-size: var(--yeti-text-2xl); }
+	h3 { font-size: var(--yeti-text-xl); }
+	h4 { font-size: var(--yeti-text-lg); }
+	h5 { font-size: var(--yeti-text-md); }
+	h6 { font-size: var(--yeti-text-sm); }
+
+	p {
+		text-wrap: pretty;
+	}
+
+	small {
+		font-size: var(--yeti-text-sm);
+		font-stretch: var(--yeti-stretch-small);
+	}
+
+	strong, b {
+		font-weight: var(--yeti-weight-bold);
+	}
+
+	a {
+		color: var(--yeti-link-color, var(--yeti-color-primary));
+		text-decoration: underline;
+		text-decoration-skip-ink: auto;
+		text-underline-offset: 0.15em;
+	}
+	a:hover {
+		color: var(--yeti-link-color-hover, var(--yeti-color-primary-strong));
+	}
+
+	/* The skip link: the first link in the body, jumping past the furniture to
+	   the content. It is a base rule and not a class because a skip link is the
+	   first link in the body by convention anyway, and a class would be one
+	   more thing to remember; the cost is that a body whose first link is
+	   something else gets it hidden, which the install guide says plainly.
+	   The clip-rect recipe is what hides it: display: none and visibility:
+	   hidden would take it out of the accessibility tree and out of Tab order,
+	   and a skip link that cannot be tabbed to is not one. */
+	body > a[href^="#"]:first-child:not(:focus-visible) {
+		position: absolute;
+		inline-size: 1px;
+		block-size: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+	}
+	/* Fixed, so it stays at the corner of the window on a page already
+	   scrolled, and above the sticky bars at 2 and the affixed controls at 1,
+	   which would otherwise paint over it: it is the first element in the
+	   body, so everything else is painted after it. The ring is the one every
+	   focusable element gets, from the rule below. */
+	body > a[href^="#"]:first-child:focus-visible {
+		position: fixed;
+		z-index: 3;
+		inset-block-start: var(--yeti-space-sm);
+		inset-inline-start: var(--yeti-space-sm);
+		padding: var(--yeti-space-sm) var(--yeti-space-md);
+		border-radius: var(--yeti-radius-sm);
+		background-color: var(--yeti-color-surface-raised);
+		color: var(--yeti-color-text);
+	}
+
+	/* The link above is absolutely positioned, so it takes no room, but it is
+	   still the preceding sibling the prose rhythm counts, which would
+	   otherwise put a whole gap above the first thing the reader sees. */
+	body > a[href^="#"]:first-child + * {
+		margin-block-start: 0;
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--yeti-color-focus);
+		outline-offset: 2px;
+	}
+
+	::selection {
+		background-color: var(--yeti-color-primary-subtle);
+	}
+}

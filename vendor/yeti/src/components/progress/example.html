@@ -1,0 +1,15 @@
+<div class="stack" data-gap="md">
+	<div class="progress" data-scroll aria-hidden="true" data-sticky></div>
+	<progress class="progress" value="40" max="100" aria-label="Upload">40%</progress>
+	<p>The thin bar pinned at the top is a reading-progress bar: it fills as this box is scrolled, and it is the one form of progress that is not a progress element, since there is no value to announce.</p>
+	<p>The bar under it is the ordinary kind, a native progress element with a value, drawn in the hue.</p>
+	<p>Scroll on and the top bar fills; scroll back and it empties. It follows the reader's own hand and never moves by itself, which is why it stays on under reduced motion.</p>
+	<p>Where a scroll timeline is unsupported the top bar is not shown at all. A bar that never moved would say the reader had not started.</p>
+	<h3>A longer read</h3>
+	<p>A reading-progress bar earns its place on a page with some length to it: an article, a guide, a long settings screen. On a page that fits its screen there is nothing to track, and the bar sits full from the first moment, which says nothing.</p>
+	<p>It measures the nearest scroll container. At the top of a page that is the page itself. Inside a scroller it is the scroller, so a long panel in a sidebar can carry its own bar without any script telling it which box to watch.</p>
+	<p>The fill is a scale from the start edge rather than a width, so the browser can run it off the main thread while the page keeps scrolling smoothly; in a right-to-left page it grows from the right, because the start edge is there.</p>
+	<p>Nothing about the bar is a value. A native progress element would announce forty percent, and forty percent of a page is not something a reader needs read to them while they read, so this form is a plain block hidden from assistive tech.</p>
+	<p>Give it a hue with the same six words every other component takes, and a thickness with the same sizes. Both apply to the ordinary bar above and to this one alike.</p>
+	<p>And that is the end of the demo. The bar at the top should be full now, and it empties again as you scroll back up.</p>
+</div>

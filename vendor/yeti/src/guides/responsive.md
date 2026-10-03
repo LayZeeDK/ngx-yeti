@@ -1,0 +1,92 @@
+---
+raw: true
+title: "Responsive, the Yeti way"
+description: "A component measures its own width, a threshold is a width where behaviour changes, and the three tools that make a layout respond, in the order to reach for them."
+nav_group: "Guides"
+nav_order: 5
+---
+
+# Responsive, the Yeti way
+
+<p class="lede">Three ideas, in the order they matter. Everything responsive in Yeti follows from them.</p>
+
+## A component measures itself
+
+A Yeti layout or component never asks how wide the screen is. It asks how wide it is. A `columns` in a sidebar and the same `columns` across the page get different answers and behave differently, with identical markup, because each one reads the box it was put in.
+
+```html demo md lg
+<div class="sidebar">
+	<nav class="stack"><a href="#">Overview</a></nav>
+	<div class="columns" data-threshold="sm">
+		<p>Left</p>
+		<p>Right</p>
+	</div>
+</div>
+```
+
+Here the `columns` sits in the sidebar's main area. When that area is narrower than the `sm` width its children stack; when a wider screen gives the area more room they sit side by side. Nothing about the screen was written down, and the same markup dropped into a full-width `center` behaves the same way relative to its own box.
+
+`columns` reaches that answer without a container query: each child's flex basis is `calc((threshold - 100%) * 999)`, hugely negative while the container is wider than the threshold and hugely positive once it is narrower, so the row wraps at the width you named. `hero` switches the same way. Where a component changes more than how it wraps, it declares itself a container and asks its own width in a container query: `nav` folding behind a toggle, `card`, `grid`, `breakout`, `pagination`, `timeline`. Either way the component reads its own box, never the screen. A viewport query, the thing a breakpoint was, appears almost nowhere in the framework, because a component cannot know where on the page it will be used.
+
+## A threshold, not a breakpoint
+
+A breakpoint is a screen width chosen ahead of time, usually from a list of devices, and every component on the page changes at the same one. A threshold is a width where one component's behaviour changes, chosen from Yeti's width vocabulary, and it belongs to that component alone.
+
+The vocabulary is seven stops:
+
+| Name | Width | About |
+| --- | --- | --- |
+| `2xs` | 12rem | a badge, or a dialog's narrowest size |
+| `xs` | 16rem | a phone held sideways, or a narrow sidebar |
+| `sm` | 24rem | a phone, or a card |
+| `md` | 32rem | a reading column |
+| `lg` | 48rem | a wide reading column, or two of `sm` |
+| `xl` | 64rem | a page |
+| `2xl` | 80rem | a wide page |
+
+They are the same names, and the same values, everywhere: `data-threshold="md"` on a `columns`, `data-max="md"` on a `center`, `data-width="sm"` on a `sidebar`. Learn them once. A theme can change the values in one place and every component that reads them moves together.
+
+Because a threshold belongs to a component, two components on the same page can change shape at different widths, and one component can be used at two thresholds on the same page. That is the whole difference, and it is why the layouts guide says to unlearn breakpoints rather than translate them.
+
+## Three tools, in this order
+
+When something has to respond, reach for these in order and stop at the first that works.
+
+**Intrinsic sizing first.** Most of the time nothing has to be told a width at all. A `cluster` wraps when its items run out of room. A `grid` with `data-columns` puts as many columns in as fit. A `sidebar` lets its main area take what is left. These respond continuously, at every width, with no threshold, and they are what to try first.
+
+```html demo sm md
+<div class="cluster" data-gap="sm">
+	<button class="button" type="button">Save</button>
+	<button class="button" type="button" data-emphasis="medium">Save as draft</button>
+	<button class="button" type="button" data-emphasis="low">Discard</button>
+</div>
+```
+
+**A container query second.** When the change is a switch rather than a flow, a row that becomes a stack, a card that puts its picture beside the text, a nav that folds behind a toggle, the component queries its own width against a threshold. In Yeti these are already written: you choose the threshold with an attribute, you do not write the query.
+
+```html demo md lg
+<nav class="nav" aria-label="Site" data-threshold="md">
+	<a href="#" data-brand>Yeti</a>
+	<button type="button" popovertarget="menu" aria-label="Menu">☰</button>
+	<ul id="menu" popover role="list">
+		<li><a href="#">Docs</a></li>
+	</ul>
+</nav>
+```
+
+**A viewport query almost never.** The one thing a component cannot measure is the screen, and the one thing that is legitimately about the screen is the page's outermost frame: whether the `shell` shows its nav beside the main area or above it. Even there Yeti asks the shell's own width, since the shell is the page. If you find yourself writing `@media (width >= …)` around a Yeti component, the component is being asked to know something it should not need to.
+
+There is a fourth tool, and it is fourth on purpose: `data-show` and `data-hide` remove an element outright at a container width, instead of changing anything's shape. Reach for it when a thing genuinely has no narrow form — not when writing the narrow form is merely more work. Two versions of one thing are two things to keep in step forever, and the removed one is out of the accessibility tree while it is gone. The [visibility guide](visibility.md) has it, and everything else that hides.
+
+## Who reads which width
+
+| Attribute | On | What the width means |
+| --- | --- | --- |
+| `data-threshold` | `columns`, `hero`, `nav`, `pagination` | at or above it, the wide form |
+| `data-max` | `breakout`, `center`, `dialog` | the widest the content column, or the dialog, may grow |
+| `data-width` | `media`, `scroller`, `shell`, `sidebar` | the preferred width of the part it sizes: the media's figure, each item in a scroller, the shell's nav and aside, or the sidebar |
+| `data-min` | `grid`, `masonry` | the narrowest a column may be before one drops, or `none`, which leaves the count to `data-columns` |
+| `data-show` | anything inside a `container` or another size container | shown from the stop up |
+| `data-hide` | anything inside a `container` or another size container | hidden from the stop up |
+
+The values are the seven stops above, `none` aside, and every one of them is a token: `--yeti-width-sm` is `24rem` until a theme says otherwise.

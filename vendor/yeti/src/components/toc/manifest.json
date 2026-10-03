@@ -1,0 +1,174 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "toc",
+  "kind": "component",
+  "group": "Navigation",
+  "description": "A column of links to the headings on the page, with the one being read marked as the reader scrolls.",
+  "class": "toc",
+  "attributes": [
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "vocabulary": "variant",
+      "default": "primary",
+      "description": "The hue of the current link and its edge bar."
+    },
+    {
+      "name": "data-size",
+      "type": "enum",
+      "vocabulary": "size-control",
+      "default": "md",
+      "description": "The text step, and the inset of each link with it."
+    },
+    {
+      "name": "data-numbered",
+      "type": "boolean",
+      "description": "Number the entries before their links, nested ones as 2.1, in the muted color."
+    }
+  ],
+  "classes": [],
+  "children": [
+    {
+      "selector": "> ul",
+      "min": 1,
+      "max": 1,
+      "description": "The links, one per li, with role=\"list\"."
+    },
+    {
+      "selector": "li",
+      "min": 1,
+      "max": null,
+      "description": "One entry, holding a link whose href is the id of a heading on this page."
+    }
+  ],
+  "tokens": [
+    {
+      "name": "--yeti-toc-scroll",
+      "public": true,
+      "description": "How the page scrolls to a heading; also read by a nav with in-page links."
+    },
+    {
+      "name": "--yeti-toc-padding",
+      "public": true,
+      "description": "The rows' block padding."
+    },
+    {
+      "name": "--yeti-color-text-muted",
+      "public": true,
+      "description": "A link that is not the current one."
+    },
+    {
+      "name": "--yeti-color-text",
+      "public": true,
+      "description": "A link under the pointer."
+    },
+    {
+      "name": "--yeti-toc-hover",
+      "public": true,
+      "description": "The hover fill; transparent turns it off."
+    },
+    {
+      "name": "--yeti-space-xs",
+      "public": true,
+      "description": "Gap between links, and their block padding."
+    },
+    {
+      "name": "--yeti-space-sm",
+      "public": true,
+      "description": "The space step when data-size is absent."
+    },
+    {
+      "name": "--yeti-text-md",
+      "public": true,
+      "description": "Text size when data-size is absent."
+    },
+    {
+      "name": "--yeti-border-width",
+      "public": true,
+      "description": "The edge bar is three of them."
+    },
+    {
+      "name": "--yeti-weight-strong",
+      "public": true,
+      "description": "Weight of the current link."
+    },
+    {
+      "name": "--yeti-duration-fast",
+      "public": true,
+      "description": "How long the mark takes to move."
+    },
+    {
+      "name": "--yeti-ease",
+      "public": true,
+      "description": "The curve of that transition."
+    },
+    {
+      "name": "--yeti-color-primary",
+      "public": true,
+      "description": "The default variant's color, when data-variant is absent."
+    },
+    {
+      "name": "--yeti-color-primary-subtle",
+      "public": true,
+      "description": "The default variant's hover tint."
+    },
+    {
+      "name": "--yeti-color-primary-text",
+      "public": true,
+      "description": "The default variant's text color."
+    },
+    {
+      "name": "--_yeti-variant",
+      "public": false
+    },
+    {
+      "name": "--_yeti-variant-subtle",
+      "public": false
+    },
+    {
+      "name": "--_yeti-variant-text",
+      "public": false
+    },
+    {
+      "name": "--_yeti-size-text",
+      "public": false
+    },
+    {
+      "name": "--_yeti-size-space",
+      "public": false
+    }
+  ],
+  "a11y": {
+    "requiredAttributes": [
+      "aria-label | aria-labelledby"
+    ],
+    "keyboard": [],
+    "notes": "Give the nav an aria-label such as \"On this page\", since a page with a toc has at least two navs. Put role=\"list\" on the ul, because the reset only removes list markers where that role says the list is decorative. The link for the section being read carries aria-current=\"true\"; toc.js moves it, and a page that ships the mark in its HTML is correct without the module. The module owns aria-current on these links: it sets and clears the value \"true\" and strips any other aria-current an author puts on a toc link. Every link points at an id on this page, so the list works with no script at all."
+  },
+  "js": [
+    {
+      "module": "toc.js",
+      "optional": true,
+      "events": [
+        {
+          "name": "yeti:current",
+          "detail": "{ link, heading }",
+          "description": "Dispatched on the .toc when the mark moves to another link."
+        }
+      ]
+    }
+  ],
+  "support": {
+    "unguarded": [
+      "IntersectionObserver",
+      ":has()",
+      "scroll-behavior"
+    ],
+    "guarded": []
+  },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": {
+    "height": "lg"
+  }
+}

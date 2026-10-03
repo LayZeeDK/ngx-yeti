@@ -1,0 +1,27 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "buttons",
+  "kind": "component",
+  "group": "Forms and Actions",
+  "description": "A group of buttons: a wrapping row, or one joined control with data-affix.",
+  "class": "buttons",
+  "attributes": [
+    { "name": "data-gap", "type": "enum", "vocabulary": "gap", "default": "sm", "description": "Space between buttons when not affixed." },
+    { "name": "data-affix", "type": "boolean", "description": "Join the buttons into one segmented control that shares borders." }
+  ],
+  "classes": [],
+  "children": [
+    { "selector": "> .button", "min": 2, "max": null, "description": "The buttons." }
+  ],
+  "tokens": [
+    { "name": "--yeti-space-sm", "public": true, "description": "The default gap." },
+    { "name": "--yeti-border-width", "public": true, "description": "The width the joined members overlap by." },
+    { "name": "--_yeti-gap", "public": false }
+  ],
+  "a11y": { "role": "group", "requiredAttributes": ["role", "aria-label | aria-labelledby"], "keyboard": [ { "key": "Arrow keys", "action": "In a segmented control of radios, move the choice to the previous or next option." } ], "notes": "role=\"group\" with a name, so the set is announced as one thing. Inside a fieldset with a legend the fieldset is the named group and the div needs neither. A segmented control is label.button members wrapping radios that share one name, inside such a fieldset: the arrow keys move the choice natively. A toggle of buttons sets aria-pressed on each member and needs a script to move it; a set of tabs is the tabs component, not this." },
+  "js": null,
+  "support": { "unguarded": ["flexbox gap", "logical border radii"], "guarded": [] },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": { "height": "sm" }
+}

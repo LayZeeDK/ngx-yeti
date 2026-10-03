@@ -1,0 +1,29 @@
+/* Overlay: one child held over the rest. The parent is the box being
+   covered; the child carrying data-over leaves the flow and is centered on
+   it, or on the viewport with data-fixed. The other children flow as usual. */
+@layer yeti.layouts {
+	.overlay { position: relative; }
+	.overlay:not([data-gap]) { --_yeti-gap: var(--yeti-space-md); }
+	.overlay > [data-over] {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		translate: -50% -50%;
+		margin: 0;
+		max-inline-size: calc(100% - 2 * var(--_yeti-gap));
+		max-block-size: calc(100% - 2 * var(--_yeti-gap));
+		overflow: auto;
+	}
+	/* data-fill: the held child covers the box instead of being centred in it,
+	   which is what a veil, a dimmer or a loading state wants. The gap is the
+	   inset a centred child keeps from the edges, and a cover has none, so the
+	   caps go with it. Positioning only: a veil that wants its own content
+	   centred puts a layout inside itself, as every other layout composes. */
+	.overlay > [data-over][data-fill] {
+		inset: 0;
+		translate: none;
+		max-inline-size: none;
+		max-block-size: none;
+	}
+	.overlay[data-fixed] > [data-over] { position: fixed; }
+}

@@ -1,0 +1,319 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "field",
+  "kind": "component",
+  "group": "Forms and Actions",
+  "description": "One form control with its label, an optional hint, and an error that shows itself when the control is invalid.",
+  "class": "field",
+  "attributes": [
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "vocabulary": "variant",
+      "default": "primary",
+      "description": "The color of a checked checkbox or radio."
+    },
+    {
+      "name": "data-size",
+      "type": "enum",
+      "vocabulary": "size-control",
+      "default": "md",
+      "description": "Scales the control's height and text."
+    },
+    {
+      "name": "data-inline",
+      "type": "boolean",
+      "description": "Put the label beside the control. Checkboxes and radios are inline without it."
+    }
+  ],
+  "classes": [],
+  "children": [
+    {
+      "selector": "> label",
+      "min": 0,
+      "max": 1,
+      "description": "The label, with for pointing at the control's id. Required unless the field is a fieldset with a legend."
+    },
+    {
+      "selector": "> legend",
+      "min": 0,
+      "max": 1,
+      "description": "The legend, when the field is a fieldset grouping several controls."
+    },
+    {
+      "selector": "> input",
+      "min": 0,
+      "max": 1,
+      "description": "The control."
+    },
+    {
+      "selector": "> select",
+      "min": 0,
+      "max": 1,
+      "description": "The control."
+    },
+    {
+      "selector": "> textarea",
+      "min": 0,
+      "max": 1,
+      "description": "The control."
+    },
+    {
+      "selector": "> .affix",
+      "min": 0,
+      "max": 1,
+      "description": "The control slot as an affix: a control with attachments, or two controls joined."
+    },
+    {
+      "selector": "> output",
+      "min": 0,
+      "max": 1,
+      "description": "A range's value, written by range.js and drawn over the thumb. Put it before the input. Leave it out on a page that does not load the module, which would leave it empty."
+    },
+    {
+      "selector": "> [data-hint]",
+      "min": 0,
+      "max": 1,
+      "description": "Help text, referenced by the control's aria-describedby."
+    },
+    {
+      "selector": "> [data-error]",
+      "min": 0,
+      "max": 1,
+      "description": "The error message, hidden until the control is invalid."
+    }
+  ],
+  "markers": [
+    {
+      "name": "data-hint",
+      "type": "boolean",
+      "on": "> *",
+      "description": "Help text, referenced by the control's aria-describedby."
+    },
+    {
+      "name": "data-error",
+      "type": "boolean",
+      "on": "> *",
+      "description": "The error message, hidden until the control is invalid."
+    }
+  ],
+  "tokens": [
+    {
+      "name": "--yeti-field-gap",
+      "public": true,
+      "description": "Space between label, control, and hint."
+    },
+    {
+      "name": "--yeti-control-size",
+      "public": true,
+      "description": "Minimum height of the control."
+    },
+    {
+      "name": "--yeti-control-radius",
+      "public": true,
+      "description": "Corner of the control."
+    },
+    {
+      "name": "--yeti-control-border",
+      "public": true,
+      "description": "Border of the control at rest."
+    },
+    {
+      "name": "--yeti-switch-track",
+      "public": true,
+      "description": "Fill and border of an off switch's track."
+    },
+    {
+      "name": "--yeti-switch-thumb",
+      "public": true,
+      "description": "The thumb of an off switch."
+    },
+    {
+      "name": "--yeti-range-value",
+      "public": true,
+      "description": "How far along a range's track the value sits, 0 to 1. range.js sets it; set it on the input yourself for a static one."
+    },
+    {
+      "name": "--_yeti-range-thumb",
+      "public": false
+    },
+    {
+      "name": "--_yeti-range-at",
+      "public": false
+    },
+    {
+      "name": "--yeti-control-surface",
+      "public": true,
+      "description": "Background of the control."
+    },
+    {
+      "name": "--yeti-control-chevron",
+      "public": true,
+      "description": "The select's chevron image."
+    },
+    {
+      "name": "--yeti-color-alert",
+      "public": true,
+      "description": "Border of an invalid control."
+    },
+    {
+      "name": "--yeti-color-primary",
+      "public": true,
+      "description": "The default variant's color, when data-variant is absent."
+    },
+    {
+      "name": "--yeti-color-primary-subtle",
+      "public": true,
+      "description": "The default variant's tint."
+    },
+    {
+      "name": "--yeti-color-primary-soft",
+      "public": true,
+      "description": "The default variant's soft stop."
+    },
+    {
+      "name": "--yeti-color-primary-strong",
+      "public": true,
+      "description": "The default variant's strong stop."
+    },
+    {
+      "name": "--yeti-color-primary-text",
+      "public": true,
+      "description": "The default variant's text color."
+    },
+    {
+      "name": "--yeti-on-primary",
+      "public": true,
+      "description": "Text on the default variant's color."
+    },
+    {
+      "name": "--yeti-text-md",
+      "public": true,
+      "description": "Text size when data-size is absent."
+    },
+    {
+      "name": "--yeti-space-sm",
+      "public": true,
+      "description": "The space step when data-size is absent; a fieldset's padding follows it."
+    },
+    {
+      "name": "--yeti-weight-strong",
+      "public": true,
+      "description": "Weight of the label or legend."
+    },
+    {
+      "name": "--yeti-color-text",
+      "public": true,
+      "description": "Text of the control."
+    },
+    {
+      "name": "--yeti-border-width",
+      "public": true,
+      "description": "Border width of every control, and of a fieldset."
+    },
+    {
+      "name": "--yeti-duration-fast",
+      "public": true,
+      "description": "How long a control's border and a switch take to change."
+    },
+    {
+      "name": "--yeti-ease",
+      "public": true,
+      "description": "The curve of that transition."
+    },
+    {
+      "name": "--yeti-color-border-strong",
+      "public": true,
+      "description": "Border of a focused control."
+    },
+    {
+      "name": "--yeti-radius-full",
+      "public": true,
+      "description": "Corners of the switch and of the range track."
+    },
+    {
+      "name": "--yeti-space-xs",
+      "public": true,
+      "description": "Gap of an inline field, and a legend's inline padding."
+    },
+    {
+      "name": "--yeti-text-sm",
+      "public": true,
+      "description": "Text size of the hint and the error."
+    },
+    {
+      "name": "--yeti-color-text-muted",
+      "public": true,
+      "description": "The hint."
+    },
+    {
+      "name": "--yeti-color-alert-text",
+      "public": true,
+      "description": "The error, and the required marker."
+    },
+    {
+      "name": "--yeti-space-md",
+      "public": true,
+      "description": "Padding of a fieldset."
+    },
+    {
+      "name": "--_yeti-variant",
+      "public": false
+    },
+    {
+      "name": "--_yeti-on-variant",
+      "public": false
+    },
+    {
+      "name": "--_yeti-size-text",
+      "public": false
+    },
+    {
+      "name": "--_yeti-size-space",
+      "public": false
+    },
+    {
+      "name": "--_yeti-variant-subtle",
+      "public": false
+    },
+    {
+      "name": "--_yeti-variant-soft",
+      "public": false
+    },
+    {
+      "name": "--_yeti-variant-strong",
+      "public": false
+    },
+    {
+      "name": "--_yeti-variant-text",
+      "public": false
+    }
+  ],
+  "a11y": {
+    "requiredAttributes": [],
+    "keyboard": [],
+    "notes": "The label's for must match the control's id; the validator checks it. Reference the hint and the error from the control with aria-describedby so both are announced. Use aria-invalid=\"true\" for errors found on the server. The required marker is decoration; the required attribute is what assistive tech reads. A switch is a checkbox with role=\"switch\"; its label reads as the switch's name. A range needs a label like any control, and aria-valuetext when the numbers are not what a person would say. With validate.js loaded, the same aria-invalid is set from the browser's own check when a submit is refused, and the browser's message is written into an empty [data-error]."
+  },
+  "js": [
+    { "module": "range.js", "optional": true },
+    {
+      "module": "validate.js",
+      "optional": true,
+      "events": [
+        { "name": "yeti:invalid", "detail": "{ controls }", "description": "Dispatched on the form when a submit is refused, carrying the invalid controls in document order." }
+      ]
+    }
+  ],
+  "support": {
+    "unguarded": [
+      ":has()",
+      ":user-invalid",
+      "appearance: none",
+      "lh unit"
+    ],
+    "guarded": []
+  },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": { "height": "xl" }
+}

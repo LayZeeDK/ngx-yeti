@@ -1,0 +1,48 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "pagination",
+  "kind": "component",
+  "group": "Navigation",
+  "description": "Links to the pages of a long list, each a square target, the current one filled, shrinking to Previous, the current page, and Next when it is narrow.",
+  "class": "pagination",
+  "attributes": [
+    { "name": "data-variant", "type": "enum", "vocabulary": "variant", "default": "primary", "description": "The hue of the current page and of the hover tint." },
+    { "name": "data-size", "type": "enum", "vocabulary": "size-control", "default": "md", "description": "The text step." },
+    { "name": "data-threshold", "type": "enum", "vocabulary": "width", "default": "sm", "description": "The pagination's own width below which only Previous, the current page, and Next remain." },
+    { "name": "data-justify", "type": "enum", "vocabulary": "justify", "default": "start", "description": "Where the links sit in the row." }
+  ],
+  "classes": [],
+  "children": [
+    { "selector": "> ol", "min": 1, "max": 1, "description": "The links, in page order, with role=\"list\"." },
+    { "selector": "li", "min": 2, "max": null, "description": "A page link, or a span holding an ellipsis for skipped pages." }
+  ],
+  "tokens": [
+    { "name": "--yeti-pagination-radius", "public": true, "description": "Corner of each target." },
+    { "name": "--yeti-control-size", "public": true, "description": "Minimum size of each target." },
+    { "name": "--yeti-color-primary", "public": true, "description": "The default variant's color, when data-variant is absent." },
+    { "name": "--yeti-color-primary-subtle", "public": true, "description": "The default variant's tint." },
+    { "name": "--yeti-color-primary-soft", "public": true, "description": "The default variant's soft stop." },
+    { "name": "--yeti-color-primary-strong", "public": true, "description": "The default variant's strong stop." },
+    { "name": "--yeti-color-primary-text", "public": true, "description": "The default variant's text color." },
+    { "name": "--yeti-on-primary", "public": true, "description": "Text on the default variant's color." },
+    { "name": "--yeti-text-md", "public": true, "description": "Text size when data-size is absent." },
+    { "name": "--yeti-space-sm", "public": true, "description": "The space step when data-size is absent; a target's inline padding follows it." },
+    { "name": "--yeti-space-xs", "public": true, "description": "Gap between targets." },
+    { "name": "--yeti-color-text-muted", "public": true, "description": "The span standing for skipped pages." },
+    { "name": "--_yeti-variant", "public": false },
+    { "name": "--_yeti-variant-subtle", "public": false },
+    { "name": "--_yeti-on-variant", "public": false },
+    { "name": "--_yeti-justify", "public": false },
+    { "name": "--_yeti-size-text", "public": false },
+    { "name": "--_yeti-variant-soft", "public": false },
+    { "name": "--_yeti-variant-strong", "public": false },
+    { "name": "--_yeti-variant-text", "public": false },
+    { "name": "--_yeti-size-space", "public": false }
+  ],
+  "a11y": { "requiredAttributes": ["aria-label | aria-labelledby"], "keyboard": [], "notes": "Put aria-label=\"Pagination\" on the nav. The current page's link carries aria-current=\"page\". Previous and Next carry rel=\"prev\" and rel=\"next\" and visible text or an aria-label; they are what remains when the row is narrow. Skipped pages are a span, not a link. Put role=\"list\" on the ol." },
+  "js": null,
+  "support": { "unguarded": ["container size queries", ":has()"], "guarded": [] },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": { "height": "sm" }
+}

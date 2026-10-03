@@ -1,0 +1,268 @@
+/* Card: a bordered surface holding a figure, a body, and a footer. From
+   the md width (32rem) of content, a card with a figure puts the picture
+   beside the text; narrower than that it stacks, picture on top. Literal
+   because container conditions cannot read custom properties. */
+@layer yeti.components {
+	.card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: var(--yeti-card-gap);
+		padding: var(--yeti-card-padding);
+		background-color: var(--yeti-card-surface);
+		color: var(--yeti-color-text);
+		border: var(--yeti-border-width) solid var(--yeti-card-border);
+		border-radius: var(--yeti-card-radius);
+		overflow: clip;
+	}
+	/* Only a card with a figure runs the side-by-side query, so only that
+	   card is a size container. Inline-size containment removes the content's
+	   contribution to intrinsic width, and a card that is always a container
+	   collapsed to its padding wherever a parent let it size itself: 37px in
+	   a cluster, the same at max-content. */
+	.card:has(> :is(img, video, picture, figure):first-child) { container-type: inline-size; }
+	.card:not([data-ratio]) { --_yeti-aspect: 16 / 9; }
+	.card > * { margin-block: 0; }
+
+	/* The figure: media, or a figure element, first in the card, bleeding to the edges.
+	   inline-size is given explicitly, rather than left to the flex item's
+	   default cross-axis stretch, because a stretch-computed width paired
+	   with aspect-ratio on a replaced element mis-sizes the height in WebKit. */
+	.card > :is(img, video, picture, figure):first-child {
+		inline-size: calc(100% + 2 * var(--yeti-card-padding));
+		margin: calc(-1 * var(--yeti-card-padding)) calc(-1 * var(--yeti-card-padding)) 0;
+		max-inline-size: none;
+		aspect-ratio: var(--_yeti-aspect);
+		object-fit: cover;
+	}
+	/* A plain figure is a column: the picture, then the caption below. A
+	   figure that is a layer keeps its own stacking (see the layer's page). */
+	.card > figure:first-child {
+		aspect-ratio: auto;
+	}
+	.card > figure:first-child:not(.layer) {
+		display: flex;
+		flex-direction: column;
+	}
+	.card > figure:first-child > :is(img, video, picture) {
+		inline-size: 100%;
+		max-inline-size: none;
+		aspect-ratio: var(--_yeti-aspect);
+		object-fit: cover;
+	}
+	.card > figure:first-child:not(.layer) > figcaption {
+		padding: var(--yeti-space-xs) var(--yeti-card-padding) 0;
+		font-size: var(--yeti-text-sm);
+		color: var(--yeti-color-text-muted);
+	}
+	/* Over the picture, the caption needs a scrim to stay readable. */
+	.card > figure.layer:first-child > figcaption {
+		padding: var(--yeti-space-xs) var(--yeti-card-padding);
+		font-size: var(--yeti-text-sm);
+		color: var(--yeti-color-text);
+		background-color: var(--yeti-color-scrim);
+	}
+
+	/* The footer sits at the bottom of a taller card. */
+	.card > footer {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--yeti-space-sm);
+		margin-block-start: auto;
+	}
+	/* footer IS a flow container, and a block-start margin on a centred flex item shifts it down half its own margin. */
+	.card > footer > * { margin-block: 0; }
+
+	/* One link may stretch over the whole card. Everything else that can be
+	   pressed is lifted above its pseudo-element, or a footer button would sit
+	   under the stretched link and the page would navigate instead. */
+	.card [data-stretch]::after {
+		content: "";
+		position: absolute;
+		inset: 0;
+	}
+	.card :is(a, button, input, select, textarea, summary, [tabindex]):not([data-stretch]) {
+		position: relative;
+		z-index: 1;
+	}
+
+	.card[data-raised] {
+		border-color: transparent;
+		box-shadow: var(--yeti-shadow-sm);
+	}
+	.card[data-variant] {
+		border-color: var(--_yeti-variant);
+		border-block-start-width: calc(var(--yeti-border-width) * 4);
+	}
+
+	/* In a grid with data-rows the card is a subgrid of the grid's rows, so its
+	   parts line up with its neighbours'; the footer sits in the last row instead of
+	   being pushed. The side-by-side form below is switched off there. The footer
+	   is placed in the last row explicitly so a card with fewer parts still
+	   aligns its footer. container-type is turned off here: a subgridded axis
+	   shares track sizing with its ancestor, which containment forbids, so a
+	   query container cannot also be a subgrid; the side-by-side query never
+	   matches a card that spans rows anyway. */
+	.grid[data-rows] > .card {
+		display: grid;
+		grid-template-rows: subgrid;
+		grid-row: span var(--_yeti-rows);
+		row-gap: var(--yeti-card-gap);
+		container-type: normal;
+	}
+	.grid[data-rows] > .card > footer { margin-block-start: 0; grid-row: -2; }
+
+	/* Wide: the picture beside the text, a media object. Only cards with a
+	   figure change, and only once the card has room for both: stacked, the
+	   picture is the hero and the text runs full width, which is the form a
+	   phone and a grid cell want; side by side, a narrow picture would be a
+	   crushed thumbnail and the text a sliver, so this form waits for md.
+	   (The first design did the reverse, a thumbnail row below sm; Joe, on
+	   2026-09-16, found it backwards, and the crushed thumbnail proved him
+	   right.) A container query can only restyle descendants of its
+	   container, never the container itself, so the card's own display and
+	   flow stay flex column throughout; the figure is pulled out of flow
+	   with position and the text is indented to clear it. The picture sits
+	   inside the border, like the stacked figure: inset to the padding box,
+	   not the border box, so the border (and a data-variant bar) stays
+	   visible above and beside it. Its width is 40% of the padding box; the
+	   sibling's margin-inline-start percentage resolves against the
+	   narrower content box, so the indent is rewritten in content-box
+	   terms (40% of padding box = 40% of content box + 0.8 × padding; the
+	   content box starts one padding in from the padding box, so the
+	   picture's right edge sits 40% - 0.2 × padding from the content
+	   box's own start) plus the card's gap. */
+	/* data-threshold moves the switch. A container condition cannot read a
+	   token, so there is one block per stop rather than one rule reading a
+	   property; each names the width token it mirrors, and md, the default,
+	   also serves a card with no attribute. The three rules are repeated
+	   rather than toggled, because nothing in CSS lets a query set a flag the
+	   container's own children can branch on. */
+	/* --yeti-width-xs (16rem) */
+	@container (inline-size >= 16rem) {
+		.card[data-threshold="xs"]:not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child {
+			position: absolute;
+			inset-block-start: 0;
+			inset-inline-start: 0;
+			inline-size: 40%;
+			block-size: 100%;
+			margin: 0;
+			aspect-ratio: auto;
+		}
+		.card[data-threshold="xs"]:not(.grid[data-rows] > .card) > figure:first-child > :is(img, video, picture) {
+			flex: 1;
+			min-block-size: 0;
+			block-size: 100%;
+			aspect-ratio: auto;
+		}
+		.card[data-threshold="xs"]:not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child ~ * {
+			margin-inline-start: calc(40% - 0.2 * var(--yeti-card-padding) + var(--yeti-card-gap));
+		}
+	}
+	/* --yeti-width-sm (24rem) */
+	@container (inline-size >= 24rem) {
+		.card[data-threshold="sm"]:not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child {
+			position: absolute;
+			inset-block-start: 0;
+			inset-inline-start: 0;
+			inline-size: 40%;
+			block-size: 100%;
+			margin: 0;
+			aspect-ratio: auto;
+		}
+		.card[data-threshold="sm"]:not(.grid[data-rows] > .card) > figure:first-child > :is(img, video, picture) {
+			flex: 1;
+			min-block-size: 0;
+			block-size: 100%;
+			aspect-ratio: auto;
+		}
+		.card[data-threshold="sm"]:not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child ~ * {
+			margin-inline-start: calc(40% - 0.2 * var(--yeti-card-padding) + var(--yeti-card-gap));
+		}
+	}
+	/* --yeti-width-md (32rem) */
+	@container (inline-size >= 32rem) {
+		.card:is([data-threshold="md"], :not([data-threshold])):not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child {
+			position: absolute;
+			inset-block-start: 0;
+			inset-inline-start: 0;
+			inline-size: 40%;
+			block-size: 100%;
+			margin: 0;
+			aspect-ratio: auto;
+		}
+		.card:is([data-threshold="md"], :not([data-threshold])):not(.grid[data-rows] > .card) > figure:first-child > :is(img, video, picture) {
+			flex: 1;
+			min-block-size: 0;
+			block-size: 100%;
+			aspect-ratio: auto;
+		}
+		.card:is([data-threshold="md"], :not([data-threshold])):not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child ~ * {
+			margin-inline-start: calc(40% - 0.2 * var(--yeti-card-padding) + var(--yeti-card-gap));
+		}
+	}
+	/* --yeti-width-lg (48rem) */
+	@container (inline-size >= 48rem) {
+		.card[data-threshold="lg"]:not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child {
+			position: absolute;
+			inset-block-start: 0;
+			inset-inline-start: 0;
+			inline-size: 40%;
+			block-size: 100%;
+			margin: 0;
+			aspect-ratio: auto;
+		}
+		.card[data-threshold="lg"]:not(.grid[data-rows] > .card) > figure:first-child > :is(img, video, picture) {
+			flex: 1;
+			min-block-size: 0;
+			block-size: 100%;
+			aspect-ratio: auto;
+		}
+		.card[data-threshold="lg"]:not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child ~ * {
+			margin-inline-start: calc(40% - 0.2 * var(--yeti-card-padding) + var(--yeti-card-gap));
+		}
+	}
+	/* --yeti-width-xl (64rem) */
+	@container (inline-size >= 64rem) {
+		.card[data-threshold="xl"]:not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child {
+			position: absolute;
+			inset-block-start: 0;
+			inset-inline-start: 0;
+			inline-size: 40%;
+			block-size: 100%;
+			margin: 0;
+			aspect-ratio: auto;
+		}
+		.card[data-threshold="xl"]:not(.grid[data-rows] > .card) > figure:first-child > :is(img, video, picture) {
+			flex: 1;
+			min-block-size: 0;
+			block-size: 100%;
+			aspect-ratio: auto;
+		}
+		.card[data-threshold="xl"]:not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child ~ * {
+			margin-inline-start: calc(40% - 0.2 * var(--yeti-card-padding) + var(--yeti-card-gap));
+		}
+	}
+	/* --yeti-width-2xl (80rem) */
+	@container (inline-size >= 80rem) {
+		.card[data-threshold="2xl"]:not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child {
+			position: absolute;
+			inset-block-start: 0;
+			inset-inline-start: 0;
+			inline-size: 40%;
+			block-size: 100%;
+			margin: 0;
+			aspect-ratio: auto;
+		}
+		.card[data-threshold="2xl"]:not(.grid[data-rows] > .card) > figure:first-child > :is(img, video, picture) {
+			flex: 1;
+			min-block-size: 0;
+			block-size: 100%;
+			aspect-ratio: auto;
+		}
+		.card[data-threshold="2xl"]:not(.grid[data-rows] > .card) > :is(img, video, picture, figure):first-child ~ * {
+			margin-inline-start: calc(40% - 0.2 * var(--yeti-card-padding) + var(--yeti-card-gap));
+		}
+	}
+}

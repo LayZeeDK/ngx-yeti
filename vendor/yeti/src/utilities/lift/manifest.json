@@ -1,0 +1,64 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "lift",
+  "kind": "utility",
+  "group": "Motion",
+  "description": "Raises the element slightly, or grows it a little, and deepens its shadow while the pointer is on it or a keyboard is inside it.",
+  "class": "lift",
+  "attributes": [
+    {
+      "name": "data-lift",
+      "type": "enum",
+      "vocabulary": "lift",
+      "default": "rise",
+      "description": "Which gesture: rise by --yeti-lift-distance, or scale by --yeti-lift-scale, for a tile in a row where a rise would break the line."
+    }
+  ],
+  "classes": [],
+  "children": [],
+  "tokens": [
+    {
+      "name": "--yeti-lift-ease",
+      "public": true,
+      "description": "The curve the lift runs on."
+    },
+    {
+      "name": "--yeti-lift-duration",
+      "public": true,
+      "description": "How long the lift takes; match a tinted hover to it."
+    },
+    {
+      "name": "--yeti-lift-distance",
+      "public": true,
+      "description": "How far the element rises; reduced motion takes it to zero."
+    },
+    {
+      "name": "--yeti-lift-scale",
+      "public": true,
+      "description": "How much the element grows at data-lift=\"scale\"; reduced motion takes it to one."
+    },
+    {
+      "name": "--yeti-lift-shadow",
+      "public": true,
+      "description": "The shadow the element casts once lifted."
+    }
+  ],
+  "a11y": {
+    "requiredAttributes": [],
+    "keyboard": [],
+    "notes": "The lift answers :focus-visible on the element and on anything inside it, so a reader tabbing through a page of cards sees the same affordance a pointer gets. It is decoration on top of a focus ring, never a replacement for one; the ring comes from the reset and is untouched. Under reduced motion the element no longer moves and the deeper shadow carries the hover by itself."
+  },
+  "js": null,
+  "support": {
+    "unguarded": [
+      "individual transform properties",
+      ":has()"
+    ],
+    "guarded": []
+  },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": {
+    "height": "lg"
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "demo",
+  "kind": "component",
+  "group": "Content",
+  "description": "A live example in a box the reader can drag narrower and wider, with a bar naming the example and the width stop the box is at, and the code beneath it.",
+  "class": "demo",
+  "attributes": [
+    { "name": "data-height", "type": "enum", "vocabulary": "height", "default": "md", "description": "The preview box's height. A frame inside cannot size to its content, so this is where that is set; with data-resize=\"both\" it is the starting height." },
+    { "name": "data-width", "type": "enum", "vocabulary": "width", "description": "The preview box's starting width, before the reader drags it. Full width when absent." },
+    { "name": "data-resize", "type": "enum", "vocabulary": "resize", "default": "width", "description": "Which way the reader can drag the box: its width only, or both width and height." },
+    { "name": "data-stylesheet", "type": "string", "description": "Read by the module: the stylesheet the frame it builds should load, when it is not the host page's own yeti.css; yeti.js is expected beside it." }
+  ],
+  "classes": [],
+  "children": [
+    { "selector": "> figcaption", "min": 0, "max": 1, "description": "A title for the demo, above the box." },
+    { "selector": "> [data-preview]", "min": 1, "max": 1, "description": "The resizable box: a bar naming the example across the top, then the example. Holds an iframe with the example in srcdoc, or the example's markup directly on a page that already loads Yeti. A box holding direct markup carries tabindex=\"0\" because it scrolls; a framed box does not need one, because the iframe fills it exactly." },
+    { "selector": "> [data-preview] > iframe", "min": 0, "max": 1, "description": "The framed example, loading yeti.css and yeti.js alone so the host page's styles never reach it and every module is present. Needs a title. With the module, an iframe without srcdoc, or an empty box, is filled from the code under the box." },
+    { "selector": "> details", "min": 0, "max": 1, "description": "The code, collapsed: a summary reading View Code, plain text that underlines under the pointer, and a pre." }
+  ],
+  "markers": [
+    { "name": "data-preview", "type": "string", "on": "> div", "description": "Marks the resizable box and names the example; the bar across the top of the box shows the value. Direct markup taller than the box scrolls, so a box holding it carries tabindex=\"0\" to stay reachable from the keyboard; a framed box does not." }
+  ],
+  "tokens": [
+    { "name": "--yeti-space-md", "public": true, "description": "Padding of the framed document's body, written by the module." },
+    { "name": "--yeti-height-md", "public": true, "description": "Box height at data-height=\"md\" and by default. The sm, lg, and xl stops of the same family are read through the shared height mapping in layouts/attributes.css, not by this file." },
+    { "name": "--yeti-height-sm", "public": true, "description": "The shortest the box can be dragged when data-resize allows height." },
+    { "name": "--yeti-demo-border", "public": true, "description": "The box's edge, and the rule under the bar." },
+    { "name": "--yeti-demo-radius", "public": true, "description": "The box's corner, and the stop label's." },
+    { "name": "--yeti-demo-label", "public": true, "description": "Surface of the bar." },
+    { "name": "--yeti-color-text", "public": true, "description": "The bar's text, the summary's under the pointer, and the tint mixed into the stop label's surface." },
+    { "name": "--yeti-weight-strong", "public": true, "description": "Weight of the example's name in the bar." },
+    { "name": "--yeti-control-border", "public": true, "description": "The rule under the summary when the pointer reaches it." },
+    { "name": "--yeti-width-xs", "public": true, "description": "The narrowest the box can be dragged." },
+    { "name": "--yeti-border-width", "public": true, "description": "Width of the box's edge, the bar's rule, and the summary's underline." },
+    { "name": "--yeti-space-xs", "public": true, "description": "Clearance direct markup keeps from the box's resize grip; the bar's block padding; the stop label's offset and inline padding." },
+    { "name": "--yeti-space-sm", "public": true, "description": "The bar's inline padding, and the stop label's inset from the end." },
+    { "name": "--yeti-text-sm", "public": true, "description": "Text size of the caption, the bar, the stop label, and the summary." },
+    { "name": "--yeti-color-text-muted", "public": true, "description": "The caption's color, the stop label's, and the summary's at rest." },
+    { "name": "--yeti-font-mono", "public": true, "description": "The stop label's typeface, so it reads as a readout, not prose." },
+    { "name": "--yeti-leading-md", "public": true, "description": "Line height of the bar and the stop label." },
+    { "name": "--yeti-color-border-strong", "public": true, "description": "The grip at rest." },
+    { "name": "--yeti-color-focus", "public": true, "description": "The grip and the box's end edge while the grip is hovered, focused or dragged." },
+    { "name": "--yeti-color-surface", "public": true, "description": "The two short lines across the grip." },
+    { "name": "--yeti-radius-full", "public": true, "description": "The grip's pill shape." },
+    { "name": "--yeti-duration-fast", "public": true, "description": "The grip's and the edge's color change when engaged." },
+    { "name": "--_yeti-width", "public": false },
+    { "name": "--_yeti-height", "public": false },
+    { "name": "--_yeti-demo-inset", "public": false },
+    { "name": "--_yeti-demo-max", "public": false },
+    { "name": "--_yeti-demo-grip", "public": false },
+    { "name": "--_yeti-demo-edge", "public": false },
+    { "name": "--_yeti-demo-middle", "public": false }
+  ],
+  "a11y": {
+    "requiredAttributes": [],
+    "keyboard": [
+      { "key": "Enter / Space", "action": "On the summary, opens or closes the code." },
+      { "key": "Arrow Right / Arrow Left", "action": "On the grip (with the module), widens or narrows the box to the next width stop; mirrored in a right-to-left page." },
+      { "key": "Home / End", "action": "On the grip (with the module), takes the box to its narrowest or widest." }
+    ],
+    "notes": "Give the iframe a title. Give a box holding direct markup tabindex=\"0\": markup taller than the box scrolls, and a scrollable region must be reachable from the keyboard. A framed box does not need one, because the iframe fills it exactly and it never scrolls. With the module, the box's width is moved by a grip, a separator named \"Resize\" and the example's name, valued in pixels with the width stop as its text, that a mouse, a finger or the keyboard can move. Without it the resize handle is the browser's; a keyboard or touch reader then sees the demo at its starting size. Either way the code is there, so a demo must never be the only place the markup appears. The bar and the stop label are generated content and are not announced; the name in data-preview is a visual heading for the box, and the iframe's title carries the same name to assistive tech. A frame the module creates is titled from that name too."
+  },
+  "js": [{ "module": "demo.js", "optional": true }],
+  "support": { "unguarded": ["container size queries", "resize", "iframe srcdoc"], "guarded": [] },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": { "height": "md", "width": "lg", "resize": "both" }
+}

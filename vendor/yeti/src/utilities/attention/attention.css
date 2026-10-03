@@ -1,0 +1,29 @@
+/* Attention: one pulse or one shake, on load, to point at something that has
+   just changed. Once, not repeatedly: a thing that keeps moving is read as a
+   state the page is in rather than a moment that has passed, and it cannot be
+   dismissed by looking at it. The iteration count is therefore left at the
+   initial 1 rather than reading --yeti-motion-iterations, which exists for
+   the animations that never end and resolves to infinite. */
+@layer yeti.utilities {
+	/* No keyframe moves the element away from where it ends, so no fill mode
+	   is needed: both the first frame and the last are the element's own
+	   computed style. Nothing here can strand an element off its mark. */
+	.attention {
+		animation: yeti-attention-pulse var(--yeti-attention-duration) var(--yeti-ease);
+	}
+	.attention[data-attention="shake"] { animation-name: yeti-attention-shake; }
+
+	/* Swelling and settling, with the peak in the middle so the gesture is
+	   symmetrical; an element that grows and snaps back reads as a twitch. */
+	@keyframes yeti-attention-pulse {
+		50% { scale: var(--yeti-attention-scale); }
+	}
+	/* Two throws, not one: a single sideways move is a slide, and it takes the
+	   return trip to read as a shake. The distance is small enough that a
+	   button beside it is never overlapped. */
+	@keyframes yeti-attention-shake {
+		25% { translate: calc(-1 * var(--yeti-attention-distance)); }
+		50% { translate: var(--yeti-attention-distance); }
+		75% { translate: calc(-1 * var(--yeti-attention-distance)); }
+	}
+}

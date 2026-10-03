@@ -1,0 +1,33 @@
+/* Print: an element that belongs to one medium and not the other. A page held
+   in the hand has no links to follow and no buttons to press, so the address
+   behind a link has to be written out on it and the share button has to come
+   off it. Both are a line of markup that exists for exactly one medium, and
+   neither has ever had a name in Yeti.
+   A media query is the right answer here and nowhere else in the framework.
+   The ban on them under src/layouts is about width: a layout that switches on
+   the window breaks the moment it moves into a narrower box, which is why
+   every threshold Yeti ships is a container query. A medium is not a width. No
+   container is ever printed at a different medium from the page around it, so
+   there is no box to measure and nothing for a container query to say;
+   enter.css asks the reader's motion preference the same way.
+   data-print is read here rather than mapped into attributes.css because the
+   value sets no property at all: it decides which of the two media its rule
+   applies in, and a custom property cannot carry a media query. */
+@layer yeti.utilities {
+	/* only, which is also what an absent attribute means: the element is for
+	   paper, and on every other medium it is not there. Written as a :not() of
+	   the other value rather than as a pair of selectors so the written-out
+	   default and the omitted one are the same rule and can never drift. */
+	@media not print {
+		.print:not([data-print="none"]) { display: none; }
+	}
+
+	/* none: the element is for the screen, and the printed page does without
+	   it. The utilities layer is last in the cascade order, so this outranks
+	   whatever display the element already had from its own component — a
+	   .button is display: inline-flex in the components layer and would
+	   otherwise print. */
+	@media print {
+		.print[data-print="none"] { display: none; }
+	}
+}

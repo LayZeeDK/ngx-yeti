@@ -1,0 +1,71 @@
+/* Space and radius read off the scale, so gaps are proportional to type.
+   Widths are container measures in rem: they follow the visitor's root size,
+   not the scale, because a threshold is about content, not type. */
+@layer yeti.base {
+	:root {
+		--yeti-space-none: 0;
+		--yeti-space-xs: var(--_yeti-step--2);
+		--yeti-space-sm: var(--_yeti-step--1);
+		--yeti-space-md: var(--_yeti-step-0);
+		--yeti-space-lg: var(--_yeti-step-1);
+		--yeti-space-xl: var(--_yeti-step-2);
+		--yeti-space-2xl: var(--_yeti-step-3);
+		--yeti-space-3xl: var(--_yeti-step-4);
+
+		--yeti-space-xs-static: var(--_yeti-step--2-static);
+		--yeti-space-sm-static: var(--_yeti-step--1-static);
+		--yeti-space-md-static: var(--_yeti-step-0-static);
+		--yeti-space-lg-static: var(--_yeti-step-1-static);
+		--yeti-space-xl-static: var(--_yeti-step-2-static);
+		--yeti-space-2xl-static: var(--_yeti-step-3-static);
+		--yeti-space-3xl-static: var(--_yeti-step-4-static);
+
+		/* Internal: the wide-viewport value of each stop, for fluid pairs. */
+		--_yeti-space-sm-max: var(--_yeti-step--1-max);
+		--_yeti-space-md-max: var(--_yeti-step-0-max);
+		--_yeti-space-lg-max: var(--_yeti-step-1-max);
+		--_yeti-space-xl-max: var(--_yeti-step-2-max);
+		--_yeti-space-2xl-max: var(--_yeti-step-3-max);
+		--_yeti-space-3xl-max: var(--_yeti-step-4-max);
+
+		--yeti-radius-sm: calc(0.25 * var(--_yeti-base));
+		--yeti-radius-md: calc(0.5 * var(--_yeti-base));
+		--yeti-radius-lg: var(--_yeti-base);
+		--yeti-radius-full: 9999px;
+
+		--yeti-width-2xs: 12rem;
+		--yeti-width-xs: 16rem;
+		--yeti-width-sm: 24rem;
+		--yeti-width-md: 32rem;
+		--yeti-width-lg: 48rem;
+		--yeti-width-xl: 64rem;
+		--yeti-width-2xl: 80rem;
+
+		/* Block sizes, for the few things that take one; the demo's preview box
+		   is the first. */
+		--yeti-height-sm: 12rem;
+		--yeti-height-md: 20rem;
+		--yeti-height-lg: 32rem;
+		--yeti-height-xl: 48rem;
+		/* Half the viewport, dynamic like the cover's height so it tracks the
+		   browser chrome on phones. */
+		--yeti-height-half: 50dvh;
+
+		--yeti-cover-height: 100dvh;
+
+		/* How far from the leading edge of the scrollport a sticky thing
+		   stops. A gap by default, because a box pinned flush against the
+		   edge reads as part of the browser's chrome; a page with a sticky
+		   bar of its own sets this to the bar's height on whatever holds the
+		   rest, so the two do not stack on the same line. */
+		--yeti-sticky-offset: var(--yeti-space-md);
+
+		/* Where a scroll-into-view stops: a fragment jump, a script's
+		   scrollIntoView, a control pulled into view by focus. The sticky offset
+		   by default, since both answer how much of the top edge a pinned bar
+		   covers; a page that wants a breath more above a jumped-to heading than
+		   its sidebar needs sets this one alone. Read by the root's scroll
+		   padding, so it is a root-level setting: on a section it does nothing. */
+		--yeti-scroll-padding: var(--yeti-sticky-offset);
+	}
+}

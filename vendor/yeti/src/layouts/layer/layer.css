@@ -1,0 +1,35 @@
+/* Layer: children stacked in one box, in source order, later ones on top.
+   Every child is in flow, so the box is as tall as the tallest of them. */
+@layer yeti.layouts {
+	.layer {
+		display: grid;
+		grid-template-areas: "layer";
+		align-items: var(--_yeti-align);
+	}
+	.layer:not([data-align]) { --_yeti-align: stretch; }
+	/* Grid has no baseline to share between items of different natural
+	   heights stacked in one area; treat data-align="baseline" as start. */
+	.layer[data-align="baseline"] { --_yeti-align: start; }
+	.layer > * {
+		margin: 0;
+		grid-area: layer;
+		align-self: var(--_yeti-align-self);
+		justify-self: var(--_yeti-justify-self);
+	}
+	/* A child places itself with data-align-self and data-justify-self;
+	   without them it follows the layer's data-align. */
+	.layer > :not([data-align-self]) { --_yeti-align-self: auto; }
+	.layer > :not([data-justify-self]) { --_yeti-justify-self: auto; }
+
+	/* A caption over a picture needs a scrim to stay readable, and it is not
+	   the aside a caption under one is, so it drops the muted color too. The
+	   card has said this since the start, for a figure.layer that is its first
+	   child; the same markup outside a card was left unreadable. Only a figure's
+	   caption, because that is the case: a layer is otherwise a stacking
+	   layout with no opinion about what is stacked in it. */
+	figure.layer > figcaption {
+		padding: var(--yeti-space-xs) var(--yeti-space-sm);
+		color: var(--yeti-color-text);
+		background-color: var(--yeti-color-scrim);
+	}
+}

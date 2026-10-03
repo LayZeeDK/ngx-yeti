@@ -1,0 +1,115 @@
+---
+raw: true
+title: "Migrating from Foundation 6"
+description: "Every Foundation 6 grid class and component, and its Yeti equivalent or the reason there is none; then the five habits to unlearn."
+nav_group: "Guides"
+nav_order: 10
+---
+
+# Migrating from Foundation 6
+
+<p class="lede">Yeti is not Foundation 7 in the sense of being version 6 with new names. It is what Foundation would be if it were written today, for browsers that have container queries, popovers, dialogs, anchor positioning and cascade layers, and if the JavaScript were allowed to be almost nothing. So a port is not a rename. This page gives you the map, then the five habits that change.</p>
+
+## The map
+
+The table covers the grid and every component in the version 6 kitchen sink. "None" means Yeti does not have it and says why; most of those are things the browser now does.
+
+### Grid
+
+| Foundation 6 | Yeti | Notes |
+| --- | --- | --- |
+| `.grid-container` | `center` with `data-max` | the reading column |
+| `.grid-x` with `.cell.medium-N` | `columns` with `data-span` on children | equal shares unless a child says otherwise |
+| `.medium-8` beside `.medium-4` | `columns` with `data-span="2"` on the wider child | shares, not twelfths |
+| `.grid-x.grid-margin-x` | `columns` with `data-gap` | the gap is a token, not a gutter class |
+| `.small-up-3` / `.large-up-4` | `grid` with `data-columns` | as many columns as fit; `data-fold` for a fixed count above a width |
+| `.grid-y` | `stack` | vertical rhythm, no grid needed |
+| `.grid-frame` / `.cell-block` | `cover` and `scroller` | full-height frame, or `data-height` for a band shorter than the screen; a region that scrolls |
+| `.float-left` / `.float-right` | none | floats are for text wrapping; a layout is a `sidebar` or a `cluster` |
+| `.show-for-medium` / `.hide-for-small` | `data-show` / `data-hide` inside a `container` | at or above a width, measured on the nearest container and not the window; a component that can change shape at its own threshold still should |
+| `.text-center` and friends | `data-align` and `data-justify` on the layout | alignment is a layout's attribute, not a text utility |
+| `.padding-1`, `.padding-horizontal-2` and the rest | `box` with `data-gap`, `data-gap-inline`, `data-gap-block` | any element is a box with the class; the box says how much |
+| `.margin-1`, `.margin-top-2` and the rest | a `stack` gap, with `data-space` on the one child that differs | spacing belongs to the layout; two things with nothing around them go in a stack |
+
+### Visibility
+
+Version 6 had a class for each of these. Most of them are the browser's job, and the [visibility guide](visibility.md) has the whole set side by side.
+
+| Foundation 6 | Yeti | Notes |
+| --- | --- | --- |
+| `.show-for-sr` | `visually-hidden` | out of sight, still announced; see the [visibility guide](visibility.md) |
+| `.hide` | the `hidden` attribute | the platform's, and the reset makes it win over any component's `display` |
+| `.invisible` | `visibility: hidden` in your own CSS | two words, and the only one of these that keeps the element's space |
+| `.show-on-focus` | none | the base skip-link rule already does it for the first link in the body |
+| `.show-for-print` | `print` | on paper and nowhere else |
+| `.hide-for-print` | `print` with `data-print="none"` | everywhere but paper |
+
+### Components
+
+| Foundation 6 | Yeti | Notes |
+| --- | --- | --- |
+| `.button`, `.button.primary`, <br> `.hollow`, `.clear` | `button` with `data-variant` and `data-emphasis` | emphasis replaces hollow and clear |
+| `.button-group` | `buttons` | a named group of buttons |
+| `.callout` | `alert` for a message, `box` with `data-border` for a plain panel | the callout did two jobs |
+| `.callout.primary`, `.callout.secondary` and the other colored callouts | `alert` with `data-variant` for a message; `data-paint` on any element for a colored panel | a color by name, on anything |
+| `.card` | `card` | the figure bleeds on its own; `data-stretch` for a whole-card link |
+| `.label` and `.badge` | `badge` | one component, sized by `data-size` |
+| `.table`, `.hover`, `.stack` | `table` with `data-hover`, `data-striped`; a `scroller` for width | the stacking table is gone, a table stays a table |
+| `.top-bar` | `nav` | collapses behind a toggle at its own threshold |
+| `.title-bar` with `.off-canvas` | `nav` with `data-panel="drawer"` | the drawer is the nav's own panel |
+| `.menu`, `.menu.vertical` | a `cluster` or `stack` of links; `nav` for a site menu | a menu is a list of links |
+| `.dropdown-pane` | `dropdown` | a popover, so no script and no z-index |
+| `.dropdown.menu` submenus | `dropdown` inside a `nav` item | one level; a mega menu is not shipped |
+| `.accordion-menu`, `.drilldown` | none | a site tree is a list of links in a `stack`; the browser's `<details>` disclosure for a section |
+| `.reveal` | `dialog`, opened by a `button` with `commandfor` | the native dialog opens itself; the module closes it from the backdrop |
+| `.tooltip` | `tooltip` | hover and focus, no script |
+| `.accordion` | `accordion` | native `<details>`; `name` for one-at-a-time |
+| `.tabs` | `tabs` | roving focus from the module |
+| `.orbit` | `carousel` | scroll snap; dots that are links |
+| `.progress`, `.progress-meter` | `progress` on the native `<progress>` | indeterminate when no value |
+| `.slider` | `field` around a native input type="range" | the native control, filled track from `--yeti-range-value` |
+| `.switch` | `field` around a native checkbox with role="switch" | native, styled |
+| `.breadcrumbs` | `breadcrumbs` | with `aria-current` on the last |
+| `.pagination` | `pagination` | with `aria-current` on the current page |
+| `.close-button` | `data-close`, inside `alert` or inside `nav` | a close button belongs to what it closes |
+| `.sticky` | `data-sticky` | a marker on a child of `sidebar`, `shell` or `stack`, or on `nav`; the stop is a token |
+| `.magellan` | none | a table of contents is a `stack` of links; scroll spying is script the page can add if it must |
+| `.responsive-embed` / `.flex-video` | `frame` with `data-ratio` | native `aspect-ratio` |
+| `.thumbnail` | `frame` in a `box` with `data-border` | two primitives |
+| `.media-object` | `media` | the recipe, or `sidebar` and `frame` yourself |
+| `.input-group` | `affix` inside `field` | the joined control and button share a border; the field still owns the label |
+| `.help-text`, `.form-error` | `data-hint` and `data-error` inside `field` | tied to the input with `aria-describedby` |
+| `.is-invalid-input` | `aria-invalid="true"` on the input | state is ARIA, not a class |
+| Abide | none | native validation attributes; the field shows the browser's state |
+| Equalizer | none | `columns` and `grid` align heights on their own |
+| Interchange | none | `<picture>` and `srcset` |
+| Toggler | none | `<details>`, `popover`, `<dialog>`, and `:has()` cover every case it had |
+| Motion UI | none | components transition on the motion tokens; reduced motion is honoured through them |
+
+### What Yeti does instead
+
+Six of those rows deserve more than a line, because what they did is still worth doing.
+
+**Toggler** set a class or an attribute on another element to show it, hide it, or animate it. Every case it covered has a platform answer now. A disclosure is `<details>` with `<summary>`. A panel that closes on Escape and on a click outside is `popover`. A modal is `<dialog>`, opened by a button with `commandfor` and `command="show-modal"`. A parent that has to react to the state of something inside it is `:has()`. None of the four needs a script, and each announces itself to a screen reader, which a toggled class never did.
+
+**Label and badge** were two components with one look. Yeti has one, `badge`, and `data-emphasis` is the difference: `high` is the solid fill the old badge had, `medium` an outline, `low` the hue in the text alone. `data-variant` picks the hue and `data-size` the step, so every label-and-badge combination version 6 shipped is three attributes on one class.
+
+**Sticky** was a plugin with a placeholder element, a pin offset, and a list of edge cases. It is the `data-sticky` marker now: put it on a child of a `sidebar` or a `stack`, on the `nav` or `aside` inside a `shell`'s body row, or on a `nav` itself, and that child sticks, `--yeti-sticky-offset` deciding how far below the top it stops. There is nothing to initialise and nothing to tear down.
+
+**Visibility** was a grid of classes: `show-for-medium`, `hide-for-large`, `show-for-medium-only`, and a `-portrait` and `-landscape` for good measure. Every one of them asked the window how wide the element was, and the window is the wrong thing to ask — the moment the same markup is dropped into a sidebar, a card or a dialog, the class is talking about a width the element has not had for some time. Yeti asks the box instead: `data-show` and `data-hide` read the nearest size container, so one piece of markup makes two different decisions on one page. The rest of the version 6 set is in the table above and most of it belongs to the browser now. There is no `-only` band and no `-portrait`: a band is two elements or a nested container, and both were rare.
+
+**Margin and padding helpers** were the classes people reached for most, and almost always to fine-tune a layout they had already built. Yeti has no margin classes, on purpose: spacing belongs to the layout, so a component never sets an outer margin and a page never fights one. The padding helper is `box`, on any element, with `data-gap` for all four sides and `data-gap-inline` and `data-gap-block` for one axis. The margin helper is the `stack`'s gap, and for the one child that needs more or less, `data-space` on that child. The exception is a word on the child; the rule stays with the layout, which is what keeps the next person's edit from undoing yours.
+
+**Reveal** is the `dialog` row above. The native element does the opening, the modal backdrop, the focus trap and Escape; `dialog.js` adds the click on the backdrop and the return of focus to the opener, and without the module the dialog still opens and closes.
+
+## The five habits
+
+**Attributes, not modifier classes.** `.button.primary.large.hollow` becomes `class="button" data-variant="primary" data-size="lg" data-emphasis="medium"`. Each attribute has a fixed list of values, and a value outside the list is a validator error. Your own classes never collide with Yeti's, because Yeti only ever has one.
+
+**Native state, not `is-` classes.** There is no `.is-active`, `.is-open`, `.is-invalid-input`. An open accordion has the `open` attribute, the current page has `aria-current="page"`, an invalid field has `aria-invalid="true"`, a selected tab has `aria-selected="true"`. Screen readers read those; they never read a class.
+
+**A threshold, not a breakpoint.** There are no `small-`, `medium-`, `large-` prefixes and nothing at all that asks the window how wide an element is. A component changes shape at its own width, chosen from the stops with `data-threshold` or `data-max`; where a thing genuinely has no narrow form, `data-show` and `data-hide` remove it at a width of its own container. The [responsive guide](responsive.md) is the whole story, and the [visibility guide](visibility.md) is the part about hiding.
+
+**Nothing to initialise.** There is no `Foundation.init()`, no `data-` attributes for plugins, no jQuery. Eight components ship nine optional modules; you load one with one script tag, anywhere, and it finds its own elements. Without the module the component still works, minus what the module adds.
+
+**The browser does the opening and closing.** Dropdowns and the nav's menu are popovers; the dialog is a dialog; the accordion is `<details>`. Escape, light dismiss, the focus trap and the expanded state come from the platform. If you find yourself writing script to open something, look for the attribute that already does.

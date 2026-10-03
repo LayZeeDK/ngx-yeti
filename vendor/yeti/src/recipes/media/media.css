@@ -1,0 +1,80 @@
+/* Media: a figure beside text. The one-class form of a sidebar holding a
+   frame and a stack. The figure is whichever child is, or wraps, the
+   picture, so source order decides the side; data-side overrides it while
+   side by side. data-width is the figure's width and so where the two
+   stack; data-max caps the text. */
+@layer yeti.layouts {
+	.media {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: var(--_yeti-align);
+		gap: var(--_yeti-gap);
+	}
+	.media:not([data-gap]) { --_yeti-gap: var(--yeti-space-md); }
+	.media:not([data-width]) { --_yeti-width: var(--yeti-width-xs); }
+	.media:not([data-align]) { --_yeti-align: stretch; }
+	.media:not([data-ratio]) { --_yeti-aspect: 1 / 1; }
+	.media:not([data-max]) { --_yeti-max: none; }
+	.media > * { margin: 0; }
+
+	/* The figure */
+	.media > :is(img, video, picture),
+	.media > :has(> :is(img, video, picture)) {
+		flex-basis: var(--_yeti-width);
+		flex-grow: 1;
+		aspect-ratio: var(--_yeti-aspect);
+		overflow: hidden;
+	}
+	.media > :is(img, video) { object-fit: cover; }
+	/* :is(..., picture) here too: the reset gives picture display: block, so a
+	   picture between the figure and its img (the wrapped-figure case) needs
+	   its own 100% size, or the img's percentage height has nothing to resolve
+	   against and falls back to the picture's own auto, content-based height. */
+	.media > :is(picture, :has(> :is(img, video, picture))) :is(img, video, picture) {
+		inline-size: 100%;
+		block-size: 100%;
+		object-fit: cover;
+	}
+
+	/* A figure with a caption: only the media is cropped; the caption sits below. */
+	.media > figure:has(> figcaption) {
+		display: flex;
+		flex-direction: column;
+		aspect-ratio: auto;
+		overflow: visible;
+	}
+	.media > figure:has(> figcaption) > :is(img, video, picture) {
+		aspect-ratio: var(--_yeti-aspect);
+		block-size: auto;
+	}
+	.media > figure:has(> figcaption) > figcaption {
+		font-size: var(--yeti-text-sm);
+		color: var(--yeti-color-text-muted);
+	}
+
+	/* The body: everything that is not the figure */
+	.media > :not(:is(img, video, picture), :has(> :is(img, video, picture))) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--yeti-space-sm);
+		flex-basis: 0;
+		flex-grow: 999;
+		min-inline-size: 50%;
+		/* data-max caps the body, so a wide row's spare width goes to the
+		   figure and the text keeps a measure; data-width still sets where the
+		   two stack. The body's half of the row still wins over the cap. */
+		max-inline-size: var(--_yeti-max);
+	}
+	.media > :not(:is(img, video, picture), :has(> :is(img, video, picture))) > * { margin: 0; }
+
+	/* data-side: which side the figure takes while side by side. The row is
+	   reversed when the figure is not already on the asked side; stacked, the
+	   source order holds. See hero.css. */
+	.media[data-side="start"]:not(:has(> :first-child:is(img, video, picture), > :first-child > :is(img, video, picture))),
+	.media[data-side="end"]:has(> :first-child:is(img, video, picture), > :first-child > :is(img, video, picture)) {
+		flex-direction: row-reverse;
+		/* Reversed, flex-end is the start edge, so a stacked child narrower
+		   than the row sits at the start. See hero.css. */
+		justify-content: flex-end;
+	}
+}

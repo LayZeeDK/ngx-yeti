@@ -1,0 +1,32 @@
+/* Buttons: a group. A wrapping row at a small gap, or with data-affix one
+   joined control whose members share borders, the way an affix joins a
+   control with what belongs beside it. */
+@layer yeti.components {
+	.buttons {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--_yeti-gap);
+	}
+	.buttons:not([data-gap]) { --_yeti-gap: var(--yeti-space-sm); }
+	.buttons > * { margin: 0; }
+
+	/* An affixed group is one control, so it never wraps: a second row would
+	   break its joined borders. Short of room, its members shrink and their
+	   labels wrap inside them instead, down to their longest word. */
+	.buttons[data-affix] { gap: 0; flex-wrap: nowrap; }
+	.buttons[data-affix] > .button:not(:first-child) {
+		border-start-start-radius: 0;
+		border-end-start-radius: 0;
+		margin-inline-start: calc(-1 * var(--yeti-border-width));
+	}
+	.buttons[data-affix] > .button:not(:last-child) {
+		border-start-end-radius: 0;
+		border-end-end-radius: 0;
+	}
+	/* A focused member rises above its neighbours so its ring is whole. */
+	.buttons[data-affix] > .button:is(:focus-visible, :has(> input:focus-visible)) {
+		position: relative;
+		z-index: 1;
+	}
+}

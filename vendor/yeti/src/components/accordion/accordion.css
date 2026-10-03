@@ -1,0 +1,39 @@
+/* Accordion: a column of disclosures. details and summary do the work, and
+   the base layer already draws them — a strong summary, the chevron that
+   turns, the panel that grows open on a grid row. What is left here is what
+   makes a column of them one object: the border around the set, the line
+   between rows, the summary's own surface, and the padding that goes with
+   them. Give every details the same name attribute and the browser closes
+   the others for you; CSS cannot set an attribute, so Yeti does not pretend
+   to offer that as an option of its own. */
+@layer yeti.components {
+	.accordion {
+		border: var(--yeti-border-width) solid var(--yeti-accordion-border);
+		border-radius: var(--yeti-radius-md);
+		background-color: var(--yeti-accordion-surface);
+		overflow: clip;
+	}
+	.accordion > details + details { border-block-start: var(--yeti-border-width) solid var(--yeti-accordion-border); }
+	.accordion > details > summary {
+		padding: var(--yeti-accordion-padding);
+		background-color: var(--yeti-accordion-summary);
+	}
+	.accordion > details > summary:hover { background-color: var(--yeti-accordion-summary-hover); }
+	/* The set clips its corners, so the ring is drawn inside the summary
+	   rather than outside it, where the clip would crop it. */
+	.accordion > details > summary:focus-visible { outline-offset: -2px; }
+	/* An open row otherwise reads as one block with its panel, since the
+	   chevron is the only thing that changes. The line sits inside the details,
+	   below the summary, so it never lands on the line between one details and
+	   the next. */
+	.accordion > details[open] > summary {
+		border-block-end: var(--yeti-border-width) solid var(--yeti-accordion-border);
+	}
+
+	/* The panel: everything after the summary, padded to match it. The base
+	   layer already spaces flow inside a details. */
+	.accordion > details > :not(summary) {
+		margin-inline: var(--yeti-accordion-padding);
+	}
+	.accordion > details > :not(summary):last-child { margin-block-end: var(--yeti-accordion-padding); }
+}

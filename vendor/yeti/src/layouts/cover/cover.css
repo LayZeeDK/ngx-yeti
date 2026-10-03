@@ -1,0 +1,16 @@
+/* Cover: a block at least as tall as the viewport with one child centered
+   vertically and anything else pinned above or below it. */
+@layer yeti.layouts {
+	.cover {
+		display: flex;
+		flex-direction: column;
+		/* A minimum, never a fixed size: a band named md grows past 20rem the
+		   moment its content is taller, so nothing is ever cut off. */
+		min-block-size: var(--_yeti-height);
+		gap: var(--_yeti-gap);
+	}
+	.cover:not([data-gap]) { --_yeti-gap: var(--yeti-space-md); }
+	.cover:not([data-height]) { --_yeti-height: var(--yeti-cover-height); }
+	.cover > * { margin: 0; }
+	.cover > [data-center] { margin-block: auto; }
+}

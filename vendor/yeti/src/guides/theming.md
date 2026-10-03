@@ -1,0 +1,139 @@
+---
+raw: true
+title: "Theming"
+description: "Set a few inputs and every color and size in Yeti follows: hues, chroma, base, and ratio, in light and dark."
+nav_group: "Guides"
+nav_order: 9
+---
+
+# Theming
+
+<p class="lede">Yeti is themed by setting tokens, not by editing CSS. Every public token is a custom property named `--yeti-<group>-<name>`; the full list is on the [Tokens](../tokens.md) page. Set them on `:root` in your own stylesheet, after Yeti's, and everything that reads them follows.</p>
+
+```html
+<link rel="stylesheet" href="/css/yeti.css">
+<style>
+	:root {
+		--yeti-hue-primary: 160;
+		--yeti-ratio: 1.25;
+		--yeti-font-sans: "Inter", system-ui, sans-serif;
+	}
+</style>
+```
+
+## Hues in, colors out
+
+Color inputs are hues: `--yeti-hue-primary`, `-secondary`, `-success`, `-warning`, `-alert`, and `-neutral`, plus one `--yeti-chroma` for how saturated accents are. From those, Yeti derives every color role at runtime: `--yeti-color-primary`, its `-subtle`, `-soft`, `-strong`, and `-text` variants, `--yeti-on-primary` for text placed on it, and the page roles `--yeti-color-surface`, `-text`, `-border`, and their variants.
+
+How to use those colors once they exist, on a component, on a painted section, or from a class of your own, is the [color guide](color.md); this page is about moving the inputs. That is why hues and colors have different group names. A hue is something you set. A color is something Yeti works out, in both light and dark, from the hue.
+
+You can still override any derived color directly. `--yeti-color-primary: #0a7;` wins over the derivation for that one role, and every role that reads it, like `--yeti-color-focus`, follows.
+
+Two more families derive from those. The greyscale `--yeti-grey-0` to `--yeti-grey-100`, in tens, mixes the page surface toward the page text, so it follows a theme that sets either pole and flips with the scheme as they do, resolved at `:root` like the hues, so set the poles there. The hued tones `--yeti-color-primary-0` to `-100`, and the same for every hue, take each grey's lightness and put the hue's angle and chroma under it, so moving `--yeti-hue-primary` moves all eleven. Three constants stand outside the derivation and never move: `--yeti-white`, `--yeti-black`, and `--yeti-grey` at 18% reflectance. A class of your own can read any of them:
+
+```css
+.promo { background-color: var(--yeti-color-primary-20); color: var(--yeti-color-primary-90); }
+```
+
+Two things to know about where you set tokens. Hues, chroma, and the scale inputs only take effect on `:root`, because Yeti computes every derived token there. Forcing a color scheme, and overriding a derived token such as `--yeti-color-primary`, work on any element, so to give one section a different accent, set its derived colors on that section rather than its hue.
+
+## Reading an oklch value
+
+Yeti writes colors as `oklch(lightness chroma hue)`.
+
+- **Lightness** runs from 0 (black) to 1 (white) and, unlike hex or HSL, looks evenly spaced to the eye. Two colors with the same lightness feel equally bright whatever their hue.
+- **Chroma** is saturation: 0 is gray, and around 0.15 is a clear but not shouting accent. Above 0.2 some hues cannot be displayed on ordinary screens and the browser pulls them back into range.
+- **Hue** is an angle: 25 red, 80 amber, 145 green, 250 blue, 300 violet.
+
+The comment beside each color token in `yeti.css` gives its hex equivalent in light mode, so you can match it against a value you already know.
+
+## Light and dark
+
+`:root` declares `color-scheme: light dark`, so Yeti follows the visitor's preference and every color token is written once with `light-dark()`. To force one scheme for a whole page or a single panel, set `color-scheme: light` or `color-scheme: dark` on that element; everything inside it flips.
+
+```css
+@layer yeti.theme {
+	html { color-scheme: light; }
+}
+```
+
+A page pinned to one scheme sets `color-scheme` on the root, and every color in Yeti follows because each is a `light-dark()` pair; `dark` pins it the other way; forcing a scheme on any other element still flips everything below it. A theme that pins the scheme still has its own `@media (prefers-color-scheme: dark)` blocks applied for a visitor who prefers dark, because the query reads the visitor and not the page, so a pinned theme should not carry any.
+
+## The scale
+
+Type and space share one geometric scale. Two knobs cover most needs:
+
+```css
+:root {
+	--yeti-base: 1.0625rem;  /* body size, every viewport */
+	--yeti-ratio: 1.25;      /* each step is 1.25 times the last */
+}
+```
+
+Left alone, both are fluid: the base grows from `--yeti-base-min` at `--yeti-viewport-min` to `--yeti-base-max` at `--yeti-viewport-max`, and the ratio from `--yeti-ratio-min` to `--yeti-ratio-max`, so headings open up more than body text on wide screens. Set the six `-min`, `-max`, and `-viewport-` tokens to shape that, or the two knobs above to switch it off.
+
+Sizes are named `xs sm md lg xl 2xl 3xl`, with `md` as the base step, and the same names mean the same step for space (`--yeti-space-lg`), text (`--yeti-text-lg`), and radius (`--yeti-radius-lg`). Each space token also has a `-static` twin for the rare gap that must not scale.
+
+## Fonts
+
+Yeti ships no web fonts. `--yeti-font-sans` and `--yeti-font-mono` default to the system stacks; set them to yours and load the font files however you prefer.
+
+A variable font with a width axis has three more knobs: `--yeti-stretch-text`, `--yeti-stretch-heading`, and `--yeti-stretch-small` (captions, small print, a nav's links, a badge), `normal` by default, each a keyword or a percentage. Narrow text and a wide title in one family is one line each.
+
+`--yeti-tracking-heading` sets the letter-spacing of every heading level and the billboard together, `normal` by default and set in em so a large heading tightens more than a small one.
+
+## Make a theme
+
+Everything above sets tokens inline, in your own `<style>` block. A theme is the same idea moved into its own file: a stylesheet of token values on `:root`, and optionally a few rules for bare HTML elements, loaded after `yeti.css` so its values win.
+
+```html
+<link rel="stylesheet" href="/css/yeti.css">
+<link rel="stylesheet" href="/css/themes/soft.css">
+```
+
+A theme file has two parts. The first is tokens: `:root` blocks (optionally split by `@media (prefers-color-scheme: …)` for a value that should only change in one scheme) setting `--yeti-*` public tokens, outside any layer. The second is element rules, inside `@layer yeti.theme { … }`: rules that style bare HTML elements, `h1`, `p`, `a`, `figcaption`, `blockquote` and the rest, with descendant and child combinators, the `:hover`, `:focus-visible`, `:active` and `:visited` states, and the `::selection`, `::marker`, `::placeholder`, `::first-line` and `::first-letter` pseudo-elements, nesting `@media` and `@supports` as needed. The validator refuses a class, id or attribute selector, `*`, the sibling combinators `+` and `~`, `:is()`, `:where()`, `:has()` or `:not()`, any pseudo-class other than `:hover`, `:focus-visible`, `:active` and `:visited`, a custom property inside the layer, a rule outside it, and a token it doesn't recognize.
+
+This theme uses both. The tokens set the accent and space out the headings' letters, as capitals want; the element rules set headings in engraved capitals, italicize captions, and draw the quotation's bar at the border width instead of its heavier default:
+
+```css
+@layer yeti.reset, yeti.base, yeti.theme, yeti.layouts, yeti.components, yeti.utilities;
+
+:root {
+	--yeti-hue-primary: 200;
+	--yeti-tracking-heading: 0.04em;
+}
+
+@layer yeti.theme {
+	h1, h2, h3 { text-transform: uppercase; }
+	figcaption { font-style: italic; }
+	blockquote { border-inline-start-width: var(--yeti-border-width); }
+}
+```
+
+The first line repeats Yeti's layer order, the one statement a theme may make besides its blocks: a browser fixes the order of layers when it first meets them, so a theme that loads before `yeti.css` without it would put its element rules below the base instead of above it.
+
+A component's skin stays token-only: a class name belongs to Yeti, and a theme that restyled one would break when its internals change and could flatten its states. The layer sits above the base, so a theme's `h1` rule beats Yeti's, and below every layout, component and utility, so a theme's `a { color }` never repaints a link that is a button and its `p` margins never reach inside a `stack`; to change what a layout or component defines, set its tokens.
+
+Beyond the hues, chroma, and scale already covered above, each component publishes a few tokens of its own as its skin surface: `--yeti-button-radius`, `--yeti-card-padding`, `--yeti-badge-radius`, and the rest are listed on the [Tokens](../tokens.md) page. Setting those, rather than editing a component's CSS, is what makes a theme portable: it is data, not code, so it survives an upgrade to a newer Yeti untouched.
+
+A small theme can change a lot. This one shifts the accent hue, opens up the corners, and turns buttons into pills:
+
+```css
+:root {
+	--yeti-hue-primary: 30;
+	--yeti-radius-md: 1rem;
+	--yeti-radius-lg: 1.5rem;
+	--yeti-button-radius: var(--yeti-radius-full);
+}
+```
+
+One check every theme should make: a link is text. The default link color is the primary at its base step, which reads on the page for the hues Yeti ships but not for a light brand color. If your primary is light, point the links at the hue's text step:
+
+```css
+:root {
+	--yeti-link-color: var(--yeti-color-primary-text);
+	--yeti-link-color-hover: var(--yeti-color-primary-strong);
+}
+```
+
+Yeti ships two such files in `dist/themes/` as worked examples: `soft`, round and warm with pill buttons and roomy cards, and `sharp`, square and mono with thick borders. Neither needs any markup beyond ordinary Yeti classes — a theme changes what a component looks like, never what element or attribute you reach for to use it.

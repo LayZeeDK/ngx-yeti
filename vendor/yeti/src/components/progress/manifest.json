@@ -1,0 +1,157 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "progress",
+  "kind": "component",
+  "group": "Feedback",
+  "description": "The native progress element as a thin bar in a hue, filled to its value, or striped and moving when it has none.",
+  "class": "progress",
+  "attributes": [
+    {
+      "name": "data-variant",
+      "type": "enum",
+      "vocabulary": "variant",
+      "default": "primary",
+      "description": "The hue of the filled part."
+    },
+    {
+      "name": "data-size",
+      "type": "enum",
+      "vocabulary": "size-control",
+      "default": "md",
+      "description": "The bar's thickness: half the size's space step."
+    },
+    {
+      "name": "data-scroll",
+      "type": "boolean",
+      "description": "Fill with how far the nearest scroll container has been scrolled, the page when the bar is at its top, instead of with a value: a reading-progress bar. On a block with the class, not a progress element, and hidden from assistive tech; where a scroll timeline is unsupported the bar is not shown."
+    }
+  ],
+  "classes": [],
+  "children": [],
+  "tokens": [
+    {
+      "name": "--yeti-progress-radius",
+      "public": true,
+      "description": "Corner of the bar and of its value."
+    },
+    {
+      "name": "--yeti-progress-size",
+      "public": true,
+      "description": "Thickness of the bar; overrides the size step."
+    },
+    {
+      "name": "--yeti-color-surface-sunken",
+      "public": true,
+      "description": "The track."
+    },
+    {
+      "name": "--yeti-color-primary",
+      "public": true,
+      "description": "The default variant's color, when data-variant is absent."
+    },
+    {
+      "name": "--yeti-color-primary-subtle",
+      "public": true,
+      "description": "The default variant's tint."
+    },
+    {
+      "name": "--yeti-color-primary-soft",
+      "public": true,
+      "description": "The default variant's soft stop."
+    },
+    {
+      "name": "--yeti-color-primary-strong",
+      "public": true,
+      "description": "The default variant's strong stop."
+    },
+    {
+      "name": "--yeti-color-primary-text",
+      "public": true,
+      "description": "The default variant's text color."
+    },
+    {
+      "name": "--yeti-on-primary",
+      "public": true,
+      "description": "Text on the default variant's color."
+    },
+    {
+      "name": "--yeti-text-md",
+      "public": true,
+      "description": "The text step when data-size is absent."
+    },
+    {
+      "name": "--yeti-space-sm",
+      "public": true,
+      "description": "The space step when data-size is absent; the bar's height follows it."
+    },
+    {
+      "name": "--yeti-duration-base",
+      "public": true,
+      "description": "How long the value takes to move; one cycle of the indeterminate sweep is four of it."
+    },
+    {
+      "name": "--yeti-ease",
+      "public": true,
+      "description": "The curve of the value's move."
+    },
+    {
+      "name": "--yeti-motion-iterations",
+      "public": true,
+      "description": "How many times the indeterminate sweep repeats; one under reduced motion."
+    },
+    {
+      "name": "--_yeti-variant",
+      "public": false
+    },
+    {
+      "name": "--_yeti-variant-subtle",
+      "public": false
+    },
+    {
+      "name": "--_yeti-size-space",
+      "public": false
+    },
+    {
+      "name": "--_yeti-variant-soft",
+      "public": false
+    },
+    {
+      "name": "--_yeti-variant-strong",
+      "public": false
+    },
+    {
+      "name": "--_yeti-variant-text",
+      "public": false
+    },
+    {
+      "name": "--_yeti-on-variant",
+      "public": false
+    },
+    {
+      "name": "--_yeti-size-text",
+      "public": false
+    }
+  ],
+  "a11y": {
+    "requiredAttributes": [
+      "aria-label | aria-labelledby | aria-hidden"
+    ],
+    "keyboard": [],
+    "notes": "Put the class on a progress element and give it a name with aria-label or aria-labelledby. Keep its text content current (\"40%\"), since older assistive tech reads that. Leave out value for work whose length is unknown; the element is then indeterminate and says so. A reading-progress bar has no value to announce, so it carries aria-hidden instead of a name; the rule accepts either."
+  },
+  "js": null,
+  "support": {
+    "unguarded": [
+      "appearance: none on progress",
+      ":dir()"
+    ],
+    "guarded": [
+      "animation-timeline: scroll()"
+    ]
+  },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": {
+    "height": "md"
+  }
+}

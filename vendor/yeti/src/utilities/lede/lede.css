@@ -1,0 +1,19 @@
+/* Lede: the standfirst, the sentence under a page's heading that says what the
+   page is before the page begins. It is a role rather than a size, which is
+   why it is a class: the alternative is a structural selector like h1 + p,
+   and that encodes where the paragraph happens to sit, so wrapping the
+   heading and the paragraph in a layout stops it matching. */
+@layer yeti.utilities {
+	.lede {
+		font-size: var(--yeti-lede-size);
+		line-height: var(--yeti-leading-md);
+		/* Its own measure, because a lede set larger at the body's measure runs
+		   to a longer line than the prose it introduces. How much shorter is a
+		   judgement rather than a calculation: ch is a unit of the font, so the
+		   right count depends on how far above the body the lede is set, and
+		   the default here suits the default size step. A theme that moves one
+		   moves the other. */
+		max-inline-size: var(--yeti-lede-measure);
+		text-wrap: pretty;
+	}
+}

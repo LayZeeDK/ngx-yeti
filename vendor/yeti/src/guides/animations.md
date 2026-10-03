@@ -1,0 +1,83 @@
+---
+raw: true
+title: "Animations"
+description: "How Yeti times everything that moves, what happens for a reader who asks for less motion, and how to turn on the crossfade between one page and the next."
+nav_group: "Guides"
+nav_order: 7
+---
+
+# Animations
+
+<p class="lede">Everything that moves in Yeti reads a duration token, and that is what makes reduced motion work.</p>
+
+## Durations collapse, end states stay
+
+Yeti never removes an effect for a reader who has asked for less motion. It shortens it. Every animation and transition in the framework reads `--yeti-duration-fast` or `--yeti-duration-base`, and under `prefers-reduced-motion: reduce` both collapse to `0.01ms`. A dialog still opens, a card still lifts, a `lift` still changes color. They simply arrive rather than travel.
+
+That is a deliberate choice over `animation: none`. An effect switched off mid-way can strand an element somewhere its layout did not put it, and the reader is left looking at a half-open panel or nothing at all. A collapsed duration always ends where the CSS says it ends.
+
+It is also why the reset's universal rule is not the mechanism. A declaration in the components layer outranks a universal one in the reset, so that rule only reaches animation the browser or a third party brought. Yeti's own motion is stilled by its tokens.
+
+Utilities that are entirely about movement carry their own pair, so tuning one gesture never moves another: `enter` has `--yeti-enter-duration`, `lift` has its own distance and shadow, and page transitions have `--yeti-page-duration`.
+
+## Page transitions
+
+A browser can crossfade between two documents instead of snapping, with no script. Yeti does not turn this on. Turn it on in your own stylesheet, with one rule:
+
+```css
+@view-transition { navigation: auto; }
+```
+
+Both pages need it and they must be same-origin, so for a site built on one stylesheet it is on everywhere or nowhere.
+
+Yeti leaves that rule to you for two reasons. Cross-document view transitions are below Baseline, and Yeti's rule is that a feature below Baseline is guarded rather than assumed. There is also nothing to guard it with: `@view-transition` is an at-rule with no element to select, so unlike every other opt-in in Yeti it cannot hang off a class. Where the feature is missing, Firefox as this is written, the navigation just snaps and nothing is broken.
+
+What Yeti does supply is the timing:
+
+| Token | Default | |
+| --- | --- | --- |
+| `--yeti-page-duration` | `200ms` | How long the crossfade takes |
+| `--yeti-page-ease` | `ease` | The curve it runs on |
+
+The animation itself stays the browser's. Its crossfade already blends the two snapshots correctly, which a hand-written pair of opacity keyframes does not: those dip through the page background halfway unless they also carry `mix-blend-mode`. Yeti changes when it runs, not what it does.
+
+Re-timing it is also the only way to honour reduced motion here. No selector reaches an at-rule, and the reset's universal rule does not match a `::view-transition` pseudo-element, so the collapsed `--yeti-page-duration` is what stills the crossfade. Write your own view-transition animations and you take that back on yourself, so read the same two tokens if you do.
+
+A page transition is a whole-page crossfade and nothing more. Carrying one element across two pages needs `view-transition-name` on both, which Yeti has no vocabulary for yet.
+
+## Scroll-driven
+
+Two things in Yeti are paced by the scroll rather than the clock: an `enter` with `data-view` plays its arrival as the element comes into view, and a `progress` with `data-scroll` fills as the page is read. Both use `animation-timeline`, which is below Baseline, so both are guarded by `@supports`, and each fallback is honest: the arrival plays on load, and the reading bar is not shown. They answer reduced motion differently, on purpose. The arrival is switched off, because a scroll-paced animation ignores the collapsed duration and would move content a reader asked not to see move. The reading bar stays, because nothing in it moves on its own; it only mirrors the reader's hand.
+
+### A marker along a path
+
+A dot that walks a curve as the page scrolls: an SVG draws the path, and the marker's `offset-path` repeats the same `d`, so a circle riding it can be paced by `animation-timeline: scroll(root)` instead of the clock.
+
+```css
+.marker {
+	offset-path: path("M0,20 Q100,0 200,20 T400,20");
+	offset-distance: 100%;
+}
+
+@supports (animation-timeline: scroll()) {
+	.marker {
+		animation: walk linear both;
+		animation-timeline: scroll(root);
+	}
+}
+
+@keyframes walk {
+	from { offset-distance: 0%; }
+	to { offset-distance: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.marker {
+		animation: none;
+	}
+}
+```
+
+The base rule puts the marker at the end of the walk, and only the animation inside `@supports` starts it at 0%. Where scroll timelines are missing, or motion is reduced, the dot rests at the end: a marker parked at the start would claim the reader had not moved, the same reason the reading bar is not shown at all without a timeline. Reduced motion does not collapse the duration here, because a scroll-driven animation never reads one; instead the rule turns the animation off outright, and the dot falls back to that resting place, reading as arrived rather than stranded at the start.
+
+The path is repeated from the SVG, not read from it: CSS has no way to reference an element's `d`, so the same coordinates live in both places and a change to one is a change to the other. The `path()` coordinates are CSS pixels of the marker's containing block, so an SVG that scales through its `viewBox` needs the path scaled with it, or the marker drifts off the drawn line.

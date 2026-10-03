@@ -1,0 +1,466 @@
+/* The shared attribute vocabulary. Each data-* value sets a private property
+   once; layouts read the property and supply their own default only when the
+   attribute is absent, so a nested layout never inherits a parent's value. */
+@layer yeti.layouts {
+	/* data-gap: one stop */
+	[data-gap="none"] { --_yeti-gap: var(--yeti-space-none); }
+	[data-gap="xs"] { --_yeti-gap: var(--yeti-space-xs); }
+	[data-gap="sm"] { --_yeti-gap: var(--yeti-space-sm); }
+	[data-gap="md"] { --_yeti-gap: var(--yeti-space-md); }
+	[data-gap="lg"] { --_yeti-gap: var(--yeti-space-lg); }
+	[data-gap="xl"] { --_yeti-gap: var(--yeti-space-xl); }
+	[data-gap="2xl"] { --_yeti-gap: var(--yeti-space-2xl); }
+	[data-gap="3xl"] { --_yeti-gap: var(--yeti-space-3xl); }
+
+	/* data-gap: fluid pairs. From the small stop's narrow value to the large
+	   stop's wide value, driven by the scale's interpolant. */
+	[data-gap="xs-sm"] { --_yeti-gap: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-sm-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap="xs-md"] { --_yeti-gap: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-md-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap="xs-lg"] { --_yeti-gap: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap="xs-xl"] { --_yeti-gap: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap="xs-2xl"] { --_yeti-gap: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap="xs-3xl"] { --_yeti-gap: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap="sm-md"] { --_yeti-gap: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-md-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap="sm-lg"] { --_yeti-gap: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap="sm-xl"] { --_yeti-gap: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap="sm-2xl"] { --_yeti-gap: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap="sm-3xl"] { --_yeti-gap: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap="md-lg"] { --_yeti-gap: calc(var(--yeti-space-md-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap="md-xl"] { --_yeti-gap: calc(var(--yeti-space-md-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap="md-2xl"] { --_yeti-gap: calc(var(--yeti-space-md-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap="md-3xl"] { --_yeti-gap: calc(var(--yeti-space-md-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap="lg-xl"] { --_yeti-gap: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-gap="lg-2xl"] { --_yeti-gap: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-gap="lg-3xl"] { --_yeti-gap: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-gap="xl-2xl"] { --_yeti-gap: calc(var(--yeti-space-xl-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-xl-static)) * var(--_yeti-t)); }
+	[data-gap="xl-3xl"] { --_yeti-gap: calc(var(--yeti-space-xl-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-xl-static)) * var(--_yeti-t)); }
+	[data-gap="2xl-3xl"] { --_yeti-gap: calc(var(--yeti-space-2xl-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-2xl-static)) * var(--_yeti-t)); }
+
+	/* data-gap-inline and data-gap-block: the gap vocabulary again, for the
+	   two axes of a box's padding, so a band can be wide at the sides and
+	   ordinary top and bottom without a second scale. Mapped here rather than
+	   read by box.css so the fluid pairs are written once. */
+	/* data-gap-inline: one stop */
+	[data-gap-inline="none"] { --_yeti-gap-inline: var(--yeti-space-none); }
+	[data-gap-inline="xs"] { --_yeti-gap-inline: var(--yeti-space-xs); }
+	[data-gap-inline="sm"] { --_yeti-gap-inline: var(--yeti-space-sm); }
+	[data-gap-inline="md"] { --_yeti-gap-inline: var(--yeti-space-md); }
+	[data-gap-inline="lg"] { --_yeti-gap-inline: var(--yeti-space-lg); }
+	[data-gap-inline="xl"] { --_yeti-gap-inline: var(--yeti-space-xl); }
+	[data-gap-inline="2xl"] { --_yeti-gap-inline: var(--yeti-space-2xl); }
+	[data-gap-inline="3xl"] { --_yeti-gap-inline: var(--yeti-space-3xl); }
+
+	/* data-gap-inline: fluid pairs. From the small stop's narrow value to the large
+	   stop's wide value, driven by the scale's interpolant. */
+	[data-gap-inline="xs-sm"] { --_yeti-gap-inline: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-sm-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-inline="xs-md"] { --_yeti-gap-inline: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-md-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-inline="xs-lg"] { --_yeti-gap-inline: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-inline="xs-xl"] { --_yeti-gap-inline: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-inline="xs-2xl"] { --_yeti-gap-inline: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-inline="xs-3xl"] { --_yeti-gap-inline: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-inline="sm-md"] { --_yeti-gap-inline: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-md-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap-inline="sm-lg"] { --_yeti-gap-inline: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap-inline="sm-xl"] { --_yeti-gap-inline: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap-inline="sm-2xl"] { --_yeti-gap-inline: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap-inline="sm-3xl"] { --_yeti-gap-inline: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap-inline="md-lg"] { --_yeti-gap-inline: calc(var(--yeti-space-md-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap-inline="md-xl"] { --_yeti-gap-inline: calc(var(--yeti-space-md-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap-inline="md-2xl"] { --_yeti-gap-inline: calc(var(--yeti-space-md-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap-inline="md-3xl"] { --_yeti-gap-inline: calc(var(--yeti-space-md-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap-inline="lg-xl"] { --_yeti-gap-inline: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-gap-inline="lg-2xl"] { --_yeti-gap-inline: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-gap-inline="lg-3xl"] { --_yeti-gap-inline: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-gap-inline="xl-2xl"] { --_yeti-gap-inline: calc(var(--yeti-space-xl-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-xl-static)) * var(--_yeti-t)); }
+	[data-gap-inline="xl-3xl"] { --_yeti-gap-inline: calc(var(--yeti-space-xl-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-xl-static)) * var(--_yeti-t)); }
+	[data-gap-inline="2xl-3xl"] { --_yeti-gap-inline: calc(var(--yeti-space-2xl-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-2xl-static)) * var(--_yeti-t)); }
+
+	/* data-gap-block: one stop */
+	[data-gap-block="none"] { --_yeti-gap-block: var(--yeti-space-none); }
+	[data-gap-block="xs"] { --_yeti-gap-block: var(--yeti-space-xs); }
+	[data-gap-block="sm"] { --_yeti-gap-block: var(--yeti-space-sm); }
+	[data-gap-block="md"] { --_yeti-gap-block: var(--yeti-space-md); }
+	[data-gap-block="lg"] { --_yeti-gap-block: var(--yeti-space-lg); }
+	[data-gap-block="xl"] { --_yeti-gap-block: var(--yeti-space-xl); }
+	[data-gap-block="2xl"] { --_yeti-gap-block: var(--yeti-space-2xl); }
+	[data-gap-block="3xl"] { --_yeti-gap-block: var(--yeti-space-3xl); }
+
+	/* data-gap-block: fluid pairs. From the small stop's narrow value to the large
+	   stop's wide value, driven by the scale's interpolant. */
+	[data-gap-block="xs-sm"] { --_yeti-gap-block: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-sm-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-block="xs-md"] { --_yeti-gap-block: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-md-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-block="xs-lg"] { --_yeti-gap-block: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-block="xs-xl"] { --_yeti-gap-block: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-block="xs-2xl"] { --_yeti-gap-block: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-block="xs-3xl"] { --_yeti-gap-block: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-gap-block="sm-md"] { --_yeti-gap-block: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-md-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap-block="sm-lg"] { --_yeti-gap-block: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap-block="sm-xl"] { --_yeti-gap-block: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap-block="sm-2xl"] { --_yeti-gap-block: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap-block="sm-3xl"] { --_yeti-gap-block: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-gap-block="md-lg"] { --_yeti-gap-block: calc(var(--yeti-space-md-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap-block="md-xl"] { --_yeti-gap-block: calc(var(--yeti-space-md-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap-block="md-2xl"] { --_yeti-gap-block: calc(var(--yeti-space-md-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap-block="md-3xl"] { --_yeti-gap-block: calc(var(--yeti-space-md-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-gap-block="lg-xl"] { --_yeti-gap-block: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-gap-block="lg-2xl"] { --_yeti-gap-block: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-gap-block="lg-3xl"] { --_yeti-gap-block: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-gap-block="xl-2xl"] { --_yeti-gap-block: calc(var(--yeti-space-xl-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-xl-static)) * var(--_yeti-t)); }
+	[data-gap-block="xl-3xl"] { --_yeti-gap-block: calc(var(--yeti-space-xl-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-xl-static)) * var(--_yeti-t)); }
+	[data-gap-block="2xl-3xl"] { --_yeti-gap-block: calc(var(--yeti-space-2xl-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-2xl-static)) * var(--_yeti-t)); }
+
+	/* data-space: the gap before one child of a stack, in the same words as
+	   the stack's own gap. The stack reads it against its gap; see stack.css. */
+	/* data-space: one stop */
+	[data-space="none"] { --_yeti-space: var(--yeti-space-none); }
+	[data-space="xs"] { --_yeti-space: var(--yeti-space-xs); }
+	[data-space="sm"] { --_yeti-space: var(--yeti-space-sm); }
+	[data-space="md"] { --_yeti-space: var(--yeti-space-md); }
+	[data-space="lg"] { --_yeti-space: var(--yeti-space-lg); }
+	[data-space="xl"] { --_yeti-space: var(--yeti-space-xl); }
+	[data-space="2xl"] { --_yeti-space: var(--yeti-space-2xl); }
+	[data-space="3xl"] { --_yeti-space: var(--yeti-space-3xl); }
+
+	/* data-space: fluid pairs. From the small stop's narrow value to the large
+	   stop's wide value, driven by the scale's interpolant. */
+	[data-space="xs-sm"] { --_yeti-space: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-sm-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-space="xs-md"] { --_yeti-space: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-md-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-space="xs-lg"] { --_yeti-space: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-space="xs-xl"] { --_yeti-space: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-space="xs-2xl"] { --_yeti-space: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-space="xs-3xl"] { --_yeti-space: calc(var(--yeti-space-xs-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-xs-static)) * var(--_yeti-t)); }
+	[data-space="sm-md"] { --_yeti-space: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-md-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-space="sm-lg"] { --_yeti-space: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-space="sm-xl"] { --_yeti-space: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-space="sm-2xl"] { --_yeti-space: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-space="sm-3xl"] { --_yeti-space: calc(var(--yeti-space-sm-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-sm-static)) * var(--_yeti-t)); }
+	[data-space="md-lg"] { --_yeti-space: calc(var(--yeti-space-md-static) + (var(--_yeti-space-lg-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-space="md-xl"] { --_yeti-space: calc(var(--yeti-space-md-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-space="md-2xl"] { --_yeti-space: calc(var(--yeti-space-md-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-space="md-3xl"] { --_yeti-space: calc(var(--yeti-space-md-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-md-static)) * var(--_yeti-t)); }
+	[data-space="lg-xl"] { --_yeti-space: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-space="lg-2xl"] { --_yeti-space: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-space="lg-3xl"] { --_yeti-space: calc(var(--yeti-space-lg-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-lg-static)) * var(--_yeti-t)); }
+	[data-space="xl-2xl"] { --_yeti-space: calc(var(--yeti-space-xl-static) + (var(--_yeti-space-2xl-max) - var(--yeti-space-xl-static)) * var(--_yeti-t)); }
+	[data-space="xl-3xl"] { --_yeti-space: calc(var(--yeti-space-xl-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-xl-static)) * var(--_yeti-t)); }
+	[data-space="2xl-3xl"] { --_yeti-space: calc(var(--yeti-space-2xl-static) + (var(--_yeti-space-3xl-max) - var(--yeti-space-2xl-static)) * var(--_yeti-t)); }
+
+	/* data-align: cross-axis alignment */
+	[data-align="start"] { --_yeti-align: flex-start; }
+	[data-align="center"] { --_yeti-align: center; }
+	[data-align="end"] { --_yeti-align: flex-end; }
+	[data-align="stretch"] { --_yeti-align: stretch; }
+	[data-align="baseline"] { --_yeti-align: baseline; }
+
+	/* data-justify: main-axis distribution */
+	[data-justify="start"] { --_yeti-justify: flex-start; }
+	[data-justify="center"] { --_yeti-justify: center; }
+	[data-justify="end"] { --_yeti-justify: flex-end; }
+	[data-justify="between"] { --_yeti-justify: space-between; }
+	[data-justify="around"] { --_yeti-justify: space-around; }
+	[data-justify="evenly"] { --_yeti-justify: space-evenly; }
+
+	/* Container widths */
+	[data-threshold="2xs"] { --_yeti-threshold: var(--yeti-width-2xs); }
+	[data-threshold="xs"] { --_yeti-threshold: var(--yeti-width-xs); }
+	[data-threshold="sm"] { --_yeti-threshold: var(--yeti-width-sm); }
+	[data-threshold="md"] { --_yeti-threshold: var(--yeti-width-md); }
+	[data-threshold="lg"] { --_yeti-threshold: var(--yeti-width-lg); }
+	[data-threshold="xl"] { --_yeti-threshold: var(--yeti-width-xl); }
+	[data-threshold="2xl"] { --_yeti-threshold: var(--yeti-width-2xl); }
+
+	[data-width="2xs"] { --_yeti-width: var(--yeti-width-2xs); }
+	[data-width="xs"] { --_yeti-width: var(--yeti-width-xs); }
+	[data-width="sm"] { --_yeti-width: var(--yeti-width-sm); }
+	[data-width="md"] { --_yeti-width: var(--yeti-width-md); }
+	[data-width="lg"] { --_yeti-width: var(--yeti-width-lg); }
+	[data-width="xl"] { --_yeti-width: var(--yeti-width-xl); }
+	[data-width="2xl"] { --_yeti-width: var(--yeti-width-2xl); }
+
+	/* data-height: a block size, for the few things that take one. It reads
+	   the height family the way data-width reads the width family; the demo's
+	   preview box was the first taker, and cover and hero read the same
+	   property as a minimum. half and full are the viewport's, because a band
+	   half the screen tall cannot be said in rem; full is what a cover is
+	   with no attribute at all. */
+	[data-height="sm"] { --_yeti-height: var(--yeti-height-sm); }
+	[data-height="md"] { --_yeti-height: var(--yeti-height-md); }
+	[data-height="lg"] { --_yeti-height: var(--yeti-height-lg); }
+	[data-height="xl"] { --_yeti-height: var(--yeti-height-xl); }
+	[data-height="half"] { --_yeti-height: var(--yeti-height-half); }
+	[data-height="full"] { --_yeti-height: var(--yeti-cover-height); }
+
+	[data-min="none"] { --_yeti-min: 0px; }
+	[data-min="2xs"] { --_yeti-min: var(--yeti-width-2xs); }
+	[data-min="xs"] { --_yeti-min: var(--yeti-width-xs); }
+	[data-min="sm"] { --_yeti-min: var(--yeti-width-sm); }
+	[data-min="md"] { --_yeti-min: var(--yeti-width-md); }
+	[data-min="lg"] { --_yeti-min: var(--yeti-width-lg); }
+	[data-min="xl"] { --_yeti-min: var(--yeti-width-xl); }
+	[data-min="2xl"] { --_yeti-min: var(--yeti-width-2xl); }
+
+	[data-max="2xs"] { --_yeti-max: var(--yeti-width-2xs); }
+	[data-max="xs"] { --_yeti-max: var(--yeti-width-xs); }
+	[data-max="sm"] { --_yeti-max: var(--yeti-width-sm); }
+	[data-max="md"] { --_yeti-max: var(--yeti-width-md); }
+	[data-max="lg"] { --_yeti-max: var(--yeti-width-lg); }
+	[data-max="xl"] { --_yeti-max: var(--yeti-width-xl); }
+	[data-max="2xl"] { --_yeti-max: var(--yeti-width-2xl); }
+
+	/* Child placement inside a layer: data-align-self and data-justify-self
+	   sit on the child and set the property on the child. */
+	[data-align-self="start"] { --_yeti-align-self: start; }
+	[data-align-self="center"] { --_yeti-align-self: center; }
+	[data-align-self="end"] { --_yeti-align-self: end; }
+	[data-align-self="stretch"] { --_yeti-align-self: stretch; }
+	[data-align-self="baseline"] { --_yeti-align-self: baseline; }
+	[data-justify-self="start"] { --_yeti-justify-self: start; }
+	[data-justify-self="center"] { --_yeti-justify-self: center; }
+	[data-justify-self="end"] { --_yeti-justify-self: end; }
+	[data-justify-self="stretch"] { --_yeti-justify-self: stretch; }
+
+	/* data-ratio */
+	[data-ratio="1/1"] { --_yeti-aspect: 1 / 1; }
+	[data-ratio="4/3"] { --_yeti-aspect: 4 / 3; }
+	[data-ratio="3/2"] { --_yeti-aspect: 3 / 2; }
+	[data-ratio="16/9"] { --_yeti-aspect: 16 / 9; }
+	[data-ratio="21/9"] { --_yeti-aspect: 21 / 9; }
+
+	/* data-columns: a maximum column count, as a minimum track width for grids
+	   and as a count for masonry's multi-column fallback */
+	[data-columns="1"] { --_yeti-column-cap: 100%; --_yeti-column-count: 1; }
+	[data-columns="2"] { --_yeti-column-cap: calc((100% - 1 * var(--_yeti-gap)) / 2); --_yeti-column-count: 2; }
+	[data-columns="3"] { --_yeti-column-cap: calc((100% - 2 * var(--_yeti-gap)) / 3); --_yeti-column-count: 3; }
+	[data-columns="4"] { --_yeti-column-cap: calc((100% - 3 * var(--_yeti-gap)) / 4); --_yeti-column-count: 4; }
+	[data-columns="5"] { --_yeti-column-cap: calc((100% - 4 * var(--_yeti-gap)) / 5); --_yeti-column-count: 5; }
+	[data-columns="6"] { --_yeti-column-cap: calc((100% - 5 * var(--_yeti-gap)) / 6); --_yeti-column-count: 6; }
+
+	/* data-variant: a hue's ladder, for components. A component sets its own
+	   default with .name:not([data-variant]), so nothing inherits a parent's. */
+	[data-variant="primary"] { --_yeti-variant: var(--yeti-color-primary); --_yeti-variant-subtle: var(--yeti-color-primary-subtle); --_yeti-variant-soft: var(--yeti-color-primary-soft); --_yeti-variant-strong: var(--yeti-color-primary-strong); --_yeti-variant-text: var(--yeti-color-primary-text); --_yeti-on-variant: var(--yeti-on-primary); }
+	[data-variant="secondary"] { --_yeti-variant: var(--yeti-color-secondary); --_yeti-variant-subtle: var(--yeti-color-secondary-subtle); --_yeti-variant-soft: var(--yeti-color-secondary-soft); --_yeti-variant-strong: var(--yeti-color-secondary-strong); --_yeti-variant-text: var(--yeti-color-secondary-text); --_yeti-on-variant: var(--yeti-on-secondary); }
+	[data-variant="success"] { --_yeti-variant: var(--yeti-color-success); --_yeti-variant-subtle: var(--yeti-color-success-subtle); --_yeti-variant-soft: var(--yeti-color-success-soft); --_yeti-variant-strong: var(--yeti-color-success-strong); --_yeti-variant-text: var(--yeti-color-success-text); --_yeti-on-variant: var(--yeti-on-success); }
+	[data-variant="warning"] { --_yeti-variant: var(--yeti-color-warning); --_yeti-variant-subtle: var(--yeti-color-warning-subtle); --_yeti-variant-soft: var(--yeti-color-warning-soft); --_yeti-variant-strong: var(--yeti-color-warning-strong); --_yeti-variant-text: var(--yeti-color-warning-text); --_yeti-on-variant: var(--yeti-on-warning); }
+	[data-variant="alert"] { --_yeti-variant: var(--yeti-color-alert); --_yeti-variant-subtle: var(--yeti-color-alert-subtle); --_yeti-variant-soft: var(--yeti-color-alert-soft); --_yeti-variant-strong: var(--yeti-color-alert-strong); --_yeti-variant-text: var(--yeti-color-alert-text); --_yeti-on-variant: var(--yeti-on-alert); }
+	/* danger is the alert ladder under a name that is not also a component,
+	   so an alert that is an alert does not read data-variant="alert". */
+	[data-variant="danger"] { --_yeti-variant: var(--yeti-color-alert); --_yeti-variant-subtle: var(--yeti-color-alert-subtle); --_yeti-variant-soft: var(--yeti-color-alert-soft); --_yeti-variant-strong: var(--yeti-color-alert-strong); --_yeti-variant-text: var(--yeti-color-alert-text); --_yeti-on-variant: var(--yeti-on-alert); }
+	[data-variant="neutral"] { --_yeti-variant: var(--yeti-color-neutral); --_yeti-variant-subtle: var(--yeti-color-neutral-subtle); --_yeti-variant-soft: var(--yeti-color-neutral-soft); --_yeti-variant-strong: var(--yeti-color-neutral-strong); --_yeti-variant-text: var(--yeti-color-neutral-text); --_yeti-on-variant: var(--yeti-on-neutral); }
+
+	/* black and white: the two constants as a ladder, for a control on a
+	   painted band that must stay ink or paper whatever the scheme. Neither
+	   follows the hue or flips. The washes are translucent so the quiet
+	   emphases tint whatever surface they sit on. */
+	[data-variant="black"] { --_yeti-variant: var(--yeti-black); --_yeti-variant-subtle: oklch(0 0 0 / 0.08); --_yeti-variant-soft: oklch(0 0 0 / 0.18); --_yeti-variant-strong: oklch(0.25 0 0); --_yeti-variant-text: var(--yeti-black); --_yeti-on-variant: var(--yeti-white); }
+	[data-variant="white"] { --_yeti-variant: var(--yeti-white); --_yeti-variant-subtle: oklch(1 0 0 / 0.12); --_yeti-variant-soft: oklch(1 0 0 / 0.24); --_yeti-variant-strong: oklch(0.88 0 0); --_yeti-variant-text: var(--yeti-white); --_yeti-on-variant: var(--yeti-black); }
+
+	/* data-size on components: a text step and the space step one below it */
+	[data-size="sm"] { --_yeti-size-text: var(--yeti-text-sm); --_yeti-size-space: var(--yeti-space-xs); }
+	[data-size="md"] { --_yeti-size-text: var(--yeti-text-md); --_yeti-size-space: var(--yeti-space-sm); }
+	[data-size="lg"] { --_yeti-size-text: var(--yeti-text-lg); --_yeti-size-space: var(--yeti-space-md); }
+
+	/* data-span: a child's share of a columns row, or how many tracks a child
+	   of a tracks grid covers */
+	[data-span="1"] { --_yeti-span: 1; }
+	[data-span="2"] { --_yeti-span: 2; }
+	[data-span="3"] { --_yeti-span: 3; }
+	[data-span="4"] { --_yeti-span: 4; }
+	[data-span="5"] { --_yeti-span: 5; }
+	[data-span="6"] { --_yeti-span: 6; }
+	[data-span="7"] { --_yeti-span: 7; }
+	[data-span="8"] { --_yeti-span: 8; }
+	[data-span="9"] { --_yeti-span: 9; }
+	[data-span="10"] { --_yeti-span: 10; }
+	[data-span="11"] { --_yeti-span: 11; }
+	[data-span="12"] { --_yeti-span: 12; }
+
+	/* data-tracks: how many equal tracks a grid has */
+	[data-tracks="2"] { --_yeti-tracks: 2; }
+	[data-tracks="3"] { --_yeti-tracks: 3; }
+	[data-tracks="4"] { --_yeti-tracks: 4; }
+	[data-tracks="5"] { --_yeti-tracks: 5; }
+	[data-tracks="6"] { --_yeti-tracks: 6; }
+	[data-tracks="7"] { --_yeti-tracks: 7; }
+	[data-tracks="8"] { --_yeti-tracks: 8; }
+	[data-tracks="9"] { --_yeti-tracks: 9; }
+	[data-tracks="10"] { --_yeti-tracks: 10; }
+	[data-tracks="11"] { --_yeti-tracks: 11; }
+	[data-tracks="12"] { --_yeti-tracks: 12; }
+
+	/* data-start: the column line a child of a tracks grid begins on */
+	[data-start="1"] { --_yeti-start: 1; }
+	[data-start="2"] { --_yeti-start: 2; }
+	[data-start="3"] { --_yeti-start: 3; }
+	[data-start="4"] { --_yeti-start: 4; }
+	[data-start="5"] { --_yeti-start: 5; }
+	[data-start="6"] { --_yeti-start: 6; }
+	[data-start="7"] { --_yeti-start: 7; }
+	[data-start="8"] { --_yeti-start: 8; }
+	[data-start="9"] { --_yeti-start: 9; }
+	[data-start="10"] { --_yeti-start: 10; }
+	[data-start="11"] { --_yeti-start: 11; }
+	[data-start="12"] { --_yeti-start: 12; }
+
+	/* data-rows: how many rows each child of a grid spans, one per part */
+	[data-rows="2"] { --_yeti-rows: 2; }
+	[data-rows="3"] { --_yeti-rows: 3; }
+	[data-rows="4"] { --_yeti-rows: 4; }
+	[data-rows="5"] { --_yeti-rows: 5; }
+	[data-rows="6"] { --_yeti-rows: 6; }
+
+	/* data-slides: how many slides of a carousel are visible at once */
+	[data-slides="1"] { --_yeti-slides: 1; }
+	[data-slides="2"] { --_yeti-slides: 2; }
+	[data-slides="3"] { --_yeti-slides: 3; }
+	[data-slides="4"] { --_yeti-slides: 4; }
+
+}
+
+/* data-sticky: a marker, not a mapping. It sets the properties on the
+   child itself rather than a private property for a layout to read,
+   because sticking is the same two lines wherever it is done and no
+   layout needs to know it happened. Only these two are here. A flex item
+   stretched to the height of its row fills its own containing block, has
+   nowhere left to move, and quietly never sticks — but that is true of a
+   row and not of a column, so the start alignment that fixes it lives in
+   sidebar.css and shell.css, whose rows stretch. A stack stretches on the
+   inline axis instead, which costs a sticky child nothing and would cost
+   it its width if this rule tried to cover both. This one lives in the
+   utilities layer, not the layouts layer above: a marker sets properties
+   on the element itself and has to outrank a component's own position (a
+   card sets position: relative), and sticky still gives absolute
+   descendants their containing block either way. */
+@layer yeti.utilities {
+	[data-sticky] {
+		position: sticky;
+		inset-block-start: var(--yeti-sticky-offset);
+		/* Above what scrolls under it, by definition, and above the level a
+		   card's controls, the affix and a tooltip take, so a card scrolled under
+		   a pinned bar cannot take the click. The skip link, first in the
+		   document and so losing any tie, sits one higher; the top layer is
+		   above all of it. */
+		z-index: 2;
+	}
+}
+
+/* data-show and data-hide: the two names in Yeti that answer "is there room
+   for this?" by removing the element rather than by changing its shape. A
+   component that can change shape should; these are for the case that cannot,
+   where a thing simply has no place in a narrow column and no substitute.
+   Markers rather than a layout's own attributes, so anything inside any size
+   container can carry one, and in the utilities layer for the same reason
+   data-sticky is: display: none has to outrank whatever display the element
+   already had from its own component, and yeti.utilities is the last layer.
+   The direction is data-threshold's, so the whole framework reads one way: a
+   width names the point at or above which the wide answer applies.
+   data-show="md" is shown from md up and gone below it; data-hide="md" is the
+   same sentence read the other way. There is deliberately no band form: a band
+   is two elements, or a nested container, and it was the rarest thing in the
+   classes these replace.
+   The widths are literal rem with the token named above each pair, because a
+   container condition cannot read a custom property; grid.css and card.css
+   write their thresholds the same way.
+   A container query with no size container above it never matches, so an
+   element carrying either marker outside one simply stays visible. That is
+   why these are declared on container: the page that explains the marker is
+   the page that explains the box it needs. */
+@layer yeti.utilities {
+	/* --yeti-width-2xs (12rem) */
+	@container (inline-size < 12rem) { [data-show="2xs"] { display: none; } }
+	@container (inline-size >= 12rem) { [data-hide="2xs"] { display: none; } }
+	/* --yeti-width-xs (16rem) */
+	@container (inline-size < 16rem) { [data-show="xs"] { display: none; } }
+	@container (inline-size >= 16rem) { [data-hide="xs"] { display: none; } }
+	/* --yeti-width-sm (24rem) */
+	@container (inline-size < 24rem) { [data-show="sm"] { display: none; } }
+	@container (inline-size >= 24rem) { [data-hide="sm"] { display: none; } }
+	/* --yeti-width-md (32rem) */
+	@container (inline-size < 32rem) { [data-show="md"] { display: none; } }
+	@container (inline-size >= 32rem) { [data-hide="md"] { display: none; } }
+	/* --yeti-width-lg (48rem) */
+	@container (inline-size < 48rem) { [data-show="lg"] { display: none; } }
+	@container (inline-size >= 48rem) { [data-hide="lg"] { display: none; } }
+	/* --yeti-width-xl (64rem) */
+	@container (inline-size < 64rem) { [data-show="xl"] { display: none; } }
+	@container (inline-size >= 64rem) { [data-hide="xl"] { display: none; } }
+	/* --yeti-width-2xl (80rem) */
+	@container (inline-size < 80rem) { [data-show="2xl"] { display: none; } }
+	@container (inline-size >= 80rem) { [data-hide="2xl"] { display: none; } }
+}
+
+/* data-paint and data-text: a color by name on any element, the first on
+   the background and the second on the words. Markers declared on box, since
+   the box is where surfaces already live, and in the utilities layer so the
+   color outranks whatever background or color the element's own component
+   gave it. data-surface stays what it is, a role of the page; this is a
+   color picked from the list in schema/vocabulary.json.
+   A painted hue takes the text the base color was made for, on-<hue>. A
+   painted grey takes the page text up to grey-40 and the page surface from
+   grey-50: half-way toward the text is where the text stops reading, and
+   the rule holds in both schemes because the greys do. The constants take
+   the constant that reads on them; on 18% grey black and white both clear
+   AA, black by a hair more. data-text is written after data-paint at equal
+   specificity, so on an element carrying both it wins. */
+@layer yeti.utilities {
+	[data-paint="primary"] { background-color: var(--yeti-color-primary); color: var(--yeti-on-primary); }
+	[data-paint="secondary"] { background-color: var(--yeti-color-secondary); color: var(--yeti-on-secondary); }
+	[data-paint="success"] { background-color: var(--yeti-color-success); color: var(--yeti-on-success); }
+	[data-paint="warning"] { background-color: var(--yeti-color-warning); color: var(--yeti-on-warning); }
+	[data-paint="alert"] { background-color: var(--yeti-color-alert); color: var(--yeti-on-alert); }
+	[data-paint="neutral"] { background-color: var(--yeti-color-neutral); color: var(--yeti-on-neutral); }
+	[data-paint="white"] { background-color: var(--yeti-white); color: var(--yeti-black); }
+	[data-paint="black"] { background-color: var(--yeti-black); color: var(--yeti-white); }
+	[data-paint="grey"] { background-color: var(--yeti-grey); color: var(--yeti-black); }
+	[data-paint="grey-0"] { background-color: var(--yeti-grey-0); color: var(--yeti-color-text); }
+	[data-paint="grey-10"] { background-color: var(--yeti-grey-10); color: var(--yeti-color-text); }
+	[data-paint="grey-20"] { background-color: var(--yeti-grey-20); color: var(--yeti-color-text); }
+	[data-paint="grey-30"] { background-color: var(--yeti-grey-30); color: var(--yeti-color-text); }
+	[data-paint="grey-40"] { background-color: var(--yeti-grey-40); color: var(--yeti-color-text); }
+	[data-paint="grey-50"] { background-color: var(--yeti-grey-50); color: var(--yeti-color-surface); }
+	[data-paint="grey-60"] { background-color: var(--yeti-grey-60); color: var(--yeti-color-surface); }
+	[data-paint="grey-70"] { background-color: var(--yeti-grey-70); color: var(--yeti-color-surface); }
+	[data-paint="grey-80"] { background-color: var(--yeti-grey-80); color: var(--yeti-color-surface); }
+	[data-paint="grey-90"] { background-color: var(--yeti-grey-90); color: var(--yeti-color-surface); }
+	[data-paint="grey-100"] { background-color: var(--yeti-grey-100); color: var(--yeti-color-surface); }
+
+	[data-text="primary"] { color: var(--yeti-color-primary); }
+	[data-text="secondary"] { color: var(--yeti-color-secondary); }
+	[data-text="success"] { color: var(--yeti-color-success); }
+	[data-text="warning"] { color: var(--yeti-color-warning); }
+	[data-text="alert"] { color: var(--yeti-color-alert); }
+	[data-text="neutral"] { color: var(--yeti-color-neutral); }
+	[data-text="white"] { color: var(--yeti-white); }
+	[data-text="black"] { color: var(--yeti-black); }
+	[data-text="grey"] { color: var(--yeti-grey); }
+	[data-text="grey-0"] { color: var(--yeti-grey-0); }
+	[data-text="grey-10"] { color: var(--yeti-grey-10); }
+	[data-text="grey-20"] { color: var(--yeti-grey-20); }
+	[data-text="grey-30"] { color: var(--yeti-grey-30); }
+	[data-text="grey-40"] { color: var(--yeti-grey-40); }
+	[data-text="grey-50"] { color: var(--yeti-grey-50); }
+	[data-text="grey-60"] { color: var(--yeti-grey-60); }
+	[data-text="grey-70"] { color: var(--yeti-grey-70); }
+	[data-text="grey-80"] { color: var(--yeti-grey-80); }
+	[data-text="grey-90"] { color: var(--yeti-grey-90); }
+	[data-text="grey-100"] { color: var(--yeti-grey-100); }
+
+	/* A plain link and a caption set their own color in the base layer, so
+	   inside a painted band a link was primary on primary and a caption was
+	   muted on black. Both take the band's color instead; a link that is a
+	   button keeps its own. */
+	[data-paint] :is(a:not([class]), figcaption):not([data-text]),
+	[data-text] :is(a:not([class]), figcaption):not([data-text]) { color: inherit; }
+	/* Browsers drop backgrounds when printing unless told otherwise, and a
+	   painted band's words were chosen for that background: white on primary
+	   prints as white on paper. Painted elements keep their colour on paper;
+	   the reader's own print setting can still take it away. */
+	[data-paint] { print-color-adjust: exact; }
+
+	/* data-numeric: figures that line up, on any element. A table's cells
+	   also end-align; that half stays with the table. */
+	[data-numeric] { font-variant-numeric: tabular-nums; }
+
+	/* data-border: the border width in the border color, on any element. The
+	   table is left out: its data-border means borders on every cell, and an
+	   outer line on top of those would double the edge. */
+	[data-border]:not(.table) { border: var(--yeti-border-width) solid var(--yeti-color-border); }
+}

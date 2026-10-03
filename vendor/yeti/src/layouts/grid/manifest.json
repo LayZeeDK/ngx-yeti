@@ -1,0 +1,38 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "grid",
+  "kind": "layout",
+  "group": "Grids and Rows",
+  "description": "Fits as many equal columns as the container allows at a minimum width, up to an optional maximum count.",
+  "class": "grid",
+  "attributes": [
+    { "name": "data-min", "type": "enum", "vocabulary": "width-or-none", "default": "xs", "description": "The narrowest a column may be. With none, only data-columns decides the count; none is meant to be paired with data-columns, and alone gives a single full-width column." },
+    { "name": "data-columns", "type": "enum", "vocabulary": "columns", "description": "The most columns allowed. Fewer appear when the container cannot fit that many at data-min; with data-min=\"none\" the count is exact. With data-fold, the count only ever halves." },
+    { "name": "data-gap", "type": "enum", "vocabulary": "gap", "default": "md", "description": "Space between columns and rows." },
+    { "name": "data-rows", "type": "enum", "vocabulary": "rows", "description": "Line up the parts of the children across each row: the value is how many rows each child spans, one per part." },
+    { "name": "data-fold", "type": "boolean", "description": "Halve the column count as the grid narrows instead of stepping down one at a time. Needs data-columns 2, 4, or 6 and uses data-min as the width per column. data-min=\"none\" has no meaning with a fold: the count needs a width per column." },
+    { "name": "data-tracks", "type": "enum", "vocabulary": "tracks", "description": "A fixed number of equal tracks that children are placed on with data-start and data-span, leaving any track nothing is placed on empty. Replaces the fitted columns, so data-min and data-columns have no effect alongside it, and it does not mix with data-fold." },
+    { "name": "data-threshold", "type": "enum", "vocabulary": "width", "default": "md", "description": "With data-tracks: the grid's own width below which every child takes the whole row, in source order; at or above it, the placement applies." }
+  ],
+  "classes": [],
+  "children": [
+    { "selector": "> *", "min": 1, "max": null, "description": "The cells. All are the same width, except in a tracks grid, where each covers the tracks it is placed on." }
+  ],
+  "markers": [
+    { "name": "data-start", "type": "enum", "vocabulary": "start", "on": "> *", "description": "In a tracks grid, the column line the child begins on. Without it the child flows into the next free track." },
+    { "name": "data-span", "type": "enum", "vocabulary": "span", "on": "> *", "description": "In a tracks grid, how many tracks the child covers. Without it the child covers one." }
+  ],
+  "tokens": [
+    { "name": "--yeti-width-xs", "public": true, "description": "The default minimum column width." },
+    { "name": "--yeti-space-md", "public": true, "description": "The default gap." },
+    { "name": "--_yeti-gap", "public": false },
+    { "name": "--_yeti-min", "public": false },
+    { "name": "--_yeti-column-cap", "public": false }
+  ],
+  "a11y": { "requiredAttributes": [], "keyboard": [], "notes": "Purely visual. Use a list when the cells are a list of like things." },
+  "js": null,
+  "support": { "unguarded": ["grid auto-fit", "min() and max() inside minmax()"], "guarded": [] },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": { "height": "xl" }
+}

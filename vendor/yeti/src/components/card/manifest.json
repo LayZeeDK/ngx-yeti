@@ -1,0 +1,46 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "card",
+  "kind": "component",
+  "group": "Content",
+  "description": "A bordered surface for one thing: an optional figure that bleeds to the edges, a body, and a footer that sits at the bottom; a row with the picture beside the text once the card's content reaches the md width.",
+  "class": "card",
+  "attributes": [
+    { "name": "data-variant", "type": "enum", "vocabulary": "variant", "description": "Tints the border and adds a bar along the top; the body stays plain." },
+    { "name": "data-threshold", "type": "enum", "vocabulary": "width", "default": "md", "description": "The card's own width from which the picture sits beside the text instead of on top." },
+    { "name": "data-ratio", "type": "enum", "vocabulary": "ratio", "default": "16/9", "description": "The picture's aspect ratio while it sits on top of the body. Past data-threshold the picture moves beside the body and fills that column, and the ratio stops applying." },
+    { "name": "data-raised", "type": "boolean", "description": "A shadow instead of a border." }
+  ],
+  "classes": [],
+  "children": [
+    { "selector": "> *", "min": 1, "max": null, "description": "A figure first if there is one, then the body, then an optional footer." },
+    { "selector": "> figure", "min": 0, "max": 1, "description": "A figure element holding media and a caption; only the media is cropped." },
+    { "selector": "> footer", "min": 0, "max": 1, "description": "Actions, pushed to the bottom of the card; in a grid with data-rows it takes the last row." },
+    { "selector": "[data-stretch]", "min": 0, "max": 1, "description": "One link that is stretched over the whole card, so the card is clickable while the link keeps its own name." }
+  ],
+  "markers": [
+    { "name": "data-stretch", "type": "boolean", "on": "a", "description": "Stretches the link over the whole card, so the card is clickable while the link keeps its own name." }
+  ],
+  "tokens": [
+    { "name": "--yeti-card-radius", "public": true, "description": "Corner radius." },
+    { "name": "--yeti-card-padding", "public": true, "description": "Padding inside the card; the figure bleeds through it." },
+    { "name": "--yeti-card-gap", "public": true, "description": "Space between the card's parts." },
+    { "name": "--yeti-card-border", "public": true, "description": "Border color." },
+    { "name": "--yeti-card-surface", "public": true, "description": "Background." },
+    { "name": "--yeti-shadow-sm", "public": true, "description": "The shadow when raised." },
+    { "name": "--yeti-color-text", "public": true, "description": "The card's text, and a caption laid over the figure." },
+    { "name": "--yeti-border-width", "public": true, "description": "Border width; the variant's bar is four of them." },
+    { "name": "--yeti-space-xs", "public": true, "description": "Padding of the caption." },
+    { "name": "--yeti-text-sm", "public": true, "description": "Text size of the caption." },
+    { "name": "--yeti-color-text-muted", "public": true, "description": "The caption under a figure." },
+    { "name": "--yeti-color-scrim", "public": true, "description": "Wash behind a caption laid over the figure, so it stays readable." },
+    { "name": "--yeti-space-sm", "public": true, "description": "Gap between the footer's actions." },
+    { "name": "--_yeti-aspect", "public": false }
+  ],
+  "a11y": { "requiredAttributes": [], "keyboard": [], "notes": "Never wrap a card in a link: the whole card's text would become the link's name. Put the link on the heading and give it data-stretch so the card is clickable and the link is named by the heading. Use article for cards that stand alone and li for cards in a list." },
+  "js": null,
+  "support": { "unguarded": ["container size queries", "aspect-ratio", "overflow: clip"], "guarded": [] },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": { "height": "md" }
+}

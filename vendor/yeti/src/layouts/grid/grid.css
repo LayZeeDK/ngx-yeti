@@ -1,0 +1,172 @@
+/* Grid: as many equal columns as fit at a minimum width, with an optional
+   maximum count. The track minimum is the larger of the minimum width and
+   the container split N ways, so data-columns caps the count without a
+   breakpoint. data-tracks is the other mode: a fixed number of tracks that
+   children are placed on by line. */
+@layer yeti.layouts {
+	.grid {
+		display: grid;
+		gap: var(--_yeti-gap);
+		grid-template-columns: repeat(auto-fit, minmax(min(max(var(--_yeti-min), var(--_yeti-column-cap)), 100%), 1fr));
+	}
+	.grid:not([data-gap]) { --_yeti-gap: var(--yeti-space-md); }
+	.grid:not([data-min]) { --_yeti-min: var(--yeti-width-xs); }
+	.grid:not([data-columns]) { --_yeti-column-cap: 0px; }
+	/* data-min="none" describes an exact count and is meaningless without one:
+	   with no floor at all, auto-fit repeats until the gaps overflow, which is
+	   dozens of tracks, or an engine-defined clamp when the gap is none too. */
+	.grid[data-min="none"]:not([data-columns]) { --_yeti-column-cap: 100%; }
+
+	/* data-fold: the count halves as the grid narrows instead of stepping.
+	   The grid is its own container and a container query can only style its
+	   children, so a folded grid has twelve tracks and the queries set each
+	   child's span. Thresholds are count × the width token's default
+	   (xs 16rem, sm 24, md 32, lg 48, xl 64, 2xl 80), measured on the content
+	   box, and are literal because a container condition cannot read a token.
+	   data-columns 2 folds 2 → 1; 4 folds 4 → 2 → 1; 6 folds 6 → 3 → 1.
+	   A tracks grid places its children itself, so every fold rule skips
+	   one, and validate refuses the pair. */
+	.grid[data-fold]:not([data-tracks]) {
+		container-type: inline-size;
+		grid-template-columns: repeat(12, minmax(0, 1fr));
+	}
+	.grid[data-fold]:not([data-tracks]) > * { grid-column: span 12; }
+
+	/* xs (16rem per column) */
+	@container (inline-size >= 32rem) {
+		.grid[data-fold]:not([data-tracks]):is(:not([data-min]), [data-min="xs"]):is([data-columns="2"], [data-columns="4"]) > * { grid-column: span 6; }
+	}
+	@container (inline-size >= 48rem) {
+		.grid[data-fold]:not([data-tracks]):is(:not([data-min]), [data-min="xs"])[data-columns="6"] > * { grid-column: span 4; }
+	}
+	@container (inline-size >= 64rem) {
+		.grid[data-fold]:not([data-tracks]):is(:not([data-min]), [data-min="xs"])[data-columns="4"] > * { grid-column: span 3; }
+	}
+	@container (inline-size >= 96rem) {
+		.grid[data-fold]:not([data-tracks]):is(:not([data-min]), [data-min="xs"])[data-columns="6"] > * { grid-column: span 2; }
+	}
+
+	/* sm (24rem per column) */
+	@container (inline-size >= 48rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="sm"]:is([data-columns="2"], [data-columns="4"]) > * { grid-column: span 6; }
+	}
+	@container (inline-size >= 72rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="sm"][data-columns="6"] > * { grid-column: span 4; }
+	}
+	@container (inline-size >= 96rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="sm"][data-columns="4"] > * { grid-column: span 3; }
+	}
+	@container (inline-size >= 144rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="sm"][data-columns="6"] > * { grid-column: span 2; }
+	}
+
+	/* md (32rem per column) */
+	@container (inline-size >= 64rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="md"]:is([data-columns="2"], [data-columns="4"]) > * { grid-column: span 6; }
+	}
+	@container (inline-size >= 96rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="md"][data-columns="6"] > * { grid-column: span 4; }
+	}
+	@container (inline-size >= 128rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="md"][data-columns="4"] > * { grid-column: span 3; }
+	}
+	@container (inline-size >= 192rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="md"][data-columns="6"] > * { grid-column: span 2; }
+	}
+
+	/* lg (48rem per column) */
+	@container (inline-size >= 96rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="lg"]:is([data-columns="2"], [data-columns="4"]) > * { grid-column: span 6; }
+	}
+	@container (inline-size >= 144rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="lg"][data-columns="6"] > * { grid-column: span 4; }
+	}
+	@container (inline-size >= 192rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="lg"][data-columns="4"] > * { grid-column: span 3; }
+	}
+	@container (inline-size >= 288rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="lg"][data-columns="6"] > * { grid-column: span 2; }
+	}
+
+	/* xl (64rem per column) */
+	@container (inline-size >= 128rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="xl"]:is([data-columns="2"], [data-columns="4"]) > * { grid-column: span 6; }
+	}
+	@container (inline-size >= 192rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="xl"][data-columns="6"] > * { grid-column: span 4; }
+	}
+	@container (inline-size >= 256rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="xl"][data-columns="4"] > * { grid-column: span 3; }
+	}
+	@container (inline-size >= 384rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="xl"][data-columns="6"] > * { grid-column: span 2; }
+	}
+
+	/* 2xl (80rem per column) */
+	@container (inline-size >= 160rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="2xl"]:is([data-columns="2"], [data-columns="4"]) > * { grid-column: span 6; }
+	}
+	@container (inline-size >= 240rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="2xl"][data-columns="6"] > * { grid-column: span 4; }
+	}
+	@container (inline-size >= 320rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="2xl"][data-columns="4"] > * { grid-column: span 3; }
+	}
+	@container (inline-size >= 480rem) {
+		.grid[data-fold]:not([data-tracks])[data-min="2xl"][data-columns="6"] > * { grid-column: span 2; }
+	}
+
+	/* data-tracks: N equal tracks that children are placed on by line, for a
+	   layout with deliberate gaps (an exhibition wall, an editorial spread)
+	   rather than a count that fits. It replaces the auto-fit list, so
+	   data-min and data-columns have no effect on a tracks grid. A child's
+	   data-start is the column line it begins on and its data-span how many
+	   tracks it covers; an unmarked child flows into the next free track and
+	   spans one, a span alone flows and spans, and a start alone begins there
+	   and spans one. A track nothing is placed on stays empty. */
+	.grid[data-tracks] {
+		container-type: inline-size;
+		grid-template-columns: repeat(var(--_yeti-tracks), minmax(0, 1fr));
+	}
+	.grid[data-tracks] > [data-start] { grid-column-start: var(--_yeti-start); }
+	.grid[data-tracks] > [data-span] { grid-column-end: span var(--_yeti-span); }
+
+	/* Below data-threshold (md when absent), measured on the grid's own
+	   content box, every child takes the whole row in source order: a
+	   placement meant for a wall reads as a column on a phone. These come
+	   after the placement rules, at the same specificity, so they win. The
+	   thresholds are the width tokens' defaults, literal because a container
+	   condition cannot read a token. */
+	@container (inline-size < 12rem) {
+		.grid[data-tracks][data-threshold="2xs"] > * { grid-column: 1 / -1; }
+	}
+	@container (inline-size < 16rem) {
+		.grid[data-tracks][data-threshold="xs"] > * { grid-column: 1 / -1; }
+	}
+	@container (inline-size < 24rem) {
+		.grid[data-tracks][data-threshold="sm"] > * { grid-column: 1 / -1; }
+	}
+	@container (inline-size < 32rem) {
+		.grid[data-tracks]:is(:not([data-threshold]), [data-threshold="md"]) > * { grid-column: 1 / -1; }
+	}
+	@container (inline-size < 48rem) {
+		.grid[data-tracks][data-threshold="lg"] > * { grid-column: 1 / -1; }
+	}
+	@container (inline-size < 64rem) {
+		.grid[data-tracks][data-threshold="xl"] > * { grid-column: 1 / -1; }
+	}
+	@container (inline-size < 80rem) {
+		.grid[data-tracks][data-threshold="2xl"] > * { grid-column: 1 / -1; }
+	}
+
+	/* data-rows: every child is a subgrid of this grid's rows, one row per
+	   part, so the parts of neighbours line up across the row. */
+	.grid[data-rows] > * {
+		display: grid;
+		grid-template-rows: subgrid;
+		grid-row: span var(--_yeti-rows);
+		row-gap: var(--_yeti-gap);
+	}
+
+	.grid > * { margin: 0; }
+}

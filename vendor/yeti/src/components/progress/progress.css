@@ -1,0 +1,78 @@
+/* Progress: the native element, styled. With a value it is a bar filled to
+   the value; without one it is indeterminate and the track's stripes move. */
+@layer yeti.components {
+	.progress {
+		appearance: none;
+		display: block;
+		inline-size: 100%;
+		/* Read with a fallback, so a per-element --yeti-progress-size still wins
+		   over the size step; a hairline reading bar sets 2px on itself. */
+		block-size: var(--yeti-progress-size, calc(var(--_yeti-size-space) / 2));
+		border: 0;
+		border-radius: var(--yeti-progress-radius);
+		background-color: var(--yeti-color-surface-sunken);
+		overflow: clip;
+	}
+	.progress:not([data-variant]) { --_yeti-variant: var(--yeti-color-primary); --_yeti-variant-subtle: var(--yeti-color-primary-subtle); --_yeti-variant-soft: var(--yeti-color-primary-soft); --_yeti-variant-strong: var(--yeti-color-primary-strong); --_yeti-variant-text: var(--yeti-color-primary-text); --_yeti-on-variant: var(--yeti-on-primary); }
+	.progress:not([data-size]) { --_yeti-size-text: var(--yeti-text-md); --_yeti-size-space: var(--yeti-space-sm); }
+	.progress::-webkit-progress-bar { background-color: transparent; }
+	.progress::-webkit-progress-value {
+		background-color: var(--_yeti-variant);
+		border-radius: inherit;
+		transition: inline-size var(--yeti-duration-base) var(--yeti-ease);
+	}
+	.progress::-moz-progress-bar {
+		background-color: var(--_yeti-variant);
+		border-radius: inherit;
+		transition: inline-size var(--yeti-duration-base) var(--yeti-ease);
+	}
+
+	/* Indeterminate: diagonal stripes sliding along the track. One period of
+	   a 45-degree stripe pair 1.5rem wide is 1.5rem × √2 along the track. */
+	.progress:indeterminate {
+		background-image: repeating-linear-gradient(-45deg, var(--_yeti-variant-subtle) 0 0.75rem, var(--yeti-color-surface-sunken) 0.75rem 1.5rem);
+		animation: yeti-progress calc(var(--yeti-duration-base) * 4) linear var(--yeti-motion-iterations);
+	}
+	.progress:indeterminate::-webkit-progress-bar { background-color: transparent; }
+	.progress:indeterminate::-moz-progress-bar { background-color: transparent; }
+	@keyframes yeti-progress {
+		to { background-position: 2.1213rem 0; }
+	}
+
+	/* data-scroll: a reading-progress bar. The filled part is how far the
+	   nearest scroll container has been scrolled: the page, when the bar sits
+	   at the top of it, or a scroller, when the bar is inside one. This is
+	   the one form that is not a progress element, because there is no value
+	   to announce; it is a plain block with the class, hidden from assistive
+	   tech by its markup, and its fill is a pseudo-element the native element
+	   would never draw. The fill is a scale from the start edge rather than a
+	   width, so it runs off the main thread. Guarded by @supports, and the
+	   fallback is to show nothing: a bar that never moved would say the
+	   reader had not started. It is not switched off under reduced motion,
+	   because nothing here moves on its own; the fill follows the reader's
+	   own hand and stops when they do. */
+	.progress[data-scroll]::before {
+		content: "";
+		display: block;
+		block-size: 100%;
+		inline-size: 100%;
+		background-color: var(--_yeti-variant);
+		border-radius: inherit;
+		transform-origin: 0 50%;
+		scale: 0 1;
+	}
+	.progress[data-scroll]:dir(rtl)::before { transform-origin: 100% 50%; }
+	@supports (animation-timeline: scroll()) {
+		.progress[data-scroll]::before {
+			animation: yeti-progress-scroll linear both;
+			animation-timeline: scroll();
+		}
+	}
+	@supports not (animation-timeline: scroll()) {
+		.progress[data-scroll] { display: none; }
+	}
+	@keyframes yeti-progress-scroll {
+		from { scale: 0 1; }
+		to { scale: 1 1; }
+	}
+}

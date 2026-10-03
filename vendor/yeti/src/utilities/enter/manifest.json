@@ -1,0 +1,100 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "enter",
+  "kind": "utility",
+  "group": "Motion",
+  "description": "Plays one arrival, on load or as the element scrolls into view, either for the element itself or for each of its children in turn.",
+  "class": "enter",
+  "attributes": [
+    {
+      "name": "data-enter",
+      "type": "enum",
+      "vocabulary": "enter",
+      "default": "fade",
+      "description": "Which arrival: a fade, a rise from below, a fall from above, a slide from the side data-side names, or a growth from slightly small."
+    },
+    {
+      "name": "data-side",
+      "type": "enum",
+      "vocabulary": "side",
+      "default": "start",
+      "description": "Which side a slide comes from. The sides are logical, so start is the right edge in a right-to-left page."
+    },
+    {
+      "name": "data-stagger",
+      "type": "boolean",
+      "description": "Animate the element's children one after another instead of the element itself, each a step later than the last."
+    },
+    {
+      "name": "data-view",
+      "type": "boolean",
+      "description": "Play as the element scrolls into view instead of on load. Where a scroll timeline is unsupported, or the reader has asked for less motion, it plays on load instead."
+    },
+    {
+      "name": "data-once",
+      "type": "boolean",
+      "description": "Arrives once, as it first comes near the viewport; without enter.js it is simply there, not animated."
+    }
+  ],
+  "classes": [],
+  "children": [],
+  "tokens": [
+    {
+      "name": "--yeti-enter-ease",
+      "public": true,
+      "description": "The curve the entrance runs on."
+    },
+    {
+      "name": "--yeti-enter-delay",
+      "public": true,
+      "description": "How long an element waits before it arrives; for a staggered run, how long before its first child moves."
+    },
+    {
+      "name": "--yeti-enter-duration",
+      "public": true,
+      "description": "How long one arrival takes; reduced motion collapses it."
+    },
+    {
+      "name": "--yeti-enter-distance",
+      "public": true,
+      "description": "How far below its place a rising element starts."
+    },
+    {
+      "name": "--yeti-enter-scale",
+      "public": true,
+      "description": "How small a scaling element starts."
+    },
+    {
+      "name": "--yeti-enter-stagger",
+      "public": true,
+      "description": "The wait between one staggered child and the next."
+    }
+  ],
+  "a11y": {
+    "requiredAttributes": [],
+    "keyboard": [],
+    "notes": "Purely visual, and safe by default: the element is only ever hidden by the animation's own backwards fill, so an element whose animation never runs is visible rather than stranded, and nothing here changes reading order or focus order. Under reduced motion the duration and the stagger step both collapse, so everything is simply present at once; the scroll-driven form is switched off entirely for the same reader, because a scroll timeline paces itself and would ignore a collapsed duration. data-once arrives once, as it first comes near the viewport; without enter.js it is simply there, not animated, since enter.css only withholds the animation while the attribute is present."
+  },
+  "js": [
+    {
+      "module": "enter.js",
+      "optional": true,
+      "events": []
+    }
+  ],
+  "support": {
+    "unguarded": [
+      "individual transform properties",
+      ":dir()",
+      "IntersectionObserver"
+    ],
+    "guarded": [
+      "animation-timeline: view()"
+    ]
+  },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": {
+    "height": "md"
+  }
+}

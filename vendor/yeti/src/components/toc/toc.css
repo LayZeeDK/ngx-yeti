@@ -1,0 +1,84 @@
+/* Table of contents: the page's own headings as a column of links, with the
+   one being read marked. The mark is aria-current, because where the reader
+   is is state, and state is native or ARIA, never a class. toc.js moves it;
+   without the module the list is a list of links and every one still works. */
+@layer yeti.components {
+	/* Only a page that jumps within itself, a toc or a nav whose links point
+	   down the page (a bare # is a placeholder, not a jump), so a site-wide
+	   stylesheet does not change how every other page scrolls. */
+	html:has(.toc, .nav a[href^="#"]:not([href="#"])) { scroll-behavior: var(--yeti-toc-scroll); }
+
+	.toc:not([data-variant]) {
+		--_yeti-variant: var(--yeti-color-primary);
+		--_yeti-variant-subtle: var(--yeti-color-primary-subtle);
+		--_yeti-variant-text: var(--yeti-color-primary-text);
+	}
+	.toc:not([data-size]) { --_yeti-size-text: var(--yeti-text-md); --_yeti-size-space: var(--yeti-space-sm); }
+	.toc > ul {
+		display: flex;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		font-size: var(--_yeti-size-text);
+	}
+	/* Column and gap are scoped off a .cluster list: yeti.components sits in a
+	   later layer than yeti.layouts, so a plain .toc > ul would outrank the
+	   cluster's own row and gap no matter what layout class the page put on
+	   the list, and the list could never become a wrapping row. Every other
+	   rule above still reaches a cluster list, which is why display, margin,
+	   padding and list-style stay unscoped. */
+	.toc > ul:not(.cluster) {
+		flex-direction: column;
+		gap: var(--yeti-space-xs);
+	}
+	/* The prose layer spaces list items with margin-block-start; the column
+	   owns that space through its own gap instead. */
+	.toc > ul > li { margin: 0; }
+	.toc a {
+		display: block;
+		padding-block: var(--yeti-toc-padding);
+		padding-inline: var(--_yeti-size-space);
+		/* The bar is on every link, transparent until the link is current, so
+		   the text never shifts sideways as the mark moves down the list. */
+		border-inline-start: calc(var(--yeti-border-width) * 3) solid transparent;
+		color: var(--yeti-color-text-muted);
+		text-decoration: none;
+		transition: color var(--yeti-duration-fast) var(--yeti-ease), border-color var(--yeti-duration-fast) var(--yeti-ease);
+	}
+	.toc a:hover {
+		/* Read with a fallback, so a per-element --yeti-toc-hover still wins over
+		   whichever variant is set here, and transparent turns the fill off. */
+		background-color: var(--yeti-toc-hover, var(--_yeti-variant-subtle));
+		color: var(--yeti-color-text);
+	}
+	.toc a[aria-current] {
+		border-inline-start-color: var(--_yeti-variant);
+		color: var(--_yeti-variant-text);
+		font-weight: var(--yeti-weight-strong);
+	}
+
+	/* data-numbered: a contents list. Every list resets a counter and every
+	   item counts, so nested entries read 2.1; the number sits before the link
+	   in the muted color with tabular figures, wide enough for a two-figure
+	   count or a nested 2.1, so the link text lines up. The number carries empty alternative text: a contents list is
+	   a list of links, and the digits are for the eye. */
+	.toc[data-numbered] ul { counter-reset: toc; }
+	.toc[data-numbered] li { counter-increment: toc; }
+	/* The number hangs: the link is padded by its width and the first line
+	   pulled back by the same, so a title that wraps lines up under its own
+	   first word, not under the number. A hanging indent rather than a flex
+	   row, so a link holding code or emphasis stays one run of text. */
+	.toc[data-numbered] a {
+		padding-inline-start: calc(var(--_yeti-size-space) + 4ch + var(--yeti-space-xs));
+		text-indent: calc(-4ch - var(--yeti-space-xs));
+	}
+	.toc[data-numbered] a::before {
+		content: counters(toc, ".") "." / "";
+		display: inline-block;
+		min-inline-size: 4ch;
+		margin-inline-end: var(--yeti-space-xs);
+		text-indent: 0;
+		color: var(--yeti-color-text-muted);
+		font-variant-numeric: tabular-nums;
+	}
+}

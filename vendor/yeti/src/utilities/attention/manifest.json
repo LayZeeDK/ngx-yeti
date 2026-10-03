@@ -1,0 +1,25 @@
+{
+  "$schema": "../../../schema/manifest.schema.json",
+  "name": "attention",
+  "kind": "utility",
+  "group": "Motion",
+  "description": "Plays one pulse or one shake on load, to point at something that has just changed.",
+  "class": "attention",
+  "attributes": [
+    { "name": "data-attention", "type": "enum", "vocabulary": "attention", "default": "pulse", "description": "Which gesture: a swell and settle, or a shake from side to side." }
+  ],
+  "classes": [],
+  "children": [],
+  "tokens": [
+    { "name": "--yeti-attention-duration", "public": true, "description": "How long the gesture takes; reduced motion collapses it." },
+    { "name": "--yeti-attention-distance", "public": true, "description": "How far a shake throws the element to each side." },
+    { "name": "--yeti-attention-scale", "public": true, "description": "How large a pulse swells the element at its peak." },
+    { "name": "--yeti-ease", "public": true, "description": "The easing of the gesture." }
+  ],
+  "a11y": { "requiredAttributes": [], "keyboard": [], "notes": "Motion is not an announcement. A change worth pointing at is worth saying, so put the element in a live region, or give it role=\"status\", and the gesture becomes the visual half of something a screen reader already hears. It plays once and never repeats, so nothing here keeps moving under a reader who cannot dismiss it, and under reduced motion the duration collapses and the element simply sits still." },
+  "js": null,
+  "support": { "unguarded": ["individual transform properties"], "guarded": [] },
+  "since": "7.0.0",
+  "example": "example.html",
+  "demo": { "height": "sm" }
+}

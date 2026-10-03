@@ -1,0 +1,60 @@
+{
+  "name": "yeti-css",
+  "version": "7.0.0-alpha.0",
+  "description": "Yeti: a CSS-first, native, zero-build layout and styling framework by Foundation.",
+  "license": "FSL-1.1-MIT",
+  "type": "module",
+  "homepage": "https://foundationcss.com/yeti/",
+  "web-types": "./dist/yeti.web-types.json",
+  "types": "./dist/yeti.d.ts",
+  "repository": "github:foundation/yeti",
+  "engines": {
+    "node": ">=24"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "style": "dist/yeti.css",
+  "exports": {
+    ".": {
+      "types": "./dist/yeti.d.ts",
+      "default": "./dist/yeti.css"
+    },
+    "./css/*": "./dist/css/*",
+    "./js/*": "./dist/js/*",
+    "./yeti.js": "./dist/yeti.js",
+    "./themes/*": "./dist/themes/*",
+    "./manifest": {
+      "types": "./dist/yeti.manifest.d.ts",
+      "default": "./dist/yeti.manifest.json"
+    },
+    "./tokens": {
+      "types": "./dist/yeti.tokens.d.ts",
+      "default": "./dist/yeti.tokens.json"
+    }
+  },
+  "scripts": {
+    "build": "node bin/build.js",
+    "validate": "node bin/validate.js",
+    "validate:html": "node bin/validate-html.js",
+    "shots": "node bin/shots.js",
+    "docs": "node bin/gen-docs.js && node bin/gen-llms.js",
+    "test": "npm run validate && npm run test:tools && npm run test:browser",
+    "test:tools": "node --test test/tools/*.test.js",
+    "test:browser": "playwright test --project=chromium",
+    "test:browser:all": "playwright test",
+    "test:screenshots": "YETI_SCREENSHOTS=1 playwright test --project=chromium --grep @screenshot",
+    "screenshots:update": "YETI_SCREENSHOTS=1 playwright test --project=chromium --grep @screenshot --update-snapshots",
+    "fixtures": "node test/browser/serve.js",
+    "release": "node bin/release.js"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4",
+    "esbuild": "0.25.12",
+    "lightningcss": "^1.33.0",
+    "parse5": "^7",
+    "playwright": "^1"
+  }
+}

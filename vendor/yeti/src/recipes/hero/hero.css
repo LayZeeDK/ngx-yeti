@@ -1,0 +1,87 @@
+/* Hero: a viewport-tall band with copy on one side and a figure on the
+   other, both centered, becoming two rows below a container width. One
+   element doing the work of a cover holding columns. */
+@layer yeti.layouts {
+	.hero {
+		display: flex;
+		flex-wrap: wrap;
+		align-content: center;
+		align-items: var(--_yeti-align);
+		min-block-size: var(--_yeti-height);
+		gap: var(--_yeti-gap);
+	}
+	.hero:not([data-gap]) { --_yeti-gap: var(--yeti-space-lg); }
+	.hero:not([data-height]) { --_yeti-height: var(--yeti-cover-height); }
+	.hero:not([data-threshold]) { --_yeti-threshold: var(--yeti-width-lg); }
+	.hero:not([data-align]) { --_yeti-align: center; }
+	.hero:not([data-ratio]) { --_yeti-aspect: 4 / 3; }
+	.hero > * {
+		margin: 0;
+		flex-grow: 1;
+		flex-basis: calc((var(--_yeti-threshold) - 100%) * 999);
+	}
+	/* data-span: a child's share of the row, as columns has it. */
+	.hero > [data-span] { flex-grow: var(--_yeti-span); }
+	/* data-min: the narrowest a child may get while the two share a row, so
+	   the copy keeps room for its buttons at a middling width and the other
+	   child gives way; never wider than the row, so stacking is unchanged. */
+	.hero > [data-min] { min-inline-size: min(var(--_yeti-min), 100%); }
+
+	/* The figure */
+	.hero > :is(img, video, picture),
+	.hero > :has(> :is(img, video, picture)) {
+		aspect-ratio: var(--_yeti-aspect);
+		overflow: hidden;
+	}
+	.hero > :is(img, video) { object-fit: cover; }
+	/* :is(..., picture) here too: the reset gives picture display: block, so a
+	   picture between the figure and its img (the wrapped-figure case) needs
+	   its own 100% size, or the img's percentage height has nothing to resolve
+	   against and falls back to the picture's own auto, content-based height. */
+	.hero > :is(picture, :has(> :is(img, video, picture))) :is(img, video, picture) {
+		inline-size: 100%;
+		block-size: 100%;
+		object-fit: cover;
+	}
+
+	/* A figure with a caption: only the media is cropped; the caption sits below. */
+	.hero > figure:has(> figcaption) {
+		display: flex;
+		flex-direction: column;
+		aspect-ratio: auto;
+		overflow: visible;
+	}
+	.hero > figure:has(> figcaption) > :is(img, video, picture) {
+		aspect-ratio: var(--_yeti-aspect);
+		block-size: auto;
+	}
+	.hero > figure:has(> figcaption) > figcaption {
+		font-size: var(--yeti-text-sm);
+		color: var(--yeti-color-text-muted);
+	}
+
+	/* The copy */
+	.hero > :not(:is(img, video, picture), :has(> :is(img, video, picture))) {
+		display: flex;
+		flex-direction: column;
+		gap: var(--yeti-space-sm);
+	}
+	.hero > :not(:is(img, video, picture), :has(> :is(img, video, picture))) > * { margin: 0; }
+
+	/* data-side: which side the figure takes while the two share a row. Done
+	   by reversing the row's direction when the figure is not already on the
+	   asked side, rather than with order: a reversed wrapped row reverses the
+	   items within a line and leaves the lines in source order, so once the
+	   hero has stacked the source order is the visual order, and a phone
+	   meets the headline first if the copy is written first. :has() cannot
+	   nest inside :has(), so the wrapped figure is matched as the first
+	   child having a media child, a second relative selector in the list. */
+	.hero[data-side="start"]:not(:has(> :first-child:is(img, video, picture), > :first-child > :is(img, video, picture))),
+	.hero[data-side="end"]:has(> :first-child:is(img, video, picture), > :first-child > :is(img, video, picture)) {
+		flex-direction: row-reverse;
+		/* Reversed, flex-end is the start edge: side by side the children fill
+		   the row and nothing moves, but stacked, a child narrower than the
+		   row sits at the start as it would unreversed. */
+		justify-content: flex-end;
+	}
+}

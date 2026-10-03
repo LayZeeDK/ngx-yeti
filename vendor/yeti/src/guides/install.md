@@ -1,0 +1,203 @@
+---
+raw: true
+title: "Installing Yeti"
+description: "Getting the files, loading the stylesheet and a module, building only the parts you use, and switching on editor completion."
+nav_group: "Guides"
+nav_order: 1
+---
+
+# Installing Yeti
+
+<p class="lede">Yeti is one stylesheet. Everything else here is optional and most pages need none of it.</p>
+
+The examples on these pages are live: each is a `demo`, a box you can drag from its bottom corner to watch the component change shape, with the code beneath it. The label in the corner names the width stop the box is at.
+
+## Start a page
+
+Yeti ships two files to begin a site from: [`index.html`](https://github.com/foundation/yeti/blob/develop/src/starter/index.html), a complete page that is correct by construction, and [`theme.css`](https://github.com/foundation/yeti/blob/develop/src/starter/theme.css), the essential settings with their defaults, every one commented out. Both ship in the package under `dist/starter/`. Copy both. They are a place to delete from, not a showcase.
+
+The page is the skeleton most sites share: a skip link, a sticky nav that folds behind a toggle on a phone, a hero, a grid of cards, a little running text, and a footer.
+
+```html
+<body class="shell" data-gap="xl">
+	<a href="#content">Skip to content</a>
+	<!-- nav.nav with data-sticky and a sticky offset of 0: the brand, the toggle, the links, one button -->
+	<main id="content" class="stack" data-gap="3xl">
+		<section class="center" aria-labelledby="headline">
+			<!-- div.hero: the headline, a lede, two buttons, and a figure -->
+		</section>
+		<section class="center" aria-labelledby="features-heading">…</section>
+		<section class="center" data-max="md" aria-labelledby="about-heading">…</section>
+	</main>
+	<footer class="box" data-surface="raised">…</footer>
+</body>
+```
+
+It links `../yeti.css`, so it opens straight from the package; moved anywhere else, point the link at the CDN copy its comment gives. Edit the values in `theme.css` before you write any CSS of your own: the hues, the scale, the fonts and the corners are most of what makes a site look like itself, and the [theming guide](theming.md) explains each.
+
+## Getting the files
+
+Yeti is not released yet. There is no package on npm and nothing to download, so there is nothing to install today. This section will describe npm, the zip on the GitHub release page and a CDN path once there is a release to describe.
+
+Everything below is written the way it will work then. The package will ship `dist/`: the bundled `yeti.css` and its minified twin `yeti.min.css`, the same source tree unbundled under `css/`, the nine modules under `js/` and all of them in one `yeti.js` with `yeti.min.js` beside it, the two example themes under `themes/`, the starter page and theme under `starter/`, and the machine-readable files described further down.
+
+To try Yeti before the release, clone the repository and run `npm run build`. That writes the same `dist/` the package will ship, so read `dist/` wherever a path below says `node_modules/yeti-css/dist/`.
+
+## The stylesheet
+
+One link, before your own styles:
+
+```html
+<link rel="stylesheet" href="node_modules/yeti-css/dist/yeti.css">
+```
+
+Yeti's rules live in cascade layers, so anything you write outside a layer wins over them without a specificity fight. A theme is a second stylesheet of token values that loads after the first:
+
+```html
+<link rel="stylesheet" href="node_modules/yeti-css/dist/yeti.css">
+<link rel="stylesheet" href="node_modules/yeti-css/dist/themes/soft.css">
+```
+
+## The minified copies
+
+`dist/yeti.min.css` is the same stylesheet with the whitespace and the comments taken out, and `dist/yeti.min.js` is the same module bundle minified, names shortened and whitespace gone, with `yeti.min.js.map` beside it so a stack trace still points at a line of `yeti.js` — in both, save for the one-line licence banner every shipped file carries. Link them instead when you are counting bytes:
+
+```html
+<link rel="stylesheet" href="node_modules/yeti-css/dist/yeti.min.css">
+<script type="module" src="node_modules/yeti-css/dist/yeti.min.js"></script>
+```
+
+The package's `style` field and its `.` export still point at the readable `yeti.css`, because that is the one worth stepping through in devtools; name the minified file yourself when you want it.
+
+Minified is not transpiled. `light-dark()`, `@starting-style`, container queries, `oklch()` and anchor positioning are left exactly as they are written, because Yeti's floor is Baseline 2025 and every browser at that floor already has them. The minified file and the readable one are the same CSS.
+
+## A custom build
+
+`yeti.css` is every part of Yeti in one file. A site that never shows a demo, a carousel or a tooltip can leave them out. `dist/css/` is the same stylesheet as separate files, and `dist/css/yeti.css` is a list of `@import` lines, one per file, in the order the full build uses. Copy that file into your project, delete the lines you don't want, and point the paths at `node_modules/yeti-css/dist/css/`:
+
+```css
+/* site.css: Yeti without the demo, the carousel or the tooltip */
+@import "../node_modules/yeti-css/dist/css/layers.css";
+@import "../node_modules/yeti-css/dist/css/tokens/scale.css";
+/* ...the rest of the list, as it came... */
+@import "../node_modules/yeti-css/dist/css/components/dialog/dialog.css";
+/* @import ".../components/tooltip/tooltip.css"; */
+/* @import ".../components/carousel/carousel.css"; */
+/* @import ".../components/demo/demo.css"; */
+@import "../node_modules/yeti-css/dist/css/utilities/attention/attention.css";
+```
+
+Four groups always stay, whatever you remove:
+
+- `layers.css`, first. It fixes the order of Yeti's cascade layers before any rule is read, which is what lets the rest of the list arrive in any order and still resolve the same way.
+- Every file under `tokens/`. The tokens are the theme; a part you removed leaves a few unused custom properties behind, which cost nothing.
+- Every file under `base/`: the reset, type, flow and form controls that everything else stands on.
+- `layouts/attributes.css`. It maps the shared attributes, `data-gap`, `data-width`, `data-variant`, `data-size` and the rest, for layouts and components alike, so a page with any layout or component needs it.
+
+Everything else stands alone: each layout, recipe, component and utility is one file, and removing it removes that part and nothing more. Where one part's file mentions another, it is for the two used together, a spinner inside a button or a dropdown inside a nav, and those rules simply match nothing once the other part is gone. Don't reorder the lines you keep: the layers settle which rules win between groups, but inside a group a later file still wins a tie.
+
+You can link `site.css` as it is, and it works: the browser follows each `@import` itself. That is fine while you are trying things, but it is one request per file, so bundle the list into one file before it ships. You need Node, and one command, run from the folder `site.css` is in:
+
+```sh
+npx esbuild site.css --bundle --minify --outfile=site.min.css
+```
+
+`npx` fetches [esbuild](https://esbuild.github.io) the first time and runs it; there is nothing to configure. Link `site.min.css` in place of `yeti.css`. The bundle keeps Yeti's layers and their order, because they are written in the CSS itself, so a theme linked after it still lands where the [theming guide](theming.md) says.
+
+Scripts need no build: load only the modules for the components you kept, one `script` tag each, as [a module](#a-module) below describes. To ship them as one file instead, list them in a `site.js`, using the package's own paths:
+
+```js
+// site.js: the modules for the dialog, the tabs and the contents list
+import "yeti-css/js/dialog.js";
+import "yeti-css/js/tabs.js";
+import "yeti-css/js/toc.js";
+```
+
+and bundle it with the same tool:
+
+```sh
+npx esbuild site.js --bundle --minify --outfile=site.min.js
+```
+
+Load `site.min.js` with `<script type="module">`, as you would `yeti.js`. The paths are `yeti-css/js/…`, not `yeti-css/dist/js/…`: the package exports its modules under `js/`, and a bundler that honors the exports refuses the other.
+
+## Bare HTML
+
+Most of Yeti is opt-in, but the base layer is not: it styles plain HTML the moment the stylesheet loads. Headings take the type scale, running text takes a measure, siblings in flow take the spacing rhythm, form controls and tables come out tidy, definition lists read as pairs, a quotation's caption reads as an attribution, and a `details` opens with a chevron and a panel that grows. A page with no Yeti markup in it at all still reads as a designed page. The [base guide](base.md) shows every element of it, live, with the tokens behind each group.
+
+One base rule is a convention rather than an element. The first link in the body, if it points at a fragment of the same page, is treated as a skip link: it is out of sight until it is focused, and then it is a box pinned at the top start corner of the window with the focus ring on it.
+
+```html
+<body>
+	<a href="#content">Skip to content</a>
+	<header>…</header>
+	<main id="content">…</main>
+</body>
+```
+
+There is no class to remember, because that is where a skip link goes anyway. The cost runs the other way: if the first link in your body points at a fragment and is not a skip link, it is invisible until someone focuses it. Put anything at all before it — a `header`, a `div`, the site's logo — and it is an ordinary link again.
+
+## A module
+
+Every component works with no script. Some do more with one: the alert's close button, the tabs' roving focus, the dialog's backdrop and focus return, a dropdown that opens on hover, the carousel's dots, a range's filled track, a form's validation messages, a toc that follows the reader, and a demo's frame built from the code beneath it. Each is a module you load once, anywhere in the page, with nothing to call:
+
+```html
+<script type="module" src="node_modules/yeti-css/dist/js/dialog.js"></script>
+```
+
+A module finds its own elements and is safe on a page that has none of them. Leave it out and the component is still there, minus what the module adds; the [components guide](components.md) says what that is for each. A page that would rather not pick loads all nine at once, about nine kilobytes compressed:
+
+```html
+<script type="module" src="node_modules/yeti-css/dist/yeti.js"></script>
+```
+
+## Events
+
+A module says what it did. Each dispatches one `CustomEvent` on the component's own element, bubbling and composed, so a single listener on `document` hears every instance on the page:
+
+| Event | Dispatched on | Detail |
+| --- | --- | --- |
+| `yeti:close` | the `.alert`, before it is removed | none |
+| `yeti:open` | the `dialog`, once it is open | none |
+| `yeti:close` | the `dialog`, when it closes | none |
+| `yeti:select` | the `.tabs` | `{ tab, panel }` |
+| `yeti:slide` | the `.carousel` | `{ index, slide }` |
+| `yeti:invalid` | the `form`, when a submit is refused | `{ controls }` |
+| `yeti:current` | the `.toc`, when the mark moves | `{ link, heading }` |
+
+```html
+<script type="module">
+	document.addEventListener('yeti:select', (event) => {
+		history.replaceState(null, '', `#${event.detail.tab.id}`);
+	});
+</script>
+```
+
+None of them is cancelable: by the time one is dispatched the module has already acted. To stop something happening, prevent the platform event that caused it — the `click`, the `submit`, the `command` — which reaches your own listener first.
+
+## Editor completion
+
+Yeti configures components through `data-*` attributes with fixed value lists, and the package ships those lists in the two formats editors read, generated from the same manifest the validator uses.
+
+VS Code, Cursor and Windsurf read a custom-data file. One setting, in `.vscode/settings.json`:
+
+```json
+{ "html.customData": ["./node_modules/yeti-css/dist/yeti.html-data.json"] }
+```
+
+PhpStorm and WebStorm read web-types and find the file through `package.json` on their own. Install the package and the completions are there.
+
+One limit is worth knowing. Neither format can tie a completion to a class, and a Yeti component's identity is its class, so every attribute is offered on every element: typing inside a `p` will offer `data-rows`. Each description opens with the components that accept the attribute, so the list explains itself, and a wrong value is still a validator error rather than a silent nothing.
+
+For a TypeScript project the package ships types for the two JSON files and the vocabularies they are built from:
+
+```ts
+import manifest from 'yeti-css/manifest';
+import type { YetiGap, YetiManifest } from 'yeti-css';
+```
+
+Both resolve with no configuration beyond the default in a modern project. They exist for tools built on those files; a page needs nothing from them.
+
+## For a language model
+
+`llms.txt` and `llms-full.txt` sit at the root of the docs site and in the package. The first lists every component with its class, attributes, legal values and defaults in a few hundred lines; the second adds each component's guidance, accessibility notes and the token catalogue. They are generated from the manifest, so they describe exactly the surface the validator enforces, and nothing else. Point an assistant at the first and it can write valid Yeti; give it the second and it can explain why.

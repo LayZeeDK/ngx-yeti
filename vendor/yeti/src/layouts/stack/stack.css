@@ -1,0 +1,48 @@
+/* Stack: vertical rhythm. A flex column with a gap, so children's own
+   margins are irrelevant and a split point costs one attribute. */
+@layer yeti.layouts {
+	.stack {
+		display: flex;
+		flex-direction: column;
+		align-items: var(--_yeti-align);
+		gap: var(--_yeti-gap);
+	}
+	.stack:not([data-gap]) { --_yeti-gap: var(--yeti-space-md); }
+	.stack:not([data-align]) { --_yeti-align: stretch; }
+	.stack > * { margin: 0; }
+	/* data-space: the gap before this one child is the value named, larger
+	   or smaller than the stack's. The flex gap stays for everyone, and the
+	   marked child carries the difference as a margin, which may be negative.
+	   The stack's gap is re-exported under a name a plain child never sets,
+	   so the calculation reads the parent's gap and not one the child brought
+	   with it. A marked child that is itself a stack with its own data-gap is
+	   the one case that reads its own; give it a plain wrapper. On a first
+	   child there is no gap before it, so the marker does nothing there, and
+	   data-split's auto margin wins on a child that carries both. */
+	.stack { --_yeti-stack-gap: var(--_yeti-gap); }
+	.stack > * + [data-space] { margin-block-start: calc(var(--_yeti-space) - var(--_yeti-stack-gap)); }
+	.stack > [data-split] { margin-block-start: auto; }
+	.stack[data-fill] { min-block-size: var(--yeti-cover-height); }
+	/* data-rule: a line between children, in the middle of each gap. Drawn
+	   by a pseudo-element hung above every child but the first, so the gap
+	   itself is untouched and data-space and data-split keep working. :where
+	   keeps the position rule at zero specificity so a child that positions
+	   itself wins; a child that already uses ::before for something loses the
+	   line, which the docs say. The line sits at half the gap before this
+	   child: the stack's own, or the one data-space named. The ruled stack
+	   exports that offset under a name only ruled stacks set, so a child
+	   that is itself a stack, and so sets its own gap, still gets the line
+	   placed by its parent's. A ruled stack inside a ruled stack reads its
+	   own value, the same limit data-space has. */
+	.stack[data-rule] { --_yeti-rule-at: calc(-0.5 * var(--_yeti-gap)); }
+	:where(.stack[data-rule] > * + *) { position: relative; }
+	.stack[data-rule] > * + *::before {
+		content: "";
+		position: absolute;
+		inset-inline: 0;
+		inset-block-start: var(--_yeti-rule-at);
+		border-block-start: var(--yeti-border-width) solid var(--yeti-color-border);
+		pointer-events: none;
+	}
+	.stack[data-rule] > * + [data-space]::before { inset-block-start: calc(-0.5 * var(--_yeti-space)); }
+}

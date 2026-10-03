@@ -1,0 +1,99 @@
+/* Your theme. Load it after yeti.css.
+
+   These are the essential settings, the ones a site's identity is made of.
+   Every line is commented out, so this file changes nothing until you edit
+   it: uncomment a value and change it. Each shows its default.
+
+   A theme has two parts. Tokens go on :root, below. Rules for bare HTML
+   elements go in the yeti.theme layer, at the end. Components are changed
+   through their own tokens, listed on the Tokens page, never by class. */
+
+/* Repeats Yeti's layer order, so element rules land in the right place even
+   if this file loads before yeti.css. */
+@layer yeti.reset, yeti.base, yeti.theme, yeti.layouts, yeti.components, yeti.utilities;
+
+:root {
+	/* Color. Every color in Yeti is worked out from these four. */
+
+	/* The brand hue, in oklch degrees: 25 red, 80 amber, 145 green, 250 blue. */
+	/* --yeti-hue-primary: 250; */
+	/* The second hue, for a secondary accent; 300 is violet. */
+	/* --yeti-hue-secondary: 300; */
+	/* The faint tint in surfaces, text and borders; follows the brand hue. */
+	/* --yeti-hue-neutral: var(--yeti-hue-primary); */
+	/* How saturated the accents are: 0 is grey, 0.15 clear, above 0.2 may clip. */
+	/* --yeti-chroma: 0.15; */
+
+	/* Scale. Text and space share one scale, from a narrow screen to a wide one. */
+
+	/* Body text size on a narrow screen. */
+	/* --yeti-base-min: 1rem; */
+	/* Body text size on a wide screen. */
+	/* --yeti-base-max: 1.125rem; */
+	/* How much each step of the scale grows on a narrow screen. */
+	/* --yeti-ratio-min: 1.2; */
+	/* How much each step of the scale grows on a wide screen. */
+	/* --yeti-ratio-max: 1.333; */
+
+	/* Fonts. Yeti ships no web fonts; load yours and name it here. */
+
+	/* The text face. */
+	/* --yeti-font-sans: system-ui, sans-serif; */
+	/* The code face. */
+	/* --yeti-font-mono: ui-monospace, monospace; */
+	/* Body text. */
+	/* --yeti-weight-normal: 400; */
+	/* Labels, table headers and buttons. */
+	/* --yeti-weight-strong: 600; */
+	/* Headings and strong text. */
+	/* --yeti-weight-bold: 700; */
+	/* The width of the body text, for a variable font: a keyword or a percentage. */
+	/* --yeti-stretch-text: normal; */
+	/* The width of the headings. */
+	/* --yeti-stretch-heading: normal; */
+	/* The width of small lettering: captions, small print, the nav's links. */
+	/* --yeti-stretch-small: var(--yeti-stretch-text); */
+	/* The letter spacing of the headings, in em: -0.02em tightens, 0.04em opens. */
+	/* --yeti-tracking-heading: normal; */
+
+	/* Links. */
+
+	/* A link at rest. A light brand hue reads better as var(--yeti-color-primary-text). */
+	/* --yeti-link-color: var(--yeti-color-primary); */
+	/* A link under the pointer. */
+	/* --yeti-link-color-hover: var(--yeti-color-primary-strong); */
+
+	/* Shape. Each radius is a fraction of the body text size and grows with it;
+	   the value shown is about what it comes to at the smallest size. */
+
+	/* Small corners: inputs, code, badges. A quarter of the body size, about 0.25rem. */
+	/* --yeti-radius-sm: 0.25rem; */
+	/* Medium corners: cards, dialogs. Half the body size, about 0.5rem. */
+	/* --yeti-radius-md: 0.5rem; */
+	/* Large corners: hero panels. The body size, about 1rem. */
+	/* --yeti-radius-lg: 1rem; */
+	/* Every border a component draws. */
+	/* --yeti-border-width: 1px; */
+
+	/* Scrolling. */
+
+	/* How far below the top a sticky element stops. The starter's nav sets its own to 0. */
+	/* --yeti-sticky-offset: var(--yeti-space-md); */
+	/* Where a jump to a heading stops; the sticky offset unless set. */
+	/* --yeti-scroll-padding: var(--yeti-sticky-offset); */
+}
+
+/* Element rules: bare HTML only, never a class, in the yeti.theme layer. The
+   layer sits above Yeti's base and below every layout and component, so these
+   restyle plain HTML and never a button, a card or a stack. Uncomment the
+   layer and keep the rules you want:
+   - html pins the page to one scheme (light or dark) instead of following the visitor;
+   - h1, h2, h3 set the headings in engraved capitals;
+   - blockquote draws the quotation's bar at the border width instead of 4px.
+
+@layer yeti.theme {
+	html { color-scheme: light; }
+	h1, h2, h3 { text-transform: uppercase; }
+	blockquote { border-inline-start-width: var(--yeti-border-width); }
+}
+*/
