@@ -93,16 +93,6 @@
         "watch": false
       }
     },
-    "serve-static": {
-      "continuous": true,
-      "executor": "@nx/web:file-server",
-      "options": {
-        "buildTarget": "yeti-app:build",
-        "port": 4200,
-        "staticFilePath": "dist/apps/yeti-app/browser",
-        "spa": true
-      }
-    },
     "typecheck": {},
     "typecheck-watch": {}
   }
