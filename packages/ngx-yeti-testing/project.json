@@ -1,18 +1,25 @@
 {
   "name": "ngx-yeti-testing",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["yeti-css"],
   "sourceRoot": "packages/ngx-yeti-testing/src",
   "projectType": "library",
   "tags": ["type:testing"],
   "targets": {
     "test": {
       "command": "vitest run --config vitest.config.mts",
+      "dependsOn": ["^yeti-build"],
       "options": {
         "cwd": "{projectRoot}"
       },
       "cache": true,
       "inputs": ["default", "^production"]
     },
-    "typecheck": {}
+    "typecheck": {
+      "dependsOn": ["^yeti-build"]
+    },
+    "lint": {
+      "dependsOn": ["^yeti-build"]
+    }
   }
 }
