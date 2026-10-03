@@ -16,6 +16,7 @@ const neverShippedFiles = [
   '**/*.spec.ts',
   '**/*.stories.ts',
   '**/.storybook/**/*.ts',
+  '**/src/test-setup.ts',
 ];
 
 const moduleBoundaries = {
@@ -25,6 +26,10 @@ const moduleBoundaries = {
     {
       sourceTag: '*',
       onlyDependOnLibsWithTags: ['*'],
+    },
+    {
+      sourceTag: 'type:lib',
+      notDependOnLibsWithTags: ['type:testing'],
     },
   ],
 };
@@ -236,22 +241,12 @@ export default [
     rules: {
       '@nx/enforce-module-boundaries': [
         'error',
-        { ...moduleBoundaries, enforceBuildableLibDependency: false },
+        {
+          ...moduleBoundaries,
+          enforceBuildableLibDependency: false,
+          depConstraints: [moduleBoundaries.depConstraints[0]],
+        },
       ],
     },
-  },
-  {
-    files: [
-      '**/*.ts',
-      '**/*.tsx',
-      '**/*.cts',
-      '**/*.mts',
-      '**/*.js',
-      '**/*.jsx',
-      '**/*.cjs',
-      '**/*.mjs',
-    ],
-    // Override or add rules here
-    rules: {},
   },
 ];
