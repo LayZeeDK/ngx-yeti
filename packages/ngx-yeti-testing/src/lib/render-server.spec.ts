@@ -26,7 +26,13 @@ class AttributeFixture {
 }
 
 function hostTag(html: string): string {
-  return /<yeti-server-fixture[^>]*>/.exec(html)?.[0] ?? '';
+  const [tag] = /<yeti-server-fixture[^>]*>/.exec(html) ?? [];
+
+  if (tag === undefined) {
+    throw new Error(`No <yeti-server-fixture> host tag in: ${html}`);
+  }
+
+  return tag;
 }
 
 describe(renderServer, () => {
