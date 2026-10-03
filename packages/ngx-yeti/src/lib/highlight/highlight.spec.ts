@@ -12,26 +12,32 @@ async function setup({ color }: { color?: string } = {}) {
 
   await fixture.whenStable();
 
-  // DirectiveFixture types its host as Element; the span host is an HTMLElement.
-  const element = fixture.nativeElement as HTMLElement;
+  const element: unknown = fixture.nativeElement;
+  assert.instanceOf(element, HTMLElement);
 
   return { colorSignal, element, fixture };
 }
 
-describe('Highlight', () => {
+describe(Highlight, () => {
   it('highlights in yellow by default', async () => {
+    expect.assertions(1);
+
     const { element } = await setup();
 
     expect(element.style.backgroundColor).toBe('yellow');
   });
 
   it('highlights in the bound color', async () => {
+    expect.assertions(1);
+
     const { element } = await setup({ color: 'lightblue' });
 
     expect(element.style.backgroundColor).toBe('lightblue');
   });
 
   it('applies a changed color', async () => {
+    expect.assertions(1);
+
     const { colorSignal, element, fixture } = await setup({
       color: 'lightblue',
     });

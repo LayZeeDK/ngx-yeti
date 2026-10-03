@@ -12,7 +12,7 @@ const config: StorybookConfig = {
     const { default: angular } = await import('@analogjs/vite-plugin-angular');
     const { findNodeModulesRoots } =
       await import('@storybook/angular-vite/vitest');
-    const isAnalogPlugin = (plugin: unknown) =>
+    const isAnalogPlugin = (plugin: unknown): boolean =>
       typeof plugin === 'object' &&
       plugin !== null &&
       'name' in plugin &&

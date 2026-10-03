@@ -148,10 +148,10 @@ function packageManifest(): string {
       sideEffects: source['sideEffects'] ?? false,
       type: 'module',
       dependencies: {
-        ...(source['dependencies'] as Record<string, string> | undefined),
-        tslib: (angularCompiler['dependencies'] as Record<string, string>)[
-          'tslib'
-        ],
+        ...(isRecord(source['dependencies']) ? source['dependencies'] : {}),
+        tslib: isRecord(angularCompiler['dependencies'])
+          ? angularCompiler['dependencies']['tslib']
+          : undefined,
       },
     },
     undefined,
@@ -160,5 +160,15 @@ function packageManifest(): string {
 }
 
 function readJson(path: string | URL): Record<string, unknown> {
-  return JSON.parse(readFileSync(path, 'utf8')) as Record<string, unknown>;
+  const json: unknown = JSON.parse(readFileSync(path, 'utf8'));
+
+  if (!isRecord(json)) {
+    throw new Error(`Expected a JSON object in ${String(path)}`);
+  }
+
+  return json;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
