@@ -165,6 +165,7 @@
     }
   },
   "plugins": [
+    "./tools/yeti/nx-plugin.mjs",
     {
       "plugin": "@nx/playwright/plugin",
       "options": {
