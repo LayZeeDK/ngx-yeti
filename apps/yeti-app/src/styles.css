@@ -1,1 +1,21 @@
-/* You can add global styles to this file, and also import other style files */
+/*
+ * The documented global stylesheet (docs/specs/specs/setup.md, section 4 C).
+ * The spec that creates ngx-yeti/accessibility.css adds its import last.
+ */
+@layer yeti, ngx-yeti;
+@import 'yeti-css/css/layers.css';
+@import 'yeti-css/css/tokens/scale.css';
+@import 'yeti-css/css/tokens/space.css';
+@import 'yeti-css/css/tokens/type.css';
+@import 'yeti-css/css/tokens/color.css';
+@import 'yeti-css/css/tokens/tone.css';
+@import 'yeti-css/css/tokens/motion.css';
+@import 'yeti-css/css/tokens/surface.css';
+@import 'yeti-css/css/tokens/components.css';
+@import 'yeti-css/css/base/reset.css';
+@import 'yeti-css/css/base/typography.css';
+@import 'yeti-css/css/base/prose.css';
+@import 'yeti-css/css/base/controls.css';
+@import 'yeti-css/css/base/media.css';
+@import 'yeti-css/css/base/transitions.css';
+@import 'yeti-css/css/layouts/attributes.css';

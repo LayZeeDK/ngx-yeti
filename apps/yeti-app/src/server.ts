@@ -27,9 +27,10 @@ const angularApp = new AngularNodeAppEngine();
  */
 
 /**
- * Serve static files from /browser
+ * Serve static files from /browser under the app's `<base href>`.
  */
 app.use(
+  '/sub',
   express.static(browserDistFolder, {
     maxAge: '1y',
     index: false,

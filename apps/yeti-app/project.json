@@ -5,19 +5,27 @@
   "prefix": "app",
   "sourceRoot": "apps/yeti-app/src",
   "tags": ["type:app"],
+  "implicitDependencies": ["yeti-css"],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
+      "dependsOn": ["^build", "^yeti-build"],
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",
       "options": {
         "outputPath": "dist/apps/yeti-app",
         "browser": "apps/yeti-app/src/main.ts",
+        "polyfills": ["@angular/localize/init"],
         "tsConfig": "apps/yeti-app/tsconfig.app.json",
         "assets": [
           {
             "glob": "**/*",
             "input": "apps/yeti-app/public"
+          },
+          {
+            "glob": "**/*.css",
+            "input": "node_modules/yeti-css/dist/css",
+            "output": "yeti-css"
           }
         ],
         "styles": ["apps/yeti-app/src/styles.css"],
@@ -25,7 +33,10 @@
         "ssr": {
           "entry": "apps/yeti-app/src/server.ts"
         },
-        "outputMode": "server"
+        "outputMode": "server",
+        "security": {
+          "allowedHosts": ["localhost"]
+        }
       },
       "configurations": {
         "production": {
@@ -61,6 +72,19 @@
         "development": {
           "buildTarget": "yeti-app:build:development"
         }
+      }
+    },
+    "serve-ssr": {
+      "continuous": true,
+      "dependsOn": ["build"],
+      "command": "node dist/apps/yeti-app/server/server.mjs",
+      "defaultConfiguration": "development",
+      "configurations": {
+        "development": {},
+        "production": {}
+      },
+      "metadata": {
+        "description": "Build the app and run its Node server on PORT (4000 by default)"
       }
     },
     "test": {
