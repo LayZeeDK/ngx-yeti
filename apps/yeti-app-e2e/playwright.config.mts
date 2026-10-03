@@ -6,7 +6,7 @@ const configuration =
   process.env['FIXTURE_CONFIGURATION'] === 'production'
     ? 'production'
     : 'development';
-const port = configuration === 'production' ? 4301 : 4300;
+const port = configuration === 'production' ? 4311 : 4310;
 const baseURL = `http://localhost:${String(port)}/sub/`;
 
 const chromiumFloor = process.env['FLOOR_CHROMIUM_PATH'];
