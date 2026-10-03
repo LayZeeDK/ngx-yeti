@@ -21,3 +21,9 @@
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
 
 <!-- nx configuration end-->
+
+# fastCompile and typecheck
+
+Targets that compile with Analog `fastCompile` never type-check. A green `test`, `build-fast`, Storybook target, or `yeti-analog` build says nothing about types or templates. Run `nx typecheck` beside them. `npm run check` and `npm run affected` do both.
+
+Read `references/fast-compile.md` before you change a Vite, Vitest, or Storybook config, add an Angular project, or move a target onto or off `fastCompile`.
