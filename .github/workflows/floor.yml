@@ -28,8 +28,11 @@ jobs:
       - run: npm ci
       - run: npx playwright install-deps chromium
       - name: Install Chrome for Testing at the floor
+        # bash adds pipefail, so a failed install fails this step.
+        shell: bash
         run: |
           path=$(npx --no-install @puppeteer/browsers install "chrome@$CHROME_FLOOR_VERSION" --path "$RUNNER_TEMP/floor" | awk '{print $2}')
+          test -x "$path"
           echo "FLOOR_CHROMIUM_PATH=$path" >> "$GITHUB_ENV"
       # Each e2e web server starts its own Nx process, and Nx shares no
       # discrete task between processes; built once here, yeti-build is a
