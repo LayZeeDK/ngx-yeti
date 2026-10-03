@@ -14,7 +14,18 @@
       "!{projectRoot}/vitest.*",
       "!{projectRoot}/src/test-setup.[jt]s"
     ],
-    "sharedGlobals": []
+    "sharedGlobals": [],
+    "storybook": [
+      {
+        "externalDependencies": [
+          "storybook",
+          "@storybook/addon-vitest",
+          "@storybook/angular-vite",
+          "@analogjs/vite-plugin-angular",
+          "vite"
+        ]
+      }
+    ]
   },
   "targetDefaults": {
     "@angular/build:application": {
@@ -33,32 +44,16 @@
     },
     "build-storybook": {
       "cache": true,
-      "inputs": [
-        "default",
-        "^production",
-        {
-          "externalDependencies": [
-            "storybook",
-            "@storybook/addon-vitest",
-            "@storybook/angular-vite",
-            "@analogjs/vite-plugin-angular",
-            "vite"
-          ]
-        }
-      ]
+      "inputs": ["default", "^production", "storybook"]
     },
     "test-storybook": {
       "cache": true,
       "inputs": [
         "default",
         "^production",
+        "storybook",
         {
           "externalDependencies": [
-            "storybook",
-            "@storybook/addon-vitest",
-            "@storybook/angular-vite",
-            "@analogjs/vite-plugin-angular",
-            "vite",
             "vitest",
             "@vitest/browser-playwright",
             "@vitest/coverage-istanbul",
