@@ -1,12 +1,14 @@
 # fastCompile and typecheck benchmarks
 
-Measured on 2026-10-03 with `vitest bench` on Windows 11 on ARM64 (Snapdragon X Elite), on an otherwise idle machine. Each table shows means over two interleaved rounds that alternate which variant runs first. Every command ran with the `VITEST*` and `NODE_ENV` variables removed. With them, Analog runs in test mode: the dev server crashes with `window is not defined` and builds take a different path.
+Measured on 2026-10-03 with `vitest bench` on Windows 11 on ARM64 (Snapdragon X Elite), on an otherwise idle machine. Every command ran with the `VITEST*` and `NODE_ENV` variables removed. With them, Analog runs in test mode: the dev server crashes with `window is not defined` and builds take a different path.
 
-The projects are fresh scaffolds with almost no code, so process startup dominates every number. The scale test at the end adds 150 generated components to the library.
+The projects are fresh scaffolds with almost no code, so process startup dominates every number. The scale test adds 150 generated components to the library. Each section names the commit it measured.
 
 ## Compile time
 
-"Without fastCompile" is the Angular compiler for `nx test` and `nx build`, and the default Analog compiler, which type-checks, for the Analog app. Storybook previously compiled stories in JIT mode without type checking.
+Measured at `b7c75f5`. Means over two interleaved rounds that alternate which variant runs first.
+
+"Without fastCompile" is the Angular compiler for `nx test` and `nx build`, and the default Analog compiler, which type-checks, for the Analog app. For Storybook it is the default JIT compile, which does not type-check, and "with fastCompile" matches today's `-c fast` configuration.
 
 | Task                                                  | Without fastCompile | With fastCompile |
 | ----------------------------------------------------- | ------------------- | ---------------- |
@@ -19,7 +21,11 @@ The projects are fresh scaffolds with almost no code, so process startup dominat
 | `nx test ngx-yeti`                                    | 4.9 s               | 3.9 s            |
 | `nx build ngx-yeti` vs `nx build-fast ngx-yeti`       | 3.3 s               | 3.3 s            |
 
+Two rows describe setups that changed later. Story tests now run in three browsers only when `CI` is set and in Chromium otherwise. `0425fdc` split the `ngx-yeti` unit tests into browser and node projects.
+
 ## Critical path: regular task vs fastCompile beside a leaf typecheck
+
+Measured at `0bf3a63`. Means over two interleaved rounds.
 
 "Regular" is one Nx task that compiles with type checking. "Split" runs the fastCompile task and `nx typecheck <project> -c <leaf>` as two concurrent Nx processes and stops the clock when both finish.
 
@@ -35,12 +41,14 @@ With 150 generated components in the library, the library row becomes 5.06 s reg
 
 ## typecheck per tsconfig
 
-`angular-typechecker` on one tsconfig, compared with the project's solution `tsconfig.json`:
+Measured at `0ca8b67`. Means over three rounds of `angular-typechecker --max-warnings 0 --strict` on one tsconfig, compared with the solution `tsconfig.json` of the project:
 
-| Project       | Whole  | `src`  | `spec` | `stories` |
-| ------------- | ------ | ------ | ------ | --------- |
-| `ngx-yeti`    | 4.73 s | 1.57 s | 2.75 s | 2.30 s    |
-| `yeti-app`    | 2.49 s | 1.90 s | 2.00 s |           |
-| `yeti-analog` | 3.91 s | 2.25 s | 1.84 s |           |
+| Project            | Whole  | `src`  | `spec` | `stories` |
+| ------------------ | ------ | ------ | ------ | --------- |
+| `ngx-yeti`         | 4.28 s | 1.60 s | 2.85 s | 2.74 s    |
+| `ngx-yeti-testing` | 2.64 s | 1.60 s | 2.35 s |           |
+| `ngx-yeti-e2e`     | 2.04 s |        |        |           |
+| `yeti-app`         | 2.87 s | 2.05 s | 2.17 s |           |
+| `yeti-analog`      | 4.29 s | 2.39 s | 1.99 s |           |
 
-The spec measurement of `ngx-yeti` predates the exclusion of stories from `tsconfig.spec.json`.
+The `ngx-yeti` spec leaf excludes stories, which the `stories` leaf checks. In the same rounds, a copy of `tsconfig.spec.json` that still includes stories took 3.25 s, so the exclusion saves 0.4 s per spec check.
