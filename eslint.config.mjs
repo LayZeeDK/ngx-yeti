@@ -19,6 +19,10 @@ export const angularConfig = [
       '@angular-eslint/directive-class-suffix': 'off',
       '@angular-eslint/require-localize-metadata': 'off',
       '@angular-eslint/runtime-localize': 'off',
+      '@typescript-eslint/no-extraneous-class': [
+        'error',
+        { allowWithDecorator: true },
+      ],
     },
   },
   {

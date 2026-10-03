@@ -1,0 +1,8 @@
+{
+  "name": "yeti-analog-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/yeti-analog-e2e/src",
+  "implicitDependencies": ["yeti-analog"],
+  "targets": {}
+}

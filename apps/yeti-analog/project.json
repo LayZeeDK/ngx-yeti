@@ -1,0 +1,19 @@
+{
+  "name": "yeti-analog",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/yeti-analog/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "outputs": ["{workspaceRoot}/dist/apps/yeti-analog"]
+    },
+    "typecheck": {
+      "executor": "angular-typechecker:typecheck",
+      "options": {
+        "tsConfig": "apps/yeti-analog/tsconfig.json"
+      }
+    }
+  }
+}
