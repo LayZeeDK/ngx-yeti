@@ -21,7 +21,9 @@ npx nx yeti-build yeti-css
 
 It runs Yeti's `node bin/build.js`, writes `vendor/yeti/dist/` (git-ignored), and is cached on `src`, `bin`, `schema`, and Yeti's build tools. Yeti's own validator runs inside it, so a build is also Yeti's check (ADR 0014 point 5).
 
-A target that reads `dist/` must depend on it. `ngx-yeti` has `implicitDependencies: ["yeti-css"]`, and its Storybook, test, typecheck, and lint targets depend on `^yeti-build`. A new project that reads `yeti-css` gets the same two settings. A "cannot find module 'yeti-css/manifest'" error means a target is missing that dependency.
+A target that reads `dist/` must depend on it. `ngx-yeti` has `implicitDependencies: ["yeti-css"]`, and its Storybook, test, typecheck, and lint targets depend on `^yeti-build`. A new project that reads `yeti-css` gets the same two settings. A "cannot find module 'yeti-css/manifest'" error means a target is missing that dependency, or the worktree case below.
+
+In a second git worktree of this repository (an agent's `isolation: worktree` checkout), Nx shares the `~/.nx` cache with the main checkout, and a `yeti-build` cache hit can report `[local cache]` without writing `vendor/yeti/dist` (measured). If `dist` is missing after such a hit, run `npx nx yeti-build yeti-css --skip-nx-cache` once. Never run `nx reset` while another checkout runs Nx: it deletes that shared cache under the running tasks.
 
 ## What package code may read
 
