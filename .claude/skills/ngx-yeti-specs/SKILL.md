@@ -87,4 +87,4 @@ Naming (ADR 0012, ADR 0080): selectors `yeti` + camelCase (`[yetiCard]`), `expor
 
 ## Done for a spec
 
-`npm run check` passes (lint, typecheck, test, test-storybook), `npx nx e2e ngx-yeti-e2e` and `npx nx e2e yeti-app-e2e` pass, `npx nx build ngx-yeti` passes, and every ledger row the spec owns is closed by a test named in its Testing Decisions. `test`, `test-storybook`, and `build-fast` compile with Analog `fastCompile` and never type-check; `typecheck` is the type gate (`references/fast-compile.md`).
+`npm run check` passes (lint, typecheck, test, test-storybook), `npx nx e2e ngx-yeti-e2e` and `npx nx e2e yeti-app-e2e` pass, `npx nx build ngx-yeti` passes, and every ledger row the spec owns is closed by a test named in its Testing Decisions. `test`, `test-storybook`, and `build-fast` never type-check; `typecheck` is the type gate (`references/fast-compile.md` says which targets use Analog `fastCompile`).

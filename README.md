@@ -58,7 +58,7 @@ Every script runs an Nx target. Run them with `npm run <script>`.
 | `build`          | Every build                                                     |
 | `format:check`   | Prettier over the workspace                                     |
 
-Most compiles use Analog `fastCompile`, which never type-checks. A green `test`, `test-storybook`, or `build-fast` says nothing about types, so run `typecheck` beside them. [`references/fast-compile.md`](references/fast-compile.md) explains the split. The Storybook scripts have `-fast` twins, such as `npm run storybook-fast`, and `build-fast` builds the library with `fastCompile`.
+Most compiles use Analog `fastCompile`, which never type-checks; Storybook uses it only in the `-fast` scripts, such as `npm run storybook-fast`, and compiles stories in JIT mode otherwise. A green `test`, `test-storybook`, or `build-fast` says nothing about types, so run `typecheck` beside them. [`references/fast-compile.md`](references/fast-compile.md) says which target compiles how.
 
 ## How the tests are organized
 
