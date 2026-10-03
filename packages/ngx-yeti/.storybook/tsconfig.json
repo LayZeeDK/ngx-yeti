@@ -5,13 +5,5 @@
     "types": ["node", "vite/client"]
   },
   "exclude": ["../**/*.spec.ts"],
-  "include": [
-    "../**/*.stories.ts",
-    "../**/*.stories.js",
-    "../**/*.stories.jsx",
-    "../**/*.stories.tsx",
-    "../**/*.stories.mdx",
-    "*.js",
-    "*.ts"
-  ]
+  "include": ["../**/*.stories.ts", "*.ts"]
 }
