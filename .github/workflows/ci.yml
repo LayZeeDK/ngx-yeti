@@ -23,3 +23,20 @@ jobs:
       - run: npx prettier --check .
       - run: npx nx run-many -t lint typecheck test test-storybook build
       - run: npx nx run-many -t e2e
+
+  safari:
+    # Real Safari, as the macOS image ships it (26.6 in September 2026).
+    # Playwright cannot drive branded Safari, so only the browser unit tests
+    # run here; the WebKit jobs cover stories and e2e.
+    runs-on: macos-26
+    env:
+      SAFARI: 'true'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: sudo safaridriver --enable
+      - run: npx nx test ngx-yeti

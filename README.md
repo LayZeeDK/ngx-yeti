@@ -88,7 +88,7 @@ Yeti has no npm release. The workspace vendors its source at one `develop` commi
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs `prettier --check`, lint, typecheck, unit and story tests, every build, and every e2e project in Chromium, Firefox, and WebKit. `.github/workflows/floor.yml` runs the browser-floor tests.
+`.github/workflows/ci.yml` runs `prettier --check`, lint, typecheck, unit and story tests, every build, and every e2e project in Chromium, Firefox, and WebKit. Its `safari` job runs the unit tests in real Safari on a macOS runner. `.github/workflows/floor.yml` runs the browser-floor tests.
 
 ## Contribute
 

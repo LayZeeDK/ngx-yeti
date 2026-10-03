@@ -55,6 +55,9 @@
         },
         {
           "env": "FLOOR_WEBKIT"
+        },
+        {
+          "env": "SAFARI"
         }
       ],
       "outputs": ["{workspaceRoot}/coverage/unit/{projectRoot}"]

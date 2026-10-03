@@ -24,6 +24,14 @@ function browserEngines(): Pick<
     };
   }
 
+  // The real Safari of a macOS runner. safaridriver has no headless mode.
+  if (process.env['SAFARI'] === 'true') {
+    return {
+      provider: webdriverio(),
+      instances: [{ browser: 'safari', headless: false }],
+    };
+  }
+
   // Playwright 1.59.1, whose WebKit is the earliest labelled at or above
   // Safari 26.2; the floor job installs it in place of the current release.
   if (process.env['FLOOR_WEBKIT'] === 'true') {
