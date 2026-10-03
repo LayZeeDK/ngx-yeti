@@ -1,4 +1,3 @@
-# Verbatim records copied from the planning repository; their prototypes are not projects.
 /docs/specs
 # Keeps Yeti's package.json scripts and an inferred lint out of the workspace's
 # targets; Yeti's `test` would otherwise join `run-many -t test`.

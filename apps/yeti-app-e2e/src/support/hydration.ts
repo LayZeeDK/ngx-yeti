@@ -8,14 +8,9 @@ const hydrationSummary =
   /^Angular hydrated \d+ component\(s\) and \d+ node\(s\), \d+ component\(s\) were skipped\./;
 
 export interface HydrationWatch {
-  /**
-   * Waits for Angular's hydration summary, then asserts that it reports 0
-   * skipped components and that no `NG05xx` hydration message was logged.
-   */
   expectClean(): Promise<void>;
 }
 
-/** Records the page's console from now on. Call it before `page.goto`. */
 export function watchHydration(page: Page): HydrationWatch {
   const messages: string[] = [];
 

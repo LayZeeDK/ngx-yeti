@@ -23,7 +23,6 @@ const microtaskTimers = `window.setTimeout = (callback) => {
 export const axeRunsWithoutJavaScript = (browserName: string): boolean =>
   browserName !== 'firefox';
 
-/** Runs axe on the page with the six tags every accessibility check uses. */
 export async function axeViolations(page: Page): Promise<AxeViolations> {
   const browserName = page.context().browser()?.browserType().name() ?? '';
 

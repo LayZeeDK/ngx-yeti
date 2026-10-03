@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 
-/** A click target whose visible state proves that a click reached Angular. */
 @Component({
   selector: 'app-replay-fixture',
   template: `<button type="button" (click)="increment()">

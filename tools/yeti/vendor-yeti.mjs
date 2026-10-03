@@ -1,8 +1,3 @@
-// Replaces vendor/yeti with Yeti's source at one commit (ADR 0006 point 2):
-// the files of `git archive <sha> src bin schema package.json
-// package-lock.json LICENSE README.md`, plus a COMMIT file holding the sha.
-//
-// Usage: node tools/yeti/vendor-yeti.mjs <full sha> [<yeti clone or URL>]
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';

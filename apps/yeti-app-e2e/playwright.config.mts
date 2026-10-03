@@ -2,13 +2,6 @@ import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 
-/**
- * The tests run against the built Node server of the Fixture app, never the
- * dev server. FIXTURE_CONFIGURATION picks the build: `development` (the
- * default, for Angular's development-mode hydration messages) or
- * `production`. Each configuration gets its own port so a reused server is
- * never one of the other build.
- */
 const configuration =
   process.env['FIXTURE_CONFIGURATION'] === 'production'
     ? 'production'
@@ -16,8 +9,6 @@ const configuration =
 const port = configuration === 'production' ? 4301 : 4300;
 const baseURL = `http://localhost:${String(port)}/sub/`;
 
-// The floor job (docs/specs/issues/93-decide-testing-at-the-browser-floor.md)
-// runs Chromium only, on Chrome for Testing 141 at this path.
 const chromiumFloor = process.env['FLOOR_CHROMIUM_PATH'];
 
 const chromium = {
@@ -42,7 +33,6 @@ export default defineConfig({
   },
   webServer: {
     command: `npx nx run yeti-app:serve-ssr:${configuration}`,
-    // `/sub/` itself has no route, so readiness waits on a fixture.
     url: `${baseURL}highlight`,
     // `env` also keeps @nx/playwright from inferring a dependency on
     // serve-ssr, which would drop the configuration.

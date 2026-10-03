@@ -1,10 +1,3 @@
-/**
- * WCAG 2.x contrast from computed styles, by the exact formula and unrounded
- * (docs/specs/adr/0015-wcag-2-2-aa-enforcement-over-yeti.md, point 3). Pure
- * functions with no DOM or Node APIs, so play functions and Node specs share
- * them.
- */
-
 /** A colour in gamma-encoded sRGB. Every channel and `alpha` is in [0, 1]. */
 export interface SrgbColor {
   readonly r: number;

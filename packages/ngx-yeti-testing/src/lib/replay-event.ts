@@ -5,7 +5,7 @@ const replayPhase = 101;
  * Patches `event` the way Angular's event replay does: `eventPhase` is the
  * replay phase, `composedPath()` throws, and `preventDefault()` throws after
  * it runs. Dispatch the result to test that a handler changes state before
- * any `preventDefault()` (docs/specs/building-blocks.md, 1.11 decision 5).
+ * any `preventDefault()`.
  */
 export function replayShapedEvent<T extends Event>(event: T): T {
   const preventDefault = event.preventDefault.bind(event);

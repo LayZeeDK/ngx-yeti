@@ -10,8 +10,13 @@ import tseslint from 'typescript-eslint';
 
 const typeScriptFiles = ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'];
 
-// ADR 0002: the browser floor is Baseline 2025, see .browserslistrc.
 const baselineYear = 2025;
+
+const neverShippedFiles = [
+  '**/*.spec.ts',
+  '**/*.stories.ts',
+  '**/.storybook/**/*.ts',
+];
 
 const moduleBoundaries = {
   enforceBuildableLibDependency: true,
@@ -227,9 +232,7 @@ export default [
     },
   },
   {
-    // Specs and stories never ship, so they may import the non-buildable
-    // ngx-yeti-testing helpers from a buildable library.
-    files: ['**/*.spec.ts', '**/*.stories.ts', '**/.storybook/**/*.ts'],
+    files: neverShippedFiles,
     rules: {
       '@nx/enforce-module-boundaries': [
         'error',

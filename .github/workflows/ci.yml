@@ -21,7 +21,5 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npx prettier --check .
-      # GitHub sets CI=true, so story, unit, and e2e runs use Chromium,
-      # Firefox, and WebKit; test-storybook is the accessibility gate.
       - run: npx nx run-many -t lint typecheck test test-storybook build
       - run: npx nx run-many -t e2e

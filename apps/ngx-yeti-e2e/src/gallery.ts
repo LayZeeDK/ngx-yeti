@@ -1,16 +1,6 @@
 import { test as base } from '@playwright/test';
 
-/*
- * The Playwright gallery over the static Storybook build, and the one file on
- * Storybook preview internals (docs/specs/adr/0014-testing-stack-for-yeti.md,
- * point 4 and Consequences). A Storybook upgrade that changes them breaks this
- * file, not the specs. The fallback is opening stories by URL:
- * `/iframe.html?id=<story-id>&viewMode=story&embed=true`.
- *
- * Playwright's `mount(storyId)` opens `baseURL` and calls `window.mount()`.
- * `baseURL` is Storybook's `iframe.html?embed=true`, and `embed=true` turns
- * Storybook's autoplay off, so the play function does not run again.
- */
+// Playwright's `mount(storyId)` opens `baseURL` and calls `window.mount()`.
 
 interface StorybookChannel {
   on: (event: string, listener: () => void) => void;

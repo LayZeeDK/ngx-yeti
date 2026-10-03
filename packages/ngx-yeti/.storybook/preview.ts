@@ -28,7 +28,6 @@ const preview: Preview = {
   },
   parameters: {
     a11y: {
-      // Any violation fails the story test: the gate of ADR 0015 point 2.
       test: 'error',
       options: {
         runOnly: {

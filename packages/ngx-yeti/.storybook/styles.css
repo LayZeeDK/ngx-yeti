@@ -1,7 +1,3 @@
-/*
- * The documented global stylesheet (docs/specs/specs/setup.md, section 4 C).
- * The spec that creates ngx-yeti/accessibility.css adds its import last.
- */
 @layer yeti, ngx-yeti;
 @import 'yeti-css/css/layers.css';
 @import 'yeti-css/css/tokens/scale.css';

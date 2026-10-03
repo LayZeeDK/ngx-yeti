@@ -11,8 +11,8 @@ import { appRoutes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // The documented setup (docs/specs/specs/setup.md, section 4 D): in 22.2
-    // this alone turns on incremental hydration and, through it, event replay.
+    // In 22.2 this alone turns on incremental hydration and, through it,
+    // event replay.
     provideClientHydration(withI18nSupport()),
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),

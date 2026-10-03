@@ -50,8 +50,6 @@ export default [
           style: 'camelCase',
         },
       ],
-      // ADR 0080 note: figure[yetiDemo] and YetiFieldError are attribute
-      // components.
       '@angular-eslint/component-selector': [
         'error',
         [

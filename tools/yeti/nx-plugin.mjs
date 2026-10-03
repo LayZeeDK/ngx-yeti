@@ -1,7 +1,3 @@
-// Gives the vendored Yeti package a cached `yeti-build` target that runs
-// Yeti's own build (ADR 0006 point 2). .nxignore hides Yeti's package.json
-// from Nx, which would otherwise turn its scripts (`test` among them) into
-// targets, so this plugin names the project.
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 
