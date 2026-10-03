@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npx prettier --check .
+      # GitHub sets CI=true, so story, unit, and e2e runs use Chromium,
+      # Firefox, and WebKit; test-storybook is the accessibility gate.
+      - run: npx nx run-many -t lint typecheck test test-storybook build
+      - run: npx nx run-many -t e2e
