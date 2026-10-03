@@ -1,12 +1,17 @@
 import path from 'node:path';
 import eslintComments from '@eslint-community/eslint-plugin-eslint-comments/configs';
+import css from '@eslint/css';
 import nx from '@nx/eslint-plugin';
 import vitest from '@vitest/eslint-plugin';
 import angular from 'angular-eslint';
+import baselineJs from 'eslint-plugin-baseline-js';
 import storybook from 'eslint-plugin-storybook';
 import tseslint from 'typescript-eslint';
 
 const typeScriptFiles = ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'];
+
+// ADR 0002: the browser floor is Baseline 2025, see .browserslistrc.
+const baselineYear = 2025;
 
 const moduleBoundaries = {
   enforceBuildableLibDependency: true,
@@ -173,6 +178,28 @@ export default [
       // Its fix writes `x!`, which no-non-null-assertion bans, and
       // assertionStyle 'never' already bans the `as` form it targets.
       '@typescript-eslint/non-nullable-type-assertion-style': 'off',
+    },
+  },
+  {
+    files: ['**/*.css'],
+    language: 'css/css',
+    plugins: { css },
+    rules: {
+      'css/use-baseline': ['error', { available: baselineYear }],
+    },
+  },
+  {
+    files: typeScriptFiles,
+    plugins: { 'baseline-js': baselineJs },
+    rules: {
+      'baseline-js/use-baseline': [
+        'error',
+        {
+          available: baselineYear,
+          includeWebApis: { preset: 'type-aware' },
+          includeJsBuiltins: { preset: 'type-aware' },
+        },
+      ],
     },
   },
   ...storybook.configs['flat/recommended'],
