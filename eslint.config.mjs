@@ -8,6 +8,17 @@ import tseslint from 'typescript-eslint';
 
 const typeScriptFiles = ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'];
 
+const moduleBoundaries = {
+  enforceBuildableLibDependency: true,
+  allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
+  depConstraints: [
+    {
+      sourceTag: '*',
+      onlyDependOnLibsWithTags: ['*'],
+    },
+  ],
+};
+
 // Playwright e2e specs share the *.spec.ts suffix, so only Vitest projects
 // spread this.
 export const vitestConfig = [
@@ -185,18 +196,17 @@ export default [
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
     rules: {
+      '@nx/enforce-module-boundaries': ['error', moduleBoundaries],
+    },
+  },
+  {
+    // Specs and stories never ship, so they may import the non-buildable
+    // ngx-yeti-testing helpers from a buildable library.
+    files: ['**/*.spec.ts', '**/*.stories.ts', '**/.storybook/**/*.ts'],
+    rules: {
       '@nx/enforce-module-boundaries': [
         'error',
-        {
-          enforceBuildableLibDependency: true,
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
-          depConstraints: [
-            {
-              sourceTag: '*',
-              onlyDependOnLibsWithTags: ['*'],
-            },
-          ],
-        },
+        { ...moduleBoundaries, enforceBuildableLibDependency: false },
       ],
     },
   },
