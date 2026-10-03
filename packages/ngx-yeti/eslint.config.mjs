@@ -72,6 +72,10 @@ export default [
               name: '@ngx-yeti/testing',
               message: 'Test helpers never ship in the package.',
             },
+            {
+              name: '@ngx-yeti/testing/server',
+              message: 'Test helpers never ship in the package.',
+            },
           ],
         },
       ],

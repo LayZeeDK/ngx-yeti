@@ -18,6 +18,8 @@ const nodeSpecs = [
 
 export default defineConfig({
   plugins: [angular({ fastCompile: true, jit: false })],
+  // Specs import `@ngx-yeti/testing` through tsconfig.base.json paths.
+  resolve: { tsconfigPaths: true },
   test: {
     globals: true,
     coverage: {
@@ -49,6 +51,9 @@ export default defineConfig({
           name: 'node',
           environment: 'node',
           include: nodeSpecs,
+          // Inlined, Angular's partially compiled packages go through the
+          // Analog linker; external, they would need the JIT compiler.
+          server: { deps: { inline: [/@angular\//] } },
         },
       },
     ],

@@ -7,5 +7,8 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['src/**/*.spec.ts'],
+    // Inlined, Angular's partially compiled packages go through the Analog
+    // linker; external, they would need the JIT compiler.
+    server: { deps: { inline: [/@angular\//] } },
   },
 });

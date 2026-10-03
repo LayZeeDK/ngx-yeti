@@ -16,7 +16,8 @@
     "strict": true,
     "paths": {
       "ngx-yeti": ["./packages/ngx-yeti/src/index.ts"],
-      "@ngx-yeti/testing": ["./packages/ngx-yeti-testing/src/index.ts"]
+      "@ngx-yeti/testing": ["./packages/ngx-yeti-testing/src/index.ts"],
+      "@ngx-yeti/testing/server": ["./packages/ngx-yeti-testing/src/server.ts"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,
