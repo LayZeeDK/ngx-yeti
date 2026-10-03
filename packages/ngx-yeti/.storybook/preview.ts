@@ -1,4 +1,5 @@
 import type { Preview } from '@storybook/angular-vite';
+import './styles.css';
 
 const preview: Preview = {
   parameters: {

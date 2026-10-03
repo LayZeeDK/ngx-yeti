@@ -45,6 +45,7 @@
       "inputs": ["production", "^production"]
     },
     "build-storybook": {
+      "dependsOn": ["^yeti-build"],
       "cache": true,
       "inputs": ["default", "^production", "storybook"],
       "configurations": {
@@ -56,6 +57,7 @@
       }
     },
     "test-storybook": {
+      "dependsOn": ["^yeti-build"],
       "cache": true,
       "inputs": [
         "default",
@@ -148,6 +150,7 @@
       }
     ],
     "storybook": {
+      "dependsOn": ["^yeti-build"],
       "configurations": {
         "fast": {
           "env": {
