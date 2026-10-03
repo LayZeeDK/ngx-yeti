@@ -79,15 +79,7 @@ Every story fails its test on any axe violation of the WCAG 2.2 AA tags, and on 
 
 The package targets Baseline 2025: Chrome and Edge 141, Firefox 145, and Safari 26.2 ([ADR 0002](docs/specs/adr/0002-browser-target-baseline-2025.md)). `.browserslistrc` sets that floor for the Angular builds, and ESLint fails on CSS or TypeScript newer than Baseline 2025.
 
-Every pull request and every push to `main` runs the browser tests in these browsers:
-
-| Browser      | At the floor (`floor.yml`)                                                                          | Current release (`ci.yml`)                                                  |
-| ------------ | --------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| Chrome, Edge | Chrome for Testing 141: unit tests, both e2e projects                                               | Playwright's Chromium: every layer                                          |
-| Firefox      | Firefox 145 through WebdriverIO: unit tests. Playwright 1.58.2's Firefox 146.0.1: both e2e projects | Playwright's Firefox: every layer                                           |
-| Safari       | Playwright 1.59.1's WebKit 26.4: unit tests, both e2e projects                                      | Playwright's WebKit: every layer. Real Safari on `macos-latest`: unit tests |
-
-Edge 141 is the Chromium 141 engine. No Playwright release bundles Firefox 145 or WebKit 26.2, so those columns use the earliest builds that are not older. No GitHub runner ships Safari 26.2; every macOS image ships Safari 26.6.
+The browser tests run in the current engines and again at the floor, as the next section says. The [`ngx-yeti-testing` skill](.claude/skills/ngx-yeti-testing/SKILL.md) says which layer runs in which browser.
 
 ## Yeti
 
@@ -95,7 +87,10 @@ Yeti has no npm release. The workspace vendors its source at one `develop` commi
 
 ## Continuous integration
 
-`.github/workflows/ci.yml` runs `prettier --check`, lint, typecheck, unit and story tests, every build, and every e2e project in Chromium, Firefox, and WebKit. Its `safari` job runs the unit tests in real Safari on a macOS runner. `.github/workflows/floor.yml` runs the browser-floor tests.
+Both workflows run on every pull request and every push to `main` or `release/**`.
+
+- `.github/workflows/ci.yml` runs `prettier --check`, lint, typecheck, unit and story tests, every build, and every e2e project in Chromium, Firefox, and WebKit, then the Fixture app e2e again on its production build. Its `safari` job runs the unit tests in real Safari on a macOS runner.
+- `.github/workflows/floor.yml` runs the unit tests and both e2e projects at the floor: Chrome for Testing 141 runs both, Firefox 145 runs the unit tests, and the earliest Playwright Firefox and WebKit not older than the floor run the rest, because no Playwright release bundles Firefox 145 or WebKit 26.2. The workflow names each version.
 
 ## Contribute
 
