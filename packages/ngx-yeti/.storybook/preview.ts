@@ -1,30 +1,19 @@
 import { wcagTags } from '@ngx-yeti/testing';
 import type { Preview } from '@storybook/angular-vite';
+import { expect, spyOn, type MockInstance } from 'storybook/test';
 import './styles.css';
 
 // Angular reports runtime errors through console.error and carries on, so a
-// story whose directive throws would otherwise still pass.
-const consoleErrors: unknown[][] = [];
+// story whose directive throws would otherwise still pass. Storybook restores
+// every spy before the next story.
+let consoleError: MockInstance<typeof console.error> | undefined;
 
 const preview: Preview = {
   beforeEach: () => {
-    const original = console.error;
-    consoleErrors.length = 0;
-    console.error = (...args: unknown[]): void => {
-      consoleErrors.push(args);
-      original(...args);
-    };
-
-    return (): void => {
-      console.error = original;
-    };
+    consoleError = spyOn(console, 'error');
   },
-  afterEach: () => {
-    if (consoleErrors.length > 0) {
-      throw new Error(
-        `The story logged ${String(consoleErrors.length)} console error(s): ${consoleErrors.map((args) => args.map(String).join(' ')).join(' | ')}`,
-      );
-    }
+  afterEach: async () => {
+    await expect(consoleError).not.toHaveBeenCalled();
   },
   parameters: {
     a11y: {
