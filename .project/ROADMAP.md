@@ -17,8 +17,8 @@
 Goal: The setup spec and the card and lift items ship end to end, with item styles loaded as counted head links on the server and the client, each item at its own entry point, and every test layer, the contract check, and a packed consuming build running against real items instead of the placeholders.
 Depends on: []
 Surfaces: Storybook stories, Fixture app routes, package entry points
-Status: active
-Archive: null
+Status: shipped
+Archive: .project/archive/001-walking-skeleton
 Integrated: null
 
 Scope: in

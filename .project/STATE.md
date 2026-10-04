@@ -2,14 +2,14 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: walking-skeleton
-phase: ship
+phase: shipped
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: active
+status: done
 branch: gsd-path/M001
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
-archive: null       # persisted archive transaction path; never recomputed
+archive: .project/archive/001-walking-skeleton
 integration_default: direct # direct | pull-request; project setting
 integration: direct # current milestone; may override the default before build
 integration_source: default # default | milestone; preserves override provenance
@@ -64,3 +64,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — build — build started
 - 2026-10-04 — build — wave 6 review passed (cycle 1): .project/review/wave-6.cycle1.md
 - 2026-10-04 — ship — build done; final review pending
+- 2026-10-04 — ship — final gate passed; shipping approval pending
+- 2026-10-04 — ship — shipping approved by the orchestrator acting as owner under the user's goal: "Complete M001 autonomously in AFK mode."
+- 2026-10-04 — shipped — archive preflight passed; shipment recorded
