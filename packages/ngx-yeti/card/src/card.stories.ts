@@ -11,6 +11,7 @@ import {
 } from '@storybook/angular-vite';
 import type { YetiRatio, YetiVariant, YetiWidth } from 'ngx-yeti';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
+import manifest from 'yeti-css/manifest';
 // Kept a URL in the static build too: NgOptimizedImage refuses `data:` URLs.
 import trail from '../../.storybook/assets/trail.svg?no-inline';
 import { NgxYetiLift } from 'ngx-yeti/lift';
@@ -22,6 +23,15 @@ import { YetiCardLink } from './card-link';
   template: '<p>The hills page</p>',
 })
 class HillsPage {}
+
+/** The values of one of the card's enum attributes, from Yeti's manifest. */
+function cardValues(name: string): readonly string[] {
+  return (
+    manifest.components.card.attributes.find(
+      (attribute) => attribute.name === name,
+    )?.values ?? []
+  );
+}
 
 interface CardState {
   readonly variant: YetiVariant | undefined;
@@ -245,36 +255,11 @@ const meta: Meta<YetiCard> = {
     }),
   ],
   argTypes: {
-    variant: {
-      control: 'select',
-      options: [
-        'primary',
-        'secondary',
-        'success',
-        'warning',
-        'alert',
-        'danger',
-        'neutral',
-        'black',
-        'white',
-      ] satisfies YetiVariant[],
-    },
-    threshold: {
-      control: 'select',
-      options: [
-        '2xs',
-        'xs',
-        'sm',
-        'md',
-        'lg',
-        'xl',
-        '2xl',
-      ] satisfies YetiWidth[],
-    },
-    ratio: {
-      control: 'select',
-      options: ['1/1', '4/3', '3/2', '16/9', '21/9'] satisfies YetiRatio[],
-    },
+    // Yeti's vocabularies, which the contract spec proves equal to the
+    // inputs' types, so a pin move that adds a value adds its option.
+    variant: { control: 'select', options: cardValues('data-variant') },
+    threshold: { control: 'select', options: cardValues('data-threshold') },
+    ratio: { control: 'select', options: cardValues('data-ratio') },
     raised: { control: 'boolean' },
   },
   render: (args, { id }) => {
