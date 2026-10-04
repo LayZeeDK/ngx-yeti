@@ -2,7 +2,7 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: walking-skeleton
-phase: build
+phase: ship
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
 status: active
@@ -49,3 +49,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — build — plan-defect repair T013 files: add packages/ngx-yeti/src/accessibility.node.spec.ts (coder block at preflight; dispatch at 1ded745 unwound, no product change)
 - 2026-10-04 — build — integrated uncached checks at 2b5202d (primary checkout, Chromium): prettier, run-many lint typecheck test test-storybook build build-fast (7 projects), pack-check, run-many e2e (3 projects), production yeti-app-e2e (71 passed, 13 skipped): all exit 0
 - 2026-10-04 — build — wave 3 review passed (cycle 1) and repair wave 4 review passed (cycle 1); repair receipt wave-2.cycle1.repair-T015.json recorded
+- 2026-10-04 — ship — build done; final review pending
