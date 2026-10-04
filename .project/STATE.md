@@ -41,3 +41,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — plan — planning started
 - 2026-10-04 — plan — plan approved
 - 2026-10-04 — build — build started
+- 2026-10-04 — build — wave 1 review passed (cycle 1): .project/review/wave-1.cycle1.md
