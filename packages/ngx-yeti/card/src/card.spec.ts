@@ -1,4 +1,5 @@
 import {
+  type Binding,
   Component,
   Directive,
   type Type,
@@ -9,6 +10,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { RouterLink, provideRouter } from '@angular/router';
+import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
 import type { YetiRatio, YetiVariant, YetiWidth } from 'ngx-yeti';
 import { YetiCard } from './card';
 import { YetiCardLink } from './card-link';
@@ -31,52 +33,10 @@ class CardHost {
   readonly probe = viewChild.required(CardTokenProbe);
 }
 
-/** The card item links in `<head>`, counted through the DOM. */
-function cardLinks(): number {
-  return document.head.querySelectorAll('link[data-ngx-yeti-styles="card"]')
-    .length;
-}
-
-/** Waits past the frame the loader's removal check runs in. */
-async function nextFrame(): Promise<void> {
-  for (let frame = 0; frame < 2; frame++) {
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-        resolve();
-      });
-    });
-  }
-}
-
-function removeItemLinks(): void {
-  // Links an earlier test's loader left in the shared document.
-  for (const link of document.head.querySelectorAll(
-    'link[data-ngx-yeti-styles]',
-  )) {
-    link.remove();
-  }
-}
-
-async function setupCard(bound?: {
-  variant: YetiVariant;
-  threshold: YetiWidth;
-  ratio: YetiRatio;
-  raised: boolean;
-}) {
-  const inputs = {
-    variant: signal<YetiVariant | undefined>(bound?.variant),
-    threshold: signal<YetiWidth | undefined>(bound?.threshold),
-    ratio: signal<YetiRatio | undefined>(bound?.ratio),
-    raised: signal(bound?.raised ?? false),
-  };
+async function setupCard(bindings: Binding[] = []) {
   const fixture = TestBed.createDirective(YetiCard, {
     tagName: 'article',
-    bindings:
-      bound === undefined
-        ? []
-        : Object.entries(inputs).map(([name, value]) =>
-            inputBinding(name, value),
-          ),
+    bindings,
   });
 
   await fixture.whenStable();
@@ -91,7 +51,27 @@ async function setupCard(bound?: {
     element.remove();
   }
 
-  return { destroy, element, fixture, inputs };
+  return { destroy, element, fixture };
+}
+
+/** A card with every input bound to a signal the test can change. */
+async function setupBoundCard(bound: {
+  variant: YetiVariant;
+  threshold: YetiWidth;
+  ratio: YetiRatio;
+  raised: boolean;
+}) {
+  const inputs = {
+    variant: signal<YetiVariant | undefined>(bound.variant),
+    threshold: signal<YetiWidth | undefined>(bound.threshold),
+    ratio: signal<YetiRatio | undefined>(bound.ratio),
+    raised: signal(bound.raised),
+  };
+  const card = await setupCard(
+    Object.entries(inputs).map(([name, value]) => inputBinding(name, value)),
+  );
+
+  return { ...card, inputs };
 }
 
 async function setupCardLink({ stretch }: { stretch?: boolean } = {}) {
@@ -169,7 +149,7 @@ describe(YetiCard, () => {
   it('renders each bound input and removes it when unset', async () => {
     expect.assertions(8);
 
-    const { element, fixture, inputs } = await setupCard({
+    const { element, fixture, inputs } = await setupBoundCard({
       variant: 'warning',
       threshold: 'sm',
       ratio: '4/3',
@@ -200,17 +180,17 @@ describe(YetiCard, () => {
     const first = await setupCard();
     const second = await setupCard();
 
-    expect(cardLinks()).toBe(1);
+    expect(itemLinks('card')).toHaveLength(1);
 
     first.destroy();
     await nextFrame();
 
-    expect(cardLinks()).toBe(1);
+    expect(itemLinks('card')).toHaveLength(1);
 
     second.destroy();
     await nextFrame();
 
-    expect(cardLinks()).toBe(0);
+    expect(itemLinks('card')).toHaveLength(0);
   });
 
   describe('in a template', () => {
@@ -304,8 +284,6 @@ describe(YetiCardLink, () => {
         .getAttributeNames()
         .filter((name) => name.startsWith('data-ngx-yeti-')),
     ).toStrictEqual([]);
-    expect(
-      document.head.querySelectorAll('link[data-ngx-yeti-styles]'),
-    ).toHaveLength(0);
+    expect(itemLinks()).toHaveLength(0);
   });
 });
