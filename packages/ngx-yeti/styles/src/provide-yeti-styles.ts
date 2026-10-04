@@ -1,4 +1,6 @@
 import {
+  ApplicationRef,
+  EnvironmentInjector,
   type EnvironmentProviders,
   inject,
   makeEnvironmentProviders,
@@ -45,6 +47,12 @@ export function provideYetiStyles(
     preload.length === 0
       ? []
       : provideEnvironmentInitializer(() => {
+          // A route's injector is not the root one: the call has no effect
+          // there, as the loader reads its configuration from the root.
+          if (inject(EnvironmentInjector) !== inject(ApplicationRef).injector) {
+            return;
+          }
+
           inject(YetiStyles).preload(preload);
         }),
   ]);

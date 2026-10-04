@@ -3,9 +3,9 @@ id: T016
 title: Make a route-level provideYetiStyles() call have no effect while the root call keeps preloading
 wave: 5
 deps: [T002, T014]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T016
+base: 6cbac613b90b22a4be4a2a2a8a78f75afb0dee82
 worktree: null
 task_branch: null
 files:
@@ -63,3 +63,26 @@ Heavy: no
 ## Log
 
 - 2026-10-04 — created by planner (final-review patch mode, finding P001)
+- 2026-10-04 — coder (build_T016): provide-yeti-styles.ts — the preload environment initializer returns early unless `inject(EnvironmentInjector) === inject(ApplicationRef).injector`, so a route-level call writes no preload link; root behaviour unchanged (url is still read by the root YetiStyles). yeti-styles.ts needed no change. New spec provide-yeti-styles.spec.ts: route injector case (no preload link, stack href uses default yeti-css/) and root case (one card preload link). Spec checked against 1ac159a's provide-yeti-styles.ts: route case fails (`expected [ Array(1) ] to strictly equal []`), then restored. Results: task Verify verbatim exit 0 (ngx-yeti test 16 files / 194 tests passed, typecheck passed); `npx nx run-many -t lint typecheck test test-storybook -p ngx-yeti --skip-nx-cache` exit 0; `npx nx e2e yeti-app-e2e --skip-nx-cache` exit 0 (80 passed); `npx prettier --check .` exit 0.
+- 2026-10-04 — orchestrator Verify (sidecar gsd-path-verify/task-t016-verify): pass, exit 0; output tail:
+  ```
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```
