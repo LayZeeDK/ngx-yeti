@@ -36,17 +36,30 @@ app.use(
  * at runtime only carries a nonce fixed at build time, so its `<style>` gets
  * the request's nonce here, as Angular's build-time `addNonce` step would.
  */
+async function withNonce(response: Response, nonce: string): Promise<Response> {
+  const html = (await response.text())
+    .replace('<app-root', `<app-root ngCspNonce="${nonce}"`)
+    .replaceAll(/<style(?![^>]*\snonce=)(?=[\s>])/g, `<style nonce="${nonce}"`);
+  const headers = new Headers(response.headers);
+
+  // The body grew by the nonces, so a prerendered page's length and
+  // validator no longer describe it.
+  headers.delete('content-length');
+  headers.delete('etag');
+  headers.set('Content-Security-Policy', `style-src 'self' 'nonce-${nonce}'`);
+
+  return new Response(html, { status: response.status, headers });
+}
+
+/**
+ * Handle all other requests by rendering the Angular application, with a
+ * nonce for a `?csp` request.
+ */
 app.use('/**', (req, res, next) => {
-  if (!('csp' in req.query)) {
-    next();
-
-    return;
-  }
-
-  const nonce = randomBytes(16).toString('base64');
+  const nonce = 'csp' in req.query ? randomBytes(16).toString('base64') : null;
 
   angularApp
-    .handle(req, { cspNonce: nonce })
+    .handle(req, nonce === null ? undefined : { cspNonce: nonce })
     .then(async (response) => {
       if (!response) {
         next();
@@ -54,42 +67,10 @@ app.use('/**', (req, res, next) => {
         return;
       }
 
-      const html = (await response.text())
-        .replace('<app-root', `<app-root ngCspNonce="${nonce}"`)
-        .replaceAll(
-          /<style(?![^>]*\snonce=)(?=[\s>])/g,
-          `<style nonce="${nonce}"`,
-        );
-      const headers = new Headers(response.headers);
-
-      // The body grew by the nonces, so a prerendered page's length and
-      // validator no longer describe it.
-      headers.delete('content-length');
-      headers.delete('etag');
-      headers.set(
-        'Content-Security-Policy',
-        `style-src 'self' 'nonce-${nonce}'`,
-      );
       await writeResponseToNodeResponse(
-        new Response(html, { status: response.status, headers }),
+        nonce === null ? response : await withNonce(response, nonce),
         res,
       );
-    })
-    .catch(next);
-});
-
-/**
- * Handle all other requests by rendering the Angular application.
- */
-app.use('/**', (req, res, next) => {
-  angularApp
-    .handle(req)
-    .then(async (response) => {
-      if (response) {
-        await writeResponseToNodeResponse(response, res);
-      } else {
-        next();
-      }
     })
     .catch(next);
 });
