@@ -7,6 +7,8 @@ import { workspaceRoot } from '@nx/devkit';
 // npx and Nx layer prepends node_modules/.bin dirs to PATH; in a deep
 // worktree the nested tasks' PATH passes cmd.exe's 8191-character limit and
 // `node` or `nx` stops resolving. Dropping the npx layer keeps it under.
+// @nx/playwright infers no `yeti-analog:serve` dependency from this form, so
+// `e2e` runs without parallelism and the web server starts the app itself.
 const nx = `"${process.execPath}" "${fileURLToPath(import.meta.resolve('nx'))}"`;
 
 // For CI, you may want to set BASE_URL to the deployed application.
