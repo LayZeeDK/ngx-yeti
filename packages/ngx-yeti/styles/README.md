@@ -1,3 +1,3 @@
 # ngx-yeti/styles
 
-Secondary entry point of `ngx-yeti`. It can be used by importing from `ngx-yeti/styles`.
+Loads Yeti's item files: exports `provideYetiStyles`, `injectYetiItemStyles`, and `YetiStylesConfig`. The setup is in the [package README](../README.md).
