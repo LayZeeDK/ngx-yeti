@@ -1,28 +1,17 @@
 import type { Type } from '@angular/core';
+import type { YetiComponent } from 'yeti-css';
 
 /** The part of a Yeti manifest component the contract check reads. */
-export interface ContractComponent {
-  readonly class: string;
-  readonly attributes: readonly ContractManifestMember[];
-  readonly markers: readonly ContractManifestMember[];
-  readonly js: readonly ContractManifestModule[] | null;
-}
+export type ContractComponent = Pick<
+  YetiComponent,
+  'class' | 'classes' | 'attributes' | 'markers' | 'js'
+>;
 
-export interface ContractManifestMember {
-  readonly name: string;
-  readonly type: string;
-  readonly values?: readonly string[];
-}
-
-export interface ContractManifestModule {
-  readonly events?: readonly { readonly name: string }[];
-}
-
-/** One attribute or marker, mapped to an input of a directive. */
+/** One class, attribute, or marker, mapped to an input of a directive. */
 export interface ContractMember {
   readonly directive: Type<unknown>;
   readonly input: string;
-  /** The values of the input's union, for an `enum` attribute. */
+  /** The values of the input's union, for an `enum` attribute or marker. */
   readonly values?: readonly string[];
 }
 
@@ -35,21 +24,35 @@ export interface ContractEvent {
 /** What a spec says its directives map from the manifest (ADR 0014 point 3). */
 export interface ContractMapping {
   readonly class: string;
+  /** The modifier classes; omit when the component has none. */
+  readonly classes?: Readonly<Record<string, ContractMember>>;
   readonly attributes: Readonly<Record<string, ContractMember>>;
   readonly markers: Readonly<Record<string, ContractMember>>;
   readonly events: Readonly<Record<string, ContractEvent>>;
+}
+
+interface ManifestMember {
+  readonly name: string;
+  readonly type: string;
+  readonly values?: readonly string[];
+  readonly on?: string;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function directiveDef(directive: Type<unknown>): Record<string, unknown> {
+  const def: unknown = Reflect.get(directive, 'ɵdir');
+
+  return isRecord(def) ? def : {};
+}
+
 function directiveKeys(
   directive: Type<unknown>,
   field: 'inputs' | 'outputs',
 ): string[] {
-  const def: unknown = Reflect.get(directive, 'ɵdir');
-  const keys = isRecord(def) ? def[field] : undefined;
+  const keys = directiveDef(directive)[field];
 
   return isRecord(keys) ? Object.keys(keys) : [];
 }
@@ -64,49 +67,129 @@ export function directiveOutputs(directive: Type<unknown>): string[] {
   return directiveKeys(directive, 'outputs');
 }
 
+/**
+ * The element name each selector of a directive requires, `''` for a
+ * selector that matches any element.
+ */
+function selectorElements(directive: Type<unknown>): string[] {
+  const selectors = directiveDef(directive)['selectors'];
+
+  return Array.isArray(selectors)
+    ? selectors.map((selector: unknown) => {
+        const element: unknown = Array.isArray(selector) ? selector[0] : '';
+
+        return typeof element === 'string' ? element : '';
+      })
+    : [];
+}
+
+/** One line per name only one side lists, as `<label> <name> <message>`. */
+function diffNames(
+  label: string,
+  manifest: readonly string[],
+  mapped: readonly string[],
+): string[] {
+  return [
+    ...manifest
+      .filter((name) => !mapped.includes(name))
+      .map((name) => `${label} ${name} is not mapped`),
+    ...mapped
+      .filter((name) => !manifest.includes(name))
+      .map((name) => `${label} ${name} is mapped but absent from the manifest`),
+  ];
+}
+
+function checkValues(
+  label: string,
+  type: string,
+  manifest: readonly string[] | undefined,
+  union: readonly string[] | undefined,
+): string[] {
+  if (type !== 'enum') {
+    return union === undefined
+      ? []
+      : [`${label}: has a union, but is a ${type}`];
+  }
+
+  if (manifest === undefined) {
+    return [`${label}: an enum the manifest lists no values for`];
+  }
+
+  if (union === undefined) {
+    return [`${label}: an enum mapped without the union's values`];
+  }
+
+  return [
+    ...manifest
+      .filter((value) => !union.includes(value))
+      .map((value) => `${label}: the union lacks the value ${value}`),
+    ...union
+      .filter((value) => !manifest.includes(value))
+      .map(
+        (value) =>
+          `${label}: the union holds ${value}, which the manifest lacks`,
+      ),
+  ];
+}
+
+/**
+ * A marker whose `on` is a list of element names must map to a directive
+ * that matches only those elements; an `on` relative to the item root
+ * (`> *`) says nothing a selector can show.
+ */
+function checkOn(
+  label: string,
+  on: string | undefined,
+  member: ContractMember,
+): string[] {
+  const elements = on?.split(',').map((element) => element.trim()) ?? [];
+
+  if (
+    elements.length === 0 ||
+    !elements.every((element) => /^[a-z][a-z0-9-]*$/.test(element))
+  ) {
+    return [];
+  }
+
+  return selectorElements(member.directive).some(
+    (element) => !elements.includes(element),
+  )
+    ? [
+        `${label}: ${member.directive.name} matches elements other than ${elements.join(', ')}`,
+      ]
+    : [];
+}
+
 function checkMembers(
-  kind: 'attribute' | 'marker',
-  manifest: readonly ContractManifestMember[],
+  kind: 'class' | 'attribute' | 'marker',
+  manifest: readonly ManifestMember[],
   mapped: Readonly<Record<string, ContractMember>>,
 ): string[] {
-  const problems: string[] = [];
+  const problems = diffNames(
+    kind,
+    manifest.map(({ name }) => name),
+    Object.keys(mapped),
+  );
 
-  for (const { name, type, values } of manifest) {
+  for (const { name, type, values, on } of manifest) {
     const member = mapped[name];
 
     if (member === undefined) {
-      problems.push(`${kind} ${name} is not mapped`);
-
       continue;
     }
 
+    const label = `${kind} ${name}`;
+
     if (!directiveInputs(member.directive).includes(member.input)) {
       problems.push(
-        `${kind} ${name}: ${member.directive.name} has no input ${member.input}`,
+        `${label}: ${member.directive.name} has no input ${member.input}`,
       );
     }
 
-    if (type === 'enum' && values !== undefined) {
-      const union = member.values ?? [];
-
-      for (const value of values.filter((v) => !union.includes(v))) {
-        problems.push(`${kind} ${name}: the union lacks the value ${value}`);
-      }
-
-      for (const value of union.filter((v) => !values.includes(v))) {
-        problems.push(
-          `${kind} ${name}: the union holds ${value}, which the manifest lacks`,
-        );
-      }
-    } else if (member.values !== undefined) {
-      problems.push(`${kind} ${name}: has a union, but is a ${type}`);
-    }
-  }
-
-  for (const name of Object.keys(mapped)) {
-    if (!manifest.some((member) => member.name === name)) {
-      problems.push(`${kind} ${name} is mapped but absent from the manifest`);
-    }
+    problems.push(
+      ...checkValues(label, type, values, member.values),
+      ...checkOn(label, on, member),
+    );
   }
 
   return problems;
@@ -126,41 +209,28 @@ export function checkContract(
     ...(component.class === mapping.class
       ? []
       : [`class ${component.class} is mapped as ${mapping.class}`]),
+    ...checkMembers('class', component.classes, mapping.classes ?? {}),
     ...checkMembers('attribute', component.attributes, mapping.attributes),
     ...checkMembers('marker', component.markers, mapping.markers),
+    ...diffNames(
+      'event',
+      events.map(({ name }) => name),
+      Object.keys(mapping.events),
+    ),
   ];
 
   for (const { name } of events) {
     const event = mapping.events[name];
 
-    if (event === undefined) {
-      problems.push(`event ${name} is not mapped`);
-    } else if (!directiveOutputs(event.directive).includes(event.output)) {
+    if (
+      event !== undefined &&
+      !directiveOutputs(event.directive).includes(event.output)
+    ) {
       problems.push(
         `event ${name}: ${event.directive.name} has no output ${event.output}`,
       );
     }
   }
 
-  for (const name of Object.keys(mapping.events)) {
-    if (!events.some((event) => event.name === name)) {
-      problems.push(`event ${name} is mapped but absent from the manifest`);
-    }
-  }
-
   return problems;
-}
-
-/** The opening tags of every element named `tag`, in document order. */
-export function openingTags(html: string, tag: string): string[] {
-  return [...html.matchAll(new RegExp(`<${tag}\\b[^>]*>`, 'g'))].map(
-    ([match]) => match,
-  );
-}
-
-/** The value of attribute `name` in an opening tag, or `null` when absent. */
-export function attributeValue(tag: string, name: string): string | null {
-  const match = new RegExp(`\\s${name}(?:="([^"]*)")?[\\s/>]`).exec(tag);
-
-  return match === null ? null : (match[1] ?? '');
 }

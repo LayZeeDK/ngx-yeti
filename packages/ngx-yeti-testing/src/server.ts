@@ -1,16 +1,19 @@
 export {
-  attributeValue,
   checkContract,
   type ContractComponent,
   type ContractEvent,
-  type ContractManifestMember,
-  type ContractManifestModule,
   type ContractMapping,
   type ContractMember,
   directiveInputs,
   directiveOutputs,
-  openingTags,
 } from './lib/contract';
+export {
+  allOpeningTags,
+  attributeValue,
+  head,
+  headLinks,
+  openingTags,
+} from './lib/html';
 export {
   type HydrationFeatures,
   renderServer,

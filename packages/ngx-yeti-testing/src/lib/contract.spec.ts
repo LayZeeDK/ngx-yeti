@@ -1,13 +1,11 @@
 import { Directive, input, output } from '@angular/core';
 import {
-  attributeValue,
   checkContract,
   type ContractComponent,
   type ContractMember,
   type ContractMapping,
   directiveInputs,
   directiveOutputs,
-  openingTags,
 } from './contract';
 
 @Directive({ selector: '[yetiSample]' })
@@ -17,14 +15,33 @@ class Sample {
   readonly changed = output<string>();
 }
 
+@Directive({ selector: 'a[yetiSampleLink]' })
+class SampleLink {
+  readonly stretch = input(false);
+}
+
 const component: ContractComponent = {
   class: 'sample',
+  classes: [],
   attributes: [
-    { name: 'data-size', type: 'enum', values: ['a', 'b'] },
-    { name: 'data-flag', type: 'boolean' },
+    {
+      name: 'data-size',
+      type: 'enum',
+      values: ['a', 'b'],
+      description: 'Size',
+    },
+    { name: 'data-flag', type: 'boolean', description: 'Flag' },
   ],
-  markers: [],
-  js: [{ events: [{ name: 'yeti:changed' }] }],
+  markers: [
+    { name: 'data-stretch', type: 'boolean', on: 'a', description: 'Link' },
+  ],
+  js: [
+    {
+      module: 'sample.js',
+      optional: true,
+      events: [{ name: 'yeti:changed', description: 'Changed' }],
+    },
+  ],
 };
 
 const size: ContractMember = {
@@ -33,11 +50,12 @@ const size: ContractMember = {
   values: ['a', 'b'],
 };
 const flag: ContractMember = { directive: Sample, input: 'flag' };
+const stretch: ContractMember = { directive: SampleLink, input: 'stretch' };
 
 const mapping: ContractMapping = {
   class: 'sample',
   attributes: { 'data-size': size, 'data-flag': flag },
-  markers: {},
+  markers: { 'data-stretch': stretch },
   events: { 'yeti:changed': { directive: Sample, output: 'changed' } },
 };
 
@@ -84,12 +102,46 @@ describe(checkContract, () => {
     ).toStrictEqual(['attribute data-size: the union lacks the value b']);
   });
 
+  it('fails an enum mapped without values and an enum with none listed', () => {
+    expect(
+      checkContract(
+        {
+          ...component,
+          attributes: [
+            { name: 'data-size', type: 'enum', description: 'Size' },
+            { name: 'data-flag', type: 'enum', values: [], description: '' },
+          ],
+        },
+        {
+          ...mapping,
+          attributes: {
+            'data-size': size,
+            'data-flag': { ...flag, values: [] },
+          },
+        },
+      ),
+    ).toStrictEqual([
+      'attribute data-size: an enum the manifest lists no values for',
+    ]);
+    expect(
+      checkContract(component, {
+        ...mapping,
+        attributes: {
+          'data-size': { directive: Sample, input: 'size' },
+          'data-flag': flag,
+        },
+      }),
+    ).toStrictEqual([
+      "attribute data-size: an enum mapped without the union's values",
+    ]);
+  });
+
   it('fails an unmapped attribute, a wrong class, and a missing output', () => {
     expect(
       checkContract(component, {
+        ...mapping,
         class: 'other',
         attributes: { 'data-size': size },
-        markers: {},
         events: { 'yeti:changed': { directive: Sample, output: 'absent' } },
       }),
     ).toStrictEqual([
@@ -103,11 +155,37 @@ describe(checkContract, () => {
     expect(
       checkContract(
         { ...component, js: null },
-        { ...mapping, markers: { 'data-extra': flag } },
+        { ...mapping, markers: { ...mapping.markers, 'data-extra': flag } },
       ),
     ).toStrictEqual([
       'marker data-extra is mapped but absent from the manifest',
       'event yeti:changed is mapped but absent from the manifest',
+    ]);
+  });
+
+  it('fails an unmapped modifier class and a mapped one the manifest lacks', () => {
+    expect(
+      checkContract(
+        {
+          ...component,
+          classes: [{ name: 'is-wide', type: 'boolean', description: '' }],
+        },
+        { ...mapping, classes: { 'is-tall': flag } },
+      ),
+    ).toStrictEqual([
+      'class is-wide is not mapped',
+      'class is-tall is mapped but absent from the manifest',
+    ]);
+  });
+
+  it('fails a marker whose directive matches elements its on excludes', () => {
+    expect(
+      checkContract(component, {
+        ...mapping,
+        markers: { 'data-stretch': { directive: Sample, input: 'flag' } },
+      }),
+    ).toStrictEqual([
+      'marker data-stretch: Sample matches elements other than a',
     ]);
   });
 });
@@ -116,17 +194,5 @@ describe(directiveInputs, () => {
   it('lists the public inputs and outputs of a directive', () => {
     expect(directiveInputs(Sample)).toStrictEqual(['size', 'flag']);
     expect(directiveOutputs(Sample)).toStrictEqual(['changed']);
-  });
-});
-
-describe(attributeValue, () => {
-  it('reads valued, empty, and absent attributes of an opening tag', () => {
-    const [tag] = openingTags('<p><a data-x="1/1" data-y class="c">', 'a');
-
-    assert.exists(tag);
-
-    expect(attributeValue(tag, 'data-x')).toBe('1/1');
-    expect(attributeValue(tag, 'data-y')).toBe('');
-    expect(attributeValue(tag, 'data-z')).toBeNull();
   });
 });
