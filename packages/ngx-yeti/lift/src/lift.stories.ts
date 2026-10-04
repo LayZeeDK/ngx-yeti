@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { itemStylesLoaded } from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
@@ -6,7 +7,7 @@ import {
 } from '@storybook/angular-vite';
 import type { YetiLift } from 'ngx-yeti';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
-import { expect, getRoles, userEvent, waitFor } from 'storybook/test';
+import { expect, getRoles, userEvent, waitFor, within } from 'storybook/test';
 import { NgxYetiLift } from './lift';
 
 /** Yeti's lift example: two cards that rise and a tile that grows. */
@@ -24,24 +25,6 @@ const liftedCards = `
     <p>A scale instead of a rise, for a tile in a row.</p>
   </article>`;
 
-/** Waits for an item's file to load. */
-async function itemLoaded(item: string): Promise<void> {
-  const link = document.head.querySelector<HTMLLinkElement>(
-    `link[data-ngx-yeti-styles="${item}"]`,
-  );
-
-  if (link === null) {
-    throw new Error(`No ${item} item link in <head>`);
-  }
-
-  if (link.sheet === null) {
-    await new Promise((resolve, reject) => {
-      link.addEventListener('load', resolve, { once: true });
-      link.addEventListener('error', reject, { once: true });
-    });
-  }
-}
-
 /** The card a link sits in. */
 function cardOf(link: HTMLElement): HTMLElement {
   const card = link.closest('article');
@@ -53,12 +36,24 @@ function cardOf(link: HTMLElement): HTMLElement {
   return card;
 }
 
-/** Each role in `root` with the accessible text of its elements. */
+/**
+ * Each role in `root` with the accessible names of its elements, as Testing
+ * Library computes them for a `name` query.
+ */
 function roleTree(root: HTMLElement): string[] {
-  return Object.entries(getRoles(root)).map(
-    ([role, elements]) =>
-      `${role}: ${elements.map((element) => element.textContent.trim()).join(' | ')}`,
-  );
+  return Object.keys(getRoles(root)).map((role) => {
+    const names: string[] = [];
+
+    within(root).queryAllByRole(role, {
+      name: (name) => {
+        names.push(name);
+
+        return true;
+      },
+    });
+
+    return `${role}: ${names.join(' | ')}`;
+  });
 }
 
 /**
@@ -137,7 +132,7 @@ export const Keyboard: Story = {
     const link = canvas.getByRole('link', { name: 'Hover me' });
     const card = cardOf(link);
 
-    await itemLoaded('lift');
+    await itemStylesLoaded('lift');
 
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
