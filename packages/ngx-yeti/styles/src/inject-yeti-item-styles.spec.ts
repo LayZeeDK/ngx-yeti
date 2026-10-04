@@ -323,6 +323,29 @@ describe(injectYetiItemStyles, () => {
     ).toStrictEqual(['app-b', appId]);
   });
 
+  it('removes no link once its loader is destroyed', async () => {
+    expect.assertions(1);
+
+    setup();
+    const parent = TestBed.inject(EnvironmentInjector);
+    // An application destroyed and bootstrapped again with the same APP_ID.
+    const providers = [{ provide: APP_ID, useValue: 'same' }, YetiStyles];
+    const destroyed = createEnvironmentInjector(providers, parent);
+    runInInjectionContext(destroyed, () => {
+      injectYetiItemStyles('card');
+    });
+    await TestBed.createDirective(ProbeStack, { tagName: 'div' }).whenStable();
+
+    destroyed.destroy();
+    // The new application's card acquires before its host is connected.
+    runInInjectionContext(createEnvironmentInjector(providers, parent), () => {
+      injectYetiItemStyles('card');
+    });
+    await nextFrame();
+
+    expect(itemLinks('card')).toHaveLength(1);
+  });
+
   it('leaks no link and no count from a constructor that throws first', async () => {
     expect.assertions(3);
 
