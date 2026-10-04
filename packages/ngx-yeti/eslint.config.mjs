@@ -10,6 +10,11 @@ export default [
   ...baseConfig,
   ...angularConfig,
   ...vitestConfig,
+  // A byte-faithful copy of Yeti's dist/yeti.d.ts, from tools/yeti/generate-sources.mjs.
+  { ignores: ['src/yeti-types.ts'] },
+  // The inline templates of this spec use `@boundary`, which the template
+  // linter's bundled compiler does not parse yet.
+  { ignores: ['styles/src/yeti-styles.spec.ts/**/*.html'] },
   {
     files: ['**/*.json'],
     rules: {

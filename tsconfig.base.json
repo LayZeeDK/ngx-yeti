@@ -17,7 +17,9 @@
     "paths": {
       "ngx-yeti": ["./packages/ngx-yeti/src/index.ts"],
       "@ngx-yeti/testing": ["./packages/ngx-yeti-testing/src/index.ts"],
-      "@ngx-yeti/testing/server": ["./packages/ngx-yeti-testing/src/server.ts"]
+      "@ngx-yeti/testing/server": ["./packages/ngx-yeti-testing/src/server.ts"],
+      "ngx-yeti/styles": ["./packages/ngx-yeti/styles/src/index.ts"],
+      "ngx-yeti/card": ["./packages/ngx-yeti/card/src/index.ts"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

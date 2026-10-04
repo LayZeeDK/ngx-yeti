@@ -101,6 +101,13 @@
         }
       }
     },
-    "typecheck-watch": {}
+    "typecheck-watch": {},
+    "yeti-sources": {
+      "command": "node tools/yeti/generate-sources.mjs",
+      "dependsOn": ["^yeti-build"],
+      "metadata": {
+        "description": "Write src/yeti-types.ts and styles/src/yeti-rank.ts from Yeti's build at the pin"
+      }
+    }
   }
 }

@@ -3,9 +3,9 @@ id: T002
 title: Build the ngx-yeti/styles loader and the card directives at generator-made entry points
 wave: 1
 deps: []
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T002
+base: 5ecb15d82792a80be67e0f23a67fd8fbd57b4570
 worktree: null
 task_branch: null
 files:
@@ -89,3 +89,28 @@ Heavy: no
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — Orchestrator answer: AC7 needs `npx prettier --check .` to pass, which fails on 8 `.project/` pipeline artifacts the helpers rewrite; `.prettierignore` is a declared file, so add a `/.project` line next to `/docs/specs` and confirm `npx prettier --check .` passes (T002 AC7 and files list; AGENTS.md "Commits" bisect-safe rule). Applied.
+- 2026-10-04 — coder: entry points `styles` and `card` made with `npx nx g @nx/angular:library-secondary-entry-point --library=ngx-yeti --name=<n> --skipModule`; its tsconfig.base.json aliases and tsconfig.lib.json include/exclude lines kept as written (the second run also wrote harmless `card/styles/...` lines, a generator quirk, kept unedited). `tools/yeti/generate-sources.mjs` plus target `ngx-yeti:yeti-sources` (dependsOn `^yeti-build`) write `src/yeti-types.ts` (byte copy of dist/yeti.d.ts; excluded in `.prettierignore` and the package ESLint config) and `styles/src/yeti-rank.ts` (Prettier-formatted record of 49 items with rank, kind, path, plus `yetiPin`); yeti-pin skill step 5 names the command. Primary `index.ts` gains `export type * from './yeti-types'`. Loader `YetiStyles` (`@Service()`, not exported) with adoption at creation, ordered insertion, rAF removal check gated on a render callback, MutationObserver created in `afterNextRender` and disconnected on the root `DestroyRef`; `injectYetiItemStyles` registers release then acquires; `provideYetiStyles` adds an environment initializer only for a non-empty `preload` (preload links also carry the `CSP_NONCE` nonce when one is provided). Card: `YetiCard`, `YetiCardLink`, `yetiCardToken` per contract with usage rules 1 to 11 and Y12 in JSDoc. `build-fast` discovers each `ng-package.json` one folder down and emits `fesm2022/<name>.mjs`, `types/<name>.d.ts`, and an `exports` entry per entry point, keeping source `exports`. The layer-2 spec's `@boundary` template cannot be parsed by angular-eslint's bundled compiler (22.5.0), so the package ESLint config ignores that spec's virtual inline-template files only.
+- 2026-10-04 — coder: Verify PASS in the worktree (exit 0; build and build-fast each emit both FESMs; typecheck -c src and full typecheck pass; 3 files, 135 tests passed). Also `npx prettier --check .` PASS and `npx nx run-many -t lint typecheck test -p ngx-yeti --skip-nx-cache` PASS.
+- 2026-10-04 — orchestrator Verify (isolate gsd-path-task/T002): pass, exit 0; output tail:
+  ```
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```

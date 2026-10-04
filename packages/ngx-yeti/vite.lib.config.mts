@@ -1,6 +1,12 @@
 // Experimental alternative to ng-packagr: fastCompile JavaScript plus typings
 // from ngc with the unsupported `_experimentalAllowEmitDeclarationOnly` flag.
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
 import angular from '@analogjs/vite-plugin-angular';
@@ -16,12 +22,42 @@ import { defineConfig, type Plugin } from 'vite';
 
 const projectRoot = import.meta.dirname;
 const tsconfig = join(projectRoot, 'tsconfig.lib.prod.json');
-const fesmFile = 'fesm2022/ngx-yeti.mjs';
-const typingsFile = 'types/ngx-yeti.d.ts';
 
 /** ng-packagr's rule: a bare specifier is a dependency and is never bundled. */
 const isExternal = (id: string): boolean =>
   !/^[./\0]/.test(id) && !isAbsolute(id);
+
+interface EntryPoint {
+  /** ng-packagr's flat name: `ngx-yeti`, `ngx-yeti-<folder>`. */
+  readonly name: string;
+  /** The key in the package's `exports` map. */
+  readonly subpath: string;
+  /** The entry file, relative to the project root. */
+  readonly entryFile: string;
+}
+
+/**
+ * The primary entry point plus every folder one level below the project root
+ * that holds an `ng-package.json`, as ng-packagr discovers secondary entry
+ * points, so a new entry point needs no edit here.
+ */
+const entryPoints: readonly EntryPoint[] = [
+  { name: 'ngx-yeti', subpath: '.', entryFile: entryFileOf('.') },
+  ...readdirSync(projectRoot, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        existsSync(join(projectRoot, entry.name, 'ng-package.json')),
+    )
+    .map(({ name }) => ({
+      name: `ngx-yeti-${name}`,
+      subpath: `./${name}`,
+      entryFile: join(name, entryFileOf(name)).replaceAll('\\', '/'),
+    })),
+];
+
+const fesmFile = (name: string): string => `fesm2022/${name}.mjs`;
+const typingsFile = (name: string): string => `types/${name}.d.ts`;
 
 export default defineConfig(({ mode }) => ({
   root: projectRoot,
@@ -42,7 +78,13 @@ export default defineConfig(({ mode }) => ({
     minify: false,
     sourcemap: true,
     reportCompressedSize: false,
-    lib: { entry: 'src/index.ts', formats: ['es'], fileName: () => fesmFile },
+    lib: {
+      entry: Object.fromEntries(
+        entryPoints.map(({ name, entryFile }) => [name, entryFile]),
+      ),
+      formats: ['es'],
+      fileName: (_format, name) => fesmFile(name),
+    },
     rolldownOptions: {
       external: isExternal,
       // fastCompile marks `ɵɵngDeclareClassMetadata(...)` statements pure;
@@ -53,16 +95,23 @@ export default defineConfig(({ mode }) => ({
   },
 }));
 
-/** Emits the rest of the package beside the FESM: typings, manifest, docs. */
+/** An entry point's `lib.entryFile`, relative to its folder. */
+function entryFileOf(folder: string): string {
+  const lib = readJson(join(projectRoot, folder, 'ng-package.json'))['lib'];
+  const entryFile = isRecord(lib) ? lib['entryFile'] : undefined;
+
+  return typeof entryFile === 'string' ? entryFile : 'src/index.ts';
+}
+
+/** Emits the rest of the package beside the FESMs: typings, manifest, docs. */
 function angularPackage(): Plugin {
   return {
     name: 'ngx-yeti:angular-package',
     async generateBundle() {
-      this.emitFile({
-        type: 'asset',
-        fileName: typingsFile,
-        source: await bundleTypings(),
-      });
+      for (const [name, source] of await bundleTypings()) {
+        this.emitFile({ type: 'asset', fileName: typingsFile(name), source });
+      }
+
       this.emitFile({
         type: 'asset',
         fileName: 'package.json',
@@ -87,9 +136,9 @@ function angularPackage(): Plugin {
 /**
  * Declaration-only ngc forces local compilation mode: per-file `.d.ts` with
  * Ivy `ɵcmp`/`ɵdir` types. They go to a throwaway directory and come back as
- * one flat file.
+ * one flat file per entry point.
  */
-async function bundleTypings(): Promise<string> {
+async function bundleTypings(): Promise<Map<string, string>> {
   const declarationDir = mkdtempSync(join(tmpdir(), 'ngx-yeti-dts-'));
 
   try {
@@ -98,7 +147,7 @@ async function bundleTypings(): Promise<string> {
       rootNames,
       options: {
         ...options,
-        rootDir: join(projectRoot, 'src'),
+        rootDir: projectRoot,
         outDir: declarationDir,
         declaration: true,
         declarationMap: false,
@@ -111,39 +160,51 @@ async function bundleTypings(): Promise<string> {
       throw new Error(formatDiagnostics(diagnostics));
     }
 
-    const bundle = await rolldown({
-      input: join(declarationDir, 'index.d.ts'),
-      external: isExternal,
-      plugins: [dts({ dtsInput: true, tsconfig: false })],
-      experimental: { attachDebugInfo: 'none' },
-    });
-    const { output } = await bundle.generate({
-      format: 'es',
-      comments: { legal: true, annotation: false, jsdoc: true },
-    });
-    await bundle.close();
+    const typings = new Map<string, string>();
 
-    return output[0].code;
+    for (const { name, entryFile } of entryPoints) {
+      const bundle = await rolldown({
+        input: join(declarationDir, entryFile.replace(/\.ts$/, '.d.ts')),
+        external: isExternal,
+        plugins: [dts({ dtsInput: true, tsconfig: false })],
+        experimental: { attachDebugInfo: 'none' },
+      });
+      const { output } = await bundle.generate({
+        format: 'es',
+        comments: { legal: true, annotation: false, jsdoc: true },
+      });
+      await bundle.close();
+      typings.set(name, output[0].code);
+    }
+
+    return typings;
   } finally {
     rmSync(declarationDir, { recursive: true, force: true });
   }
 }
 
-/** ng-packagr's manifest for a single entry point compiled in partial mode. */
+/** ng-packagr's manifest for the entry points compiled in partial mode. */
 function packageManifest(): string {
   const source = readJson(join(projectRoot, 'package.json'));
   const angularCompiler = readJson(
     new URL(import.meta.resolve('@angular/compiler/package.json')),
   );
+  const sourceExports = source['exports'];
 
   return JSON.stringify(
     {
       ...source,
-      module: fesmFile,
-      typings: typingsFile,
+      module: fesmFile('ngx-yeti'),
+      typings: typingsFile('ngx-yeti'),
       exports: {
         './package.json': { default: './package.json' },
-        '.': { types: `./${typingsFile}`, default: `./${fesmFile}` },
+        ...(isRecord(sourceExports) ? sourceExports : {}),
+        ...Object.fromEntries(
+          entryPoints.map(({ name, subpath }) => [
+            subpath,
+            { types: `./${typingsFile(name)}`, default: `./${fesmFile(name)}` },
+          ]),
+        ),
       },
       sideEffects: source['sideEffects'] ?? false,
       type: 'module',

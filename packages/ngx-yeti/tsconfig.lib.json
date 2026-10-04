@@ -7,12 +7,29 @@
     "inlineSources": true,
     "types": []
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "styles/src/**/*.ts",
+    "card/src/**/*.ts",
+    "card/styles/src/**/*.ts"
+  ],
   "exclude": [
     "src/**/*.spec.ts",
     "src/**/*.test.ts",
     "**/*.stories.ts",
     "**/*.stories.js",
-    "src/test-setup.ts"
+    "src/test-setup.ts",
+    "styles/src/**/*.spec.ts",
+    "styles/src/**/*.test.ts",
+    "styles/**/*.stories.ts",
+    "styles/**/*.stories.js",
+    "card/src/**/*.spec.ts",
+    "card/src/**/*.test.ts",
+    "card/**/*.stories.ts",
+    "card/**/*.stories.js",
+    "card/styles/src/**/*.spec.ts",
+    "card/styles/src/**/*.test.ts",
+    "card/styles/**/*.stories.ts",
+    "card/styles/**/*.stories.js"
   ]
 }
