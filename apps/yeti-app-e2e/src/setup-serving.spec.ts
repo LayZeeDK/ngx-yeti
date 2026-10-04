@@ -36,7 +36,13 @@ async function recordCspViolations(
       Reflect.get(window, '__cspViolations'),
     );
 
-    return [...(Array.isArray(events) ? events.map(String) : []), ...messages];
+    if (!Array.isArray(events)) {
+      throw new Error(
+        'The probe recorded nothing under window.__cspViolations',
+      );
+    }
+
+    return [...events.map(String), ...messages];
   };
 }
 
