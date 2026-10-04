@@ -9,7 +9,7 @@ Built against Yeti `7.0.0-alpha.0` at commit `f52d1e8b93de5bbde322480ba77d5be26c
 ### Entry points
 
 - `ngx-yeti`: types only, generated from Yeti's `yeti.d.ts` at the pin, such as `YetiComponentName`, `YetiVariant`, `YetiWidth`, `YetiRatio`, and `YetiLift`.
-- `ngx-yeti/styles`: `provideYetiStyles` and `injectYetiItemStyles`, which load each item's Yeti file as a counted link in `<head>` on the server and the client.
+- `ngx-yeti/styles`: `provideYetiStyles` with its `YetiStylesConfig` type, and `injectYetiItemStyles`, which load each item's Yeti file as a counted link in `<head>` on the server and the client.
 - `ngx-yeti/card`: `YetiCard`, `YetiCardLink`, and `yetiCardToken`.
 - `ngx-yeti/lift`: `NgxYetiLift`.
 - `ngx-yeti/accessibility.css`: the package's accessibility stylesheet, in `@layer ngx-yeti`. It has no rules yet. Import it as the last line of the global stylesheet.
