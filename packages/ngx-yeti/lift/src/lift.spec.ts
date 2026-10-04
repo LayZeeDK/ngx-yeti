@@ -1,5 +1,12 @@
 import { Component, inputBinding, signal, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import {
+  itemLinks,
+  itemStylesLoaded,
+  nextFrame,
+  removeItemLinks,
+  stylesheetLoaded,
+} from '@ngx-yeti/testing';
 import type { YetiLift } from 'ngx-yeti';
 import { YetiCard } from 'ngx-yeti/card';
 import { provideYetiStyles } from 'ngx-yeti/styles';
@@ -33,7 +40,10 @@ class HoverHost {}
 /** Yeti's built CSS, served by Vite from the workspace's node_modules. */
 const yetiCss = `/@fs/${server.config.root.replaceAll('\\', '/')}/../../node_modules/yeti-css/dist/css/`;
 
-/** The always-loaded group of the setup spec's global stylesheet. */
+/**
+ * The part of the setup spec's global stylesheet the pointer cases read: the
+ * layer order, the tokens, and the reset. Not the whole always-loaded group.
+ */
 const globalFiles = [
   'layers.css',
   'tokens/scale.css',
@@ -46,42 +56,6 @@ const globalFiles = [
   'tokens/components.css',
   'base/reset.css',
 ];
-
-function itemLinks(item: string): number {
-  return document.head.querySelectorAll(`link[data-ngx-yeti-styles="${item}"]`)
-    .length;
-}
-
-/** Waits past the frame the loader's removal check runs in. */
-async function nextFrame(): Promise<void> {
-  for (let frame = 0; frame < 2; frame++) {
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-        resolve();
-      });
-    });
-  }
-}
-
-function removeItemLinks(): void {
-  // Links an earlier test's loader left in the shared document.
-  for (const link of document.head.querySelectorAll(
-    'link[data-ngx-yeti-styles]',
-  )) {
-    link.remove();
-  }
-}
-
-async function loaded(link: HTMLLinkElement): Promise<void> {
-  if (link.sheet !== null) {
-    return;
-  }
-
-  await new Promise((resolve, reject) => {
-    link.addEventListener('load', resolve, { once: true });
-    link.addEventListener('error', reject, { once: true });
-  });
-}
 
 /** Adds the global stylesheet once per test file, as an application does. */
 async function globalStylesheet(): Promise<void> {
@@ -98,7 +72,7 @@ async function globalStylesheet(): Promise<void> {
       document.head.append(link);
     }
 
-    await loaded(link);
+    await stylesheetLoaded(link);
   }
 }
 
@@ -144,13 +118,8 @@ async function setupHover() {
     return found;
   };
 
-  for (const item of ['card', 'lift']) {
-    const link = document.head.querySelector<HTMLLinkElement>(
-      `link[data-ngx-yeti-styles="${item}"]`,
-    );
-    assert.exists(link);
-    await loaded(link);
-  }
+  await itemStylesLoaded('card');
+  await itemStylesLoaded('lift');
 
   const rise = card('rise');
 
@@ -227,12 +196,12 @@ describe(NgxYetiLift, () => {
     const { destroy, element } = await setupLift();
 
     expect(element.getAttribute('data-ngx-yeti-item-lift')).toBe('');
-    expect(itemLinks('lift')).toBe(1);
+    expect(itemLinks('lift')).toHaveLength(1);
 
     destroy();
     await nextFrame();
 
-    expect(itemLinks('lift')).toBe(0);
+    expect(itemLinks('lift')).toHaveLength(0);
   });
 
   describe('beside yetiCard on one host', () => {
@@ -261,15 +230,15 @@ describe(NgxYetiLift, () => {
       const element: unknown = fixture.nativeElement;
       assert.instanceOf(element, HTMLElement);
 
-      expect(itemLinks('card')).toBe(1);
-      expect(itemLinks('lift')).toBe(1);
+      expect(itemLinks('card')).toHaveLength(1);
+      expect(itemLinks('lift')).toHaveLength(1);
 
       fixture.destroy();
       element.remove();
       await nextFrame();
 
-      expect(itemLinks('card')).toBe(0);
-      expect(itemLinks('lift')).toBe(0);
+      expect(itemLinks('card')).toHaveLength(0);
+      expect(itemLinks('lift')).toHaveLength(0);
     });
   });
 
