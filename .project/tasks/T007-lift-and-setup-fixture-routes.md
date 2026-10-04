@@ -3,9 +3,9 @@ id: T007
 title: Serve the lift, setup, and setup-boundaries Fixture routes with their e2e cases
 wave: 2
 deps: [T005, T006]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T007
+base: 45394edf71cb8ab113ec3818717741fe8db3af64
 worktree: null
 task_branch: null
 files:
@@ -72,3 +72,33 @@ Heavy: yes
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — build_T007: implemented fixtures (lift, setup, setup-boundaries rows; `provideYetiStyles({ preload: ['card'] })` in app.config.ts) and the three e2e specs. Chromium, development build, `npx playwright test lift.spec.ts setup.spec.ts setup-boundaries.spec.ts`: lift.spec 14/14 pass; setup-boundaries.spec 8 pass + 2 WebKit-only skipped (the `$reset()` flow also passed when temporarily run in Chromium); setup.spec 14 pass, 2 skipped (noscript copy: production build only), 2 fail — the client-only `@defer` card's 0-unstyled-frames assertion (see question). `npx prettier --check .` passes; `npx nx run-many -t lint typecheck test -p yeti-app yeti-app-e2e` passes (warnings only). Full Verify not yet run.
+- Measured: Angular keeps a dehydrated `@defer (hydrate never)` block's server DOM when its parent `@if` is destroyed, so no control can remove a dehydrated host; the specs remove those hosts with `element.remove()` where a case needs an empty `<head>`. The `hydrate on interaction` block keeps its `jsaction` markers until it hydrates, so the setup spec's hydration wait excludes it.
+- Measured: `@boundary` templates fail the yeti-app template linter (its compiler does not parse `@boundary`, as wave-1 recorded for ngx-yeti); the boundary cases' templates sit in module constants, which the linter does not extract and the Angular compiler resolves. eslint.config.mjs is outside `files`.
+- Measured (Chromium, cache off through `page.route`, 300 ms delay): on `/sub/setup` the card file is already loaded at page start by the server's shared host, so the client-only `@defer` card can only be a re-insertion after every host is removed; the re-inserted `card` link refetches through the delay and paints about 20 unstyled frames although `card` is preloaded (the preload was consumed at load). Without emptying `<head>`, the card link is already present and 0 frames is trivially true.
+- NEEDS-ORCHESTRATOR: How should AC3's "the client-only `@defer` with the preloaded card shows 0 unstyled frames with item CSS delayed 300 ms" be asserted, given the setup route must server-render a card (Interface contract) so the card file is never first loaded by the client there? — readings: (a) assert 0 after emptying `<head>` (fails in Chromium, ~20 frames, measured); (b) assert 0 without emptying `<head>` (passes trivially, the link is already there); (c) record the preloaded card's frames as an annotation like the lift's and carry the 0-frame assertion to a route whose card first renders on the client (needs a fixture key or file outside `files`, e.g. M006's `setup--client-defer-preload`).
+- Orchestrator answer: reading (c), without any file outside `files`. The preload's 0-frame claim is for an item whose first instance is a client-only `@defer` block (setup.md:341; ADR 0060 point 6, measured on `alert`, which the page does not server-render), and Playwright's `page.route` disables the HTTP cache, so a re-inserted card link on `/setup` refetches by construction. On `/setup`, record the re-inserted client-only card's unstyled frames as a test annotation, as the lift's are recorded. Add a second fixture component in `apps/yeti-app/src/app/fixtures/setup-fixture.ts`, registered in `apps/yeti-app/src/app/fixtures/fixtures.ts` under the route key `setup-defer` (prerendered and server-rendered like every fixture), whose only card is inside a client-only `@defer (on interaction)` block, so the server renders no card host and the root `preload: ['card']` link is the only card request before the interaction; in `apps/yeti-app-e2e/src/setup.spec.ts`, assert 0 unstyled frames there with item CSS delayed 300 ms, plus the route's standard checks (JavaScript on and off, axe on `wcagTags`, clean hydration). That route carries AC3's 0-frame assertion. — Citations: T007 AC3 and `files`; INTENT.md SC2; setup.md:341; ADR 0060 point 6.
+- 2026-10-04 — build_T007, after the orchestrator answer: added `SetupDeferFixture` in setup-fixture.ts, registered as `setup-defer` in fixtures.ts (only card in a client-only `@defer (on interaction)`; the server writes no card link, only the root `card` preload). setup.spec.ts: on `/setup` the re-inserted client-only card's and the lift's frames are annotations; on `/setup-defer` (both route kinds) clean hydration, 0 link/style mutations after DOMContentLoaded, no item link before the interaction, the card preload in `<head>`, 0 unstyled frames for the deferred card with item CSS delayed 300 ms from the start (cache off through routing), JavaScript off placeholder plus preload, and axe on `wcagTags`. Production build (`FIXTURE_CONFIGURATION=production`), the three specs: 42 passed, 8 skipped (development-only hydration diagnostics and WebKit-only `$reset()`), noscript-copy test included and passing.
+- 2026-10-04 — Verify (verbatim task command): exit 0. `npm ci` ok; `nx run-many -t typecheck -p yeti-app yeti-app-e2e` ok; setup-boundaries.spec.ts exists; `nx e2e yeti-app-e2e -- lift.spec.ts setup.spec.ts setup-boundaries.spec.ts`: 46 passed, 4 skipped (Chromium; skips are the noscript-copy test in development and the WebKit-only `$reset()` frames test). Also `npx prettier --check .` passes and `npx nx run-many -t lint typecheck test -p yeti-app yeti-app-e2e` passes (0 errors, 7 warnings of the `playwright/no-conditional-*` and `expect-expect` kinds).
+- 2026-10-04 — orchestrator Verify (isolate gsd-path-task/T007): pass, exit 0; output tail:
+  ```
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```
