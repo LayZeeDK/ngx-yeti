@@ -32,7 +32,7 @@ export default defineConfig({
   webServer: [
     {
       command: `${nx} run yeti-app:serve-ssr:${configuration}`,
-      url: `${baseURL}highlight`,
+      url: `${baseURL}card`,
       // `env` also keeps @nx/playwright from inferring a dependency on
       // serve-ssr, which would drop the configuration.
       env: { PORT: String(port) },

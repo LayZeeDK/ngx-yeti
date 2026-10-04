@@ -3,9 +3,9 @@ id: T012
 title: Remove the NgxYeti and Highlight placeholders and move their assertions onto card
 wave: 3
 deps: [T001, T002, T003, T004, T005, T007, T010]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T012
+base: c560d1670f278937879715aba770fb72caa67919
 worktree: null
 task_branch: null
 files:
@@ -90,3 +90,29 @@ Heavy: yes
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — build_T012: deleted the nine files under packages/ngx-yeti/src/lib/ and apps/yeti-app/src/app/fixtures/highlight-fixture.ts; packages/ngx-yeti/src/index.ts keeps only `export type * from './yeti-types'` (dist fesm2022/ngx-yeti.mjs is empty; ng-packagr and vite.lib.config.mts needed no change). New packages/ngx-yeti/card/src/card.ssr.spec.ts (section 8 markup with span/link stand-ins, bound ratio 4/3, static raised, NgOptimizedImage + RouterLink with provideRouter): article class/presence/data-threshold/data-ratio/data-raised, no data-variant; link data-stretch and href; exactly one item link in head (card, data-beasties-skip, href ends components/card/card.css?v=<40-hex pin>); no jsaction on any element other than RouterLink anchors. fixture-app.spec.ts: hydration and JS-off axe tests dropped as duplicates of card.spec.ts (which already asserts both on the card route); JS-off styled test now asserts the card file's article padding-top and Yeti's root font on `card`; axe negative controls open `card`; replay test kept. build-output.spec.ts names sub/card/index.html and sub/server/card; playwright.config.mts serve-ssr readiness URL is `${baseURL}card`. apps/ngx-yeti-e2e/src/ngx-yeti.spec.ts renamed to open-story.spec.ts with plain `mv` (coder rules forbid staging, so not `git mv`; the orchestrator's commit records the rename) and opens card--default / card--missing. Replay fixture: `i18n` on its button (text unchanged; a separate paragraph broke the 3-line inline-template lint rule). Skills: pattern pointers moved to card files in ngx-yeti-testing (layers 2, 3), ngx-yeti-stories, type-safety SKILL.md + rules/sifers-pattern.md (example rewritten from setupCardLink) + rules/angular-components.md, eslint-conflict-audit (template row now apps/yeti-app/src/app/app.html); ngx-yeti-specs placeholder bullet deleted and preload-split Departures row added.
+- 2026-10-04 — build_T012 audit re-checks: row 1 `rg -c i18n apps/yeti-app/src/app/fixtures` -> every fixture file (card 1, lift 1, replay 1, setup 2, setup-boundaries 1) has an i18n text: verified. Row 4 eslint configs spreading vitestConfig = ngx-yeti, ngx-yeti-testing, yeti-app, yeti-analog (+ root); skill list now names all four: verified. Row 5 `injectYetiItemStyles` is exported from packages/ngx-yeti/styles/src/index.ts (inject-yeti-item-styles.ts:24); stories skill names the `ngx-yeti/styles` entry point and setup.md: verified.
+- 2026-10-04 — build_T012 Verify (task command, Chromium): exit 0 (card.ssr.spec 4/4; typecheck 4 projects; build + build-fast ngx-yeti; yeti-app-e2e fixture-app + build-output 8/8; ngx-yeti-e2e open-story 3/3). Orchestrator extras: `npx nx run-many -t lint typecheck test test-storybook --skip-nx-cache` exit 0 (7 projects); `npx nx run-many -t e2e --skip-nx-cache` exit 0 (3 projects); `npx prettier --check .` exit 0.
+- 2026-10-04 — orchestrator Verify (isolate gsd-path-task/T012): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  [1A[2K[2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  [2m[WebServer] [22m  yeti-css:yeti-build
+  [2m[WebServer] [22mFlaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  [1A[2K[2m[WebServer] [22m(node:32108) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [1A[2K[2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  ```

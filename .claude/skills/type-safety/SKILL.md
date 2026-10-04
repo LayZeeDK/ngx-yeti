@@ -21,7 +21,7 @@ Lint and typecheck catch different things. Run both. `nx test` compiles with Ana
 - `explicit-function-return-type` with `allowExpressions`, `allowTypedFunctionExpressions`, and `allowHigherOrderFunctions`. Specs are exempt.
 - `@eslint-community/eslint-comments/require-description`. Every `eslint-disable` comment needs a `-- reason`.
 - `angularConfig`: angular-eslint `tsAll` and `templateAll` with a few rules turned off. See [rules/angular-components.md](rules/angular-components.md).
-- `vitestConfig` for `**/*.spec.ts` in the Vitest projects only (`ngx-yeti`, `yeti-app`, `yeti-analog`). It enables `vitest.configs.recommended`, about 40 more vitest rules at error, and `vitest/no-hooks`. The Playwright e2e projects do not spread it.
+- `vitestConfig` for `**/*.spec.ts` in the Vitest projects only (`ngx-yeti`, `ngx-yeti-testing`, `yeti-app`, `yeti-analog`). It enables `vitest.configs.recommended`, about 40 more vitest rules at error, and `vitest/no-hooks`. The Playwright e2e projects do not spread it.
 - Storybook `flat/recommended` and `flat/csf-strict` for stories.
 
 **Enforced in `tsconfig.base.json`:**
@@ -96,8 +96,8 @@ describe(App, () => {
 
 ## Files demonstrating the patterns
 
-- `packages/ngx-yeti/src/lib/highlight/highlight.spec.ts` shows a directive test with `inputBinding`, a signal-driven change, and `assert.instanceOf`.
-- `packages/ngx-yeti/src/lib/ngx-yeti/ngx-yeti.spec.ts` and `apps/yeti-app/src/app/app.spec.ts` show the minimal component `setup()`.
-- `packages/ngx-yeti/src/lib/ngx-yeti/ngx-yeti.stories.ts` shows `Meta<Component>` with an awaited `play` assertion.
+- `packages/ngx-yeti/card/src/card.spec.ts` shows a directive test with `inputBinding`, a signal-driven change, and `assert.instanceOf`.
+- `apps/yeti-app/src/app/app.spec.ts` shows the minimal component `setup()`.
+- `packages/ngx-yeti/card/src/card.stories.ts` shows `Meta<Directive>` with awaited `play` assertions.
 - `packages/ngx-yeti/vite.lib.config.mts` shows an `isRecord` type guard on parsed JSON.
 - `packages/ngx-yeti/.storybook/main.ts` shows an `unknown` type guard over Vite plugins.

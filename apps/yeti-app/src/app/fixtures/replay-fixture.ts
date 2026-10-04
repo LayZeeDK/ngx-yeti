@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 
 @Component({
   selector: 'app-replay-fixture',
-  template: `<button type="button" (click)="increment()">
+  template: `<button type="button" i18n (click)="increment()">
     Clicked {{ count() }} times
   </button>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
