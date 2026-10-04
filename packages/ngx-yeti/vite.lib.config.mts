@@ -118,7 +118,48 @@ function angularPackage(): Plugin {
         source: packageManifest(),
       });
 
-      for (const fileName of ['README.md', 'LICENSE']) {
+      const secondaries = entryPoints
+        .filter(({ subpath }) => subpath !== '.')
+        .map((entry) => ({ ...entry, folder: entry.subpath.slice(2) }));
+
+      // ng-packagr's development-only stub per secondary entry point, and
+      // the .npmignore that keeps the stubs out of the tarball.
+      for (const { name, folder } of secondaries) {
+        this.emitFile({
+          type: 'asset',
+          fileName: `${folder}/package.json`,
+          source: JSON.stringify(
+            {
+              module: `../${fesmFile(name)}`,
+              typings: `../${typingsFile(name)}`,
+            },
+            undefined,
+            2,
+          ),
+        });
+      }
+
+      this.emitFile({
+        type: 'asset',
+        fileName: '.npmignore',
+        source: [
+          "# Nested package.json's are only needed for development.",
+          ...secondaries.map(({ folder }) => `${folder}/package.json`),
+        ].join('\n'),
+      });
+
+      // ponytail: `assets` entries are taken as plain file paths; ng-packagr's
+      // glob and object forms need handling once ng-package.json uses them.
+      const assets = readJson(join(projectRoot, 'ng-package.json'))['assets'];
+
+      for (const fileName of [
+        'README.md',
+        'LICENSE',
+        ...secondaries.map(({ folder }) => `${folder}/README.md`),
+        ...(Array.isArray(assets)
+          ? assets.filter((a) => typeof a === 'string')
+          : []),
+      ]) {
         const path = join(projectRoot, fileName);
 
         if (existsSync(path)) {
@@ -197,8 +238,8 @@ function packageManifest(): string {
       module: fesmFile('ngx-yeti'),
       typings: typingsFile('ngx-yeti'),
       exports: {
-        './package.json': { default: './package.json' },
         ...(isRecord(sourceExports) ? sourceExports : {}),
+        './package.json': { default: './package.json' },
         ...Object.fromEntries(
           entryPoints.map(({ name, subpath }) => [
             subpath,

@@ -31,7 +31,7 @@ Template errors appear only in `typecheck`. For example, `<yeti-nope />` in a te
 
 Analog reports that `fastCompile` passes about 91% of Angular's conformance suite. The gaps that show up here:
 
-- `build-fast` output has no signal `debugName` and no `propDecorators` in class metadata. Its file tree, `package.json`, typings, and README match the ng-packagr output byte for byte.
+- `build-fast` output has no signal `debugName` and no `propDecorators` in class metadata. Its file tree, `package.json` files, `.npmignore`, READMEs, and `ng-package.json` assets match the ng-packagr output byte for byte. Its typings do too, except that ng-packagr also keeps the declarations of classes an entry point uses but does not export, such as the styles loader.
 - `build-fast` gets typings from `ngc` with `angularCompilerOptions._experimentalAllowEmitDeclarationOnly`. The underscore marks an unsupported flag that can change in any Angular release. Publish from `build`.
 
 ## Gotchas no config file explains
