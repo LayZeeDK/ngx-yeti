@@ -258,6 +258,9 @@ describe(NgxYetiLift, () => {
       rise.append(probe);
       const distance = parseFloat(getComputedStyle(probe).marginTop);
       probe.remove();
+      // The end state, not the animation: on a busy runner headless WebKit
+      // advances the transition in a few frames and the poll ran out midway.
+      rise.style.transition = 'none';
 
       await page.elementLocator(rise).hover();
 
