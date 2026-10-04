@@ -277,7 +277,8 @@ check(
   manifest.version,
 );
 
-// 9. The shipped changelog names the full Yeti commit.
+// 9. The shipped changelog has an entry for the packed version, and that
+// entry names the full Yeti commit (ADR 0017 point 1).
 let changelog = '';
 
 try {
@@ -286,9 +287,16 @@ try {
   check(false, 'the tarball ships CHANGELOG.md', String(error));
 }
 
+const entry = changelog
+  .split(/^## /m)
+  .find((section) => section.split(/\s/, 1)[0] === manifest.version);
 check(
-  changelog.includes(yetiCommit),
-  `the shipped CHANGELOG.md names ${yetiCommit}`,
+  entry !== undefined,
+  `the shipped CHANGELOG.md has a "## ${manifest.version}" entry`,
+);
+check(
+  entry.includes(yetiCommit),
+  `the CHANGELOG.md entry for ${manifest.version} names ${yetiCommit}`,
 );
 
 // 10. The package is MIT, and the Yeti files it carries keep Yeti's licence
