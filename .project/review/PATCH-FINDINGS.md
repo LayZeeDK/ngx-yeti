@@ -1,13 +1,13 @@
 # Patch Findings
 
-Reviewed HEAD: 1ac159a21be091ed19cbeb6b4646ecc467f528a6
+Reviewed HEAD: 6991ad5cd35faf1a84fe7afdfe7a5dc8afeeb8ad
 State: ship/blocked
 
 ## Findings
 
-### P001 — Route-level provideYetiStyles still preloads
+### P001 — Production hydration-frame assertion fails under upstream A4
 
-- **Source**: `.project/review/final-gap-3.md`
-- **Locator**: `Risk: Documented provideYetiStyles placement matches the loader`
-- **Evidence**: A route-level `provideYetiStyles()` is not without effect: its `preload` list runs at route-injector creation and writes preload links (using the root `url`), while its `url` is silently ignored. This contradicts setup.md:196, README rule 10, and the JSDoc, which all say a route-level call has no effect.
-- **Fix direction**: Make the code match setup.md (which outranks the README): the preload initializer must act only when provideYetiStyles is in the root environment injector, e.g. in the initializer, skip unless `inject(EnvironmentInjector) === inject(ApplicationRef).injector` (or move preload into the root YetiStyles reading `yetiStylesConfig.preload` from the root injector, so a route-level config is never read). Add a spec like the one above asserting no preload link and default url after a route-level call.
+- **Source**: `.project/review/final-gap-1.md`
+- **Locator**: `Risk: project Verify`
+- **Evidence**: Project Verify failed at the reviewed commit.
+- **Fix direction**: Resolve the recorded command failure before shipping.

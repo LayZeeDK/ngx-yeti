@@ -2,7 +2,7 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: walking-skeleton
-phase: ship
+phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
 status: active
@@ -57,3 +57,8 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — build — build started
 - 2026-10-04 — build — wave 5 review passed (cycle 1): .project/review/wave-5.cycle1.md
 - 2026-10-04 — ship — build done; final review pending
+- 2026-10-04 — ship — project Verify failed at 6991ad5: production yeti-app-e2e card.spec.ts:221 one 0px hydration frame (upstream A4 under critical-CSS inlining; reproduced 1 of 20 Chromium runs, both route kinds); evidence final-gap-1.md and verify ledger
+- 2026-10-04 — plan — patch plan reopened
+- 2026-10-04 — plan — patch plan gates (wave 6, T017): check_handoffs plan pass; brief check with landed tasks at recorded bases pass (gate-plan mis-lints landed T012)
+- 2026-10-04 — plan — patch plan approved
+- 2026-10-04 — build — build started

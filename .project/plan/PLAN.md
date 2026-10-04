@@ -69,6 +69,11 @@ Review depth: full
 Goal: Repair final-review finding P001 (final-gap-3): make a route-level `provideYetiStyles()` call have no effect, as setup.md:196 says, so it neither changes `url` nor writes preload links, while the root-level call keeps its url override, preload dedupe, CSP nonce, server write, and client adoption (T016).
 Review depth: full
 
+## Wave 6 — final-review patch
+
+Goal: Repair final-review finding P001 (final-gap-1, project Verify failed at 6991ad5): in the production configuration, record rather than assert the hydration-frame counts upstream bug A4 can affect on server-rendered and prerendered items, at every such site in the yeti-app-e2e specs, keep the 0-frame assertions in the development configuration and on client-only items, and record the Chromium measurement in the specs skill's departures table and the package README (T017).
+Review depth: full
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |
@@ -123,3 +128,4 @@ Review depth: full
 - T014 depends on T002 and T003 for the API and stylesheet it documents and for the two source files whose JSDoc it edits; it runs beside T012 and T013 with disjoint files.
 - Docs-audit rulings 1, 4, and 5 land in T012 because they edit the same files as the placeholder move (the replay fixture, the type-safety skill, the stories skill); rulings 2 and 3 land in T014.
 - T016 depends on T002 and T014 for file overlap: it changes `provide-yeti-styles.ts` and may change `yeti-styles.ts`, which T002 created and T014 edited (JSDoc).
+- T017 depends on T005, T011, and T015 for file overlap on `apps/yeti-app-e2e/src/card.spec.ts`, on T007 and T015 for `apps/yeti-app-e2e/src/setup.spec.ts`, on T003 and T012 for `.claude/skills/ngx-yeti-specs/SKILL.md` (the departures table T012 last edited), and on T014 for `packages/ngx-yeti/README.md`.
