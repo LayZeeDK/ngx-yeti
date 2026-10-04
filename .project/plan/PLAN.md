@@ -55,6 +55,15 @@ Walkthrough:
 1. Run `npx nx run ngx-yeti:pack-check`: the consumer compiles against the tarball, importing `YetiCard` and `YetiCardLink` from the card entry point, `NgxYetiLift` from the lift entry point, `injectYetiItemStyles` and `provideYetiStyles` from the styles entry point, and the five Yeti types from `ngx-yeti`, and resolves the package's accessibility stylesheet; a `threshold="medium"` probe fails to compile.
 2. List the tarball: its `package.json` version is `0.220200.0-yeti.7.0.0-alpha.0.gf52d1e8` with no `yeti-css` in any dependency field, and its `CHANGELOG.md` names `f52d1e8b93de5bbde322480ba77d5be26c49b0ef`.
 
+## Wave 4 — fix wave 2 cycle 1 review findings
+
+Goal: Repair the blocking findings of the wave 2 cycle 1 review without changing source task contracts.
+Review depth: full
+
+| Task | Title | Deps | Files |
+|------|-------|------|-------|
+| T015 | Fix wave 2 cycle 1 review findings in T007, T010, T011 | T007, T010, T011 | apps/yeti-app-e2e/playwright.config.mts, apps/yeti-app-e2e/src/card.spec.ts, apps/yeti-app-e2e/src/lift.spec.ts, apps/yeti-app-e2e/src/setup-boundaries.spec.ts, apps/yeti-app-e2e/src/setup-serving.spec.ts, apps/yeti-app-e2e/src/setup.spec.ts, apps/yeti-app/project.json, apps/yeti-app/src/app/app.config.server.ts, apps/yeti-app/src/app/app.config.ts, apps/yeti-app/src/app/fixtures/card-fixture.ts, apps/yeti-app/src/app/fixtures/fixtures.ts, apps/yeti-app/src/app/fixtures/lift-fixture.ts, apps/yeti-app/src/app/fixtures/setup-boundaries-fixture.ts, apps/yeti-app/src/app/fixtures/setup-fixture.ts, apps/yeti-app/src/server.ts |
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |
