@@ -31,10 +31,11 @@ import {
  * The rest of the one-time setup is build configuration: build Yeti at the
  * pin the package version names (usage rule 1), write the layer statement
  * first (rule 2), import the always-loaded group and never an item file (rule
- * 3), import the accessibility stylesheet after it (rule 4), write no Yeti or
- * `data-ngx-yeti-*` attribute by hand (rule 7), provide `withI18nSupport()`
- * wherever `i18n` is used (rule 9), and put a `@boundary` inside a `@defer`
- * block (rule 11).
+ * 3), import the accessibility stylesheet after it (rule 4), write no Yeti
+ * class, Yeti `data-*` attribute, or `data-ngx-yeti-*` attribute by hand (rule
+ * 7), provide `withI18nSupport()` wherever `i18n` is used (rule 9), and, when
+ * deferred content holds package directives, put a `@boundary` inside the
+ * `@defer`, not only around it (rule 11).
  */
 export function provideYetiStyles(
   config: YetiStylesConfig = {},
