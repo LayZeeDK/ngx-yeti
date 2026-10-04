@@ -2,7 +2,7 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: walking-skeleton
-phase: ship
+phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
 status: active
@@ -50,3 +50,8 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — build — integrated uncached checks at 2b5202d (primary checkout, Chromium): prettier, run-many lint typecheck test test-storybook build build-fast (7 projects), pack-check, run-many e2e (3 projects), production yeti-app-e2e (71 passed, 13 skipped): all exit 0
 - 2026-10-04 — build — wave 3 review passed (cycle 1) and repair wave 4 review passed (cycle 1); repair receipt wave-2.cycle1.repair-T015.json recorded
 - 2026-10-04 — ship — build done; final review pending
+- 2026-10-04 — ship — final review blocked: final-gap-3 (route-level provideYetiStyles preloads, contradicting setup.md:196 and :225); FINAL.md SC1-SC7 met; PATCH-FINDINGS.md P001
+- 2026-10-04 — plan — patch plan reopened
+- 2026-10-04 — plan — patch plan gates: check_handoffs plan and review_panel pass; gate-plan's brief check lints landed T012 at HEAD (helper passes no landed_bases), so the brief check ran via validate_task_briefs with each done task at its recorded base: pass (16 tasks)
+- 2026-10-04 — plan — patch plan approved
+- 2026-10-04 — build — build started

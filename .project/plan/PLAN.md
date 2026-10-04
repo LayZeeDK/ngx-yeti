@@ -64,6 +64,11 @@ Review depth: full
 |------|-------|------|-------|
 | T015 | Fix wave 2 cycle 1 review findings in T007, T010, T011 | T007, T010, T011 | apps/yeti-app-e2e/playwright.config.mts, apps/yeti-app-e2e/src/card.spec.ts, apps/yeti-app-e2e/src/lift.spec.ts, apps/yeti-app-e2e/src/setup-boundaries.spec.ts, apps/yeti-app-e2e/src/setup-serving.spec.ts, apps/yeti-app-e2e/src/setup.spec.ts, apps/yeti-app/project.json, apps/yeti-app/src/app/app.config.server.ts, apps/yeti-app/src/app/app.config.ts, apps/yeti-app/src/app/fixtures/card-fixture.ts, apps/yeti-app/src/app/fixtures/fixtures.ts, apps/yeti-app/src/app/fixtures/lift-fixture.ts, apps/yeti-app/src/app/fixtures/setup-boundaries-fixture.ts, apps/yeti-app/src/app/fixtures/setup-fixture.ts, apps/yeti-app/src/server.ts |
 
+## Wave 5 — final-review patch
+
+Goal: Repair final-review finding P001 (final-gap-3): make a route-level `provideYetiStyles()` call have no effect, as setup.md:196 says, so it neither changes `url` nor writes preload links, while the root-level call keeps its url override, preload dedupe, CSP nonce, server write, and client adoption (T016).
+Review depth: full
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |
@@ -117,3 +122,4 @@ Review depth: full
 - T013 depends on T012 (same wave, disjoint files): the packed consuming build asserts the primary entry point exports types only, which is true only after T012 lands. It also consumes T002's, T003's, and T006's entry points and stylesheet.
 - T014 depends on T002 and T003 for the API and stylesheet it documents and for the two source files whose JSDoc it edits; it runs beside T012 and T013 with disjoint files.
 - Docs-audit rulings 1, 4, and 5 land in T012 because they edit the same files as the placeholder move (the replay fixture, the type-safety skill, the stories skill); rulings 2 and 3 land in T014.
+- T016 depends on T002 and T014 for file overlap: it changes `provide-yeti-styles.ts` and may change `yeti-styles.ts`, which T002 created and T014 edited (JSDoc).
