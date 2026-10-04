@@ -264,18 +264,15 @@ describe(injectYetiItemStyles, () => {
   );
 
   it('acquires two items for two directives on one host', async () => {
-    expect.assertions(2);
+    expect.assertions(1);
 
     setup();
     const fixture = TestBed.createComponent(SharedHost);
     await fixture.whenStable();
 
+    // The probes set their own presence attributes; the real directives'
+    // two attributes on one host are lift.spec.ts's "beside yetiCard" case.
     expect(itemNames()).toStrictEqual(['stack', 'card']);
-    expect(
-      document.querySelector(
-        'article[data-ngx-yeti-item-card][data-ngx-yeti-item-stack]',
-      ),
-    ).toBeInstanceOf(HTMLElement);
   });
 
   it('writes the link attributes with the nonce from CSP_NONCE', async () => {
