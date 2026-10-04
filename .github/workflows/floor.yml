@@ -79,6 +79,13 @@ jobs:
 
   firefox-146-e2e:
     runs-on: ubuntu-latest
+    # Playwright's --shard splits each project's tests into the same halves on
+    # every run, so the two runners share the suite; act runs both at once.
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    name: firefox-146-e2e (${{ matrix.shard }}/2)
     # Playwright 1.58.2 bundles Firefox 146.0.1, the earliest Playwright
     # Firefox not below 145; 1.57 bundles 144. Stock Firefox 145 runs only
     # through WebdriverIO, which covers layer 2 in the firefox-145 job.
@@ -100,4 +107,6 @@ jobs:
       # discrete task between processes; built once here, yeti-build is a
       # cache hit in all of them instead of racing over dist/.
       - run: npx nx run yeti-css:yeti-build
-      - run: npx nx run-many -t e2e -p ngx-yeti-e2e yeti-app-e2e
+      # Two workers on the runner's four CPUs: 30% less test time than one,
+      # and no more past two, measured in this image at four CPUs.
+      - run: npx nx run-many -t e2e -p ngx-yeti-e2e yeti-app-e2e -- --shard=${{ matrix.shard }}/2 --workers=2
