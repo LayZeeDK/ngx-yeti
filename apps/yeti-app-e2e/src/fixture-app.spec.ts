@@ -7,39 +7,10 @@ const routeKinds = [
   { kind: 'server-rendered', prefix: 'server/' },
 ] as const;
 
-// The card route's hydration and JavaScript-off axe tests live in card.spec.ts.
+// The card route's hydration and JavaScript-off tests live in card.spec.ts,
+// the global stylesheet's in setup.spec.ts.
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} route`, () => {
-    test.describe('with JavaScript off', () => {
-      test.use({ javaScriptEnabled: false });
-
-      test('serves server HTML that Yeti styles', async ({ page }) => {
-        await page.goto(`${prefix}card`);
-
-        // The card file's padding; an element without Yeti computes 0px.
-        await expect(page.locator('article')).not.toHaveCSS(
-          'padding-top',
-          '0px',
-        );
-
-        const { fontFamily, yetiFontSans } = await page
-          .locator('html')
-          .evaluate((html) => {
-            const style = getComputedStyle(html);
-
-            return {
-              fontFamily: style.fontFamily,
-              yetiFontSans: style.getPropertyValue('--yeti-font-sans').trim(),
-            };
-          });
-
-        expect(yetiFontSans, 'Yeti defines --yeti-font-sans').not.toBe('');
-        expect(fontFamily, "the root font is Yeti's --yeti-font-sans").toBe(
-          yetiFontSans,
-        );
-      });
-    });
-
     test('replays a click made before hydration', async ({ page }) => {
       const release = await holdBackMainBundle(page);
       const button = page.getByRole('button');
