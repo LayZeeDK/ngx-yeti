@@ -305,7 +305,10 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('border-top-width', '0px');
     });
 
-    test('renders the preloaded client-only card with 0 unstyled frames while the server hosts are connected', async ({
+    // The server hosts keep the card link in <head>, so the client-only card
+    // reuses it and the preload plays no part; the setup-defer route carries
+    // the preload claim (card.md:337).
+    test('renders a client-only card with 0 unstyled frames while the server hosts hold the card link', async ({
       page,
     }) => {
       const cardPadding = await recordFrames(
@@ -317,11 +320,6 @@ for (const { kind, prefix } of routeKinds) {
       await delayItemCss(page);
       await page.goto(`${prefix}card`);
       await waitForHydration(page);
-
-      await expect(
-        page.locator('head link[rel="preload"][as="style"]'),
-        'the app preloads the card file',
-      ).toHaveAttribute('href', /components\/card\/card\.css/);
 
       await page
         .getByRole('button', { name: 'Show the client-only card' })
