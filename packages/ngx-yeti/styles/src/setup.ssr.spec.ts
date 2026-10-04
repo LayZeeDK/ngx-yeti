@@ -1,3 +1,4 @@
+import { APP_BASE_HREF } from '@angular/common';
 import {
   APP_ID,
   CSP_NONCE,
@@ -57,6 +58,21 @@ describe('setup', () => {
     );
 
     expect(links).toStrictEqual([
+      itemLink('components/card/card.css', 'card'),
+      itemLink('utilities/lift/lift.css', 'lift'),
+    ]);
+  });
+
+  it('ignores APP_BASE_HREF in the item and preload links', async () => {
+    expect.assertions(2);
+
+    const html = head(
+      await render([{ provide: APP_BASE_HREF, useValue: '/other/' }]),
+    );
+
+    expect(html).not.toContain('/other/');
+    expect(headLinks(html)).toStrictEqual([
+      `<link rel="preload" as="style" href="yeti-css/utilities/lift/lift.css?v=${yetiPin}">`,
       itemLink('components/card/card.css', 'card'),
       itemLink('utilities/lift/lift.css', 'lift'),
     ]);

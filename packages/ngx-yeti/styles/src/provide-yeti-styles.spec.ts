@@ -1,8 +1,10 @@
+import { APP_BASE_HREF } from '@angular/common';
 import {
   APP_ID,
   Component,
   EnvironmentInjector,
   type EnvironmentProviders,
+  type Provider,
   createEnvironmentInjector,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
@@ -14,7 +16,7 @@ import {
 } from '@ngx-yeti/testing';
 import { provideYetiStyles } from './provide-yeti-styles';
 import { yetiPin } from './yeti-rank';
-import { YetiStyles } from './yeti-styles';
+import { YetiStyles, type YetiStylesConfig } from './yeti-styles';
 
 function href(path: string, url = 'yeti-css/'): string {
   return `${url}${path}?v=${yetiPin}`;
@@ -25,7 +27,7 @@ class NoItem {}
 
 function setup({
   providers = [],
-}: { providers?: EnvironmentProviders[] } = {}) {
+}: { providers?: (Provider | EnvironmentProviders)[] } = {}) {
   removeItemLinks();
   TestBed.configureTestingModule({ providers });
   const root = TestBed.inject(EnvironmentInjector);
@@ -33,7 +35,37 @@ function setup({
   return { root };
 }
 
+const urlCases: readonly {
+  readonly name: string;
+  readonly config: YetiStylesConfig;
+}[] = [
+  { name: 'the default url', config: {} },
+  { name: 'a given url', config: { url: 'assets/yeti/' } },
+];
+
 describe(provideYetiStyles, () => {
+  it.each(urlCases)(
+    'ignores APP_BASE_HREF in item and preload links with $name',
+    ({ config }) => {
+      expect.assertions(2);
+
+      setup({
+        providers: [
+          { provide: APP_BASE_HREF, useValue: '/other/' },
+          provideYetiStyles({ ...config, preload: ['card'] }),
+        ],
+      });
+      TestBed.inject(YetiStyles).acquire('stack');
+
+      expect(preloadHrefs()).toStrictEqual([
+        href('components/card/card.css', config.url),
+      ]);
+      expect(itemLinks('stack')[0]?.getAttribute('href')).toBe(
+        href('layouts/stack/stack.css', config.url),
+      );
+    },
+  );
+
   it('loads every item file from the configured url', () => {
     expect.assertions(1);
 
