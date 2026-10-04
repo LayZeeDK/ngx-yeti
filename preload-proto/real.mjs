@@ -21,9 +21,15 @@ const setups = {
   Mc: { main: 3000, polyfills: 0, css: 300, strip: false, what: 'main +3000, card.css +300' },
   'Mc-nopre': { main: 3000, polyfills: 0, css: 300, strip: true, what: 'main +3000, card.css +300, server preload removed' },
   'Mc-v4': { main: 3000, polyfills: 0, css: 300, strip: false, v4: true, what: 'main +3000, card.css +300, preload rewritten to stylesheet media="not all"' },
+  'MP-nopre': { main: 3000, polyfills: 3000, css: 0, strip: true, what: 'main and polyfills +3000, server preload removed' },
+  'MP-v4': { main: 3000, polyfills: 3000, css: 0, strip: false, v4: true, what: 'main and polyfills +3000, preload rewritten to stylesheet media="not all"' },
+  MPc: { main: 3000, polyfills: 3000, css: 300, strip: false, what: 'main and polyfills +3000, card.css +300' },
+  'MPc-nopre': { main: 3000, polyfills: 3000, css: 300, strip: true, what: 'main and polyfills +3000, card.css +300, server preload removed' },
+  'MPc-v4': { main: 3000, polyfills: 3000, css: 300, strip: false, v4: true, what: 'main and polyfills +3000, card.css +300, preload rewritten to stylesheet media="not all"' },
 };
 const routes = (arg('routes', 'server/card,card')).split(',');
-const configs = routes.flatMap((route) => Object.keys(setups).map((setup) => ({ route, setup })));
+const setupKeys = arg('setups', 'M,MP,Mc,Mc-nopre,Mc-v4').split(',');
+const configs = routes.flatMap((route) => setupKeys.map((setup) => ({ route, setup })));
 
 let current = null; // { r, setup, requests: [] }
 const reports = new Map();

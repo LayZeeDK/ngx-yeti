@@ -75,7 +75,7 @@ jobs:
         run: npm i --no-save --no-package-lock --no-audit --no-fund selenium-webdriver
       - name: Real page in Safari
         working-directory: preload-proto
-        run: node real.mjs --browser=safari --runs=20 --routes=${{ matrix.routes }} | tee real-safari.log
+        run: node real.mjs --browser=safari --runs=20 --routes=${{ matrix.routes }} --setups=MP,MP-nopre,MP-v4,MPc,MPc-nopre,MPc-v4 | tee real-safari.log
       - name: Summary
         if: always()
         working-directory: preload-proto
