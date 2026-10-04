@@ -270,3 +270,5 @@ Write every other commit message in [Conventional Commits](https://www.conventio
 Make each commit atomic. It holds one logical change, and a reviewer can revert it alone.
 
 Make each commit bisect-safe, task commits included. `npx prettier --check .` and `npm exec nx -- run-many -t lint typecheck test -p <projects the commit touches>` pass at every commit, not only at the tip. If a change needs code fixes before a stricter rule can land, commit the fixes first.
+
+Test-driven commits are the one exception: a red commit may add a test that fails, when the next commit makes it pass (red, green, then an optional refactor). In the red commit, only the new test fails; formatting, lint, typecheck, and every other test still pass, and the commit message names the failing test and says the next commit makes it pass. CI fails on the red commit and passes on the green one. Skip a red commit when bisecting (`git bisect skip`).
