@@ -3,9 +3,9 @@ id: T009
 title: Add the per-spec contract check for card and lift and the ADR 0080 name-collision test
 wave: 2
 deps: [T002, T006]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T009
+base: 45394edf71cb8ab113ec3818717741fe8db3af64
 worktree: null
 task_branch: null
 files:
@@ -62,3 +62,27 @@ Heavy: no
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — coder: added the item-agnostic harness `contract.ts` (`checkContract`, `directiveInputs`/`directiveOutputs` read from the compiled `ɵdir`, `openingTags`, `attributeValue`) exported from `server.ts`; its self-test covers a missing input, an extra union value, a missing vocabulary value, an unmapped attribute, a wrong class, and a missing output. Card and lift contract specs check the manifest mapping, `satisfies` plus `expectTypeOf` unions, and the SSR-rendered attribute for every vocabulary value. The name-collision spec reads the 46 names of `yeti.d.ts` against the runtime exports of `styles`, `card`, and `lift` plus `YetiStylesConfig`. `project.json` unchanged: the harness self-test reads no manifest, and `ngx-yeti` already has `implicitDependencies: ["yeti-css"]`.
+- 2026-10-04 — Verify (full command) exit 0; `npx prettier --check .` exit 0; `npx nx run-many -t lint typecheck test -p ngx-yeti ngx-yeti-testing` exit 0 (after fixing lint on the first run).
+- 2026-10-04 — orchestrator Verify (isolate gsd-path-task/T009): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```
