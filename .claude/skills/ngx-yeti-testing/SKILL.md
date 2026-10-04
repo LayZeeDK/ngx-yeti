@@ -23,6 +23,7 @@ The file suffix routes a spec to its Vitest project (`packages/ngx-yeti/vitest.u
 | Export                                                          | Use                                                                                                                                     |
 | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `wcagTags`                                                      | The six axe tags of every accessibility check                                                                                           |
+| `violationLines(violations)`                                    | One `id: help (targets)` line per axe violation, so an e2e axe check asserts `toEqual([])` (`src/lib/axe-violations.ts`)                |
 | `parseColor`, `composite`, `relativeLuminance`, `contrastRatio` | Exact WCAG contrast from computed styles (`ngx-yeti-accessibility` skill)                                                               |
 | `replayShapedEvent(event)`                                      | Patches an event as Angular's replay does (`preventDefault()` throws after running), to prove a handler changes state before calling it |
 | `itemLinks`, `preloadHrefs`, `removeItemLinks`                  | Read or remove the item stylesheet links and preload hints in `<head>` (`src/lib/item-links.ts`)                                        |

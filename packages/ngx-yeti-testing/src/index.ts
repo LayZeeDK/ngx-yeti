@@ -1,3 +1,4 @@
+export { violationLines } from './lib/axe-violations';
 export {
   composite,
   contrastRatio,

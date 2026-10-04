@@ -1,5 +1,5 @@
 import { AxeBuilder } from '@axe-core/playwright';
-import { wcagTags } from '@ngx-yeti/testing';
+import { violationLines, wcagTags } from '@ngx-yeti/testing';
 import { type Page } from '@playwright/test';
 import axe from 'axe-core';
 
@@ -18,8 +18,8 @@ const microtaskTimers = `window.setTimeout = (callback) => {
 `;
 
 /**
- * One `id: help (targets)` line per violation, like `ngx-yeti-e2e`. Tests
- * use it through the `axeViolations` fixture of `fixtures.ts`.
+ * One `id: help (targets)` line per violation (`violationLines`). Tests use
+ * it through the `axeViolations` fixture of `fixtures.ts`.
  */
 export async function axeViolations(
   page: Page,
@@ -32,8 +32,5 @@ export async function axeViolations(
     .withTags([...wcagTags])
     .analyze();
 
-  return violations.map(
-    ({ id, help, nodes }) =>
-      `${id}: ${help} (${nodes.map(({ target }) => target.join(' ')).join(', ')})`,
-  );
+  return violationLines(violations);
 }
