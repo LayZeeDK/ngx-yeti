@@ -1,6 +1,6 @@
 // Writes the package sources generated from Yeti's build at the pin (setup
 // spec sections 1 and 3; ADR 0060 points 3 and 10): `yeti-types.ts`, a copy
-// of `dist/yeti.d.ts`, and `yeti-rank.ts`, the 49 items in the import order of
+// of `dist/yeti.d.ts`, and `yeti-rank.ts`, every item in the import order of
 // `dist/css/yeti.css` with the pin. Run it through `npx nx yeti-sources
 // ngx-yeti`, which builds Yeti first. Its outputs are committed. With
 // `--check` it writes nothing and exits 1 when a committed output differs.
@@ -58,7 +58,7 @@ export interface YetiRankEntry {
   readonly path: string;
 }
 
-/** Yeti's 49 item files in \`yeti.css\`'s import order. */
+/** Yeti's ${items.length} item files in \`yeti.css\`'s import order. */
 export const yetiRank = {
 ${items
   .map(
