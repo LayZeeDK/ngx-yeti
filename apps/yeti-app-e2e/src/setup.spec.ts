@@ -85,6 +85,8 @@ for (const { kind, prefix } of routeKinds) {
     test("keeps the dehydrated hosts' links after every live host leaves, and after hydrating one", async ({
       page,
     }) => {
+      const styleMutations = await recordStyleMutations(page);
+
       await page.goto(`${prefix}setup`);
       await waitForHydration(page, interactionHost);
 
@@ -97,6 +99,15 @@ for (const { kind, prefix } of routeKinds) {
         'the hydrate never and hydrate on interaction hosts keep both links',
       ).toEqual(['card', 'lift']);
 
+      // From here on only the interaction host holds the links.
+      await removeDehydratedHosts(page, '#never-host');
+      await nextFrames(page);
+
+      expect(
+        await itemLinks(page),
+        'the dehydrated interaction host keeps both links',
+      ).toEqual(['card', 'lift']);
+
       const button = page.getByRole('button', { name: 'Hydrate this card' });
 
       await button.click();
@@ -107,17 +118,15 @@ for (const { kind, prefix } of routeKinds) {
       await nextFrames(page);
 
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
+      expect(
+        await styleMutations(),
+        'no item link is removed or added again on the way',
+      ).toEqual([]);
 
-      for (const id of ['#never-host', '#interaction-host']) {
-        await expect(page.locator(id)).toHaveAttribute(
-          'data-ngx-yeti-item-card',
-          '',
-        );
-        await expect(page.locator(id)).toHaveAttribute(
-          'data-ngx-yeti-item-lift',
-          '',
-        );
-      }
+      const host = page.locator(interactionHost);
+
+      await expect(host).toHaveAttribute('data-ngx-yeti-item-card', '');
+      await expect(host).toHaveAttribute('data-ngx-yeti-item-lift', '');
     });
 
     test('keeps the leaving host styled while it leaves and drops its link after', async ({
