@@ -37,6 +37,8 @@ describe(provideYetiStyles, () => {
   it('loads every item file from the configured url', () => {
     expect.assertions(1);
 
+    // @ts-expect-error -- without the trailing slash every item file is a 404.
+    provideYetiStyles({ url: 'assets/yeti' });
     setup({ providers: [provideYetiStyles({ url: 'assets/yeti/' })] });
     const styles = TestBed.inject(YetiStyles);
     styles.acquire('card');

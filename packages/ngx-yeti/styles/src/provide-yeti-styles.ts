@@ -20,8 +20,8 @@ import {
  * preloads nothing, and is created by the first item directive on the client
  * instead of at application start.
  *
- * - `url`: keep it in agreement with the `assets` entry's `output` (usage rule
- *   5), relative to `<base href>`; `deployUrl` is not supported (usage rule 6).
+ * - `url`: the `assets` entry's `output` with a trailing slash (usage rule 5),
+ *   relative to `<base href>`; `deployUrl` is not supported (usage rule 6).
  * - `preload`: name every item that first renders on the client, in a
  *   client-only `@defer`, an `@if`, a growing `@for`, or a route reached by
  *   client navigation, when a flash-free first frame matters (usage rule 8).

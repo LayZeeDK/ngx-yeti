@@ -17,10 +17,12 @@ import { yetiPin, yetiRank } from './yeti-rank';
 export interface YetiStylesConfig {
   /**
    * The folder the application's `assets` entry copies Yeti's `dist/css/` to,
-   * relative to `<base href>`, with a trailing slash. Default `'yeti-css/'`.
-   * Keep it in agreement with the `assets` entry's `output` (setup usage rule 5).
+   * relative to `<base href>`, with a trailing slash, or `''` for
+   * `<base href>` itself. Default `'yeti-css/'`. Keep it in agreement with the
+   * `assets` entry's `output` (setup usage rule 5). The type rejects a URL
+   * without the slash, which would make every item file a 404.
    */
-  readonly url?: string;
+  readonly url?: '' | `${string}/`;
   /**
    * Items whose files are preloaded on the server and the client at
    * application start: every item that first renders on the client, when a

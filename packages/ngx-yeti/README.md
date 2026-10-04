@@ -138,7 +138,7 @@ The package's JSDoc cites these rules by number.
 2. Write `@layer yeti, ngx-yeti;` (or the Tailwind form) before any other CSS in the global stylesheet, and import `layers.css` first among Yeti's files.
 3. Import the always-loaded group globally, in Yeti's order, and never an item file: item files belong to the loader.
 4. Import the package's accessibility stylesheet after the always-loaded group. Without it, the accessibility gaps its rules close are open again.
-5. Keep the `assets` entry's `output` and `provideYetiStyles({ url })` in agreement; both default to `yeti-css`.
+5. Keep the `assets` entry's `output` and `provideYetiStyles({ url })` in agreement: `url` is the `output` with a trailing slash. They default to `yeti-css` and `yeti-css/`.
 6. Use `<base href>` (or `APP_BASE_HREF`) for a subpath; `deployUrl` is not supported.
 7. Write no Yeti class, no Yeti `data-*` attribute, and no `data-ngx-yeti-*` attribute by hand. Presence attributes belong to the package.
 8. Name every item that first renders on the client in `preload`, when a flash-free first frame matters.

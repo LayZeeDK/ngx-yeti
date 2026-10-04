@@ -38,7 +38,7 @@ class SharedHost {}
 class HoverHost {}
 
 /** Yeti's built CSS, served by Vite from the workspace's node_modules. */
-const yetiCss = `/@fs/${server.config.root.replaceAll('\\', '/')}/../../node_modules/yeti-css/dist/css/`;
+const yetiCss: `${string}/` = `/@fs/${server.config.root.replaceAll('\\', '/')}/../../node_modules/yeti-css/dist/css/`;
 
 /**
  * The part of the setup spec's global stylesheet the pointer cases read: the
