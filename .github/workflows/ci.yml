@@ -9,6 +9,10 @@ concurrency:
   group: ci-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
+# Read-only token for every job, whatever the repository default.
+permissions:
+  contents: read
+
 # The commit gate as independent jobs on separate runners, so the wall clock
 # is the slowest job, not the sum. e2e grows with every spec: add an engine or
 # configuration to its matrix, or a Playwright --shard axis as floor.yml's
