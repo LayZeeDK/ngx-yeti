@@ -3,9 +3,9 @@ id: T015
 title: Fix wave 2 cycle 1 review findings in T007, T010, T011
 wave: 4
 deps: [T007, T010, T011]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T015
+base: 7ea86a7d0c71a851440cc6aed95da18788a91ebb
 worktree: null
 task_branch: null
 files:
@@ -83,3 +83,27 @@ Criterion: `apps/yeti-app-e2e/src/setup-serving.spec.ts` passes in the developme
 ## Log
 
 - 2026-10-04 — created by dispatch_driver.py fix-tasks from wave 2 cycle 1
+- 2026-10-04 — coder: in apps/yeti-app-e2e/src/setup-serving.spec.ts, the strict-CSP case now expects item links `['card', 'lift']` (the nonce loop still requires the nonce on every item link); the plain-route case now requires at least one item link and every item link to lack `nonce`. No other file changed.
+- Checks (exit codes): `npx nx e2e yeti-app-e2e --skip-nx-cache -- setup-serving.spec.ts` 0 (4 passed); `FIXTURE_CONFIGURATION=production` same command 0 (3 passed, 1 skipped); Verify block 1 0; Verify block 2 0; Verify block 3 0; `npx prettier --check .` 0; `npx nx run-many -t lint typecheck -p yeti-app-e2e` 0.
+- 2026-10-04 — orchestrator Verify (sidecar gsd-path-verify/task-t015-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```

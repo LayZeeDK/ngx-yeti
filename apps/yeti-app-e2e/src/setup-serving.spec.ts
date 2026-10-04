@@ -89,7 +89,7 @@ test.describe('the strict-CSP card route', () => {
 
     await waitForHydration(page);
 
-    expect(await itemLinks(page)).toEqual(['card']);
+    expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
     // Browsers hide the `nonce` attribute; the property keeps its value.
     const nonced = await page
@@ -128,13 +128,13 @@ test.describe('the strict-CSP card route', () => {
     const response = await page.goto('server/card');
 
     expect(response?.headers()['content-security-policy']).toBeUndefined();
-    expect(
-      await page
-        .locator('head link[data-ngx-yeti-styles]')
-        .evaluateAll((links) =>
-          links.map((link) => link.hasAttribute('nonce')),
-        ),
-    ).toEqual([false]);
+
+    const nonced = await page
+      .locator('head link[data-ngx-yeti-styles]')
+      .evaluateAll((links) => links.map((link) => link.hasAttribute('nonce')));
+
+    expect(nonced.length, 'the route has item links').toBeGreaterThan(0);
+    expect(nonced.every((hasNonce) => !hasNonce)).toBe(true);
   });
 });
 
