@@ -43,7 +43,7 @@ jobs:
       # discrete task between processes; built once here, yeti-build is a
       # cache hit in all of them instead of racing over dist/.
       - run: npx nx run yeti-css:yeti-build
-      - run: npx nx run-many -t test e2e -p ngx-yeti ngx-yeti-e2e yeti-app-e2e
+      - run: npx nx run-many --output-style=static -t test e2e -p ngx-yeti ngx-yeti-e2e yeti-app-e2e
 
   firefox-145:
     runs-on: ubuntu-latest
@@ -82,7 +82,7 @@ jobs:
       # discrete task between processes; built once here, yeti-build is a
       # cache hit in all of them instead of racing over dist/.
       - run: npx nx run yeti-css:yeti-build
-      - run: npx nx run-many -t test e2e -p ngx-yeti ngx-yeti-e2e yeti-app-e2e
+      - run: npx nx run-many --output-style=static -t test e2e -p ngx-yeti ngx-yeti-e2e yeti-app-e2e
 
   firefox-146-e2e:
     runs-on: ubuntu-latest
@@ -117,4 +117,4 @@ jobs:
       - run: npx nx run yeti-css:yeti-build
       # Two workers on the runner's four CPUs: 30% less test time than one,
       # and no more past two, measured in this image at four CPUs.
-      - run: npx nx run-many -t e2e -p ngx-yeti-e2e yeti-app-e2e -- --shard=${{ matrix.shard }}/2 --workers=2
+      - run: npx nx run-many --output-style=static -t e2e -p ngx-yeti-e2e yeti-app-e2e -- --shard=${{ matrix.shard }}/2 --workers=2

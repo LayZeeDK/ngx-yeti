@@ -29,7 +29,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx prettier --check .
-      - run: npx nx run-many -t lint typecheck
+      - run: npx nx run-many --output-style=static -t lint typecheck
 
   package:
     runs-on: ubuntu-latest
@@ -41,7 +41,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx nx run-many -t build pack-check
+      - run: npx nx run-many --output-style=static -t build pack-check
 
   # The Playwright image carries the three browsers and their system
   # libraries, which an install on the runner took 69s to add.
@@ -60,7 +60,7 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx nx run-many -t test test-storybook
+      - run: npx nx run-many --output-style=static -t test test-storybook
 
   e2e:
     runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
       # cache hit in all of them instead of racing over dist/.
       - run: npx nx run yeti-css:yeti-build
       # The production configuration changes the Fixture app only.
-      - run: npx nx run-many -t e2e -p ${{ matrix.configuration == 'production' && 'yeti-app-e2e' || 'yeti-analog-e2e ngx-yeti-e2e yeti-app-e2e' }} -- --project=${{ matrix.engine }}
+      - run: npx nx run-many --output-style=static -t e2e -p ${{ matrix.configuration == 'production' && 'yeti-app-e2e' || 'yeti-analog-e2e ngx-yeti-e2e yeti-app-e2e' }} -- --project=${{ matrix.engine }}
 
   safari:
     # Real Safari, as the macOS image ships it (26.6 on every macOS image in
