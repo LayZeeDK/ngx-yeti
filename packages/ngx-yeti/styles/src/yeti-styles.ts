@@ -123,17 +123,23 @@ export class YetiStyles {
     });
   }
 
-  /** Rule 1: counts the item and inserts its link on the first acquisition. */
+  /**
+   * Rule 1: counts the item and inserts its link on the first acquisition,
+   * or again when something else took the tracked link out of `<head>`.
+   */
   acquire(item: YetiComponentName): void {
     const entry = this.#links.get(item);
 
-    if (entry) {
+    if (entry?.link.isConnected) {
       entry.count++;
 
       return;
     }
 
-    this.#links.set(item, { link: this.#insert(item), count: 1 });
+    this.#links.set(item, {
+      link: this.#insert(item),
+      count: (entry?.count ?? 0) + 1,
+    });
   }
 
   /** Rule 2: lowers the count and checks for removal in the next frame. */

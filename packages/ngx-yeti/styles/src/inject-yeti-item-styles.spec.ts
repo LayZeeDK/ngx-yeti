@@ -190,6 +190,20 @@ describe(injectYetiItemStyles, () => {
     expect(itemNames()).toStrictEqual([]);
   });
 
+  it('inserts the link again when something else took it out of <head>', async () => {
+    expect.assertions(1);
+
+    const { create } = setup();
+    await create(ProbeCard);
+    for (const link of itemLinks()) {
+      link.remove();
+    }
+
+    await create(ProbeCard);
+
+    expect(itemNames()).toStrictEqual(['card']);
+  });
+
   it('keeps the link while a host with no directive is connected', async () => {
     expect.assertions(2);
 
