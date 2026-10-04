@@ -153,6 +153,31 @@ export async function delayCss(
   });
 }
 
+/**
+ * Whether the item links in `<head>` named in `items`, or all of them, have
+ * loaded their stylesheets.
+ */
+export async function itemSheetsLoaded(
+  page: Page,
+  items?: readonly string[],
+): Promise<boolean> {
+  return page
+    .locator('head link[data-ngx-yeti-styles]')
+    .evaluateAll((links, names) => {
+      const itemOf = (link: Element): string =>
+        link.getAttribute('data-ngx-yeti-styles') ?? '';
+      const loaded = links
+        .filter(
+          (link) => link instanceof HTMLLinkElement && link.sheet !== null,
+        )
+        .map(itemOf);
+
+      return (names ?? links.map(itemOf)).every((item) =>
+        loaded.includes(item),
+      );
+    }, items ?? null);
+}
+
 /** The `data-ngx-yeti-styles` values of the item links in `<head>`, in document order. */
 export async function itemLinks(page: Page): Promise<readonly string[]> {
   return page

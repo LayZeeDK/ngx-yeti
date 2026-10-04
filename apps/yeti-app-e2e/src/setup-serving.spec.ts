@@ -1,21 +1,15 @@
 import { type Page } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
 import { waitForHydration } from './support/hydration';
-import { delayCss, itemLinks, recordFrames } from './support/style-probe';
+import {
+  delayCss,
+  itemLinks,
+  itemSheetsLoaded,
+  recordFrames,
+} from './support/style-probe';
 
 /** The `nx serve` entry of `playwright.config.mts`. */
 const devServerURL = 'http://localhost:4312/sub/';
-
-/** Whether every item link in `<head>` has loaded its stylesheet. */
-async function itemSheetsLoaded(page: Page): Promise<boolean> {
-  return page
-    .locator('head link[data-ngx-yeti-styles]')
-    .evaluateAll((links) =>
-      links.every(
-        (link) => link instanceof HTMLLinkElement && link.sheet !== null,
-      ),
-    );
-}
 
 /** Lists each CSP violation the page reports. Call before `goto`. */
 async function recordCspViolations(

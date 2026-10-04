@@ -12,6 +12,7 @@ import {
 import {
   delayCss,
   itemLinks,
+  itemSheetsLoaded,
   recordFrames,
   recordStyleMutations,
 } from './support/style-probe';
@@ -80,13 +81,7 @@ async function cardGeometry(page: Page): Promise<unknown> {
 /** Upstream bug O2: read geometry only once the card's sheet has applied. */
 async function expectCardSheetApplied(page: Page): Promise<void> {
   expect(
-    await page.evaluate(() =>
-      [...document.styleSheets].some(
-        ({ ownerNode }) =>
-          ownerNode instanceof HTMLLinkElement &&
-          ownerNode.dataset['ngxYetiStyles'] === 'card',
-      ),
-    ),
+    await itemSheetsLoaded(page, ['card']),
     'the card stylesheet is loaded',
   ).toBe(true);
   await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
