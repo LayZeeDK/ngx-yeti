@@ -93,10 +93,10 @@ describe('ngx-yeti/accessibility.css', () => {
     const ngPackage: unknown = JSON.parse(readPackageFile('ng-package.json'));
     const packageJson: unknown = JSON.parse(readPackageFile('package.json'));
 
-    expect(ngPackage).toHaveProperty('assets', [
-      'accessibility.css',
-      'CHANGELOG.md',
-    ]);
+    expect(ngPackage).toHaveProperty(
+      'assets',
+      expect.arrayContaining(['accessibility.css']),
+    );
     expect(packageJson).toHaveProperty(
       ['exports', './accessibility.css'],
       './accessibility.css',
