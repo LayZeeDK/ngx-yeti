@@ -38,9 +38,4 @@ export default [
       '@angular-eslint/component-max-inline-declarations': 'off',
     },
   },
-  {
-    files: ['**/*.html'],
-    // Override or add rules here
-    rules: {},
-  },
 ];
