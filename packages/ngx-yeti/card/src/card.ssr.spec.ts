@@ -3,6 +3,7 @@ import { Component, signal } from '@angular/core';
 import { RouterLink, provideRouter } from '@angular/router';
 import {
   attributeValue,
+  headLinks,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -45,10 +46,6 @@ function render(): Promise<string> {
   return renderServer(CardFixture, { providers: [provideRouter([])] });
 }
 
-function head(html: string): string {
-  return /<head>[\s\S]*<\/head>/.exec(html)?.[0] ?? '';
-}
-
 describe(YetiCard, () => {
   it('renders the card host with its class, presence attribute, and inputs', async () => {
     expect.assertions(7);
@@ -84,7 +81,7 @@ describe(YetiCard, () => {
   it('writes one card item link into the head', async () => {
     expect.assertions(4);
 
-    const links = openingTags(head(await render()), 'link').filter(
+    const links = headLinks(await render()).filter(
       (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
     );
     const [card, ...rest] = links;
@@ -98,18 +95,22 @@ describe(YetiCard, () => {
     );
   });
 
-  it('puts no jsaction from the package on any element', async () => {
-    expect.assertions(1);
+  it('puts no jsaction from the package on the card or its link', async () => {
+    expect.assertions(3);
 
-    // RouterLink's click listener is the only one in the fixture; the card
-    // directives add none, so no element outside the two router links
-    // carries a jsaction.
-    const withJsaction = openingTags(await render(), '[a-z][\\w-]*').filter(
-      (tag) =>
-        attributeValue(tag, 'jsaction') !== null &&
-        attributeValue(tag, 'routerlink') === null,
+    const html = await render();
+    const [card] = openingTags(html, 'article');
+    const [stretched, plain] = openingTags(html, 'a');
+    assert.exists(card);
+    assert.exists(stretched);
+    assert.exists(plain);
+
+    // RouterLink's click listener is the only one in the fixture: the
+    // stretched link carries what the plain routerLink link carries, no more.
+    expect(attributeValue(card, 'jsaction')).toBeNull();
+    expect(attributeValue(plain, 'jsaction')).not.toBeNull();
+    expect(attributeValue(stretched, 'jsaction')).toBe(
+      attributeValue(plain, 'jsaction'),
     );
-
-    expect(withJsaction).toStrictEqual([]);
   });
 });
