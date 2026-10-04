@@ -1,5 +1,10 @@
 import { Component } from '@angular/core';
-import { renderServer } from '@ngx-yeti/testing/server';
+import {
+  attributeValue,
+  headLinks,
+  openingTags,
+  renderServer,
+} from '@ngx-yeti/testing/server';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
 import { NgxYetiLift } from './lift';
 
@@ -10,17 +15,6 @@ import { NgxYetiLift } from './lift';
     '<article yetiCard raised yetiLift><h3><a yetiCardLink stretch href="#rise">A card that rises</a></h3><p i18n>The card rises and its shadow deepens.</p></article><article yetiCard raised yetiLift="scale"><h3><a yetiCardLink stretch href="#scale">A tile that grows</a></h3></article>',
 })
 class LiftFixture {}
-
-/** The opening tags of every element named `tag`, in document order. */
-function openingTags(html: string, tag: string): string[] {
-  return [...html.matchAll(new RegExp(`<${tag}\\b[^>]*>`, 'g'))].map(
-    ([match]) => match,
-  );
-}
-
-function head(html: string): string {
-  return /<head>[\s\S]*<\/head>/.exec(html)?.[0] ?? '';
-}
 
 describe(NgxYetiLift, () => {
   it('renders the lift on both hosts and the gesture on the scale card', async () => {
@@ -51,18 +45,23 @@ describe(NgxYetiLift, () => {
   });
 
   it('writes the card and lift item links into the head in yeti.css order', async () => {
-    expect.assertions(3);
+    expect.assertions(4);
 
-    const links = openingTags(head(await renderServer(LiftFixture)), 'link');
-    const [card, lift, ...rest] = links;
+    const links = headLinks(await renderServer(LiftFixture));
+    const attribute = (name: string): (string | null)[] =>
+      links.map((link) => attributeValue(link, name));
 
-    expect(rest).toStrictEqual([]);
-    expect(card).toMatch(
-      /^<link rel="stylesheet" href="yeti-css\/components\/card\/card\.css\?v=[0-9a-f]{40}" data-ngx-yeti-styles="card" data-ngx-yeti-app="ng" data-beasties-skip="">$/,
-    );
-    expect(lift).toMatch(
-      /^<link rel="stylesheet" href="yeti-css\/utilities\/lift\/lift\.css\?v=[0-9a-f]{40}" data-ngx-yeti-styles="lift" data-ngx-yeti-app="ng" data-beasties-skip="">$/,
-    );
+    expect(attribute('data-ngx-yeti-styles')).toStrictEqual(['card', 'lift']);
+    expect(attribute('href')).toStrictEqual([
+      expect.stringMatching(
+        /^yeti-css\/components\/card\/card\.css\?v=[0-9a-f]{40}$/,
+      ),
+      expect.stringMatching(
+        /^yeti-css\/utilities\/lift\/lift\.css\?v=[0-9a-f]{40}$/,
+      ),
+    ]);
+    expect(attribute('data-ngx-yeti-app')).toStrictEqual(['ng', 'ng']);
+    expect(attribute('data-beasties-skip')).toStrictEqual(['', '']);
   });
 
   it('puts no jsaction on the hosts', async () => {
