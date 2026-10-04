@@ -106,6 +106,11 @@ const proxy = createServer(async (req, res) => {
     upRes.on('end', () => {
       let html = Buffer.concat(chunks).toString('utf8');
       run.preloadsInHtml = (html.match(/<link rel="preload" as="style"[^>]*>/g) ?? []).length;
+      // One Safari session keeps stylesheets in its memory cache despite no-store
+      // (measured: no card.css request after the first load), so every stylesheet
+      // URL in the server's HTML gets the run id. Links the client inserts keep
+      // their own URLs; they come after first paint.
+      html = html.replace(/href="([^"?]+\.css)(?:\?([^"]*))?"/g, (_, path, q) => `href="${path}?${q ? `${q}&` : ''}r=${run.r}"`);
 
       if (s.strip) {
         html = html.replace(/<link rel="preload" as="style"[^>]*>/g, '');
@@ -194,6 +199,12 @@ async function once({ route, setup }, i) {
 
   return row;
 }
+
+// One unrecorded load first: a new Safari session's first navigation is slow as a
+// whole (measured: interactive at ~3400 ms), which is not what is measured here.
+await driver.open(`${origin}/sub/${routes[0]}`);
+await sleep(4000);
+await driver.close();
 
 const rows = [];
 
