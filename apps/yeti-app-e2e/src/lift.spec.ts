@@ -1,5 +1,5 @@
 import { type Locator } from '@playwright/test';
-import { expect, isProduction, test } from './support/fixtures';
+import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import { expectHoverLifts, removeEveryHost } from './support/hosts';
 import {
   nextFrames,
@@ -13,11 +13,6 @@ import {
   recordHostAttributes,
   recordStyleMutations,
 } from './support/style-probe';
-
-const routeKinds = [
-  { kind: 'prerendered', prefix: '' },
-  { kind: 'server-rendered', prefix: 'server/' },
-] as const;
 
 /** Yeti's `.lift` transition list; an element without Yeti computes `all`. */
 const unstyledTransition = 'all';

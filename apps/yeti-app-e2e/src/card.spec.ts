@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { workspaceRoot } from '@nx/devkit';
 import { type Page } from '@playwright/test';
-import { expect, isProduction, test } from './support/fixtures';
+import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import { expectHoverLifts, removeEveryHost } from './support/hosts';
 import {
   nextFrames,
@@ -18,11 +18,6 @@ import {
   recordHostAttributes,
   recordStyleMutations,
 } from './support/style-probe';
-
-const routeKinds = [
-  { kind: 'prerendered', prefix: '' },
-  { kind: 'server-rendered', prefix: 'server/' },
-] as const;
 
 const yetiPin = readFileSync(
   join(workspaceRoot, 'vendor/yeti/COMMIT'),

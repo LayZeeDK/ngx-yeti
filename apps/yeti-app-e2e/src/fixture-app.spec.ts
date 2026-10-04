@@ -1,11 +1,6 @@
 import { type Page } from '@playwright/test';
-import { expect, test } from './support/fixtures';
+import { expect, routeKinds, test } from './support/fixtures';
 import { holdBackMainBundle } from './support/main-bundle';
-
-const routeKinds = [
-  { kind: 'prerendered', prefix: '' },
-  { kind: 'server-rendered', prefix: 'server/' },
-] as const;
 
 // The card route's hydration and JavaScript-off tests live in card.spec.ts,
 // the global stylesheet's in setup.spec.ts.

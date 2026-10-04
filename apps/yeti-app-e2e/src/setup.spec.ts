@@ -1,4 +1,4 @@
-import { expect, isProduction, test } from './support/fixtures';
+import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import { removeDehydratedHosts, removeEveryHost } from './support/hosts';
 import {
   nextFrames,
@@ -12,11 +12,6 @@ import {
   recordFrames,
   recordStyleMutations,
 } from './support/style-probe';
-
-const routeKinds = [
-  { kind: 'prerendered', prefix: '' },
-  { kind: 'server-rendered', prefix: 'server/' },
-] as const;
 
 /** The `hydrate on interaction` host, which keeps `jsaction` until it hydrates. */
 const interactionHost = '#interaction-host';

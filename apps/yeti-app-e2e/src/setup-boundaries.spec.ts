@@ -1,4 +1,4 @@
-import { expect, test } from './support/fixtures';
+import { expect, routeKinds, test } from './support/fixtures';
 import { waitForHydration } from './support/hydration';
 import { holdBackMainBundle } from './support/main-bundle';
 import { delayCss, itemLinks, recordFrames } from './support/style-probe';
@@ -7,11 +7,6 @@ import { delayCss, itemLinks, recordFrames } from './support/style-probe';
  * Ticket 37's consumer `@boundary` cases as setup.md:343 keeps them, as
  * regression tests of the setup spec's `@boundary` documentation.
  */
-
-const routeKinds = [
-  { kind: 'prerendered', prefix: '' },
-  { kind: 'server-rendered', prefix: 'server/' },
-] as const;
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} setup-boundaries route`, () => {
