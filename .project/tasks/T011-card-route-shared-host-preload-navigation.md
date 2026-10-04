@@ -22,7 +22,7 @@ card.md:332-339 asks the card Fixture route to render section 8's markup and a g
 ## Approach
 
 - Extend `apps/yeti-app/src/app/fixtures/card-fixture.ts` without changing what the wave-1 route asserts (section 8's card, its heading text, its `i18n` paragraph, its stretched link): add a plain `ul role="list"` of `li` cards with `yetiCard`, `yetiLift`, and `raised`, each with a stretched heading link; a `card` plus `lift` host inside `@defer (hydrate never)`; a control that removes every live card and lifted card; a client-only `@defer (on interaction)` block holding a card; and a stretched-link or plain `routerLink` to a Fixture route that renders no card (for example `/sub/replay`). Import `NgxYetiLift` from `'ngx-yeti/lift'`.
-- Extend `apps/yeti-app-e2e/src/card.spec.ts` (keep its wave-1 tests) with, on both route kinds where they apply: the shared host keeps the card and lift links after the removal, lifts on hover (real mouse), and keeps its border; with item CSS delayed 300 ms the preloaded client-only card shows 0 unstyled frames (style probe `recordFrames`); the `NgOptimizedImage` console messages for the cropped picture and the row form are recorded as annotations in the development build; client navigation to the card-less route removes the card link in the frame after the last host leaves, and navigating back re-inserts it once.
+- Extend `apps/yeti-app-e2e/src/card.spec.ts` (keep its wave-1 tests) with, on both route kinds where they apply: the shared host keeps the card and lift links after the removal, lifts on hover (real mouse), and keeps its border; with item CSS delayed 300 ms the preloaded client-only card as AC3 states (style probe `recordFrames`); the `NgOptimizedImage` console messages for the cropped picture and the row form are recorded as annotations in the development build; client navigation to the card-less route removes the card link in the frame after the last host leaves, and navigating back re-inserts it once.
 - Wait for the item links before reading geometry (upstream bug O2); hydration diagnostics only in the development build (`isProduction`). Skills: `.claude/skills/ngx-yeti-testing/SKILL.md`, `.claude/skills/type-safety/SKILL.md`, `.claude/skills/ngx-yeti-specs/SKILL.md`.
 
 ## Interface contract
@@ -40,7 +40,7 @@ card.md:332-339 asks the card Fixture route to render section 8's markup and a g
 
 1. The card route still meets every wave-1 assertion and now also renders a `ul role="list"` of lifted cards, a `card` plus `lift` host inside `@defer (hydrate never)`, a client-only `@defer` card, and a link to a card-less route.
 2. After every live card and lifted card is removed, the `hydrate never` host keeps both the card and the lift item links, lifts on a real hover, and keeps its border.
-3. With item CSS delayed 300 ms, the client-only `@defer` card (preloaded) shows 0 unstyled frames.
+3. With item CSS delayed 300 ms, the client-only `@defer` card (preloaded) shows 0 unstyled frames while the route's server-rendered card hosts are still connected, and, after every live and dehydrated card host has left, its re-inserted card link's unstyled frames are recorded as a test annotation (Playwright's `page.route` disables the HTTP cache, so a re-inserted link refetches; the 0-frame preload assertion for an item first rendered by the client is T007's `setup-defer` route, setup.md:341, ADR 0060 point 6).
 4. Navigating to the card-less route removes the card item link, and navigating back re-inserts it once; the `NgOptimizedImage` development-mode messages are recorded.
 5. `npx prettier --check .` and `npx nx run-many -t lint typecheck test -p yeti-app yeti-app-e2e` pass at the task commit.
 
@@ -55,3 +55,4 @@ Heavy: yes
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — orchestrator plan-defect repair (AC3 and its Approach bullet): T007's measurement showed that with `page.route` disabling the HTTP cache, a client-only card re-inserted after a route's server-rendered card hosts have left refetches its file and paints about 20 unstyled frames although `card` is preloaded, because the server's link consumed the preload at load. The 0-frame preload assertion applies to an item first rendered by the client (setup.md:341; ADR 0060 point 6) and lives on T007's `setup-defer` route; AC3 here asserts 0 frames while the server hosts are connected and records the re-insertion frames.

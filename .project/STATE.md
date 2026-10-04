@@ -43,3 +43,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — build — build started
 - 2026-10-04 — build — wave 1 review passed (cycle 1): .project/review/wave-1.cycle1.md
 - 2026-10-04 — build — T008 AC3 primary checkout: npx nx e2e ngx-yeti-e2e --skip-nx-cache -- card.spec.ts lift.spec.ts at 38eb73e exit 0, 12 passed (Chromium)
+- 2026-10-04 — build — plan-defect repair T011 AC3: preload 0-frame assertion moved to T007 setup-defer route (T007 NEEDS-ORCHESTRATOR answer; setup.md:341, ADR 0060 point 6)
