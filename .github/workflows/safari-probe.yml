@@ -1,0 +1,45 @@
+name: Safari probe
+
+# Throwaway measurement: does real Safari skip rendering when a style preload
+# lands after the parser ends while a module script is pending?
+on:
+  push:
+    branches: ['probe/**']
+
+permissions:
+  contents: read
+
+jobs:
+  safari-probe:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: sudo safaridriver --enable
+      - name: Versions
+        run: |
+          sw_vers
+          safaridriver --version
+          defaults read /Applications/Safari.app/Contents/Info CFBundleShortVersionString
+          defaults read /Applications/Safari.app/Contents/Info CFBundleVersion
+      - name: Install selenium-webdriver in the probe folder only
+        working-directory: safari-probe
+        run: npm i --no-save --no-package-lock --no-audit --no-fund selenium-webdriver
+      - name: Probe
+        working-directory: safari-probe
+        run: node run.mjs --browser=safari --runs=20 | tee probe.log
+      - name: Summary
+        if: always()
+        working-directory: safari-probe
+        run: sed -n '/^## /,$p' probe.log >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: safari-probe
+          path: |
+            safari-probe/results-*.json
+            safari-probe/shot-*.png
+            safari-probe/probe.log

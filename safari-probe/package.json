@@ -1,0 +1,4 @@
+{
+  "private": true,
+  "description": "Keeps npm i selenium-webdriver inside this folder"
+}
