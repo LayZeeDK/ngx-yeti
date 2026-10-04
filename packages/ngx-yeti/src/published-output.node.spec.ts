@@ -13,13 +13,9 @@ const yetiClasses = new Set(
   Object.values(manifest.components).map((component) => component.class),
 );
 
-function escapeRegExp(text: string): string {
-  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 // A class selector followed by its rule's `{`, as CSS in a string would read.
 const yetiSelectorInScript = new RegExp(
-  String.raw`\.(?:${[...yetiClasses].map(escapeRegExp).join('|')})(?![\w-])[^{};()]*\{`,
+  String.raw`\.(?:${[...yetiClasses].map((name) => RegExp.escape(name)).join('|')})(?![\w-])[^{};()]*\{`,
   'g',
 );
 
