@@ -27,8 +27,8 @@ In a second git worktree of this repository (an agent's `isolation: worktree` ch
 
 ## What package code may read
 
-- Package code reads Yeti only through `yeti-css/manifest` and `yeti-css/tokens` (ADR 0006 point 7), and only at build or test time: the package ships no Yeti file and declares no `yeti-css` dependency (ADR 0060). Lint enforces it: `yeti-css` is a non-buildable project, so an import of it from `ngx-yeti` source fails `@nx/enforce-module-boundaries`, while specs and stories may import it. Data an item needs at run time is generated into package source at build time.
-- At build time, the package reads `yeti-css/css/yeti.css` for the item order and `yeti.d.ts`, of which it ships a generated copy, `yeti-types.ts` (ADR 0006 2026-10-02 notes; ADR 0060 point 10). Input types import Yeti's vocabulary types from that copy, never from `yeti-css`.
+- Package code reads Yeti only through `yeti-css/manifest` and `yeti-css/tokens` (ADR 0006 point 7), and only at build or test time: the package ships no Yeti file and declares no `yeti-css` dependency (ADR 0060). Lint enforces it: `yeti-css` is a non-buildable project, so an import of it from `ngx-yeti` source fails `@nx/enforce-module-boundaries`, while specs and stories may import it. Data an item needs at run time is generated into committed package source by `npx nx yeti-sources ngx-yeti` at a pin move (departures table of the `ngx-yeti-specs` skill); `nx build ngx-yeti` generates nothing.
+- At a pin move, `yeti-sources` reads `yeti-css/css/yeti.css` for the item order and `yeti.d.ts`, of which the package ships a generated copy, `yeti-types.ts` (ADR 0006 2026-10-02 notes; ADR 0060 point 10). Input types import Yeti's vocabulary types from that copy, never from `yeti-css`.
 - The package ships none of Yeti's CSS and declares no `yeti-css` dependency or peer dependency; the consumer brings a build of Yeti at the pin (ADR 0060).
 - Never read or write a private `--_yeti-*` token (ADR 0004). The exceptions are the demo spec's two edge tokens and the Firefox scale workaround's `--_yeti-t` in `packages/ngx-yeti/accessibility.css` (departures table of the `ngx-yeti-specs` skill).
 
