@@ -290,4 +290,26 @@ check(
   `the shipped CHANGELOG.md names ${yetiCommit}`,
 );
 
+// 10. The package is MIT, and the Yeti files it carries keep Yeti's licence
+// (ADR 0001, ADR 0006 point 3). Each shipped licence is a copy of its source,
+// so a pin move that changes Yeti's licence fails here until it is copied.
+check(
+  manifest.license === 'MIT',
+  'package.json declares the MIT licence',
+  String(manifest.license),
+);
+
+for (const [shipped, source] of [
+  ['LICENSE', 'LICENSE'],
+  ['LICENSE-yeti', 'vendor/yeti/LICENSE'],
+]) {
+  const packed = path.join(installed, shipped);
+  check(
+    existsSync(packed) &&
+      readFileSync(packed, 'utf8') ===
+        readFileSync(path.join(workspaceRoot, source), 'utf8'),
+    `the tarball ships ${shipped} as a copy of ${source}`,
+  );
+}
+
 console.log(tarball);
