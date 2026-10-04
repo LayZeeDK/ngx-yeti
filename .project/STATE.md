@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: walking-skeleton
-phase: plan
+phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: done
+status: active
 branch: gsd-path/M001
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -40,3 +40,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — define — milestone intent approved
 - 2026-10-04 — plan — planning started
 - 2026-10-04 — plan — plan approved
+- 2026-10-04 — build — build started
