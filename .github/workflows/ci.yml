@@ -20,6 +20,7 @@ permissions:
 jobs:
   static:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -32,6 +33,7 @@ jobs:
 
   package:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -45,6 +47,7 @@ jobs:
   # libraries, which an install on the runner took 69s to add.
   unit:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     container: mcr.microsoft.com/playwright:v1.63.0-noble
     env:
       # GitHub runs the container as root with HOME owned by the image's
@@ -61,6 +64,7 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     container: mcr.microsoft.com/playwright:v1.63.0-noble
     strategy:
       fail-fast: false
@@ -91,6 +95,7 @@ jobs:
     # Playwright cannot drive branded Safari, so only the browser unit tests
     # run here; the WebKit jobs cover stories and e2e.
     runs-on: macos-latest
+    timeout-minutes: 20
     env:
       SAFARI: 'true'
     steps:

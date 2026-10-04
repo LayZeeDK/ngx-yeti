@@ -23,6 +23,7 @@ env:
 jobs:
   chromium-141:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -46,6 +47,7 @@ jobs:
 
   firefox-145:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     env:
       FLOOR_FIREFOX: 'true'
     steps:
@@ -61,6 +63,7 @@ jobs:
 
   webkit-26-4:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     # Playwright 1.59.1 bundles WebKit 26.4, the earliest label not below
     # Safari 26.2. A Playwright release drives only its own WebKit build, so
     # the job runs in that release's image and installs the same release.
@@ -83,6 +86,7 @@ jobs:
 
   firefox-146-e2e:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     # Playwright's --shard splits each project's tests into the same halves on
     # every run, so the two runners share the suite; act runs both at once.
     strategy:
