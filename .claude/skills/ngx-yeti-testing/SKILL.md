@@ -61,13 +61,13 @@ Test the JavaScript-off page with Playwright's own option: put the tests in a `d
 
 The other helpers in `apps/yeti-app-e2e/src/support/`:
 
-| Helper                                                                                                         | Use                                                                                |
-| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `waitForHydration`, `nextFrames` from `hydration.ts`                                                           | Wait until the page has hydrated; wait for animation frames                        |
-| `recordFrames` (with its `start` option), `recordStyleMutations`, `recordHostAttributes` from `style-probe.ts` | Record frames, style changes, and host attributes while the page loads or hydrates |
-| `itemLinks`, `itemSheetsLoaded`, `delayCss` from `style-probe.ts`                                              | Read the item links, check their sheets have loaded, and delay CSS responses       |
-| `expectHydrationFrames` from `style-probe.ts`                                                                  | Assert the unstyled-frame count of a hydration run                                 |
-| `removeEveryHost`, `removeDehydratedHosts`, `expectHoverLifts` from `hosts.ts`                                 | Remove item hosts from the page; check that hovering lifts an item                 |
+| Helper                                                                                                         | Use                                                                                                                                                                                                                   |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `waitForHydration`, `nextFrames` from `hydration.ts`                                                           | Wait until the page has hydrated, which it reads from the `jsaction` markers: give the fixture route a server-rendered element with a listener or a `routerLink`, or the wait ends at once; wait for animation frames |
+| `recordFrames` (with its `start` option), `recordStyleMutations`, `recordHostAttributes` from `style-probe.ts` | Record frames, style changes, and host attributes while the page loads or hydrates                                                                                                                                    |
+| `itemLinks`, `itemSheetsLoaded`, `delayCss` from `style-probe.ts`                                              | Read the item links, check their sheets have loaded, and delay CSS responses                                                                                                                                          |
+| `expectHydrationFrames` from `style-probe.ts`                                                                  | Assert the unstyled-frame count of a hydration run                                                                                                                                                                    |
+| `removeEveryHost`, `removeDehydratedHosts`, `expectHoverLifts` from `hosts.ts`                                 | Remove item hosts from the page; check that hovering lifts an item                                                                                                                                                    |
 
 ## Engines
 

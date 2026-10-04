@@ -90,13 +90,15 @@ export class SetupFixture {
  * The setup spec's client-only `@defer` with the preload list
  * (setup.md:341; ADR 0060 point 6): the page's only card first renders on the
  * client, so the server writes no card link and the app's `card` preload is
- * the only card request before the interaction.
+ * the only card request before the interaction. The `routerLink` gives the
+ * server HTML a `jsaction` marker, which the e2e `waitForHydration` waits on.
  */
 @Component({
   selector: 'app-setup-defer-fixture',
-  imports: [YetiCard],
+  imports: [RouterLink, YetiCard],
   template: `<h2>Setup with a deferred card</h2>
     <p i18n>The card file is preloaded before the card first renders.</p>
+    <a routerLink="/setup">Back to setup</a>
     @defer (on interaction) {
       <article id="deferred-card" yetiCard>
         <h3>A card from the client</h3>

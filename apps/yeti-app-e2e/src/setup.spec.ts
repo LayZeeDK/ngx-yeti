@@ -370,7 +370,7 @@ for (const { kind, prefix } of routeKinds) {
       // Item CSS delayed from the start.
       await delayCss(page);
       await page.goto(`${prefix}setup-defer`);
-      await waitForHydration(page, interactionHost);
+      await waitForHydration(page);
 
       expect(
         await styleMutations(),
@@ -425,6 +425,10 @@ for (const { kind, prefix } of routeKinds) {
         await expect(
           page.locator('head link[rel="preload"][as="style"]'),
         ).toHaveAttribute('href', /components\/card\/card\.css/);
+        await expect(
+          page.locator('[jsaction]'),
+          'a jsaction marker that waitForHydration waits on',
+        ).not.toHaveCount(0);
       });
 
       test('serves server HTML that axe passes', async ({
