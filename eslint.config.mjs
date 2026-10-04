@@ -215,6 +215,28 @@ export default [
   ...storybook.configs['flat/recommended'],
   ...storybook.configs['flat/csf-strict'],
   {
+    // The axe story gate is preview.ts's `a11y.test = 'error'` (ADR 0014
+    // point 1). A story may switch off single rules through
+    // `a11y.options.rules`, but never lower or leave the gate.
+    files: ['**/*.stories.ts'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "Property[key.name='a11y'] > ObjectExpression > Property:matches([key.name=/^(test|disable|manual)$/], [key.value=/^(test|disable|manual)$/])",
+          message:
+            'Stories never set a11y test, disable, or manual: the axe gate stays at preview.ts\'s test: "error". Fix the markup instead (ngx-yeti-stories skill).',
+        },
+        {
+          selector: "Literal[value='!test']",
+          message:
+            "Stories never opt out of test-storybook with the '!test' tag.",
+        },
+      ],
+    },
+  },
+  {
     files: ['**/.storybook/main.@(js|cjs|mjs|ts)'],
     rules: {
       // Dependencies live in the root package.json, but projects lint from
