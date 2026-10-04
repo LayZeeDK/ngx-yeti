@@ -91,7 +91,7 @@ describe(YetiCard, () => {
     expect(attributeValue(card, 'data-ngx-yeti-styles')).toBe('card');
     expect(attributeValue(card, 'data-beasties-skip')).toBe('');
     expect(attributeValue(card, 'href')).toMatch(
-      /components\/card\/card\.css\?v=[0-9a-f]{40}$/,
+      /^yeti-css\/components\/card\/card\.css\?v=[0-9a-f]{40}$/,
     );
   });
 
