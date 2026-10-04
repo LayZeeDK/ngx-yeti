@@ -17,8 +17,9 @@ import { YetiStyles } from './yeti-styles';
  *
  * The consumer's part is the setup spec's one-time setup, usage rules 1 to 7
  * in particular: Yeti's build at the pin, the `assets` entry, and the global
- * stylesheet. Never write a `data-ngx-yeti-*` attribute by hand (usage rule
- * 7), and put a `@boundary` inside a `@defer` block, not only around it
+ * stylesheet. The item files belong to this function, so the global
+ * stylesheet never imports one (usage rule 3). Never write a
+ * `data-ngx-yeti-*` attribute by hand (usage rule 7), and put a `@boundary` inside a `@defer` block, not only around it
  * (usage rule 11).
  */
 export function injectYetiItemStyles(item: YetiComponentName): void {

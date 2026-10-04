@@ -2,7 +2,7 @@
 
 `ngx-yeti` is an Angular package that wraps [Yeti](https://github.com/foundation/yeti), version 7 of Foundation (`yeti-css`), in typed directives. This repository is the Nx workspace that builds, tests, and documents it.
 
-The package is pre-release. The specs in [`docs/specs/`](docs/specs/README.md) describe all 49 Yeti items and five shared pieces. The tooling, Storybook, and test infrastructure are in place, and no item is implemented yet.
+The package is pre-release. The specs in [`docs/specs/`](docs/specs/README.md) describe all 49 Yeti items and five shared pieces. The tooling, Storybook, and test infrastructure are in place. The setup spec's style loader (`ngx-yeti/styles`) and the `card` and `lift` items are implemented, each at its own entry point; the other items are not, and nothing is published to npm.
 
 ## What the workspace holds
 
@@ -14,6 +14,7 @@ The package is pre-release. The specs in [`docs/specs/`](docs/specs/README.md) d
 | `apps/yeti-app-e2e`         | Playwright tests against the Fixture app's Node server                                                 |
 | `apps/ngx-yeti-e2e`         | Playwright tests against the static Storybook build                                                    |
 | `apps/yeti-analog`          | A demo app built with Analog                                                                           |
+| `apps/yeti-analog-e2e`      | Playwright tests against the Analog demo app's dev server                                              |
 | `vendor/yeti`               | Yeti's source at the pinned commit, as the npm workspace package `yeti-css`                            |
 | `tools/yeti`                | The script that vendors Yeti and the Nx plugin that builds it                                          |
 | `docs/specs`                | The specs, ADRs, and records the package is built from; a verbatim copy, never edited                  |

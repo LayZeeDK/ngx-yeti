@@ -3,9 +3,9 @@ id: T014
 title: Document the setup in the package README, cite the usage rules in JSDoc, and apply docs-audit rulings 2 and 3
 wave: 3
 deps: [T002, T003]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T014
+base: c560d1670f278937879715aba770fb72caa67919
 worktree: null
 task_branch: null
 files:
@@ -61,3 +61,28 @@ Heavy: yes
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — coder: packages/ngx-yeti/README.md rewritten: status note (setup, card, lift implemented; nothing published), entry-point table (ngx-yeti, ngx-yeti/styles, ngx-yeti/card, ngx-yeti/lift, ngx-yeti/accessibility.css), setup parts A to E in setup.md order (version format, Nx and non-Nx Yeti builds, assets entry, global stylesheet with layer statement + 16 imports + accessibility.css last, Tailwind C2 led and C1 with its two measured losses, provideClientHydration(withI18nSupport()) and provideYetiStyles({ url, preload }) with no fragment-links line, exact-version install with no yeti-css dependency), usage rules 1 to 11, and the @boundary/@error section with the boundary inside @defer. provide-yeti-styles.ts JSDoc already cited rules 1-11 (unchanged); inject-yeti-item-styles.ts JSDoc now also cites rule 3 (comment only). README.md: apps/yeti-analog-e2e row, status line updated. references/fast-compile.md: only ngx-yeti, yeti-app, yeti-analog declare typecheck-watch. AGENTS.md Commits: GSD Path subjects for pipeline commits, Conventional Commits for others, bisect-safe rule for task commits.
+- 2026-10-04 — docs-audit claim re-checks: row 2 — rg over project.json finds typecheck-watch only in packages/ngx-yeti, apps/yeti-app, apps/yeti-analog, matching the new sentence; row 3 — ls apps lists ngx-yeti-e2e, yeti-analog, yeti-analog-e2e, yeti-app, yeti-app-e2e, all now in the README table. Banned-word rg over edited files: 0 hits.
+- 2026-10-04 — Verify (full command, in worktree): exit 0 (npm ci, rg checks, npx prettier --check ., npm run check). Extra: npx nx run-many -t lint typecheck test test-storybook --skip-nx-cache: exit 0.
+- 2026-10-04 — orchestrator Verify (isolate gsd-path-task/T014): pass, exit 0; output tail:
+  ```
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```
