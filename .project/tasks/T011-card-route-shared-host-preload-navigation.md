@@ -3,9 +3,9 @@ id: T011
 title: Extend the card Fixture route with lifted cards, the hydrate-never shared host, the preload case, and route navigation
 wave: 2
 deps: [T005, T006, T007]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T011
+base: 08f39eafc33a420e3ace7f3cc761699a3329a8a2
 worktree: null
 task_branch: null
 files:
@@ -56,3 +56,27 @@ Heavy: yes
 
 - 2026-10-04 — created by planner
 - 2026-10-04 — orchestrator plan-defect repair (AC3 and its Approach bullet): T007's measurement showed that with `page.route` disabling the HTTP cache, a client-only card re-inserted after a route's server-rendered card hosts have left refetches its file and paints about 20 unstyled frames although `card` is preloaded, because the server's link consumed the preload at load. The 0-frame preload assertion applies to an item first rendered by the client (setup.md:341; ADR 0060 point 6) and lives on T007's `setup-defer` route; AC3 here asserts 0 frames while the server hosts are connected and records the re-insertion frames.
+- 2026-10-04 — coder: card-fixture.ts keeps section 8's card (now inside `@if (live())` with a plain `ul role="list"` of three `li yetiCard yetiLift raised` cards, one `threshold="2xl" ratio="1/1"` with a cropped `NgOptimizedImage` picture); adds a "Remove the live cards" control, a plain `routerLink` to `/replay` (card-less), a `@defer (hydrate never)` `div#never-card yetiCard yetiLift` (not `raised`, so its border is visible), and a client-only `@defer (on interaction)` `div#client-card yetiCard`. Extra hosts are `li`/`div` so the wave-1 `article` locators stay unique. card.spec.ts: the two wave-1 `itemLinks` expectations become `['card', 'lift']` (the lifted cards necessarily add the lift link; no other wave-1 assertion changed); new tests per route kind: hydrate-never host keeps both links, lifts on real hover, keeps a solid non-zero border (AC2); with item CSS delayed 300 ms the preloaded client-only card shows 0 unstyled frames while server hosts are connected, and after every live and dehydrated host has left the re-inserted link's frames are annotated (measured 19 of 20-21 frames, AC3); client navigation to `/replay` removes the card link exactly 1 animation frame after the last card host leaves (in-page rAF counter plus MutationObserver), and `goBack()` re-inserts it once (one `add link[data-ngx-yeti-styles="card"]` mutation) (AC4); development build annotates NgOptimizedImage messages (measured 2 x NG02952 aspect-ratio warnings: row-form card and square-cropped card).
+- 2026-10-04 — coder Verify: `npm ci --no-audit --no-fund` ok; `npx nx run-many -t typecheck -p yeti-app yeti-app-e2e` ok; both `rg -q` probes ok; `npx nx e2e yeti-app-e2e -- card.spec.ts` 22 passed (Chromium, development build). Also `npx prettier --check .` clean and `npx nx run-many -t lint typecheck test -p yeti-app yeti-app-e2e` successful (lint warnings only, pre-existing wave-1 conditionals). Verify PASS.
+- 2026-10-04 — orchestrator Verify (isolate gsd-path-task/T011): pass, exit 0; output tail:
+  ```
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```
