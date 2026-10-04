@@ -1,0 +1,85 @@
+name: Preload prototype
+
+# Throwaway measurement: how should ngx-yeti write item preloads on the server,
+# given WebKit's rendering stall behind a late style preload?
+on:
+  push:
+    branches: ['probe/**']
+    paths: ['preload-proto/**', '.github/workflows/preload-proto.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  variants:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: sudo safaridriver --enable
+      - name: Versions
+        run: |
+          sw_vers
+          safaridriver --version
+      - name: Install selenium-webdriver in the prototype folder only
+        working-directory: preload-proto
+        run: npm i --no-save --no-package-lock --no-audit --no-fund selenium-webdriver
+      - name: Variants in Safari
+        working-directory: preload-proto
+        run: node run.mjs --browser=safari --runs=20 | tee proto-safari.log
+      - name: Summary
+        if: always()
+        working-directory: preload-proto
+        run: cat proto-safari.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: proto-safari
+          path: |
+            preload-proto/proto-safari.*
+
+  real-page:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        routes: ['server/card,card', 'server/setup-defer,setup-defer']
+    name: real-page (${{ matrix.routes }})
+    env:
+      NX_NO_CLOUD: 'true'
+      NX_DAEMON: 'false'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx nx run yeti-app:build:production --output-style=static
+      - name: Start the app's Node server
+        run: |
+          PORT=4000 nohup node dist/apps/yeti-app/server/server.mjs > app.log 2>&1 &
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:4000/sub/card && break; sleep 1; done
+          curl -s http://localhost:4000/sub/server/card | head -c 1500
+      - run: sudo safaridriver --enable
+      - name: Install selenium-webdriver in the prototype folder only
+        working-directory: preload-proto
+        run: npm i --no-save --no-package-lock --no-audit --no-fund selenium-webdriver
+      - name: Real page in Safari
+        working-directory: preload-proto
+        run: node real.mjs --browser=safari --runs=20 --routes=${{ matrix.routes }} | tee real-safari.log
+      - name: Summary
+        if: always()
+        working-directory: preload-proto
+        run: cat real-safari-*.md >> "$GITHUB_STEP_SUMMARY" || true
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: real-safari-${{ strategy.job-index }}
+          path: |
+            preload-proto/real-safari*
+            app.log

@@ -5,6 +5,8 @@ name: Safari probe
 on:
   push:
     branches: ['probe/**']
+    # The preload prototype has its own workflow.
+    paths-ignore: ['preload-proto/**', '.github/workflows/**']
 
 permissions:
   contents: read
