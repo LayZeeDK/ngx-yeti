@@ -46,7 +46,7 @@ Sample one file of each kind, since each kind can match different config objects
 | Story                        | `packages/ngx-yeti/card/src/card.stories.ts`                             |
 | Storybook config             | `packages/ngx-yeti/.storybook/main.ts`                                   |
 | Vite or Vitest config `.mts` | `packages/ngx-yeti/vite.lib.config.mts`                                  |
-| Playwright e2e spec          | `apps/yeti-app-e2e/src/example.spec.ts`                                  |
+| Playwright e2e spec          | `apps/yeti-app-e2e/src/card.spec.ts`                                     |
 | `.mjs`                       | `eslint.config.mjs`                                                      |
 
 A rule is active only if it appears in the `rules` object of the printed config with a severity other than `'off'` or `0`. Do not infer active rules from comments, git history, plugin documentation, or rule names. Filter each JSON file to its active rules and keep one list per kind. Only rules in these lists are candidates.
