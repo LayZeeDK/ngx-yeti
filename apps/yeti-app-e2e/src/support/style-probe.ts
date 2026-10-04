@@ -1,4 +1,5 @@
 import { type Page } from '@playwright/test';
+import { expect, isProduction, test } from './fixtures';
 
 /**
  * Probes after the style-loading prototype's
@@ -182,6 +183,34 @@ export async function recordFrames(
   }
 
   return reader(page, key);
+}
+
+/**
+ * The hydration frame rule for a card's `padding-top` frames, sampled from
+ * first paint (setup.md:338): the development run expects 0 frames without
+ * Yeti in Chromium and WebKit. Firefox's frames are recorded against upstream
+ * bug A4 (setup.md:403), and so are every engine's in production, where
+ * critical-CSS inlining lets a server-rendered card paint before the global
+ * stylesheet applies, in Chromium too (1 of 20 production runs).
+ */
+export function expectHydrationFrames(
+  frames: readonly string[],
+  browserName: string,
+): void {
+  const unstyled = frames.filter((value) => value === '0px');
+
+  expect(frames.length, 'the card was sampled').toBeGreaterThan(0);
+  test.info().annotations.push({
+    type: isProduction ? 'a4-frames' : 'frames',
+    description: `${browserName}${isProduction ? ', critical-CSS inlining on (production)' : ''}: ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
+  });
+
+  if (!isProduction && browserName !== 'firefox') {
+    expect(
+      unstyled,
+      'no frame after first paint shows the card without Yeti',
+    ).toEqual([]);
+  }
 }
 
 /**

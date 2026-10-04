@@ -7,6 +7,7 @@ import {
 } from './support/hydration';
 import {
   delayCss,
+  expectHydrationFrames,
   itemLinks,
   recordFrames,
   recordStyleMutations,
@@ -75,32 +76,10 @@ for (const { kind, prefix } of routeKinds) {
       await expect(shared).toHaveAttribute('data-ngx-yeti-item-card', '');
       await expect(shared).toHaveAttribute('data-ngx-yeti-item-lift', '');
 
-      const frames = (await cardPadding()).filter((value) => value !== '');
-      const unstyled = frames.filter((value) => value === '0px');
-
-      expect(frames.length, 'the card was sampled').toBeGreaterThan(0);
-
-      // Upstream bug A4 (setup.md:403): with critical-CSS inlining on, a
-      // server-rendered host can paint before the global stylesheet applies,
-      // in Chromium too, so production records the frames.
-      if (isProduction) {
-        test.info().annotations.push({
-          type: 'a4-frames',
-          description: `${browserName}, critical-CSS inlining on (production): ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
-        });
-
-        return;
-      }
-
-      test.info().annotations.push({
-        type: 'frames',
-        description: `${browserName}: ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
-      });
-
-      // Firefox's frames are recorded against upstream bug A4 (setup.md:338).
-      if (browserName !== 'firefox') {
-        expect(unstyled, 'no frame shows the card without Yeti').toEqual([]);
-      }
+      expectHydrationFrames(
+        (await cardPadding()).filter((value) => value !== ''),
+        browserName,
+      );
     });
 
     test("keeps the dehydrated hosts' links after every live host leaves, and after hydrating one", async ({

@@ -11,6 +11,7 @@ import {
 } from './support/hydration';
 import {
   delayCss,
+  expectHydrationFrames,
   itemLinks,
   itemSheetsLoaded,
   recordFrames,
@@ -158,29 +159,10 @@ for (const { kind, prefix } of routeKinds) {
       await expect(link).toHaveAttribute('data-ngx-yeti-app', /.+/);
       await expect(link).toHaveAttribute('data-beasties-skip', '');
 
-      const frames = (await cardPadding()).filter((value) => value !== '');
-
-      expect(frames.length, 'the card was sampled').toBeGreaterThan(0);
-
-      // Upstream bug A4 (setup.md:403): with critical-CSS inlining on, a
-      // server-rendered card can paint before the global stylesheet applies,
-      // in Chromium too (1 of 20 production runs), so production records it.
-      if (isProduction) {
-        test.info().annotations.push({
-          type: 'a4-frames',
-          description: `${browserName}, critical-CSS inlining on (production): ${String(frames.filter((value) => value === '0px').length)} of ${String(frames.length)} frames without Yeti`,
-        });
-      } else if (browserName !== 'firefox') {
-        expect(
-          frames.filter((value) => value === '0px'),
-          'no frame after first paint shows the card without Yeti',
-        ).toEqual([]);
-      } else {
-        test.info().annotations.push({
-          type: 'frames',
-          description: `${String(frames.filter((value) => value === '0px').length)} of ${String(frames.length)} frames without Yeti`,
-        });
-      }
+      expectHydrationFrames(
+        (await cardPadding()).filter((value) => value !== ''),
+        browserName,
+      );
     });
 
     test("keeps the hydrate-never host's card and lift links, lift, and border after every live card leaves", async ({
