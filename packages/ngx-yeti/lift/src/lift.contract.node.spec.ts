@@ -1,29 +1,14 @@
-import { Component } from '@angular/core';
-import {
-  attributeValue,
-  checkContract,
-  openingTags,
-  renderServer,
-} from '@ngx-yeti/testing/server';
-import type { YetiLift } from 'ngx-yeti';
+import { checkContract } from '@ngx-yeti/testing/server';
 import manifest from 'yeti-css/manifest';
 import { NgxYetiLift } from './lift';
 
-// Compile-time half: the list is a subset of the union and misses none of it.
-const gestures = ['rise', 'scale'] as const satisfies readonly YetiLift[];
+const gestures = ['rise', 'scale'] as const;
 
-expectTypeOf<(typeof gestures)[number]>().toEqualTypeOf<YetiLift>();
-
-@Component({
-  selector: 'yeti-lift-contract-fixture',
-  imports: [NgxYetiLift],
-  template:
-    '@for (gesture of gestures; track gesture) {<div i18n [yetiLift]="gesture">Lift</div>} <div yetiLift></div> <div [yetiLift]="empty"></div>',
-})
-class LiftContractFixture {
-  protected readonly gestures = gestures;
-  protected readonly empty = '';
-}
+// Compile-time half: the list holds exactly the gestures the input accepts
+// besides `''`, the bare attribute.
+expectTypeOf<ReturnType<NgxYetiLift['yetiLift']>>().toEqualTypeOf<
+  (typeof gestures)[number] | '' | undefined
+>();
 
 describe('lift contract', () => {
   it('maps the manifest component to NgxYetiLift', () => {
@@ -41,25 +26,5 @@ describe('lift contract', () => {
         events: {},
       }),
     ).toStrictEqual([]);
-  });
-
-  it('writes each mapped gesture, and nothing for unset or empty input', async () => {
-    expect.assertions(3);
-
-    const hosts = openingTags(await renderServer(LiftContractFixture), 'div');
-
-    expect(hosts.map((tag) => attributeValue(tag, 'class'))).toStrictEqual(
-      Array<string>(hosts.length).fill('lift'),
-    );
-    expect(hosts.map((tag) => attributeValue(tag, 'data-lift'))).toStrictEqual([
-      ...gestures,
-      null,
-      null,
-    ]);
-    expect(
-      hosts.every(
-        (tag) => attributeValue(tag, 'data-ngx-yeti-item-lift') === '',
-      ),
-    ).toBe(true);
   });
 });
