@@ -1,3 +1,43 @@
-/* Each rule arrives with the item spec whose ledger row it closes. */
+/* Each accessibility rule arrives with the item spec whose ledger row it
+   closes. The one other rule is the Firefox scale workaround below. */
 @layer ngx-yeti {
+  /* Firefox 145 to 152 reject atan2() with a relative length, so Yeti's
+     --_yeti-t, tan(atan2(100vw - ..., ...)), is invalid there and every Yeti
+     size with it (measured 2026-10-04; 153 accepts it). A registered <length>
+     computes to px, so the same ratio built from these three is valid in
+     every engine and equal to Yeti's. Delete it when yeti-css no longer
+     divides relative lengths through atan2() (user ruling, 2026-10-04). */
+  @property --_ngx-yeti-viewport {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  @property --_ngx-yeti-viewport-min {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  @property --_ngx-yeti-viewport-max {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+  }
+
+  :root {
+    --_ngx-yeti-viewport: 100vw;
+    --_ngx-yeti-viewport-min: var(--yeti-viewport-min);
+    --_ngx-yeti-viewport-max: var(--yeti-viewport-max);
+    --_yeti-t: clamp(
+      0,
+      tan(
+        atan2(
+          var(--_ngx-yeti-viewport) - var(--_ngx-yeti-viewport-min),
+          var(--_ngx-yeti-viewport-max) - var(--_ngx-yeti-viewport-min)
+        )
+      ),
+      1
+    );
+  }
 }

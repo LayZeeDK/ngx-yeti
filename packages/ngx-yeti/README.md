@@ -16,13 +16,13 @@ The package ships none of Yeti's CSS. You bring a build of Yeti at the commit th
 
 ## Entry points
 
-| Specifier                    | What it exports                                                         |
-| ---------------------------- | ----------------------------------------------------------------------- |
-| `ngx-yeti`                   | Types only, such as `YetiComponentName`, generated from Yeti at the pin |
-| `ngx-yeti/styles`            | `provideYetiStyles`, `injectYetiItemStyles`, and `YetiStylesConfig`     |
-| `ngx-yeti/card`              | `YetiCard`, `YetiCardLink`, and `yetiCardToken`                         |
-| `ngx-yeti/lift`              | `NgxYetiLift`                                                           |
-| `ngx-yeti/accessibility.css` | The package's accessibility stylesheet                                  |
+| Specifier                    | What it exports                                                                |
+| ---------------------------- | ------------------------------------------------------------------------------ |
+| `ngx-yeti`                   | Types only, such as `YetiComponentName`, generated from Yeti at the pin        |
+| `ngx-yeti/styles`            | `provideYetiStyles`, `injectYetiItemStyles`, and `YetiStylesConfig`            |
+| `ngx-yeti/card`              | `YetiCard`, `YetiCardLink`, and `yetiCardToken`                                |
+| `ngx-yeti/lift`              | `NgxYetiLift`                                                                  |
+| `ngx-yeti/accessibility.css` | The package's accessibility stylesheet, and Yeti's scale in Firefox 145 to 152 |
 
 ## Requirements
 

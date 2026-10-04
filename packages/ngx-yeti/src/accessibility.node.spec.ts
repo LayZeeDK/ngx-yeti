@@ -10,13 +10,15 @@ function readPackageFile(name: string): string {
 
 interface Findings {
   readonly outsideLayer: readonly string[];
-  readonly privateTokens: readonly string[];
+  readonly privateReads: readonly string[];
+  readonly privateWrites: readonly string[];
   readonly classSelectors: readonly string[];
 }
 
 function inspect(css: string): Findings {
   const outsideLayer: string[] = [];
-  const privateTokens: string[] = [];
+  const privateReads: string[] = [];
+  const privateWrites: string[] = [];
   const classSelectors: string[] = [];
   const isPrivateToken = (name: string): boolean => name.startsWith('--_yeti-');
 
@@ -40,12 +42,12 @@ function inspect(css: string): Findings {
           declaration.property === 'custom' &&
           isPrivateToken(declaration.value.name)
         ) {
-          privateTokens.push(declaration.value.name);
+          privateWrites.push(declaration.value.name);
         }
       },
       Variable(variable) {
         if (isPrivateToken(variable.name.ident)) {
-          privateTokens.push(variable.name.ident);
+          privateReads.push(variable.name.ident);
         }
       },
       Selector(selector) {
@@ -61,14 +63,17 @@ function inspect(css: string): Findings {
     },
   });
 
-  return { outsideLayer, privateTokens, classSelectors };
+  return { outsideLayer, privateReads, privateWrites, classSelectors };
 }
 
 describe('ngx-yeti/accessibility.css', () => {
-  it('keeps every rule inside @layer ngx-yeti, reads or writes no --_yeti-* token, and names no package class', () => {
+  // The Firefox scale workaround writes --_yeti-t and nothing else of Yeti's
+  // (the departures table of the ngx-yeti-specs skill, user ruling 2026-10-04).
+  it('keeps every rule inside @layer ngx-yeti, reads no --_yeti-* token, writes only --_yeti-t, and names no package class', () => {
     expect(inspect(readPackageFile('accessibility.css'))).toStrictEqual({
       outsideLayer: [],
-      privateTokens: [],
+      privateReads: [],
+      privateWrites: ['--_yeti-t'],
       classSelectors: [],
     });
   });
@@ -84,7 +89,8 @@ describe('ngx-yeti/accessibility.css', () => {
 
     expect(inspect(css)).toStrictEqual({
       outsideLayer: ['style', 'layer-block'],
-      privateTokens: ['--_yeti-a', '--_yeti-b'],
+      privateReads: ['--_yeti-b'],
+      privateWrites: ['--_yeti-a'],
       classSelectors: ['ngx-yeti-x'],
     });
   });

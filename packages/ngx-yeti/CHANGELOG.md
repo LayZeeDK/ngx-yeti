@@ -12,6 +12,6 @@ Built against Yeti `7.0.0-alpha.0` at commit `f52d1e8b93de5bbde322480ba77d5be26c
 - `ngx-yeti/styles`: `provideYetiStyles` with its `YetiStylesConfig` type, and `injectYetiItemStyles`, which load each item's Yeti file as a counted link in `<head>` on the server and the client.
 - `ngx-yeti/card`: `YetiCard`, `YetiCardLink`, and `yetiCardToken`.
 - `ngx-yeti/lift`: `NgxYetiLift`.
-- `ngx-yeti/accessibility.css`: the package's accessibility stylesheet, in `@layer ngx-yeti`. It has no rules yet. Import it as the last line of the global stylesheet.
+- `ngx-yeti/accessibility.css`: the package's accessibility stylesheet, in `@layer ngx-yeti`. Import it as the last line of the global stylesheet. It has no accessibility rule yet; it carries a workaround that makes Yeti's sizes render in Firefox 145 to 152, which reject the `atan2()` division of relative lengths that Yeti's scale uses.
 
 The package declares no `yeti-css` dependency or peer dependency, and its declarations never import `yeti-css`.
