@@ -91,6 +91,7 @@
     "eslint-plugin-storybook": "^10.6.1",
     "jsdom": "^27.1.0",
     "jsonc-eslint-parser": "^2.1.0",
+    "lightningcss": "^1.33.0",
     "ng-packagr": "~22.2.0",
     "nx": "23.2.1",
     "postcss": "^8.4.5",
