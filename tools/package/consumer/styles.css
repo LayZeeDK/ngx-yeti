@@ -1,4 +1,0 @@
-/* The consumer's global stylesheet (setup spec, section 4 C), reduced to its
-   first and last lines. The last line resolves through the package exports. */
-@layer yeti, ngx-yeti;
-@import 'ngx-yeti/accessibility.css';

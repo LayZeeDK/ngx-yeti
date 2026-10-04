@@ -5,6 +5,7 @@
 import { spawnSync } from 'node:child_process';
 import {
   copyFileSync,
+  existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -94,19 +95,52 @@ const extract = run(
 );
 check(extract.status === 0, 'the tarball extracted', extract.output);
 
-for (const file of ['consumer.ts', 'tsconfig.json', 'styles.css']) {
+for (const file of ['consumer.ts', 'tsconfig.json']) {
   copyFileSync(path.join(fixtureDir, file), path.join(consumerDir, file));
 }
 
-// 3. Every specifier resolves through the tarball's own exports.
+// 3. The tarball exports exactly the source's entry points and stylesheet,
+// the consumer imports every entry point, and each specifier resolves
+// through the tarball's own exports.
+const sourceRoot = path.join(workspaceRoot, 'packages/ngx-yeti');
+const entryPoints = [
+  'ngx-yeti',
+  ...readdirSync(sourceRoot, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        existsSync(path.join(sourceRoot, entry.name, 'ng-package.json')),
+    )
+    .map(({ name }) => `ngx-yeti/${name}`),
+];
+const specifiers = [...entryPoints, 'ngx-yeti/accessibility.css'];
+const packedExports = Object.keys(
+  JSON.parse(readFileSync(path.join(installed, 'package.json'), 'utf8'))
+    .exports,
+)
+  .filter((key) => key !== './package.json')
+  .map((key) => path.posix.join('ngx-yeti', key));
+check(
+  JSON.stringify(packedExports.toSorted()) ===
+    JSON.stringify(specifiers.toSorted()),
+  'the packed exports map lists every entry point and accessibility.css',
+  packedExports.join(', '),
+);
+const consumerSource = readFileSync(
+  path.join(fixtureDir, 'consumer.ts'),
+  'utf8',
+);
+const unimported = entryPoints.filter(
+  (specifier) => !consumerSource.includes(`from '${specifier}';`),
+);
+check(
+  unimported.length === 0,
+  'consumer.ts imports every entry point',
+  unimported.join(', '),
+);
 const consumerRequire = createRequire(path.join(consumerDir, 'consumer.ts'));
 
-for (const specifier of [
-  'ngx-yeti',
-  'ngx-yeti/card',
-  'ngx-yeti/lift',
-  'ngx-yeti/styles',
-]) {
+for (const specifier of specifiers) {
   let resolved = '';
 
   try {
@@ -138,10 +172,14 @@ check(
   compile.output,
 );
 
-// 5. The typed inputs are not `any`: an unknown threshold fails to compile.
-writeFileSync(
-  path.join(consumerDir, 'probe.ts'),
-  `import { Component } from '@angular/core';
+// 5. The typed APIs are not `any`: an unknown threshold and an unknown
+// preload item each fail to compile. Each probe compiles alone, because a
+// TypeScript error stops ngc before it checks templates.
+const probes = [
+  {
+    claim: 'threshold="medium" fails to compile against YetiWidth',
+    expected: ['"medium"', 'YetiWidth'],
+    source: `import { Component } from '@angular/core';
 import { YetiCard } from 'ngx-yeti/card';
 
 @Component({
@@ -151,57 +189,36 @@ import { YetiCard } from 'ngx-yeti/card';
 })
 export class Probe {}
 `,
-);
-writeFileSync(
-  path.join(consumerDir, 'tsconfig.probe.json'),
-  JSON.stringify({ extends: './tsconfig.json', files: ['probe.ts'] }),
-);
-const probe = run(
-  process.execPath,
-  [ngc, '-p', 'tsconfig.probe.json'],
-  consumerDir,
-);
-check(
-  probe.status !== 0 &&
-    probe.output.includes('"medium"') &&
-    probe.output.includes('YetiWidth'),
-  'threshold="medium" fails to compile against YetiWidth',
-  probe.output,
-);
+  },
+  {
+    claim: "preload: ['nope'] fails to compile against YetiComponentName",
+    expected: ['"nope"', 'YetiComponentName'],
+    source: `import { provideYetiStyles } from 'ngx-yeti/styles';
 
-// 6. The global stylesheet's last line resolves through the exports map.
-const stylesheetLines = readFileSync(
-  path.join(consumerDir, 'styles.css'),
-  'utf8',
-)
-  .trim()
-  .split('\n');
-const lastImport = /^@import '(?<specifier>[^']+)';$/.exec(
-  stylesheetLines.at(-1) ?? '',
-)?.groups?.specifier;
-check(
-  lastImport === 'ngx-yeti/accessibility.css',
-  "styles.css ends with @import 'ngx-yeti/accessibility.css'",
-);
-let stylesheet = '';
+export const providers = [provideYetiStyles({ preload: ['nope'] })];
+`,
+  },
+];
 
-try {
-  stylesheet = consumerRequire.resolve(lastImport);
-} catch (error) {
+for (const { claim, expected, source } of probes) {
+  writeFileSync(path.join(consumerDir, 'probe.ts'), source);
+  writeFileSync(
+    path.join(consumerDir, 'tsconfig.probe.json'),
+    JSON.stringify({ extends: './tsconfig.json', files: ['probe.ts'] }),
+  );
+  const probe = run(
+    process.execPath,
+    [ngc, '-p', 'tsconfig.probe.json'],
+    consumerDir,
+  );
   check(
-    false,
-    `${lastImport} resolves through the tarball exports`,
-    String(error),
+    probe.status !== 0 && expected.every((text) => probe.output.includes(text)),
+    claim,
+    probe.output,
   );
 }
 
-check(
-  stylesheet === path.join(installed, 'accessibility.css'),
-  `${lastImport} resolves to the tarball's accessibility.css`,
-  stylesheet,
-);
-
-// 7. The primary entry point exports types only.
+// 6. The primary entry point exports types only.
 const primary = await import(
   pathToFileURL(consumerRequire.resolve('ngx-yeti')).href
 );
@@ -211,7 +228,7 @@ check(
   Object.keys(primary).join(', '),
 );
 
-// 8. No published declaration imports yeti-css: `from`, `import()`, `import
+// 7. No published declaration imports yeti-css: `from`, `import()`, `import
 // '...'`, or a types reference. Doc comments may name the default URL.
 const yetiImport =
   /(?:\bfrom\s*|\bimport\s*\(?\s*|\breference\s+types\s*=\s*)["']yeti-css(?:\/[^"']*)?["']/;
@@ -229,7 +246,7 @@ check(
   yetiImports.join('\n'),
 );
 
-// 9. The packed package.json declares no yeti-css and carries the version.
+// 8. The packed package.json declares no yeti-css and carries the version.
 const manifest = JSON.parse(
   readFileSync(path.join(installed, 'package.json'), 'utf8'),
 );
@@ -259,7 +276,7 @@ check(
   manifest.version,
 );
 
-// 10. The shipped changelog names the full Yeti commit.
+// 9. The shipped changelog names the full Yeti commit.
 let changelog = '';
 
 try {
