@@ -42,14 +42,29 @@ export async function expectHoverLifts(
   // Yeti's `.lift` transition list; an element without Yeti computes `all`.
   await expect(card).not.toHaveCSS('transition-property', 'all');
 
-  const before = await card.boundingBox();
+  // Away from the card first, then wait until two reads agree, so the hover
+  // starts from rest.
+  await page.mouse.move(0, 0);
+
+  let before = await card.boundingBox();
+
+  await expect
+    .poll(
+      async () => {
+        const previous = before?.y;
+
+        before = await card.boundingBox();
+
+        return before !== null && before.y === previous;
+      },
+      { message: 'the card comes to rest' },
+    )
+    .toBe(true);
 
   if (before === null) {
     throw new Error('The card is not rendered');
   }
 
-  // Away from the card first, so the hover starts from rest.
-  await page.mouse.move(0, 0);
   await card.hover();
 
   await expect
