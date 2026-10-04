@@ -269,4 +269,4 @@ Write every other commit message in [Conventional Commits](https://www.conventio
 
 Make each commit atomic. It holds one logical change, and a reviewer can revert it alone.
 
-Make each commit bisect-safe, task commits included. `npx prettier --check .` and `npm exec nx -- run-many -t lint typecheck test` for the projects the commit touches pass at every commit, not only at the tip. If a change needs code fixes before a stricter rule can land, commit the fixes first.
+Make each commit bisect-safe, task commits included. `npx prettier --check .` and `npm exec nx -- run-many -t lint typecheck test -p <projects the commit touches>` pass at every commit, not only at the tip. If a change needs code fixes before a stricter rule can land, commit the fixes first.
