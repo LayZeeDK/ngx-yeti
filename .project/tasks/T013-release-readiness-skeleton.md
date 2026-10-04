@@ -15,6 +15,7 @@ files:
   - packages/ngx-yeti/CHANGELOG.md
   - packages/ngx-yeti/src/version.node.spec.ts
   - packages/ngx-yeti/src/published-output.node.spec.ts
+  - packages/ngx-yeti/src/accessibility.node.spec.ts
   - tools/package/pack-check.mjs
   - tools/package/consumer/consumer.ts
   - tools/package/consumer/tsconfig.json
@@ -69,3 +70,5 @@ Heavy: no
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — coder: BLOCKED at preflight, no product path changed. The Approach ships `CHANGELOG.md` through an `assets` entry in `packages/ngx-yeti/ng-package.json` (ng-packagr copies only `README.md` and `LICENSE` on its own, `node_modules/ng-packagr/src/lib/ng-package/entry-point/write-package.transform.js:89-92`), but the landed T003 spec `packages/ngx-yeti/src/accessibility.node.spec.ts` asserts `expect(ngPackage).toHaveProperty('assets', ['accessibility.css'])`, a deep equality on the whole array. Adding `"CHANGELOG.md"` makes that spec fail under `nx test ngx-yeti` (AC5), and the spec is not in this task's `files`. Completion needs an unlisted path. Proposed repair: add `packages/ngx-yeti/src/accessibility.node.spec.ts` to `files` so its assertion becomes `toHaveProperty('assets', expect.arrayContaining(['accessibility.css']))` (or the exact new array). Preflight otherwise clean: `npm ci` exit 0, `nx build ngx-yeti` exit 0; dist holds an empty `fesm2022/ngx-yeti.mjs`, no `.d.ts` imports `yeti-css`, ng-packagr adds `dependencies.tslib`; `vendor/yeti/COMMIT` = `f52d1e8b93de5bbde322480ba77d5be26c49b0ef`, Yeti version `7.0.0-alpha.0`; SC3 and SC5 exist in INTENT.md.
+- 2026-10-04 — orchestrator plan-defect repair (`files` only): added `packages/ngx-yeti/src/accessibility.node.spec.ts`, which T003 landed with a whole-array assertion on `ng-package.json` `assets`; shipping `CHANGELOG.md` through `assets` (the only ng-packagr route) must update that assertion. The dispatch at base 1ded745 was unwound with no product change; the task returns to pending for redispatch at the new base.
