@@ -2,7 +2,7 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: walking-skeleton
-phase: build
+phase: ship
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
 status: active
@@ -63,3 +63,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — plan — patch plan approved
 - 2026-10-04 — build — build started
 - 2026-10-04 — build — wave 6 review passed (cycle 1): .project/review/wave-6.cycle1.md
+- 2026-10-04 — ship — build done; final review pending
