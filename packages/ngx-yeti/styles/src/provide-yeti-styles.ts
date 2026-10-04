@@ -16,8 +16,9 @@ import {
  *
  * Call it at most once, in the application's root providers (setup usage rule
  * 10): the loader is a root service, so a call in a route's providers has no
- * effect. Calling it is optional; without it the loader uses `yeti-css/` and
- * preloads nothing.
+ * effect. Calling it is optional; without it the loader uses `yeti-css/`,
+ * preloads nothing, and is created by the first item directive on the client
+ * instead of at application start.
  *
  * - `url`: keep it in agreement with the `assets` entry's `output` (usage rule
  *   5), relative to `<base href>`; `deployUrl` is not supported (usage rule 6).
@@ -40,12 +41,11 @@ export function provideYetiStyles(
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
     { provide: yetiStylesConfigToken, useValue: config },
-    // The loader writes the preload links when it is created, so create it at
-    // application start.
-    config.preload === undefined || config.preload.length === 0
-      ? []
-      : provideEnvironmentInitializer(() => {
-          inject(YetiStyles);
-        }),
+    // Created at application start, the loader writes the preload links and
+    // adopts the server's links at bootstrap (ADR 0060 point 5), so its check
+    // removes a server link with no host even before any item renders.
+    provideEnvironmentInitializer(() => {
+      inject(YetiStyles);
+    }),
   ]);
 }

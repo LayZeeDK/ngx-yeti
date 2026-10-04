@@ -1,10 +1,17 @@
 import {
+  APP_ID,
+  Component,
   EnvironmentInjector,
   type EnvironmentProviders,
   createEnvironmentInjector,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { itemLinks, preloadHrefs, removeItemLinks } from '@ngx-yeti/testing';
+import {
+  itemLinks,
+  nextFrame,
+  preloadHrefs,
+  removeItemLinks,
+} from '@ngx-yeti/testing';
 import { provideYetiStyles } from './provide-yeti-styles';
 import { yetiPin } from './yeti-rank';
 import { YetiStyles } from './yeti-styles';
@@ -12,6 +19,9 @@ import { YetiStyles } from './yeti-styles';
 function href(path: string, url = 'yeti-css/'): string {
   return `${url}${path}?v=${yetiPin}`;
 }
+
+@Component({ selector: 'yeti-no-item', template: '' })
+class NoItem {}
 
 function setup({
   providers = [],
@@ -64,6 +74,28 @@ describe(provideYetiStyles, () => {
       href('components/card/card.css'),
       href('layouts/stack/stack.css'),
     ]);
+  });
+
+  it('creates the loader at application start without a preload list', async () => {
+    expect.assertions(1);
+
+    removeItemLinks();
+    // A server link whose host is gone, with no item directive on the client.
+    const link = document.createElement('link');
+    link.setAttribute('rel', 'stylesheet');
+    link.setAttribute('data-ngx-yeti-styles', 'card');
+    link.setAttribute('data-ngx-yeti-app', 'yeti-test');
+    document.head.append(link);
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: APP_ID, useValue: 'yeti-test' },
+        provideYetiStyles(),
+      ],
+    });
+    await TestBed.createComponent(NoItem).whenStable();
+    await nextFrame();
+
+    expect(link.isConnected).toBe(false);
   });
 
   it('has no effect in a route injector', () => {
