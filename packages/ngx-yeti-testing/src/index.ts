@@ -8,6 +8,7 @@ export {
 } from './lib/contrast';
 export {
   itemLinks,
+  itemNames,
   itemStylesLoaded,
   nextFrame,
   preloadHrefs,

@@ -14,6 +14,11 @@ export function itemLinks(item?: YetiComponentName): HTMLLinkElement[] {
   ];
 }
 
+/** The item name of every item link in `<head>`, in document order. */
+export function itemNames(): (string | null)[] {
+  return itemLinks().map((link) => link.getAttribute('data-ngx-yeti-styles'));
+}
+
 /** The `href` of every style preload link in `<head>`, in document order. */
 export function preloadHrefs(): (string | null)[] {
   return [

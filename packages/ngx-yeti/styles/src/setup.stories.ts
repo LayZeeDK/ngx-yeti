@@ -4,15 +4,10 @@ import {
   type Meta,
   type StoryObj,
 } from '@storybook/angular-vite';
-import { itemLinks, nextFrame } from '@ngx-yeti/testing';
+import { itemNames, nextFrame } from '@ngx-yeti/testing';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
 import { NgxYetiLift } from 'ngx-yeti/lift';
 import { expect, userEvent, waitFor } from 'storybook/test';
-
-/** The item links in `<head>`, by item name, in document order. */
-function itemNames(): (string | null)[] {
-  return itemLinks().map((link) => link.getAttribute('data-ngx-yeti-styles'));
-}
 
 const meta: Meta<YetiCard> = {
   id: 'setup',

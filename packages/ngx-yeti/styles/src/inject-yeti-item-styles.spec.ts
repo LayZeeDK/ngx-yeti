@@ -11,7 +11,12 @@ import {
   runInInjectionContext,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import {
+  itemLinks,
+  itemNames,
+  nextFrame,
+  removeItemLinks,
+} from '@ngx-yeti/testing';
 import type { YetiComponentName } from 'ngx-yeti';
 import { injectYetiItemStyles } from './inject-yeti-item-styles';
 import { yetiPin } from './yeti-rank';
@@ -123,10 +128,6 @@ function permutations<T>(items: readonly T[]): T[][] {
 
 function href(path: string, url = 'yeti-css/'): string {
   return `${url}${path}?v=${yetiPin}`;
-}
-
-function itemNames(): (string | null)[] {
-  return itemLinks().map((link) => link.getAttribute('data-ngx-yeti-styles'));
 }
 
 function serverLink(item: YetiComponentName, app: string): HTMLLinkElement {
