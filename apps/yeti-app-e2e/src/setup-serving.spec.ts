@@ -41,78 +41,73 @@ async function recordCspViolations(
 }
 
 test.describe('the development server', () => {
-  test(
-    'serves the setup route with every item link loaded and the card styled',
-    { tag: '@yeti-scale' },
-    async ({ page }) => {
-      test.skip(
-        isProduction,
-        '`nx serve` runs the development build; the production run has no dev server',
-      );
+  test('serves the setup route with every item link loaded and the card styled', async ({
+    page,
+  }) => {
+    test.skip(
+      isProduction,
+      '`nx serve` runs the development build; the production run has no dev server',
+    );
 
-      await page.goto(`${devServerURL}setup`);
-      await waitForHydration(page, '#interaction-host');
+    await page.goto(`${devServerURL}setup`);
+    await waitForHydration(page, '#interaction-host');
 
-      expect(await itemLinks(page)).toEqual(['card', 'lift']);
-      await expect.poll(() => itemSheetsLoaded(page)).toBe(true);
-      await expect(page.locator('#shared-host')).not.toHaveCSS(
-        'padding-top',
-        '0px',
-      );
-    },
-  );
+    expect(await itemLinks(page)).toEqual(['card', 'lift']);
+    await expect.poll(() => itemSheetsLoaded(page)).toBe(true);
+    await expect(page.locator('#shared-host')).not.toHaveCSS(
+      'padding-top',
+      '0px',
+    );
+  });
 });
 
 test.describe('the strict-CSP card route', () => {
-  test(
-    'carries the nonce on every item link and inlined style with no violation',
-    { tag: '@yeti-scale' },
-    async ({ page }) => {
-      const violations = await recordCspViolations(page);
-      const response = await page.goto('server/card?csp');
-      const policy = response?.headers()['content-security-policy'] ?? '';
-      const nonce =
-        /^style-src 'self' 'nonce-([^']+)'$/.exec(policy)?.[1] ?? '';
+  test('carries the nonce on every item link and inlined style with no violation', async ({
+    page,
+  }) => {
+    const violations = await recordCspViolations(page);
+    const response = await page.goto('server/card?csp');
+    const policy = response?.headers()['content-security-policy'] ?? '';
+    const nonce = /^style-src 'self' 'nonce-([^']+)'$/.exec(policy)?.[1] ?? '';
 
-      expect(nonce, `a strict style-src policy: ${policy}`).not.toBe('');
+    expect(nonce, `a strict style-src policy: ${policy}`).not.toBe('');
 
-      await waitForHydration(page);
+    await waitForHydration(page);
 
-      expect(await itemLinks(page)).toEqual(['card', 'lift']);
+    expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      // Browsers hide the `nonce` attribute; the property keeps its value.
-      const nonced = await page
-        .locator('head link[data-ngx-yeti-styles], style')
-        .evaluateAll((elements) =>
-          elements.map((element) =>
-            element instanceof HTMLElement
-              ? `${element.localName} ${element.nonce}`
-              : '',
-          ),
-        );
-      const expected = (tag: string): string => `${tag} ${nonce}`;
-
-      expect(nonced, 'the card link carries the nonce').toContain(
-        expected('link'),
-      );
-      expect(
-        nonced.filter(
-          (entry) => entry !== expected('link') && entry !== expected('style'),
+    // Browsers hide the `nonce` attribute; the property keeps its value.
+    const nonced = await page
+      .locator('head link[data-ngx-yeti-styles], style')
+      .evaluateAll((elements) =>
+        elements.map((element) =>
+          element instanceof HTMLElement
+            ? `${element.localName} ${element.nonce}`
+            : '',
         ),
-        'every item link and style carries the nonce',
-      ).toEqual([]);
+      );
+    const expected = (tag: string): string => `${tag} ${nonce}`;
 
-      if (isProduction) {
-        expect(
-          nonced,
-          "Angular's inlined critical CSS is a nonced style",
-        ).toContain(expected('style'));
-      }
+    expect(nonced, 'the card link carries the nonce').toContain(
+      expected('link'),
+    );
+    expect(
+      nonced.filter(
+        (entry) => entry !== expected('link') && entry !== expected('style'),
+      ),
+      'every item link and style carries the nonce',
+    ).toEqual([]);
 
-      await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
-      expect(await violations(), 'no CSP violation').toEqual([]);
-    },
-  );
+    if (isProduction) {
+      expect(
+        nonced,
+        "Angular's inlined critical CSS is a nonced style",
+      ).toContain(expected('style'));
+    }
+
+    await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
+    expect(await violations(), 'no CSP violation').toEqual([]);
+  });
 
   test('leaves the route without the flag as it was', async ({ page }) => {
     const response = await page.goto('server/card');
@@ -129,24 +124,23 @@ test.describe('the strict-CSP card route', () => {
 });
 
 test.describe('upstream bug A4', () => {
-  test(
-    "records the card's frames without padding while the global stylesheet is delayed",
-    { tag: '@yeti-scale' },
-    async ({ browserName, page }) => {
-      const cardPadding = await recordFrames(page, 'article', 'padding');
+  test("records the card's frames without padding while the global stylesheet is delayed", async ({
+    browserName,
+    page,
+  }) => {
+    const cardPadding = await recordFrames(page, 'article', 'padding');
 
-      await delayCss(page, /\/styles(-[A-Z0-9]+)?\.css$/);
-      await page.goto('server/card');
-      await waitForHydration(page);
-      await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
+    await delayCss(page, /\/styles(-[A-Z0-9]+)?\.css$/);
+    await page.goto('server/card');
+    await waitForHydration(page);
+    await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
 
-      const frames = (await cardPadding()).filter((value) => value !== '');
+    const frames = (await cardPadding()).filter((value) => value !== '');
 
-      expect(frames.length, 'the card was sampled').toBeGreaterThan(0);
-      test.info().annotations.push({
-        type: 'frames',
-        description: `${browserName}, critical-CSS inlining ${isProduction ? 'on (production)' : 'off (development)'}: ${String(frames.filter((value) => value === '0px').length)} of ${String(frames.length)} frames with padding: 0`,
-      });
-    },
-  );
+    expect(frames.length, 'the card was sampled').toBeGreaterThan(0);
+    test.info().annotations.push({
+      type: 'frames',
+      description: `${browserName}, critical-CSS inlining ${isProduction ? 'on (production)' : 'off (development)'}: ${String(frames.filter((value) => value === '0px').length)} of ${String(frames.length)} frames with padding: 0`,
+    });
+  });
 });
