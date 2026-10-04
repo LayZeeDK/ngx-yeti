@@ -73,6 +73,11 @@
         "port": 4401
       }
     },
+    "test-storybook": {
+      "options": {
+        "command": "vitest run --project=storybook"
+      }
+    },
     "typecheck": {},
     "build-fast": {
       "command": "vite build --config vite.lib.config.mts",
