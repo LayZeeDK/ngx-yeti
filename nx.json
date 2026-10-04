@@ -206,7 +206,10 @@
       "dependsOn": ["^yeti-build"]
     },
     "lint": {
-      "dependsOn": ["^yeti-build"]
+      "dependsOn": ["^yeti-build"],
+      "options": {
+        "max-warnings": 0
+      }
     },
     "e2e-ci--**/*": {
       "inputs": ["e2e", "^default"]
