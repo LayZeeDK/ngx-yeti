@@ -56,28 +56,6 @@ function roleTree(root: HTMLElement): string[] {
   });
 }
 
-/**
- * The roles and names of `root` beside those of a copy of it with every
- * trace of the lift taken off, so the lift's effect on the tree shows.
- */
-function withoutLift(root: HTMLElement): HTMLElement {
-  const copy = root.cloneNode(true);
-
-  if (!(copy instanceof HTMLElement)) {
-    throw new Error('The copy is not an element');
-  }
-
-  for (const host of copy.querySelectorAll('[yetilift]')) {
-    host.classList.remove('lift');
-
-    for (const name of ['yetilift', 'data-lift', 'data-ngx-yeti-item-lift']) {
-      host.removeAttribute(name);
-    }
-  }
-
-  return copy;
-}
-
 const meta: Meta<NgxYetiLift> = {
   id: 'lift',
   component: NgxYetiLift,
@@ -97,7 +75,14 @@ type Story = StoryObj<NgxYetiLift>;
  * `lift.spec.ts`: Storybook's `userEvent.hover` does not set CSS `:hover`.
  */
 export const Default: Story = {
-  play: async ({ canvas, canvasElement }) => {
+  // The reference is the same markup rendered without `yetiLift`, hidden except
+  // while the trees are compared, so an attribute the lift adds shows.
+  render: () => ({
+    template: `
+      <div data-testid="cards">${liftedCards}</div>
+      <div data-testid="reference" hidden>${liftedCards.replaceAll(/ yetiLift(?:="scale")?/g, '')}</div>`,
+  }),
+  play: async ({ canvas }) => {
     const cards = canvas.getByTestId('cards');
     const [first, second, third] = [
       'Hover me',
@@ -116,13 +101,18 @@ export const Default: Story = {
     await expect(second).not.toHaveAttribute('data-lift');
     await expect(third).toHaveAttribute('data-lift', 'scale');
 
-    const reference = withoutLift(cards);
-    canvasElement.append(reference);
+    const reference = canvas.getByTestId('reference');
+
+    await expect(
+      reference.querySelector('[data-ngx-yeti-item-lift]'),
+    ).toBeNull();
+
+    reference.hidden = false;
 
     try {
       await expect(roleTree(cards)).toStrictEqual(roleTree(reference));
     } finally {
-      reference.remove();
+      reference.hidden = true;
     }
   },
 };
