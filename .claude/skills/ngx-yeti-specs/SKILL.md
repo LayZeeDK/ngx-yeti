@@ -75,6 +75,7 @@ Files in `packages/ngx-yeti/<item>/src/`:
 | `<item>-tokens.ts`              | `InjectionToken<Parent>`; imports the parent class with `import type`; parts import the token as a value to `inject()` it (building-blocks 1.9) |
 | `<item>.spec.ts`                | Layer 2 (Vitest browser mode)                                                                                                                   |
 | `<item>.ssr.spec.ts`            | Layer 3 server-render smoke                                                                                                                     |
+| `<item>.contract.node.spec.ts`  | Layer 3 contract check (ADR 0014 point 3)                                                                                                       |
 | `<item>.stories.ts`             | Layer 1 stories, `meta.id` pinned to `<item>`                                                                                                   |
 
 Another entry point is imported by its package path (`ngx-yeti/<other>`), never by a relative path. No `@defer` in package templates (ADR 0011 clause 10).

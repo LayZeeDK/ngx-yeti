@@ -40,7 +40,7 @@ The file suffix routes a spec to its Vitest project (`packages/ngx-yeti/vitest.u
 ## Layer 3
 
 - Every item has `<item>.ssr.spec.ts`: a fixture component with one `i18n` text (building-blocks 1.11 decision 11), rendered with `renderServer()`, asserting the server HTML. `packages/ngx-yeti/card/src/card.ssr.spec.ts` is the pattern.
-- The contract check (ADR 0014 point 3) reads `yeti-css/manifest` (its types come from `yeti-css`; the mapping's `classes` field is optional for an item without modifier classes) and asserts every class, attribute, marker, value, and event the spec maps has its input, union member, or output, and that no union holds a value the manifest lacks. The first item spec designs the per-item API in a `*.node.spec.ts`; later specs reuse it. `packages/ngx-yeti/src/yeti-manifest.node.spec.ts` already pins the manifest's component count.
+- The contract check (ADR 0014 point 3) reads `yeti-css/manifest` (its types come from `yeti-css`; the mapping's `classes` field is optional for an item without modifier classes) and asserts every class, attribute, marker, and event the spec maps has its input or output, and that each mapped `values` list matches the manifest's values. It never reads the input's type. Write `<item>.contract.node.spec.ts` with `checkContract` from `@ngx-yeti/testing/server`, and pair each `values` list with `expectTypeOf<ReturnType<Directive['input']>>().toEqualTypeOf<(typeof list)[number] | undefined>()`, which only `nx typecheck` checks; `card.contract.node.spec.ts` is the pattern. `packages/ngx-yeti/src/yeti-manifest.node.spec.ts` already pins the manifest's component count.
 
 ## Layer 4
 
