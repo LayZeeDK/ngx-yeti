@@ -17,11 +17,11 @@ Angular specs need no cleanup hooks. `setupTestBed()` in `src/test-setup.ts` reg
 Write `setup()` as an `async` function at module level or inside the `describe`. It creates the fixture, waits for it to be stable, narrows the host element, and returns all of it.
 
 ```typescript
-async function setup({ color }: { color?: string } = {}) {
-  const colorSignal = signal(color ?? '');
-  const fixture = TestBed.createDirective(Highlight, {
-    tagName: 'span',
-    bindings: color === undefined ? [] : [inputBinding('yetiHighlight', colorSignal)],
+async function setupCardLink({ stretch }: { stretch?: boolean } = {}) {
+  const stretchSignal = signal(stretch ?? false);
+  const fixture = TestBed.createDirective(YetiCardLink, {
+    tagName: 'a',
+    bindings: stretch === undefined ? [] : [inputBinding('stretch', stretchSignal)],
   });
 
   await fixture.whenStable();
@@ -29,26 +29,28 @@ async function setup({ color }: { color?: string } = {}) {
   const element: unknown = fixture.nativeElement;
   assert.instanceOf(element, HTMLElement);
 
-  return { colorSignal, element, fixture };
+  return { element, fixture, stretchSignal };
 }
 
-describe(Highlight, () => {
-  it('applies a changed color', async () => {
-    expect.assertions(1);
+describe(YetiCardLink, () => {
+  it('renders data-stretch while stretch is true', async () => {
+    expect.assertions(2);
 
-    const { colorSignal, element, fixture } = await setup({
-      color: 'lightblue',
+    const { element, fixture, stretchSignal } = await setupCardLink({
+      stretch: true,
     });
 
-    colorSignal.set('pink');
-    fixture.detectChanges();
+    expect(element.getAttribute('data-stretch')).toBe('');
 
-    expect(element.style.backgroundColor).toBe('pink');
+    stretchSignal.set(false);
+    await fixture.whenStable();
+
+    expect(element.hasAttribute('data-stretch')).toBe(false);
   });
 });
 ```
 
-Source: `packages/ngx-yeti/src/lib/highlight/highlight.spec.ts`.
+Source: `packages/ngx-yeti/card/src/card.spec.ts`.
 
 ## Key rules
 

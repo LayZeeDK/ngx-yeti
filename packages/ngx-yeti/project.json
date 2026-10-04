@@ -36,6 +36,7 @@
     },
     "test": {
       "command": "vitest run --config vitest.unit.config.mts",
+      "dependsOn": ["build", "^yeti-build"],
       "options": {
         "cwd": "{projectRoot}"
       },
@@ -101,6 +102,20 @@
         }
       }
     },
-    "typecheck-watch": {}
+    "typecheck-watch": {},
+    "pack-check": {
+      "command": "node tools/package/pack-check.mjs",
+      "dependsOn": ["build"],
+      "metadata": {
+        "description": "npm pack the built package and compile a consumer against the tarball; never publishes"
+      }
+    },
+    "yeti-sources": {
+      "command": "node tools/yeti/generate-sources.mjs",
+      "dependsOn": ["^yeti-build"],
+      "metadata": {
+        "description": "Write src/yeti-types.ts and styles/src/yeti-rank.ts from Yeti's build at the pin"
+      }
+    }
   }
 }

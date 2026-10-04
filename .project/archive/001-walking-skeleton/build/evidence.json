@@ -1,0 +1,416 @@
+{
+  "canonical_project_dir": ".project",
+  "command": "verify-landed",
+  "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+  "project_dir": ".project",
+  "tasks": [
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "5ecb15d82792a80be67e0f23a67fd8fbd57b4570",
+            "commit": "8dbddcbabdb58952c1a15cd0c06400c1a2140a6d",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T001: Reproduce and fix the Playwright webServer start in pipeline worktrees"
+      },
+      "landed_commit": "8dbddcbabdb58952c1a15cd0c06400c1a2140a6d",
+      "reasons": [],
+      "task": {
+        "base": "5ecb15d82792a80be67e0f23a67fd8fbd57b4570",
+        "id": "T001",
+        "status": "done",
+        "task_file": ".project/tasks/T001-webserver-start-in-worktrees.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "5ecb15d82792a80be67e0f23a67fd8fbd57b4570",
+            "commit": "db5c1ca4c56808f2e7738171cf55607e5fb52ed7",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T002: Build the ngx-yeti/styles loader and the card directives at generator-made entry points"
+      },
+      "landed_commit": "db5c1ca4c56808f2e7738171cf55607e5fb52ed7",
+      "reasons": [],
+      "task": {
+        "base": "5ecb15d82792a80be67e0f23a67fd8fbd57b4570",
+        "id": "T002",
+        "status": "done",
+        "task_file": ".project/tasks/T002-styles-loader-and-card-entry-points.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "5ecb15d82792a80be67e0f23a67fd8fbd57b4570",
+            "commit": "8decde2ca83896d9da5a5210c384106ba7061875",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T003: Publish ngx-yeti/accessibility.css and resolve it in Storybook and yeti-app"
+      },
+      "landed_commit": "8decde2ca83896d9da5a5210c384106ba7061875",
+      "reasons": [],
+      "task": {
+        "base": "5ecb15d82792a80be67e0f23a67fd8fbd57b4570",
+        "id": "T003",
+        "status": "done",
+        "task_file": ".project/tasks/T003-accessibility-stylesheet.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "c25ae9ada299fffdd4cd23d405f5cfe2b134fad2",
+            "commit": "7de9f72935a08ebd658abf3e0b4a3b1878f9ad5e",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T004: Write the card stories and the card browser tests"
+      },
+      "landed_commit": "7de9f72935a08ebd658abf3e0b4a3b1878f9ad5e",
+      "reasons": [],
+      "task": {
+        "base": "c25ae9ada299fffdd4cd23d405f5cfe2b134fad2",
+        "id": "T004",
+        "status": "done",
+        "task_file": ".project/tasks/T004-card-stories-and-browser-tests.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "8dbddcbabdb58952c1a15cd0c06400c1a2140a6d",
+            "commit": "11d3cf5ae6bb770fcc4f2a139ca6b3540d614fb9",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T005: Serve the card Fixture route and prove the loader adopts the server's links at hydration"
+      },
+      "landed_commit": "11d3cf5ae6bb770fcc4f2a139ca6b3540d614fb9",
+      "reasons": [],
+      "task": {
+        "base": "8dbddcbabdb58952c1a15cd0c06400c1a2140a6d",
+        "id": "T005",
+        "status": "done",
+        "task_file": ".project/tasks/T005-card-fixture-route-and-hydration-adoption.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "764ecb4c7d25e80ad2ef5adbff2796f29c9c1f52",
+            "commit": "a9d78d149f9e474b4f794c874d353d84e83574f4",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T006: Ship the lift item with the setup shared-host story and the setup SSR smoke"
+      },
+      "landed_commit": "a9d78d149f9e474b4f794c874d353d84e83574f4",
+      "reasons": [],
+      "task": {
+        "base": "764ecb4c7d25e80ad2ef5adbff2796f29c9c1f52",
+        "id": "T006",
+        "status": "done",
+        "task_file": ".project/tasks/T006-lift-item-and-setup-stories.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "45394edf71cb8ab113ec3818717741fe8db3af64",
+            "commit": "08f39eafc33a420e3ace7f3cc761699a3329a8a2",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T007: Serve the lift, setup, and setup-boundaries Fixture routes with their e2e cases"
+      },
+      "landed_commit": "08f39eafc33a420e3ace7f3cc761699a3329a8a2",
+      "reasons": [],
+      "task": {
+        "base": "45394edf71cb8ab113ec3818717741fe8db3af64",
+        "id": "T007",
+        "status": "done",
+        "task_file": ".project/tasks/T007-lift-and-setup-fixture-routes.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "45394edf71cb8ab113ec3818717741fe8db3af64",
+            "commit": "3c3a0d1d52b6fca7722d434ed6997d59b7e13b22",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T008: Add the card and lift Storybook-half e2e cases to ngx-yeti-e2e"
+      },
+      "landed_commit": "3c3a0d1d52b6fca7722d434ed6997d59b7e13b22",
+      "reasons": [],
+      "task": {
+        "base": "45394edf71cb8ab113ec3818717741fe8db3af64",
+        "id": "T008",
+        "status": "done",
+        "task_file": ".project/tasks/T008-card-and-lift-storybook-e2e.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "45394edf71cb8ab113ec3818717741fe8db3af64",
+            "commit": "38eb73eaa63eaf706723b38cf253a405eb632c29",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T009: Add the per-spec contract check for card and lift and the ADR 0080 name-collision test"
+      },
+      "landed_commit": "38eb73eaa63eaf706723b38cf253a405eb632c29",
+      "reasons": [],
+      "task": {
+        "base": "45394edf71cb8ab113ec3818717741fe8db3af64",
+        "id": "T009",
+        "status": "done",
+        "task_file": ".project/tasks/T009-contract-check-and-name-collision.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "08f39eafc33a420e3ace7f3cc761699a3329a8a2",
+            "commit": "032ac76150832a5b982e9974050ab31fcd4bb02b",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T010: Prove the setup serving cases on the Fixture app (dev server, strict-CSP nonce, A4 frames)"
+      },
+      "landed_commit": "032ac76150832a5b982e9974050ab31fcd4bb02b",
+      "reasons": [],
+      "task": {
+        "base": "08f39eafc33a420e3ace7f3cc761699a3329a8a2",
+        "id": "T010",
+        "status": "done",
+        "task_file": ".project/tasks/T010-setup-serving-cases.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "08f39eafc33a420e3ace7f3cc761699a3329a8a2",
+            "commit": "f7e7a29a61126e1b10762b048274447761c51193",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T011: Extend the card Fixture route with lifted cards, the hydrate-never shared host, the preload case, and route navigation"
+      },
+      "landed_commit": "f7e7a29a61126e1b10762b048274447761c51193",
+      "reasons": [],
+      "task": {
+        "base": "08f39eafc33a420e3ace7f3cc761699a3329a8a2",
+        "id": "T011",
+        "status": "done",
+        "task_file": ".project/tasks/T011-card-route-shared-host-preload-navigation.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "c560d1670f278937879715aba770fb72caa67919",
+            "commit": "4bc217041ab5693abfba28ed04c2f0735e7dcba3",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T012: Remove the NgxYeti and Highlight placeholders and move their assertions onto card"
+      },
+      "landed_commit": "4bc217041ab5693abfba28ed04c2f0735e7dcba3",
+      "reasons": [],
+      "task": {
+        "base": "c560d1670f278937879715aba770fb72caa67919",
+        "id": "T012",
+        "status": "done",
+        "task_file": ".project/tasks/T012-remove-placeholders-move-assertions-to-card.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "40e59de44daaf7c2d47d010cb8095add09734cc9",
+            "commit": "bfb82f0ad710e63f454092883e7c62e4873f58f5",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T013: Make the package release-ready with the ADR 0017 version, a changelog, and a packed consuming build"
+      },
+      "landed_commit": "bfb82f0ad710e63f454092883e7c62e4873f58f5",
+      "reasons": [],
+      "task": {
+        "base": "40e59de44daaf7c2d47d010cb8095add09734cc9",
+        "id": "T013",
+        "status": "done",
+        "task_file": ".project/tasks/T013-release-readiness-skeleton.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "c560d1670f278937879715aba770fb72caa67919",
+            "commit": "369568036ebd7ce746682630ac834f8a5ca0a8f8",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T014: Document the setup in the package README, cite the usage rules in JSDoc, and apply docs-audit rulings 2 and 3"
+      },
+      "landed_commit": "369568036ebd7ce746682630ac834f8a5ca0a8f8",
+      "reasons": [],
+      "task": {
+        "base": "c560d1670f278937879715aba770fb72caa67919",
+        "id": "T014",
+        "status": "done",
+        "task_file": ".project/tasks/T014-setup-documentation-and-docs-rulings.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "7ea86a7d0c71a851440cc6aed95da18788a91ebb",
+            "commit": "b433b0d8a86e5e0a28a04caf75d4bcab8a236b5f",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T015: Fix wave 2 cycle 1 review findings in T007, T010, T011"
+      },
+      "landed_commit": "b433b0d8a86e5e0a28a04caf75d4bcab8a236b5f",
+      "reasons": [],
+      "task": {
+        "base": "7ea86a7d0c71a851440cc6aed95da18788a91ebb",
+        "id": "T015",
+        "status": "done",
+        "task_file": ".project/tasks/T015-fix-wave-2-cycle-1.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "6cbac613b90b22a4be4a2a2a8a78f75afb0dee82",
+            "commit": "a55170564c95eff84158d382cd04fa249890b7ee",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T016: Make a route-level provideYetiStyles() call have no effect while the root call keeps preloading"
+      },
+      "landed_commit": "a55170564c95eff84158d382cd04fa249890b7ee",
+      "reasons": [],
+      "task": {
+        "base": "6cbac613b90b22a4be4a2a2a8a78f75afb0dee82",
+        "id": "T016",
+        "status": "done",
+        "task_file": ".project/tasks/T016-route-level-provide-yeti-styles-no-effect.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M001",
+        "candidates": [
+          {
+            "base": "173f52c2035c14cc40d80d265301861d888e9600",
+            "commit": "9ca088d07c29c8496f6b9aaa40d917b0e50148ce",
+            "valid": true
+          }
+        ],
+        "head": "605daf2d28e6f9e873a2fbe24f49767a04cb6d2f",
+        "subject": "T017: Record rather than assert A4-affected hydration frames in the production e2e run, and document Chromium's A4 frame"
+      },
+      "landed_commit": "9ca088d07c29c8496f6b9aaa40d917b0e50148ce",
+      "reasons": [],
+      "task": {
+        "base": "173f52c2035c14cc40d80d265301861d888e9600",
+        "id": "T017",
+        "status": "done",
+        "task_file": ".project/tasks/T017-production-a4-frames-recorded-not-asserted.md"
+      }
+    }
+  ]
+}

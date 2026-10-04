@@ -5,6 +5,7 @@ import {
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
 import express from 'express';
+import { randomBytes } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -25,6 +26,53 @@ app.use(
     redirect: false,
   }),
 );
+
+/**
+ * Strict-CSP case of the setup spec (setup.md, layer 4): a `?csp` request,
+ * such as `/sub/server/card?csp`, is answered with a per-request nonce in a
+ * `style-src 'self' 'nonce-...'` policy. Angular gets the nonce as `CSP_NONCE`
+ * through the request context (`app.config.server.ts`), and the client reads
+ * it from `ngCspNonce` on the root element. The critical CSS Angular inlines
+ * at runtime only carries a nonce fixed at build time, so its `<style>` gets
+ * the request's nonce here, as Angular's build-time `addNonce` step would.
+ */
+app.use('/**', (req, res, next) => {
+  if (!('csp' in req.query)) {
+    next();
+
+    return;
+  }
+
+  const nonce = randomBytes(16).toString('base64');
+
+  angularApp
+    .handle(req, { cspNonce: nonce })
+    .then(async (response) => {
+      if (!response) {
+        next();
+
+        return;
+      }
+
+      const html = (await response.text())
+        .replace('<app-root', `<app-root ngCspNonce="${nonce}"`)
+        .replaceAll(
+          /<style(?![^>]*\snonce=)(?=[\s>])/g,
+          `<style nonce="${nonce}"`,
+        );
+      const headers = new Headers(response.headers);
+
+      headers.set(
+        'Content-Security-Policy',
+        `style-src 'self' 'nonce-${nonce}'`,
+      );
+      await writeResponseToNodeResponse(
+        new Response(html, { status: response.status, headers }),
+        res,
+      );
+    })
+    .catch(next);
+});
 
 /**
  * Handle all other requests by rendering the Angular application.

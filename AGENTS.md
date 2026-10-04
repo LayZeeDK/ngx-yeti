@@ -263,8 +263,10 @@ Before working on a spec, a test, a story, accessibility, or Yeti itself, read t
 
 # Commits
 
-Write every commit message in [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format: `type(scope): subject`. Use the types in the git history, such as `build`, `refactor`, `docs`, `feat`, `fix`, and `test`. Use the Nx project or the tool as the scope, such as `ngx-yeti`, `eslint`, or `nx`.
+Commits made by the GSD Path pipeline use GSD Path's subjects: `T###: <title>` for a task, and `plan:`, `roadmap:`, `build:`, `ship:`, or `integrate:` for the pipeline's own commits.
+
+Write every other commit message in [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) format: `type(scope): subject`. Use the types in the git history, such as `build`, `refactor`, `docs`, `feat`, `fix`, and `test`. Use the Nx project or the tool as the scope, such as `ngx-yeti`, `eslint`, or `nx`.
 
 Make each commit atomic. It holds one logical change, and a reviewer can revert it alone.
 
-Make each commit bisect-safe. `npx prettier --check .` and `npm exec nx -- run-many -t lint typecheck test` pass at every commit, not only at the tip. If a change needs code fixes before a stricter rule can land, commit the fixes first.
+Make each commit bisect-safe, task commits included. `npx prettier --check .` and `npm exec nx -- run-many -t lint typecheck test` for the projects the commit touches pass at every commit, not only at the tip. If a change needs code fixes before a stricter rule can land, commit the fixes first.

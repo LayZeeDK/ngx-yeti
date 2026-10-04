@@ -33,21 +33,21 @@ Read the project's ESLint flat config files and produce a conflict report. A con
 
 ```bash
 cd packages/ngx-yeti
-npx eslint --print-config src/lib/ngx-yeti/ngx-yeti.ts > ts.json
+npx eslint --print-config card/src/card.ts > ts.json
 ```
 
 Sample one file of each kind, since each kind can match different config objects:
 
-| Kind                         | Example                                                  |
-| ---------------------------- | -------------------------------------------------------- |
-| Component or directive `.ts` | `packages/ngx-yeti/src/lib/ngx-yeti/ngx-yeti.ts`         |
-| Template `.html`             | `packages/ngx-yeti/src/lib/ngx-yeti/ngx-yeti.html`       |
-| Vitest spec                  | `packages/ngx-yeti/src/lib/ngx-yeti/ngx-yeti.spec.ts`    |
-| Story                        | `packages/ngx-yeti/src/lib/ngx-yeti/ngx-yeti.stories.ts` |
-| Storybook config             | `packages/ngx-yeti/.storybook/main.ts`                   |
-| Vite or Vitest config `.mts` | `packages/ngx-yeti/vite.lib.config.mts`                  |
-| Playwright e2e spec          | `apps/yeti-app-e2e/src/example.spec.ts`                  |
-| `.mjs`                       | `eslint.config.mjs`                                      |
+| Kind                         | Example                                                                  |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| Component or directive `.ts` | `packages/ngx-yeti/card/src/card.ts`                                     |
+| Template `.html`             | `apps/yeti-app/src/app/app.html` (the package has no component template) |
+| Vitest spec                  | `packages/ngx-yeti/card/src/card.spec.ts`                                |
+| Story                        | `packages/ngx-yeti/card/src/card.stories.ts`                             |
+| Storybook config             | `packages/ngx-yeti/.storybook/main.ts`                                   |
+| Vite or Vitest config `.mts` | `packages/ngx-yeti/vite.lib.config.mts`                                  |
+| Playwright e2e spec          | `apps/yeti-app-e2e/src/example.spec.ts`                                  |
+| `.mjs`                       | `eslint.config.mjs`                                                      |
 
 A rule is active only if it appears in the `rules` object of the printed config with a severity other than `'off'` or `0`. Do not infer active rules from comments, git history, plugin documentation, or rule names. Filter each JSON file to its active rules and keep one list per kind. Only rules in these lists are candidates.
 
@@ -71,7 +71,7 @@ Look for:
 
 Check `rule.meta.fixable` for both rules. If both are fixable and target the same AST node or pattern, test it:
 
-1. Write a minimal file that violates rule A **inside a project directory that a tsconfig includes** (for example `packages/ngx-yeti/src/lib/zz-probe/probe.ts`). Type-aware rules fail on stdin and on files outside a tsconfig with "was not found by the project service".
+1. Write a minimal file that violates rule A **inside a project directory that a tsconfig includes** (for example `packages/ngx-yeti/src/zz-probe/probe.ts`). Type-aware rules fail on stdin and on files outside a tsconfig with "was not found by the project service".
 2. Run `npx eslint <file> --fix --rule '{"rule-b": "off"}' -f json` from the project directory, then lint the output with rule B on.
 3. Repeat in the other direction.
 4. Delete the probe directory.

@@ -30,14 +30,14 @@ The file suffix routes a spec to its Vitest project (`packages/ngx-yeti/vitest.u
 
 ## Layer 2
 
-- Test a directive alone with `TestBed.createDirective(Type, { tagName, bindings: [inputBinding('name', signal)] })` (Angular 22.2). Use a small test host only for a parent, content, `exportAs`, or static attributes. `packages/ngx-yeti/src/lib/highlight/highlight.spec.ts` is the pattern.
+- Test a directive alone with `TestBed.createDirective(Type, { tagName, bindings: [inputBinding('name', signal)] })` (Angular 22.2). Use a small test host only for a parent, content, `exportAs`, or static attributes. `packages/ngx-yeti/card/src/card.spec.ts` is the pattern.
 - Tests run zoneless; `src/test-setup.ts` calls `setupTestBed()`.
 - Real pointer and keyboard input comes from `import { userEvent } from 'vitest/browser'`. It drives Playwright, so `userEvent.hover()` sets CSS `:hover` (measured in Chromium, Firefox, and WebKit), unlike Storybook's `userEvent`.
 - No axe here.
 
 ## Layer 3
 
-- Every item has `<item>.ssr.spec.ts`: a fixture component with one `i18n` text (building-blocks 1.11 decision 11), rendered with `renderServer()`, asserting the server HTML. `packages/ngx-yeti/src/lib/highlight/highlight.ssr.spec.ts` is the pattern.
+- Every item has `<item>.ssr.spec.ts`: a fixture component with one `i18n` text (building-blocks 1.11 decision 11), rendered with `renderServer()`, asserting the server HTML. `packages/ngx-yeti/card/src/card.ssr.spec.ts` is the pattern.
 - The contract check (ADR 0014 point 3) reads `yeti-css/manifest` (typed by Yeti's own declarations) and asserts every class, attribute, marker, value, and event the spec maps has its input, union member, or output, and that no union holds a value the manifest lacks. The first item spec designs the per-item API in a `*.node.spec.ts`; later specs reuse it. `packages/ngx-yeti/src/yeti-manifest.node.spec.ts` already pins the manifest's component count.
 
 ## Layer 4

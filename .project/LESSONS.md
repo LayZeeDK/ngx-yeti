@@ -1,0 +1,7 @@
+# Lessons
+
+- 001-walking-skeleton — Same-wave parallel tasks that share a Fixture route (T010 and T011 on /sub/server/card) passed their isolated Verify but failed together: plan an integrated uncached `run-many` and e2e check before each wave review, or make a task that asserts a route's exact item links depend on every task that changes that route.
+- 001-walking-skeleton — A task brief that names a path the task itself deletes (T012, packages/ngx-yeti/src/lib) makes `workflow_run.py gate-plan` fail for every later plan or patch approval; name deleted paths without backticks or check briefs with landed tasks at their recorded bases.
+- 001-walking-skeleton — An exact-array assertion in one task's spec (T003 on ng-package.json assets) blocked a later task that had to extend the array (T013); give the later task the spec file, or write such assertions with arrayContaining.
+- 001-walking-skeleton — A documented "has no effect" rule (setup.md:196, a route-level provideYetiStyles) was not tested until final review; give every documented usage rule that constrains behaviour a test in the task that writes the API.
+- 001-walking-skeleton — In the production Fixture build, upstream A4 (critical-CSS inlining) can paint one unstyled hydration frame in Chromium too (1 of 20 runs); production e2e records A4-affected frames as annotations and the 0-frame assertions live in the development configuration and client-only preload cases.

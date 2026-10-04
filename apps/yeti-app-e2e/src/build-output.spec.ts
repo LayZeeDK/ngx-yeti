@@ -16,9 +16,7 @@ test.describe('the Fixture app build', () => {
   });
 
   test('prerenders /<item> and leaves /server/<item> to the server', () => {
-    expect(existsSync(join(browserOutput, 'sub/highlight/index.html'))).toBe(
-      true,
-    );
-    expect(existsSync(join(browserOutput, 'sub/server/highlight'))).toBe(false);
+    expect(existsSync(join(browserOutput, 'sub/card/index.html'))).toBe(true);
+    expect(existsSync(join(browserOutput, 'sub/server/card'))).toBe(false);
   });
 });

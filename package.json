@@ -112,6 +112,7 @@
     "includedScripts": []
   },
   "workspaces": [
+    "packages/ngx-yeti",
     "vendor/yeti"
   ]
 }

@@ -30,7 +30,7 @@ Stories are test layer 1 (ADR 0014 point 1): the single home of interaction and 
 
 ## Directive stories
 
-`packages/ngx-yeti/src/lib/highlight/highlight.stories.ts` is the pattern:
+`packages/ngx-yeti/card/src/card.stories.ts` is the pattern; for a directive with one input it shortens to:
 
 ```ts
 const meta: Meta<YetiBadge> = {
@@ -57,7 +57,7 @@ const meta: Meta<YetiBadge> = {
 
 ## How stories load Yeti
 
-The preview imports `.storybook/styles.css`, the setup spec's global stylesheet (the `@layer yeti, ngx-yeti;` statement and Yeti's always-loaded files in the setup spec's order). `staticDirs` serves the built Yeti CSS under `yeti-css/`, as an application's `assets` entry does. An item's own CSS file loads through its directive (`injectYetiItemStyles`), never through a story import. Yeti is built before any Storybook target runs (`^yeti-build`).
+The preview imports `.storybook/styles.css`, the setup spec's global stylesheet (the `@layer yeti, ngx-yeti;` statement and Yeti's always-loaded files in the setup spec's order). `staticDirs` serves the built Yeti CSS under `yeti-css/`, as an application's `assets` entry does. An item's own CSS file loads through its directive, which calls `injectYetiItemStyles` from the `ngx-yeti/styles` entry point (it arrived with the setup spec, `docs/specs/specs/setup.md`), never through a story import. Yeti is built before any Storybook target runs (`^yeti-build`).
 
 ## Colour schemes
 

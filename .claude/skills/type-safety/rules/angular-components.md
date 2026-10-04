@@ -2,7 +2,7 @@
 
 The root `eslint.config.mjs` spreads angular-eslint `tsAll` and `templateAll` through `angularConfig`. These presets enable every rule, not only the recommended ones. The config turns off `component-class-suffix`, `directive-class-suffix`, `require-localize-metadata`, `runtime-localize`, `template/no-call-expression` (a signal read is a call), `template/i18n`, `template/prefer-style-binding` (it recommends `[style.x]`, which `template/no-inline-styles` bans), and `template/use-track-by-function` (it only checks `*ngFor`).
 
-Use host bindings or classes for styles. `template/no-inline-styles` bans both `style="..."` and `[style.x]` in templates. The `host: { '[style.background-color]': 'color()' }` binding in `packages/ngx-yeti/src/lib/highlight/highlight.ts` is metadata, not template, so it passes.
+Use host bindings or classes for styles. `template/no-inline-styles` bans both `style="..."` and `[style.x]` in templates. The `host: { '[attr.data-raised]': "raised() ? '' : null" }` binding in `packages/ngx-yeti/card/src/card.ts` is metadata, not template, so the template rules do not apply to it.
 
 ## Class-side rules that apply to new code
 

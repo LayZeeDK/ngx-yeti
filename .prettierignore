@@ -7,5 +7,9 @@ package-lock.json
 .angular
 
 /docs/specs
+/.project
 
 /vendor
+
+# Byte-faithful copy of Yeti's dist/yeti.d.ts, written by tools/yeti/generate-sources.mjs
+/packages/ngx-yeti/src/yeti-types.ts

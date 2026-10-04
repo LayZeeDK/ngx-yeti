@@ -1,6 +1,5 @@
 import { type Page } from '@playwright/test';
-import { expect, isProduction, test } from './support/fixtures';
-import { watchHydration } from './support/hydration';
+import { expect, test } from './support/fixtures';
 import { holdBackMainBundle } from './support/main-bundle';
 
 const routeKinds = [
@@ -8,33 +7,19 @@ const routeKinds = [
   { kind: 'server-rendered', prefix: 'server/' },
 ] as const;
 
+// The card route's hydration and JavaScript-off axe tests live in card.spec.ts.
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}highlight`);
-
-      await expect(page.getByText('Highlighted text')).toBeVisible();
-      await expectCleanHydration();
-    });
-
     test.describe('with JavaScript off', () => {
       test.use({ javaScriptEnabled: false });
 
       test('serves server HTML that Yeti styles', async ({ page }) => {
-        await page.goto(`${prefix}highlight`);
+        await page.goto(`${prefix}card`);
 
-        await expect(page.getByText('Highlighted text')).toHaveCSS(
-          'background-color',
-          'rgb(255, 255, 0)',
+        // The card file's padding; an element without Yeti computes 0px.
+        await expect(page.locator('article')).not.toHaveCSS(
+          'padding-top',
+          '0px',
         );
 
         const { fontFamily, yetiFontSans } = await page
@@ -52,15 +37,6 @@ for (const { kind, prefix } of routeKinds) {
         expect(fontFamily, "the root font is Yeti's --yeti-font-sans").toBe(
           yetiFontSans,
         );
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}highlight`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
 
@@ -90,7 +66,7 @@ test.describe('the axe fixture', () => {
     page: Page,
     axeViolations: () => Promise<string[]>,
   ): Promise<string[]> {
-    await page.goto('highlight');
+    await page.goto('card');
     await page.locator('main').evaluate((main) => {
       main.append(document.createElement('img'));
     });
