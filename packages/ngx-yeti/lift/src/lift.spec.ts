@@ -264,8 +264,8 @@ describe(NgxYetiLift, () => {
 
       removeItemLinks();
       const { rise } = await setupHover();
+      const shadow = settledStyle(rise).boxShadow;
       const top = rise.getBoundingClientRect().top;
-      const shadow = getComputedStyle(rise).boxShadow;
       const probe = document.createElement('div');
       probe.style.marginTop = 'var(--yeti-lift-distance)';
       rise.append(probe);
