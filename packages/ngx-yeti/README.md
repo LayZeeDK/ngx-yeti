@@ -153,12 +153,15 @@ You can wrap the package's directives in your own `@boundary` and `@error` block
 - **What a boundary catches** around a package directive: errors in its constructor (including `inject()` and field initializers), host bindings, and effects, on the server and the client.
 - **What it misses:** host listeners, `afterNextRender` callbacks, and a constructor error in `@defer` content when the boundary sits outside the `@defer`. That error goes to `ErrorHandler.handleError` and leaves the region empty, with a `200` response. Put the boundary inside the `@defer` (usage rule 11):
 
+  <!-- prettier-ignore -->
   ```html
-  @defer (hydrate on viewport) { @boundary {
-  <article yetiCard>...</article>
-  } @error {
-  <p>The card could not be shown.</p>
-  } }
+  @defer (hydrate on viewport) {
+    @boundary {
+      <article yetiCard>...</article>
+    } @error {
+      <p>The card could not be shown.</p>
+    }
+  }
   ```
 
 - **Server error, client success:** the server HTML holds the fallback. At hydration the client removes it and builds the item fresh instead of hydrating it, and Angular logs nothing.
