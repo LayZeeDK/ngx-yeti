@@ -88,6 +88,51 @@ export async function recordStyleMutations(
   return reader(page, key);
 }
 
+/**
+ * Call before `goto`. The returned function lists each attribute of an
+ * element matching `selector` whose value changes, such as
+ * `rise-card data-lift: null -> scale`. Hydration rewrites attributes with
+ * the value they already have (measured in Chromium), so a record alone is
+ * no change. Event replay removes `RouterLink`'s `jsaction` marker, which is
+ * not the package's, so `jsaction` is not counted.
+ */
+export async function recordHostAttributes(
+  page: Page,
+  selector: string,
+): Promise<() => Promise<readonly string[]>> {
+  const key = '__ngxYetiHostAttributes';
+
+  await page.addInitScript(
+    ([name, hostSelector]) => {
+      const changes: string[] = [];
+
+      Reflect.set(window, name, changes);
+      new MutationObserver((mutations) => {
+        for (const { target, attributeName, oldValue } of mutations) {
+          if (
+            target instanceof Element &&
+            target.matches(hostSelector) &&
+            attributeName !== null &&
+            attributeName !== 'jsaction' &&
+            target.getAttribute(attributeName) !== oldValue
+          ) {
+            changes.push(
+              `${target.id || target.localName} ${attributeName}: ${String(oldValue)} -> ${String(target.getAttribute(attributeName))}`,
+            );
+          }
+        }
+      }).observe(document, {
+        attributes: true,
+        attributeOldValue: true,
+        subtree: true,
+      });
+    },
+    [key, selector] as const,
+  );
+
+  return reader(page, key);
+}
+
 let frameProbes = 0;
 
 /**

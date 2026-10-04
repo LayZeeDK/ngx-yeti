@@ -1,4 +1,4 @@
-import { type Locator, type Page } from '@playwright/test';
+import { type Locator } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
 import { expectHoverLifts, removeEveryHost } from './support/hosts';
 import {
@@ -10,6 +10,7 @@ import {
   delayCss,
   itemLinks,
   recordFrames,
+  recordHostAttributes,
   recordStyleMutations,
 } from './support/style-probe';
 
@@ -20,44 +21,6 @@ const routeKinds = [
 
 /** Yeti's `.lift` transition list; an element without Yeti computes `all`. */
 const unstyledTransition = 'all';
-
-/**
- * Call before `goto`: lists each attribute of a card, lift, or card link host
- * whose value differs from the server's. Hydration rewrites attributes with
- * the value they already have (measured), and event replay removes
- * `RouterLink`'s `jsaction` marker; neither is a change of the package's.
- */
-async function recordHostAttributes(
-  page: Page,
-): Promise<() => Promise<unknown>> {
-  await page.addInitScript(() => {
-    const changes: string[] = [];
-
-    Reflect.set(window, '__liftHostAttributes', changes);
-    new MutationObserver((mutations) => {
-      for (const { target, attributeName, oldValue } of mutations) {
-        if (
-          target instanceof Element &&
-          target.matches('[yeticard], [yetilift], [yeticardlink]') &&
-          attributeName !== null &&
-          attributeName !== 'jsaction' &&
-          target.getAttribute(attributeName) !== oldValue
-        ) {
-          changes.push(
-            `${target.id || target.localName} ${attributeName}: ${String(oldValue)} -> ${String(target.getAttribute(attributeName))}`,
-          );
-        }
-      }
-    }).observe(document, {
-      attributes: true,
-      attributeOldValue: true,
-      subtree: true,
-    });
-  });
-
-  return () =>
-    page.evaluate((): unknown => Reflect.get(window, '__liftHostAttributes'));
-}
 
 /** Upstream bug O2: read geometry only once the lift's sheet has applied. */
 async function expectLiftSheetApplied(card: Locator): Promise<void> {
@@ -88,7 +51,10 @@ for (const { kind, prefix } of routeKinds) {
       page,
     }) => {
       const styleMutations = await recordStyleMutations(page);
-      const hostAttributes = await recordHostAttributes(page);
+      const hostAttributes = await recordHostAttributes(
+        page,
+        '[yeticard], [yetilift], [yeticardlink]',
+      );
 
       await page.goto(`${prefix}lift`);
       await waitForHydration(page);

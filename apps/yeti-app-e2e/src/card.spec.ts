@@ -14,6 +14,7 @@ import {
   itemLinks,
   itemSheetsLoaded,
   recordFrames,
+  recordHostAttributes,
   recordStyleMutations,
 } from './support/style-probe';
 
@@ -27,45 +28,6 @@ const yetiPin = readFileSync(
   'utf8',
 ).trim();
 const cardHref = `yeti-css/components/card/card.css?v=${yetiPin}`;
-
-/**
- * Call before `goto`: lists each attribute of a card host whose value differs
- * from the server's. Hydration rewrites every static and bound attribute with
- * the value it already has (measured in Chromium), so a record alone is no
- * change. Angular's event replay removes its own `jsaction` marker, which
- * `RouterLink`'s listener put on the link, not the package; it is not counted.
- */
-async function recordCardHostAttributes(
-  page: Page,
-): Promise<() => Promise<unknown>> {
-  await page.addInitScript(() => {
-    const changes: string[] = [];
-
-    Reflect.set(window, '__cardHostAttributes', changes);
-    new MutationObserver((mutations) => {
-      for (const { target, attributeName, oldValue } of mutations) {
-        if (
-          target instanceof Element &&
-          target.matches('[yeticard], [yeticardlink]') &&
-          attributeName !== null &&
-          attributeName !== 'jsaction' &&
-          target.getAttribute(attributeName) !== oldValue
-        ) {
-          changes.push(
-            `${target.localName} ${attributeName}: ${String(oldValue)} -> ${String(target.getAttribute(attributeName))}`,
-          );
-        }
-      }
-    }).observe(document, {
-      attributes: true,
-      attributeOldValue: true,
-      subtree: true,
-    });
-  });
-
-  return () =>
-    page.evaluate((): unknown => Reflect.get(window, '__cardHostAttributes'));
-}
 
 /** The boxes of the card and its children. */
 async function cardGeometry(page: Page): Promise<unknown> {
@@ -165,7 +127,10 @@ for (const { kind, prefix } of routeKinds) {
     }) => {
       const styleMutations = await recordStyleMutations(page);
       const cardPadding = await recordFrames(page, 'article', 'padding-top');
-      const hostAttributes = await recordCardHostAttributes(page);
+      const hostAttributes = await recordHostAttributes(
+        page,
+        '[yeticard], [yeticardlink]',
+      );
 
       await page.goto(`${prefix}card`);
       await waitForHydration(page);
