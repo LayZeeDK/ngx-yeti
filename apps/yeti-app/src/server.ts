@@ -62,6 +62,10 @@ app.use('/**', (req, res, next) => {
         );
       const headers = new Headers(response.headers);
 
+      // The body grew by the nonces, so a prerendered page's length and
+      // validator no longer describe it.
+      headers.delete('content-length');
+      headers.delete('etag');
       headers.set(
         'Content-Security-Policy',
         `style-src 'self' 'nonce-${nonce}'`,
