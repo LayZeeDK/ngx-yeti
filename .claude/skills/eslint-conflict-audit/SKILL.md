@@ -23,7 +23,7 @@ Read the project's ESLint flat config files and produce a conflict report. A con
 ### This workspace
 
 - The root `eslint.config.mjs` exports `default`, `angularConfig` (angular-eslint `tsAll` and `templateAll`), and `vitestConfig` (Vitest specs only).
-- `packages/ngx-yeti`, `apps/yeti-app`, and `apps/yeti-analog` spread all three. `apps/yeti-app-e2e` and `apps/yeti-analog-e2e` spread `default` and Playwright `flat/recommended`.
+- `packages/ngx-yeti`, `apps/yeti-app`, and `apps/yeti-analog` spread all three. `packages/ngx-yeti-testing` spreads `default` and `vitestConfig`. `apps/yeti-app-e2e`, `apps/yeti-analog-e2e`, and `apps/ngx-yeti-e2e` spread `default` and Playwright `flat/recommended`.
 - Nx `flat/typescript` and `flat/javascript` append `eslint-config-prettier` when `prettier` and `eslint-config-prettier` are installed, so Prettier conflicts are handled even though no config names it.
 - Rules already turned off because of a past audit carry a comment saying why. Do not report them again.
 
