@@ -86,6 +86,22 @@ function defaultCard(dir: 'ltr' | 'rtl'): string {
     </div>`;
 }
 
+/**
+ * Section 8's card with every input unset, tracked under the story's id so
+ * the play function can set its ratio.
+ */
+function trackedDefaultCard(
+  dir: 'ltr' | 'rtl',
+  id: string,
+): { props: Record<string, unknown>; template: string } {
+  const state = signal<CardState>(unset);
+  cardStates.set(id, state);
+
+  // Template props are named unlike the inputs, which they would collide
+  // with once `component` is set.
+  return { props: { state, trail }, template: defaultCard(dir) };
+}
+
 function element(canvas: HTMLElement, selector: string): HTMLElement {
   const found = canvas.querySelector(selector);
 
@@ -241,27 +257,7 @@ const meta: Meta<YetiCard> = {
       ],
     }),
   ],
-  argTypes: {
-    // Yeti's vocabularies, which the contract spec proves equal to the
-    // inputs' types, so a pin move that adds a value adds its option.
-    variant: { control: 'select', options: cardValues('data-variant') },
-    threshold: { control: 'select', options: cardValues('data-threshold') },
-    ratio: { control: 'select', options: cardValues('data-ratio') },
-    raised: { control: 'boolean' },
-  },
-  render: (args, { id }) => {
-    // Template props are named unlike the inputs, which they would collide
-    // with once `component` is set.
-    const state = signal<CardState>({
-      variant: args.variant,
-      threshold: args.threshold,
-      ratio: args.ratio,
-      raised: args.raised === true,
-    });
-    cardStates.set(id, state);
-
-    return { props: { state, trail }, template: defaultCard('ltr') };
-  },
+  render: (_args, { id }) => trackedDefaultCard('ltr', id),
 };
 export default meta;
 
@@ -386,6 +382,15 @@ export const StretchedLink: Story = {
  * card never switches to the row form.
  */
 export const Inputs: Story = {
+  // The one story whose controls bind the inputs (card spec, layer 1).
+  argTypes: {
+    // Yeti's vocabularies, which the contract spec proves equal to the
+    // inputs' types, so a pin move that adds a value adds its option.
+    variant: { control: 'select', options: cardValues('data-variant') },
+    threshold: { control: 'select', options: cardValues('data-threshold') },
+    ratio: { control: 'select', options: cardValues('data-ratio') },
+    raised: { control: 'boolean' },
+  },
   render: (args, { id }) => {
     const state = signal<CardState>({
       variant: args.variant,
@@ -535,14 +540,7 @@ export const List: Story = {
 };
 
 export const Rtl: Story = {
-  render: (_args, { id }) => {
-    cardStates.set(id, signal<CardState>(unset));
-
-    return {
-      props: { state: cardState(id), trail },
-      template: defaultCard('rtl'),
-    };
-  },
+  render: (_args, { id }) => trackedDefaultCard('rtl', id),
   play: async ({ canvas, canvasElement }) => {
     const frame = canvas.getByTestId('frame');
     const card = canvas.getByRole('article');
