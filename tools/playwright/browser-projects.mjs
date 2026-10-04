@@ -1,7 +1,7 @@
 import { devices } from '@playwright/test';
 
 /**
- * The Playwright projects of both e2e projects. A floor job of floor.yml
+ * The Playwright projects of every e2e project. A floor job of floor.yml
  * sets one FLOOR_* variable and runs that engine only; with CI set, the
  * three current engines run; locally, Chromium runs.
  */
