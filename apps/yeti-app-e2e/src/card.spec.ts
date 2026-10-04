@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { workspaceRoot } from '@nx/devkit';
 import { type Locator, type Page } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
 import { watchHydration } from './support/hydration';
@@ -12,8 +15,11 @@ const routeKinds = [
   { kind: 'server-rendered', prefix: 'server/' },
 ] as const;
 
-const cardHref =
-  'yeti-css/components/card/card.css?v=f52d1e8b93de5bbde322480ba77d5be26c49b0ef';
+const yetiPin = readFileSync(
+  join(workspaceRoot, 'vendor/yeti/COMMIT'),
+  'utf8',
+).trim();
+const cardHref = `yeti-css/components/card/card.css?v=${yetiPin}`;
 
 /**
  * Call before `goto`: lists each attribute of a card host whose value differs
