@@ -84,6 +84,8 @@ Your theme (token values on `:root`) and your application CSS come after. Unlaye
 
 The item files are not in this list. The package loads each one when the item first renders.
 
+Known issue, upstream bug A4: in a production build, Angular's critical-CSS inlining keeps only some of Yeti's `:root` token blocks and loads the global stylesheet without blocking render, so a server-rendered item can paint without its tokens until the global stylesheet arrives. The records measured 1 to 2 such frames in Firefox; Chromium showed a single frame here too, in 1 of 20 production repeat runs. `optimization.styles.inlineCritical: false` turns inlining off, which makes the global stylesheet render-blocking. Neither setting is recommended until both are measured.
+
 #### With Tailwind v4
 
 Replace the first line with one shared statement that keeps `ngx-yeti` after `yeti`, and add `@source not inline('container');` so Tailwind's `.container` never caps a Yeti `container`. There are two forms. Prefer C2.

@@ -257,7 +257,15 @@ for (const { kind, prefix } of routeKinds) {
 
       expect(frames.length, 'the card was sampled').toBeGreaterThan(0);
 
-      if (browserName === 'chromium') {
+      // Upstream bug A4 (setup.md:403): with critical-CSS inlining on, a
+      // server-rendered card can paint before the global stylesheet applies,
+      // in Chromium too (1 of 20 production runs), so production records it.
+      if (isProduction) {
+        test.info().annotations.push({
+          type: 'a4-frames',
+          description: `${browserName}, critical-CSS inlining on (production): ${String(frames.filter((value) => value === '0px').length)} of ${String(frames.length)} frames without Yeti`,
+        });
+      } else if (browserName === 'chromium') {
         expect(
           frames.filter((value) => value === '0px'),
           'no frame after first paint shows the card without Yeti',

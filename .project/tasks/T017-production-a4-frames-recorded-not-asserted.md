@@ -3,9 +3,9 @@ id: T017
 title: Record rather than assert A4-affected hydration frames in the production e2e run, and document Chromium's A4 frame
 wave: 6
 deps: [T003, T005, T007, T011, T012, T014, T015]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T017
+base: 173f52c2035c14cc40d80d265301861d888e9600
 worktree: null
 task_branch: null
 files:
@@ -84,3 +84,28 @@ Heavy: yes
 ## Log
 
 - 2026-10-04 — created by planner (final-review patch mode, finding P001 of final-gap-1)
+- 2026-10-04 — build_T017: card.spec.ts "adopts the server's card link at hydration" and setup.spec.ts "adopts the server's links with no unstyled frame" push an `a4-frames` annotation (engine, critical-CSS inlining on, N of M frames) under `isProduction` and assert no 0px count there; development keeps the Chromium 0-frame assertion and the other engines' `frames` annotation unchanged. setup.spec.ts leaving-host test: waits for a non-0 padding-top after hydration, then samples the leave window with `sampleFrames` and asserts 0 unstyled frames there in both configurations; development also asserts 0 from first paint, production records the from-first-paint count as `a4-frames`. Client-only preload assertions untouched. SKILL.md: new Departures row (setup.md:263, :338; 1 of 20 production runs at 6991ad5), existing rows byte-identical. README: A4 known-issue paragraph after section C naming Chromium, no recommendation. No docs/specs/ change.
+- 2026-10-04 — build_T017: task Verify run verbatim: exit 0 (production repeat-each=10: 400 passed, 80 skipped; development: 46 passed, 2 skipped). `npx prettier --check .`: exit 0. `npx nx run-many -t lint typecheck test -p yeti-app yeti-app-e2e`: exit 0. Full `npx nx e2e yeti-app-e2e --skip-nx-cache` (development): exit 0, 80 passed, 4 skipped. Full `FIXTURE_CONFIGURATION=production npx nx e2e yeti-app-e2e --skip-nx-cache`: exit 0, 71 passed, 13 skipped. Chromium only locally.
+- 2026-10-04 — orchestrator Verify (sidecar gsd-path-verify/task-t017-verify): pass, exit 0; output tail:
+  ```
+  [2m[WebServer] [22m    at NodeInjectorFactory.ConstructorFault_Factory [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\apps\yeti-app\src\app\fixtures\setup-boundaries-fixture.ts:32:3[90m)[39m
+  [2m[WebServer] [22m    at getNodeInjectable [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:751:38[90m)[39m
+  [2m[WebServer] [22m    at instantiateAllDirectives [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:5647:23[90m)[39m
+  [1A[2K[2m[WebServer] [22m    at createDirectivesInstances [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:5504:3[90m)[39m
+  [2m[WebServer] [22m    at initializeElement [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:15288:5[90m)[39m
+  [2m[WebServer] [22m    at ɵɵelementStart [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:15281:3[90m)[39m
+  [2m[WebServer] [22m    at ServerErrorCase_Primary_1_Template [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\apps\yeti-app\src\app\fixtures\replay-fixture.ts:10:27[90m)[39m
+  [2m[WebServer] [22m    at executeTemplate [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:5496:5[90m)[39m
+  [2m[WebServer] [22m    at renderView [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:5899:7[90m)[39m
+  [1A[2K[2m[WebServer] [22mERROR Error: The probe threw in its constructor on the server
+  [1A[2K[2m[WebServer] [22m    at new _ConstructorFault [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\apps\yeti-app\src\app\fixtures\setup-boundaries-fixture.ts:30:13[90m)[39m
+  [2m[WebServer] [22m    at NodeInjectorFactory.ConstructorFault_Factory [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\apps\yeti-app\src\app\fixtures\setup-boundaries-fixture.ts:32:3[90m)[39m
+  [2m[WebServer] [22m    at getNodeInjectable [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:751:38[90m)[39m
+  [2m[WebServer] [22m    at instantiateAllDirectives [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:5647:23[90m)[39m
+  [2m[WebServer] [22m    at createDirectivesInstances [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:5504:3[90m)[39m
+  [2m[WebServer] [22m    at initializeElement [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:15288:5[90m)[39m
+  [2m[WebServer] [22m    at ɵɵelementStart [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:15281:3[90m)[39m
+  [2m[WebServer] [22m    at ReplacedClickCase_Primary_3_Template [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\apps\yeti-app\src\app\fixtures\replay-fixture.ts:10:27[90m)[39m
+  [2m[WebServer] [22m    at executeTemplate [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:5496:5[90m)[39m
+  [2m[WebServer] [22m    at renderView [90m(C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\verify\task-t017-verify\[39m.angular\prerender-root\31d20392-37bc-4db3-895c-f4e7028c2227\node_modules\[4m@angular\core[24m\fesm2022\_debug_node-chunk.mjs:5899:7[90m)[39m
+  ```

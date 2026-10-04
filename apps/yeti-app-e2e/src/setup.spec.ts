@@ -152,6 +152,19 @@ for (const { kind, prefix } of routeKinds) {
       const unstyled = frames.filter((value) => value === '0px');
 
       expect(frames.length, 'the card was sampled').toBeGreaterThan(0);
+
+      // Upstream bug A4 (setup.md:403): with critical-CSS inlining on, a
+      // server-rendered host can paint before the global stylesheet applies,
+      // in Chromium too, so production records the frames.
+      if (isProduction) {
+        test.info().annotations.push({
+          type: 'a4-frames',
+          description: `${browserName}, critical-CSS inlining on (production): ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
+        });
+
+        return;
+      }
+
       test.info().annotations.push({
         type: 'frames',
         description: `${browserName}: ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
@@ -201,6 +214,7 @@ for (const { kind, prefix } of routeKinds) {
     });
 
     test('keeps the leaving host styled while it leaves and drops its link after', async ({
+      browserName,
       page,
     }) => {
       const leavingPadding = await recordFrames(
@@ -212,11 +226,21 @@ for (const { kind, prefix } of routeKinds) {
       await page.goto(`${prefix}setup`);
       await waitForHydration(page);
 
+      const leaving = page.locator('#leaving-host');
+
+      // Upstream bug A4 reaches only the frames before the global stylesheet
+      // applies; from here on every frame is inside the asserted leave window.
+      await expect(leaving).not.toHaveCSS('padding-top', '0px');
+
+      const leaveWindow = await sampleFrames(
+        page,
+        '#leaving-host',
+        'padding-top',
+      );
+
       // Only the live hosts hold the card link now.
       await removeDehydratedHosts(page);
       await page.getByRole('button', { name: 'Remove the live hosts' }).click();
-
-      const leaving = page.locator('#leaving-host');
 
       await expect(leaving, 'the host is leaving').toHaveClass(
         /app-setup-leaving/,
@@ -225,14 +249,30 @@ for (const { kind, prefix } of routeKinds) {
       await expect(leaving).toHaveCount(0);
       await expect.poll(() => itemLinks(page)).toEqual([]);
 
-      const frames = await leavingPadding();
-      const present = frames.filter((value) => value !== '');
+      const present = (await leavingPadding()).filter((value) => value !== '');
+      const leaveFrames = (await leaveWindow()).filter((value) => value !== '');
 
       expect(present.length, 'the leaving host was sampled').toBeGreaterThan(0);
       expect(
-        present.filter((value) => value === '0px'),
-        'no frame shows the leaving card without Yeti',
+        leaveFrames.length,
+        'the leaving host was sampled while it left',
+      ).toBeGreaterThan(0);
+      expect(
+        leaveFrames.filter((value) => value === '0px'),
+        'no frame shows the leaving card without Yeti while it leaves',
       ).toEqual([]);
+
+      if (isProduction) {
+        test.info().annotations.push({
+          type: 'a4-frames',
+          description: `${browserName}, critical-CSS inlining on (production): ${String(present.filter((value) => value === '0px').length)} of ${String(present.length)} frames without Yeti from first paint`,
+        });
+      } else {
+        expect(
+          present.filter((value) => value === '0px'),
+          'no frame after first paint shows the leaving card without Yeti',
+        ).toEqual([]);
+      }
     });
 
     test("records the client-only @defer's frames after every host has left", async ({
