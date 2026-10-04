@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
 
 declare global {
@@ -11,25 +12,9 @@ declare global {
 
 type CardForm = 'row' | 'stacked' | 'neither';
 
-/**
- * Upstream bug O2: read geometry only once the card's item file has loaded
- * and applied.
- */
+/** Waits for the card's item file, then for the card to lay out with it. */
 async function expectCardStyled(page: Page, card: Locator): Promise<void> {
-  await expect(
-    page.locator('head link[data-ngx-yeti-styles="card"]'),
-  ).toHaveCount(1);
-  await expect
-    .poll(() =>
-      page.evaluate(() =>
-        [...document.styleSheets].some(
-          ({ ownerNode }) =>
-            ownerNode instanceof HTMLLinkElement &&
-            ownerNode.dataset['ngxYetiStyles'] === 'card',
-        ),
-      ),
-    )
-    .toBe(true);
+  await expectItemSheetsApplied(page, ['card']);
   await expect(card).toHaveCSS('display', 'flex');
 }
 

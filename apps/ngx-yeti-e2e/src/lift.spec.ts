@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
 
 interface Reading {
@@ -7,33 +8,6 @@ interface Reading {
   readonly translate: string;
   readonly scale: string;
   readonly liftScale: string;
-}
-
-/**
- * Upstream bug O2: read geometry only once the lift's and the card's item
- * files have loaded and applied.
- */
-async function expectItemsStyled(page: Page): Promise<void> {
-  for (const item of ['card', 'lift']) {
-    await expect(
-      page.locator(`head link[data-ngx-yeti-styles="${item}"]`),
-    ).toHaveCount(1);
-  }
-
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () =>
-          [...document.styleSheets].filter(
-            ({ ownerNode }) =>
-              ownerNode instanceof HTMLLinkElement &&
-              ['card', 'lift'].includes(
-                ownerNode.dataset['ngxYetiStyles'] ?? '',
-              ),
-          ).length,
-      ),
-    )
-    .toBe(2);
 }
 
 /** The card a link sits in. */
@@ -82,7 +56,7 @@ test.describe('lift--default', () => {
     const root = await openStory(page, 'lift--default');
     const card = cardOf(root, 'Hover me');
 
-    await expectItemsStyled(page);
+    await expectItemSheetsApplied(page, ['card', 'lift']);
     await pointerAway(page);
     const before = await settled(card);
 
@@ -99,7 +73,7 @@ test.describe('lift--default', () => {
     const root = await openStory(page, 'lift--default');
     const card = cardOf(root, 'This one grows');
 
-    await expectItemsStyled(page);
+    await expectItemSheetsApplied(page, ['card', 'lift']);
     await pointerAway(page);
     await card.hover();
     const { scale, liftScale, translate } = await settled(card);
@@ -116,7 +90,7 @@ test.describe('lift--default', () => {
     const root = await openStory(page, 'lift--default');
     const card = cardOf(root, 'Hover me');
 
-    await expectItemsStyled(page);
+    await expectItemSheetsApplied(page, ['card', 'lift']);
     await pointerAway(page);
     const before = await settled(card);
 
@@ -142,7 +116,7 @@ test.describe('lift--keyboard', () => {
     const root = await openStory(page, 'lift--keyboard');
     const link = root.getByRole('link', { name: 'Hover me' });
 
-    await expectItemsStyled(page);
+    await expectItemSheetsApplied(page, ['card', 'lift']);
     await pointerAway(page);
     await page.keyboard.press('Tab');
 
@@ -166,7 +140,7 @@ test.describe('lift--keyboard', () => {
     const root = await openStory(page, 'lift--keyboard');
     const link = root.getByRole('link', { name: 'Hover me' });
 
-    await expectItemsStyled(page);
+    await expectItemSheetsApplied(page, ['card', 'lift']);
     await page.keyboard.press('Tab');
 
     await expect(link).toBeFocused();
@@ -197,7 +171,7 @@ test.describe('lift--without', () => {
     const root = await openStory(page, 'lift--without');
     const card = cardOf(root, 'A card that stays put');
 
-    await expectItemsStyled(page);
+    await expectItemSheetsApplied(page, ['card', 'lift']);
     await pointerAway(page);
     const before = await settled(card);
 
