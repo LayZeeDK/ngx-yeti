@@ -3,7 +3,11 @@ import { join } from 'node:path';
 import { workspaceRoot } from '@nx/devkit';
 import { type Locator, type Page } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
-import { watchHydration } from './support/hydration';
+import {
+  nextFrames,
+  waitForHydration,
+  watchHydration,
+} from './support/hydration';
 import {
   itemLinks,
   recordFrames,
@@ -60,20 +64,6 @@ async function recordCardHostAttributes(
     page.evaluate((): unknown => Reflect.get(window, '__cardHostAttributes'));
 }
 
-/**
- * Event replay removes every `jsaction` attribute once hydration has
- * finished, in both builds.
- */
-async function waitForHydration(page: Page): Promise<void> {
-  await expect(page.locator('[jsaction]')).toHaveCount(0);
-  await page.evaluate(
-    () =>
-      new Promise((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(resolve));
-      }),
-  );
-}
-
 /** The boxes of the card and its children. */
 async function cardGeometry(page: Page): Promise<unknown> {
   return page.locator('article').evaluate((card) =>
@@ -98,15 +88,6 @@ async function expectCardSheetApplied(page: Page): Promise<void> {
     'the card stylesheet is loaded',
   ).toBe(true);
   await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
-}
-
-async function nextFrames(page: Page): Promise<void> {
-  await page.evaluate(
-    () =>
-      new Promise((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(resolve));
-      }),
-  );
 }
 
 /** Delays every Yeti file 300 ms; Playwright's routing also turns the HTTP cache off. */

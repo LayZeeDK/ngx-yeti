@@ -7,6 +7,36 @@ import { expect, type Page } from '@playwright/test';
 const hydrationSummary =
   /^Angular hydrated \d+ component\(s\) and \d+ node\(s\), \d+ component\(s\) were skipped\./;
 
+/** Resolves after the page's next two animation frames. */
+export async function nextFrames(page: Page): Promise<void> {
+  await page.evaluate(
+    () =>
+      new Promise((resolve) => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+      }),
+  );
+}
+
+/**
+ * Event replay removes every `jsaction` attribute once hydration has
+ * finished, in both builds, then this waits two frames. A
+ * `hydrate on interaction` block keeps its markers until it hydrates, so
+ * pass its host's selector as `pending` to leave it out.
+ */
+export async function waitForHydration(
+  page: Page,
+  pending?: string,
+): Promise<void> {
+  await expect(
+    page.locator(
+      pending === undefined
+        ? '[jsaction]'
+        : `[jsaction]:not(${pending}, ${pending} *)`,
+    ),
+  ).toHaveCount(0);
+  await nextFrames(page);
+}
+
 /** Returns a function that expects a clean hydration. */
 export function watchHydration(page: Page): () => Promise<void> {
   const messages: string[] = [];

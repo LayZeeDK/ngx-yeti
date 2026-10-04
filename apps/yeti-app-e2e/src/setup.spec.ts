@@ -1,6 +1,10 @@
 import { type Page } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
-import { watchHydration } from './support/hydration';
+import {
+  nextFrames,
+  waitForHydration,
+  watchHydration,
+} from './support/hydration';
 import {
   itemLinks,
   recordFrames,
@@ -12,26 +16,8 @@ const routeKinds = [
   { kind: 'server-rendered', prefix: 'server/' },
 ] as const;
 
-/**
- * Event replay removes every `jsaction` attribute once hydration has
- * finished, except in the `hydrate on interaction` block, which keeps its
- * markers until it hydrates.
- */
-async function waitForHydration(page: Page): Promise<void> {
-  await expect(
-    page.locator('[jsaction]:not(#interaction-host, #interaction-host *)'),
-  ).toHaveCount(0);
-  await nextFrames(page);
-}
-
-async function nextFrames(page: Page): Promise<void> {
-  await page.evaluate(
-    () =>
-      new Promise((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(resolve));
-      }),
-  );
-}
+/** The `hydrate on interaction` host, which keeps `jsaction` until it hydrates. */
+const interactionHost = '#interaction-host';
 
 /**
  * Starts sampling `property` on `selector` in every animation frame, like
@@ -128,7 +114,7 @@ for (const { kind, prefix } of routeKinds) {
       );
 
       await page.goto(`${prefix}setup`);
-      await waitForHydration(page);
+      await waitForHydration(page, interactionHost);
 
       expect(
         await styleMutations(),
@@ -180,7 +166,7 @@ for (const { kind, prefix } of routeKinds) {
       page,
     }) => {
       await page.goto(`${prefix}setup`);
-      await waitForHydration(page);
+      await waitForHydration(page, interactionHost);
 
       await page.getByRole('button', { name: 'Remove the live hosts' }).click();
       await expect(page.locator('#shared-host, #leaving-host')).toHaveCount(0);
@@ -225,7 +211,7 @@ for (const { kind, prefix } of routeKinds) {
       );
 
       await page.goto(`${prefix}setup`);
-      await waitForHydration(page);
+      await waitForHydration(page, interactionHost);
 
       const leaving = page.locator('#leaving-host');
 
@@ -286,7 +272,7 @@ for (const { kind, prefix } of routeKinds) {
       );
 
       await page.goto(`${prefix}setup`);
-      await waitForHydration(page);
+      await waitForHydration(page, interactionHost);
       await removeEveryHost(page);
 
       await expect(
@@ -470,7 +456,7 @@ for (const { kind, prefix } of routeKinds) {
         await route.continue();
       });
       await page.goto(`${prefix}setup-defer`);
-      await waitForHydration(page);
+      await waitForHydration(page, interactionHost);
 
       expect(
         await styleMutations(),

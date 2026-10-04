@@ -1,5 +1,6 @@
 import { type Page } from '@playwright/test';
 import { expect, test } from './support/fixtures';
+import { waitForHydration } from './support/hydration';
 import { holdBackMainBundle } from './support/main-bundle';
 import { itemLinks, recordFrames } from './support/style-probe';
 
@@ -12,17 +13,6 @@ const routeKinds = [
   { kind: 'prerendered', prefix: '' },
   { kind: 'server-rendered', prefix: 'server/' },
 ] as const;
-
-/** Event replay removes every `jsaction` attribute once hydration has finished. */
-async function waitForHydration(page: Page): Promise<void> {
-  await expect(page.locator('[jsaction]')).toHaveCount(0);
-  await page.evaluate(
-    () =>
-      new Promise((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(resolve));
-      }),
-  );
-}
 
 /** Samples `property` on `selector` in every animation frame from now on. */
 async function sampleFrames(

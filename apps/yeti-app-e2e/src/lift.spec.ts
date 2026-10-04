@@ -1,6 +1,10 @@
 import { type Locator, type Page } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
-import { watchHydration } from './support/hydration';
+import {
+  nextFrames,
+  waitForHydration,
+  watchHydration,
+} from './support/hydration';
 import {
   itemLinks,
   recordFrames,
@@ -51,21 +55,6 @@ async function recordHostAttributes(
 
   return () =>
     page.evaluate((): unknown => Reflect.get(window, '__liftHostAttributes'));
-}
-
-/** Event replay removes every `jsaction` attribute once hydration has finished. */
-async function waitForHydration(page: Page): Promise<void> {
-  await expect(page.locator('[jsaction]')).toHaveCount(0);
-  await nextFrames(page);
-}
-
-async function nextFrames(page: Page): Promise<void> {
-  await page.evaluate(
-    () =>
-      new Promise((resolve) => {
-        requestAnimationFrame(() => requestAnimationFrame(resolve));
-      }),
-  );
 }
 
 /** Upstream bug O2: read geometry only once the lift's sheet has applied. */

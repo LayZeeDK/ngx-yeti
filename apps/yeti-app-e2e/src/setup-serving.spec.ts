@@ -1,19 +1,10 @@
 import { type Page } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
+import { waitForHydration } from './support/hydration';
 import { itemLinks, recordFrames } from './support/style-probe';
 
 /** The `nx serve` entry of `playwright.config.mts`. */
 const devServerURL = 'http://localhost:4312/sub/';
-
-/**
- * Event replay removes every `jsaction` attribute once hydration has
- * finished, except in the setup route's `hydrate on interaction` block.
- */
-async function waitForHydration(page: Page): Promise<void> {
-  await expect(
-    page.locator('[jsaction]:not(#interaction-host, #interaction-host *)'),
-  ).toHaveCount(0);
-}
 
 /** Whether every item link in `<head>` has loaded its stylesheet. */
 async function itemSheetsLoaded(page: Page): Promise<boolean> {
@@ -65,7 +56,7 @@ test.describe('the development server', () => {
     );
 
     await page.goto(`${devServerURL}setup`);
-    await waitForHydration(page);
+    await waitForHydration(page, '#interaction-host');
 
     expect(await itemLinks(page)).toEqual(['card', 'lift']);
     await expect.poll(() => itemSheetsLoaded(page)).toBe(true);
