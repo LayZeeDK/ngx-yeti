@@ -568,11 +568,11 @@ Not applicable: alignment mode is no (no prior `.project/` artifacts audited).
 
 | Queue # | Ruling | User's words | Planned |
 |---------|--------|--------------|---------|
-| 1 | fix-code | "Accept all as recommended (recommended)" (2026-10-04; recommendation accepted: give the replay fixture an `i18n` text) | no |
-| 2 | fix-doc | "Accept all as recommended (recommended)" (2026-10-04; recommendation accepted: say only served projects declare `typecheck-watch`) | no |
-| 3 | fix-doc | "Accept all as recommended (recommended)" (2026-10-04; recommendation accepted: add the `apps/yeti-analog-e2e` row) | no |
-| 4 | fix-doc | "Accept all as recommended (recommended)" (2026-10-04; recommendation accepted: add `ngx-yeti-testing` to the `vitestConfig` project list) | no |
-| 5 | fix-doc | "Accept all as recommended (recommended)" (2026-10-04; recommendation accepted: mark `injectYetiItemStyles` as arriving with the setup spec) | no |
+| 1 | fix-code | "Accept all as recommended (recommended)" (2026-10-04; recommendation accepted: give the replay fixture an `i18n` text) | T012 |
+| 2 | fix-doc | "Accept all as recommended (recommended)" (2026-10-04; recommendation accepted: say only served projects declare `typecheck-watch`) | T014 |
+| 3 | fix-doc | "Accept all as recommended (recommended)" (2026-10-04; recommendation accepted: add the `apps/yeti-analog-e2e` row) | T014 |
+| 4 | fix-doc | "Accept all as recommended (recommended)" (2026-10-04; recommendation accepted: add `ngx-yeti-testing` to the `vitestConfig` project list) | T012 |
+| 5 | fix-doc | "Accept all as recommended (recommended)" (2026-10-04; recommendation accepted: mark `injectYetiItemStyles` as arriving with the setup spec) | T012 |
 | 6 | accept-drift | "Accept all as recommended (recommended)" (2026-10-04; dated benchmark measurements) | n/a (accept-drift) |
 | 7 | accept-drift | "Accept all as recommended (recommended)" (2026-10-04; recorded probe) | n/a (accept-drift) |
 | 8 | accept-drift | "Accept all as recommended (recommended)" (2026-10-04; recorded comparison) | n/a (accept-drift) |
