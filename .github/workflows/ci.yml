@@ -106,4 +106,5 @@ jobs:
           cache: npm
       - run: npm ci
       - run: sudo safaridriver --enable
-      - run: npx nx test ngx-yeti
+      # The unit job runs the engine-independent node project.
+      - run: npx nx test ngx-yeti -- --project=browser

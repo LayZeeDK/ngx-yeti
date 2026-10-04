@@ -43,7 +43,8 @@ jobs:
       # discrete task between processes; built once here, yeti-build is a
       # cache hit in all of them instead of racing over dist/.
       - run: npx nx run yeti-css:yeti-build
-      - run: npx nx run-many --output-style=static -t test e2e -p ngx-yeti ngx-yeti-e2e yeti-app-e2e
+      - run: npx nx test ngx-yeti -- --project=browser
+      - run: npx nx run-many --output-style=static -t e2e -p ngx-yeti-e2e yeti-app-e2e
 
   firefox-145:
     runs-on: ubuntu-latest
@@ -59,7 +60,8 @@ jobs:
       - run: npm ci
       - run: npx playwright install-deps firefox
       # WebdriverIO downloads Firefox 145 and geckodriver itself.
-      - run: npx nx test ngx-yeti
+      # ci.yml's unit job runs the engine-independent node project.
+      - run: npx nx test ngx-yeti -- --project=browser
 
   webkit-26-4:
     runs-on: ubuntu-latest
@@ -82,7 +84,8 @@ jobs:
       # discrete task between processes; built once here, yeti-build is a
       # cache hit in all of them instead of racing over dist/.
       - run: npx nx run yeti-css:yeti-build
-      - run: npx nx run-many --output-style=static -t test e2e -p ngx-yeti ngx-yeti-e2e yeti-app-e2e
+      - run: npx nx test ngx-yeti -- --project=browser
+      - run: npx nx run-many --output-style=static -t e2e -p ngx-yeti-e2e yeti-app-e2e
 
   firefox-146-e2e:
     runs-on: ubuntu-latest
