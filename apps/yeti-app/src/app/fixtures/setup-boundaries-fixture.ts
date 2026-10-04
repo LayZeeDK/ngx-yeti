@@ -180,7 +180,6 @@ export class ResetCase {
     ResetCase,
     ServerErrorCase,
   ],
-  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations -- the fixture lists its cases in one file, like the other fixtures
   template: `<h2>Boundaries around cards</h2>
     <p i18n>
       A consumer's boundary catches some item errors and misses others.

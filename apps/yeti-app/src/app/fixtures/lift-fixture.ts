@@ -13,7 +13,6 @@ import { NgxYetiLift } from 'ngx-yeti/lift';
 @Component({
   selector: 'app-lift-fixture',
   imports: [NgxYetiLift, RouterLink, YetiCard, YetiCardLink],
-  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations -- the fixture keeps the lift cases in one file, like the other fixtures
   template: `<h2>Lifted cards</h2>
     <p i18n>Point at a card or tab to its link to lift it.</p>
     <button type="button" [disabled]="!live()" (click)="live.set(false)">

@@ -17,7 +17,6 @@ import { NgxYetiLift } from 'ngx-yeti/lift';
 @Component({
   selector: 'app-card-fixture',
   imports: [NgOptimizedImage, NgxYetiLift, RouterLink, YetiCard, YetiCardLink],
-  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations -- the fixture shows the spec's section 8 markup in one file, like the other fixtures
   template: `<h2>Weekend trips</h2>
     <button type="button" [disabled]="!live()" (click)="live.set(false)">
       Remove the live cards

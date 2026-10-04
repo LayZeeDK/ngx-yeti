@@ -32,6 +32,13 @@ export default [
     },
   },
   {
+    // A fixture keeps its cases, with their templates and styles, in one file.
+    files: ['src/app/fixtures/**/*.ts'],
+    rules: {
+      '@angular-eslint/component-max-inline-declarations': 'off',
+    },
+  },
+  {
     files: ['**/*.html'],
     // Override or add rules here
     rules: {},

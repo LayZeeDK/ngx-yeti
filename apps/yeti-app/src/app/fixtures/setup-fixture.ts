@@ -20,7 +20,6 @@ import { NgxYetiLift } from 'ngx-yeti/lift';
 @Component({
   selector: 'app-setup-fixture',
   imports: [NgxYetiLift, RouterLink, YetiCard, YetiCardLink],
-  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations -- the fixture keeps the setup cases in one file, like the other fixtures
   template: `<h2>Setup</h2>
     <p i18n>Each item loads its Yeti file as one counted link.</p>
     <button type="button" [disabled]="!live()" (click)="live.set(false)">
@@ -66,7 +65,6 @@ import { NgxYetiLift } from 'ngx-yeti/lift';
     } @placeholder {
       <button type="button">Show the client-only items</button>
     }`,
-  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations -- the leave animation belongs beside the template that names it
   styles: `
     .app-setup-leaving {
       animation: app-setup-fade 600ms linear;
@@ -97,7 +95,6 @@ export class SetupFixture {
 @Component({
   selector: 'app-setup-defer-fixture',
   imports: [YetiCard],
-  // eslint-disable-next-line @angular-eslint/component-max-inline-declarations -- the fixture keeps its one case in the setup fixtures' file
   template: `<h2>Setup with a deferred card</h2>
     <p i18n>The card file is preloaded before the card first renders.</p>
     @defer (on interaction) {
