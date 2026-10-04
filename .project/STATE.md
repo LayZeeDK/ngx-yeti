@@ -47,3 +47,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — build — integrated uncached e2e at 0bbf48a (primary checkout, Chromium): npx nx run-many -t e2e --skip-nx-cache exit 0 (3 projects); FIXTURE_CONFIGURATION=production npx nx e2e yeti-app-e2e --skip-nx-cache exit 0 (73 passed, 15 skipped)
 - 2026-10-04 — build — wave 2 review passed (cycle 2, after repair T015): .project/review/wave-2.cycle2.md
 - 2026-10-04 — build — plan-defect repair T013 files: add packages/ngx-yeti/src/accessibility.node.spec.ts (coder block at preflight; dispatch at 1ded745 unwound, no product change)
+- 2026-10-04 — build — integrated uncached checks at 2b5202d (primary checkout, Chromium): prettier, run-many lint typecheck test test-storybook build build-fast (7 projects), pack-check, run-many e2e (3 projects), production yeti-app-e2e (71 passed, 13 skipped): all exit 0
