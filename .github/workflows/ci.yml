@@ -9,8 +9,12 @@ concurrency:
   group: ci-${{ github.event.pull_request.number || github.sha }}
   cancel-in-progress: true
 
+# The commit gate as independent jobs on separate runners, so the wall clock
+# is the slowest job, not the sum. e2e grows with every spec: add an engine or
+# configuration to its matrix, or a Playwright --shard axis as floor.yml's
+# firefox-146-e2e has, rather than lengthening a job.
 jobs:
-  check:
+  static:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -19,13 +23,63 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium firefox webkit
       - run: npx prettier --check .
-      - run: npx nx run-many -t lint typecheck test test-storybook build pack-check
-      - run: npx nx run-many -t e2e
-      - run: npx nx e2e yeti-app-e2e
-        env:
-          FIXTURE_CONFIGURATION: production
+      - run: npx nx run-many -t lint typecheck
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx nx run-many -t build pack-check
+
+  # The Playwright image carries the three browsers and their system
+  # libraries, which an install on the runner took 69s to add.
+  unit:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
+    env:
+      # GitHub runs the container as root with HOME owned by the image's
+      # pwuser, and Firefox refuses to start as root in another user's home.
+      HOME: /root
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx nx run-many -t test test-storybook
+
+  e2e:
+    runs-on: ubuntu-latest
+    container: mcr.microsoft.com/playwright:v1.63.0-noble
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, firefox, webkit]
+        configuration: [development, production]
+    name: e2e (${{ matrix.engine }}, ${{ matrix.configuration }})
+    env:
+      HOME: /root
+      FIXTURE_CONFIGURATION: ${{ matrix.configuration }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Each e2e web server starts its own Nx process, and Nx shares no
+      # discrete task between processes; built once here, yeti-build is a
+      # cache hit in all of them instead of racing over dist/.
+      - run: npx nx run yeti-css:yeti-build
+      # The production configuration changes the Fixture app only.
+      - run: npx nx run-many -t e2e -p ${{ matrix.configuration == 'production' && 'yeti-app-e2e' || 'yeti-analog-e2e ngx-yeti-e2e yeti-app-e2e' }} -- --project=${{ matrix.engine }}
 
   safari:
     # Real Safari, as the macOS image ships it (26.6 on every macOS image in

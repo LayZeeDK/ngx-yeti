@@ -90,7 +90,7 @@ Yeti has no npm release. The workspace vendors its source at one `develop` commi
 
 Both workflows run on every pull request and every push to `main` or `release/**`.
 
-- `.github/workflows/ci.yml` runs `prettier --check`, lint, typecheck, unit and story tests, every build, and every e2e project in Chromium, Firefox, and WebKit, then the Fixture app e2e again on its production build. Its `safari` job runs the unit tests in real Safari on a macOS runner.
+- `.github/workflows/ci.yml` runs its checks as parallel jobs: `static` (`prettier --check`, lint, typecheck), `package` (every build and the packed consuming build), `unit` (unit and story tests in Chromium, Firefox, and WebKit), and one `e2e` job per engine and Fixture app configuration (every e2e project on the development build, the Fixture app again on its production build). Its `safari` job runs the unit tests in real Safari on a macOS runner.
 - `.github/workflows/floor.yml` runs the unit tests and both e2e projects at the floor: Chrome for Testing 141 runs both, Firefox 145 runs the unit tests, and the earliest Playwright Firefox and WebKit not older than the floor run the rest, because no Playwright release bundles Firefox 145 or WebKit 26.2. The workflow names each version.
 
 ## Contribute
