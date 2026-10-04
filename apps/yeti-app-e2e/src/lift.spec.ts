@@ -1,4 +1,3 @@
-import { type Locator } from '@playwright/test';
 import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import { expectHoverLifts, removeEveryHost } from './support/hosts';
 import {
@@ -16,11 +15,6 @@ import {
 
 /** Yeti's `.lift` transition list; an element without Yeti computes `all`. */
 const unstyledTransition = 'all';
-
-/** Upstream bug O2: read geometry only once the lift's sheet has applied. */
-async function expectLiftSheetApplied(card: Locator): Promise<void> {
-  await expect(card).not.toHaveCSS('transition-property', unstyledTransition);
-}
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} lift route`, () => {
@@ -116,7 +110,11 @@ for (const { kind, prefix } of routeKinds) {
 
       const card = page.locator('#client-card');
 
-      await expectLiftSheetApplied(card);
+      // Upstream bug O2: read geometry only once the lift's sheet has applied.
+      await expect(card).not.toHaveCSS(
+        'transition-property',
+        unstyledTransition,
+      );
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
       const frames = await liftFrames();
