@@ -190,6 +190,30 @@ describe(injectYetiItemStyles, () => {
     expect(itemNames()).toStrictEqual([]);
   });
 
+  it('counts every acquisition while the hosts are detached', async () => {
+    expect.assertions(2);
+
+    const { create, destroy } = setup();
+    const first = await create(ProbeCard);
+    const second = await create(ProbeCard);
+    // Detached hosts, as a reused route's: only the count keeps the link.
+    for (const fixture of [first, second]) {
+      const element: unknown = fixture.nativeElement;
+      assert.instanceOf(element, Element);
+      element.remove();
+    }
+
+    destroy(first);
+    await nextFrame();
+
+    expect(itemNames()).toStrictEqual(['card']);
+
+    destroy(second);
+    await nextFrame();
+
+    expect(itemNames()).toStrictEqual([]);
+  });
+
   it('inserts the link again when something else took it out of <head>', async () => {
     expect.assertions(1);
 
