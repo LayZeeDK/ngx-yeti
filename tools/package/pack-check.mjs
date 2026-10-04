@@ -232,14 +232,18 @@ check(
 // '...'`, or a types reference. Doc comments may name the default URL.
 const yetiImport =
   /(?:\bfrom\s*|\bimport\s*\(?\s*|\breference\s+types\s*=\s*)["']yeti-css(?:\/[^"']*)?["']/;
-const yetiImports = readdirSync(installed, {
+const declarations = readdirSync(installed, {
   recursive: true,
   encoding: 'utf8',
-})
-  .filter((file) => file.endsWith('.d.ts'))
-  .filter((file) =>
-    yetiImport.test(readFileSync(path.join(installed, file), 'utf8')),
-  );
+}).filter((file) => /\.d\.[cm]?ts$/.test(file));
+check(
+  declarations.length >= entryPoints.length,
+  'the tarball ships a declaration file per entry point',
+  declarations.join('\n'),
+);
+const yetiImports = declarations.filter((file) =>
+  yetiImport.test(readFileSync(path.join(installed, file), 'utf8')),
+);
 check(
   yetiImports.length === 0,
   'no published .d.ts imports yeti-css',
