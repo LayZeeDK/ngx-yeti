@@ -248,7 +248,7 @@ Read `references/fast-compile.md` before you change a Vite, Vitest, or Storybook
 
 # Specs and skills
 
-`docs/specs/` holds the specs, ADRs, and records `ngx-yeti` is built from. Start with `docs/specs/README.md`. The folder is a verbatim copy of the planning bundle: never edit it.
+`docs/specs/` holds the specs, ADRs, and records `ngx-yeti` is built from. Start with `docs/specs/README.md`. The folder is a verbatim copy of the planning bundle: never edit it, except its two living ledgers. Add and update rows in `docs/specs/ledger.md` for every accessibility, standards, parity, or compatibility change the package adds over Yeti, and in `docs/specs/upstream-bugs.md` for every upstream bug found.
 
 Before working on a spec, a test, a story, accessibility, or Yeti itself, read the matching skill in `.claude/skills/`:
 

@@ -5,7 +5,7 @@ description: 'This skill should be used when implementing, planning, or answerin
 
 # Implementing an ngx-yeti spec
 
-`docs/specs/` is a verbatim copy of the planning bundle. Never edit it; it is a record, and Prettier and Nx ignore it. Code, tests, and stories go in the workspace projects.
+`docs/specs/` is a verbatim copy of the planning bundle. Never edit it; it is a record, and Prettier and Nx ignore it. The two ledgers are the exception and stay living: `ledger.md` takes a row for every accessibility, standards, parity, or compatibility change the package adds over Yeti, and `upstream-bugs.md` a row for every upstream bug found, each in the file's own format. Code, tests, and stories go in the workspace projects.
 
 ## Read in this order
 

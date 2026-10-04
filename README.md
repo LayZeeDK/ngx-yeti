@@ -6,21 +6,21 @@ The package is pre-release. The specs in [`docs/specs/`](docs/specs/README.md) d
 
 ## What the workspace holds
 
-| Path                        | What it is                                                                                             |
-| --------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `packages/ngx-yeti`         | The published package, with its stories and its unit and server-render tests                           |
-| `packages/ngx-yeti-testing` | Test helpers shared by specs, stories, and e2e tests, imported as `@ngx-yeti/testing`; never published |
-| `apps/yeti-app`             | The Fixture app: an Angular SSR app that serves one prerendered and one server-rendered route per item |
-| `apps/yeti-app-e2e`         | Playwright tests against the Fixture app's Node server                                                 |
-| `apps/ngx-yeti-e2e`         | Playwright tests against the static Storybook build                                                    |
-| `apps/yeti-analog`          | A demo app built with Analog                                                                           |
-| `apps/yeti-analog-e2e`      | Playwright tests against the Analog demo app's dev server                                              |
-| `vendor/yeti`               | Yeti's source at the pinned commit, as the npm workspace package `yeti-css`                            |
-| `tools/yeti`                | The script that vendors Yeti and the Nx plugin that builds it                                          |
-| `docs/specs`                | The specs, ADRs, and records the package is built from; a verbatim copy, never edited                  |
-| `docs/decisions`            | Decision trails of larger changes                                                                      |
-| `references`                | Notes for contributors, such as [`fast-compile.md`](references/fast-compile.md)                        |
-| `.claude/skills`            | Instructions for coding agents, one skill per area                                                     |
+| Path                        | What it is                                                                                                                                       |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `packages/ngx-yeti`         | The published package, with its stories and its unit and server-render tests                                                                     |
+| `packages/ngx-yeti-testing` | Test helpers shared by specs, stories, and e2e tests, imported as `@ngx-yeti/testing`; never published                                           |
+| `apps/yeti-app`             | The Fixture app: an Angular SSR app that serves one prerendered and one server-rendered route per item                                           |
+| `apps/yeti-app-e2e`         | Playwright tests against the Fixture app's Node server                                                                                           |
+| `apps/ngx-yeti-e2e`         | Playwright tests against the static Storybook build                                                                                              |
+| `apps/yeti-analog`          | A demo app built with Analog                                                                                                                     |
+| `apps/yeti-analog-e2e`      | Playwright tests against the Analog demo app's dev server                                                                                        |
+| `vendor/yeti`               | Yeti's source at the pinned commit, as the npm workspace package `yeti-css`                                                                      |
+| `tools/yeti`                | The script that vendors Yeti and the Nx plugin that builds it                                                                                    |
+| `docs/specs`                | The specs, ADRs, and records the package is built from; a verbatim copy, never edited except its two ledgers, `ledger.md` and `upstream-bugs.md` |
+| `docs/decisions`            | Decision trails of larger changes                                                                                                                |
+| `references`                | Notes for contributors, such as [`fast-compile.md`](references/fast-compile.md)                                                                  |
+| `.claude/skills`            | Instructions for coding agents, one skill per area                                                                                               |
 
 ## Set up
 
