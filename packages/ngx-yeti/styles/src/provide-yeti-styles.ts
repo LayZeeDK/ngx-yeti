@@ -1,6 +1,4 @@
 import {
-  ApplicationRef,
-  EnvironmentInjector,
   type EnvironmentProviders,
   inject,
   makeEnvironmentProviders,
@@ -9,7 +7,7 @@ import {
 import {
   YetiStyles,
   type YetiStylesConfig,
-  yetiStylesConfig,
+  yetiStylesConfigToken,
 } from './yeti-styles';
 
 /**
@@ -40,20 +38,14 @@ import {
 export function provideYetiStyles(
   config: YetiStylesConfig = {},
 ): EnvironmentProviders {
-  const preload = config.preload ?? [];
-
   return makeEnvironmentProviders([
-    { provide: yetiStylesConfig, useValue: config },
-    preload.length === 0
+    { provide: yetiStylesConfigToken, useValue: config },
+    // The loader writes the preload links when it is created, so create it at
+    // application start.
+    config.preload === undefined || config.preload.length === 0
       ? []
       : provideEnvironmentInitializer(() => {
-          // A route's injector is not the root one: the call has no effect
-          // there, as the loader reads its configuration from the root.
-          if (inject(EnvironmentInjector) !== inject(ApplicationRef).injector) {
-            return;
-          }
-
-          inject(YetiStyles).preload(preload);
+          inject(YetiStyles);
         }),
   ]);
 }

@@ -29,8 +29,8 @@ export interface YetiStylesConfig {
   readonly preload?: readonly YetiComponentName[];
 }
 
-export const yetiStylesConfig = new InjectionToken<YetiStylesConfig>(
-  'yetiStylesConfig',
+export const yetiStylesConfigToken = new InjectionToken<YetiStylesConfig>(
+  'yetiStylesConfigToken',
 );
 
 const itemAttribute = 'data-ngx-yeti-styles';
@@ -49,17 +49,20 @@ function isItem(name: string | null): name is YetiComponentName {
  * Keeps one counted `<link rel="stylesheet">` per item file of the consumer's
  * Yeti build in `<head>` (ADR 0060 points 2 to 6; setup spec, "The loader's
  * behaviour" rules 1 to 7). Not exported from the package.
+ *
+ * It reads its configuration from the root injector, so a
+ * `provideYetiStyles()` call in a route's providers has no effect.
  */
 @Service()
 export class YetiStyles {
   readonly #document = inject(DOCUMENT);
   readonly #appId = inject(APP_ID);
   readonly #nonce = inject(CSP_NONCE, { optional: true });
-  readonly #url =
-    inject(yetiStylesConfig, { optional: true })?.url ?? 'yeti-css/';
+  readonly #config = inject(yetiStylesConfigToken, { optional: true });
+  readonly #url = this.#config?.url ?? 'yeti-css/';
   readonly #links = new Map<YetiComponentName, ItemLink>();
-  /** True once a render callback has run, which happens on the client only. */
-  #rendered = false;
+  /** Created by the first render callback, which runs on the client only. */
+  #observer: MutationObserver | undefined;
   #checkScheduled = false;
 
   constructor() {
@@ -75,19 +78,38 @@ export class YetiStyles {
       }
     }
 
+    // Rule 4: one preload link per item, never beside one already in `<head>`.
+    // The `href` is compared as a string, never put into a selector.
+    const preloaded = new Set(
+      [...this.#document.head.querySelectorAll('link[rel="preload"]')].map(
+        (link) => link.getAttribute('href'),
+      ),
+    );
+
+    for (const item of this.#config?.preload ?? []) {
+      const href = this.#href(item);
+
+      if (!preloaded.has(href)) {
+        preloaded.add(href);
+        this.#document.head.appendChild(
+          this.#createLink({ rel: 'preload', as: 'style', href }),
+        );
+      }
+    }
+
     // Render callbacks are the only platform split (building-blocks 1.11):
     // the observer, and with it every removal, exists on the client only.
-    let observer: MutationObserver | undefined;
-
     afterNextRender(() => {
-      this.#rendered = true;
-      observer = new MutationObserver(() => {
+      this.#observer = new MutationObserver(() => {
         this.#scheduleCheck();
       });
-      observer.observe(this.#document, { childList: true, subtree: true });
+      this.#observer.observe(this.#document, {
+        childList: true,
+        subtree: true,
+      });
       this.#scheduleCheck();
     });
-    inject(DestroyRef).onDestroy(() => observer?.disconnect());
+    inject(DestroyRef).onDestroy(() => this.#observer?.disconnect());
   }
 
   /** Rule 1: counts the item and inserts its link on the first acquisition. */
@@ -114,71 +136,61 @@ export class YetiStyles {
     this.#scheduleCheck();
   }
 
-  /** Rule 4: one preload link per item, never beside one already in `<head>`. */
-  preload(items: readonly YetiComponentName[]): void {
-    for (const item of items) {
-      const href = this.#href(item);
-
-      if (
-        this.#document.head.querySelector(`link[rel="preload"][href="${href}"]`)
-      ) {
-        continue;
-      }
-
-      const link = this.#document.createElement('link');
-      link.setAttribute('rel', 'preload');
-      link.setAttribute('as', 'style');
-      link.setAttribute('href', href);
-      this.#setNonce(link);
-      this.#document.head.appendChild(link);
-    }
-  }
-
   #href(item: YetiComponentName): string {
     return `${this.#url}${yetiRank[item].path}?v=${yetiPin}`;
   }
 
-  #setNonce(link: HTMLLinkElement): void {
+  #createLink(attributes: Readonly<Record<string, string>>): HTMLLinkElement {
+    const link = this.#document.createElement('link');
+
+    for (const [name, value] of Object.entries(attributes)) {
+      link.setAttribute(name, value);
+    }
+
     if (this.#nonce) {
       link.setAttribute('nonce', this.#nonce);
     }
+
+    return link;
   }
 
   /** Inserts before the first item link of a later rank: `yeti.css`'s order. */
   #insert(item: YetiComponentName): HTMLLinkElement {
-    const link = this.#document.createElement('link');
-    link.setAttribute('rel', 'stylesheet');
-    link.setAttribute('href', this.#href(item));
-    link.setAttribute(itemAttribute, item);
-    link.setAttribute(appAttribute, this.#appId);
-    // Keeps Angular's critical-CSS inlining away from the link (ticket 13 Q4).
-    link.setAttribute('data-beasties-skip', '');
-    this.#setNonce(link);
+    const link = this.#createLink({
+      rel: 'stylesheet',
+      href: this.#href(item),
+      [itemAttribute]: item,
+      [appAttribute]: this.#appId,
+      // Keeps Angular's critical-CSS inlining away from the link (ticket 13 Q4).
+      'data-beasties-skip': '',
+    });
 
     const rank = yetiRank[item].rank;
-    let next: { readonly rank: number; readonly link: HTMLLinkElement } | null =
-      null;
+    let next: HTMLLinkElement | null = null;
+    let nextRank = Infinity;
 
     for (const [other, { link: otherLink }] of this.#links) {
       const otherRank = yetiRank[other].rank;
 
-      if (otherRank > rank && (next === null || otherRank < next.rank)) {
-        next = { rank: otherRank, link: otherLink };
+      if (otherRank > rank && otherRank < nextRank) {
+        next = otherLink;
+        nextRank = otherRank;
       }
     }
 
-    if (next?.link.parentNode === this.#document.head) {
-      this.#document.head.insertBefore(link, next.link);
-    } else {
-      this.#document.head.appendChild(link);
-    }
+    // A tracked link that something else took out of `<head>` cannot be the
+    // reference node; the new link then goes last.
+    this.#document.head.insertBefore(
+      link,
+      next?.parentNode === this.#document.head ? next : null,
+    );
 
     return link;
   }
 
   #scheduleCheck(): void {
     // The server never removes a link; render callbacks never run there.
-    if (!this.#rendered || this.#checkScheduled) {
+    if (this.#observer === undefined || this.#checkScheduled) {
       return;
     }
 
