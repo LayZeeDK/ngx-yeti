@@ -21,7 +21,7 @@
     "test-storybook-fast": "nx run-many -t test-storybook -c fast",
     "e2e": "nx run-many -t e2e",
     "check": "nx run-many -t lint typecheck test test-storybook",
-    "affected": "nx affected -t lint typecheck test test-storybook build",
+    "affected": "nx affected -t lint typecheck test test-storybook build pack-check",
     "format": "nx format:write",
     "format:check": "nx format:check"
   },

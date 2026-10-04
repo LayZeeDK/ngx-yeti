@@ -21,7 +21,7 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium firefox webkit
       - run: npx prettier --check .
-      - run: npx nx run-many -t lint typecheck test test-storybook build
+      - run: npx nx run-many -t lint typecheck test test-storybook build pack-check
       - run: npx nx run-many -t e2e
       - run: npx nx e2e yeti-app-e2e
         env:
