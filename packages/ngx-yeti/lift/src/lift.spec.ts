@@ -243,22 +243,30 @@ describe(NgxYetiLift, () => {
   });
 
   describe('under a real pointer', () => {
-    it('raises a hovered card and deepens its shadow', async () => {
+    // Under reduced motion Yeti takes the distance to 0 and the deeper shadow
+    // carries the hover alone (lift.md user stories 15 and 16), which is how
+    // the macOS runner's Safari reports.
+    it('raises a hovered card by --yeti-lift-distance and deepens its shadow', async () => {
       expect.assertions(2);
 
       removeItemLinks();
       const { rise } = await setupHover();
       const top = rise.getBoundingClientRect().top;
       const shadow = getComputedStyle(rise).boxShadow;
+      const probe = document.createElement('div');
+      probe.style.marginTop = 'var(--yeti-lift-distance)';
+      rise.append(probe);
+      const distance = parseFloat(getComputedStyle(probe).marginTop);
+      probe.remove();
 
       await page.elementLocator(rise).hover();
 
       await expect
-        .poll(() => rise.getBoundingClientRect().top)
-        .toBeLessThan(top);
-      await expect
         .poll(() => getComputedStyle(rise).boxShadow)
         .not.toBe(shadow);
+      await expect
+        .poll(() => top - rise.getBoundingClientRect().top)
+        .toBeCloseTo(distance, 1);
     });
 
     it('grows a hovered scale card by --yeti-lift-scale without moving it', async () => {
