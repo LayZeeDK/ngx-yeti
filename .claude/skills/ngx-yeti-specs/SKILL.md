@@ -62,7 +62,7 @@ Create each entry point with the generator, never by hand:
 npx nx g @nx/angular:library-secondary-entry-point --library=ngx-yeti --name=<item> --skipModule
 ```
 
-It writes `packages/ngx-yeti/<item>/ng-package.json`, `<item>/src/index.ts`, the `ngx-yeti/<item>` path alias in `tsconfig.base.json`, and the entry's lines in `packages/ngx-yeti/tsconfig.lib.json`: `<item>/src/**/*.ts` in `include` and `<item>/`-prefixed copies of the spec and story patterns in `exclude`. An entry point made by hand lacks those lines, so `nx typecheck ngx-yeti -c src` does not check its source.
+It writes `packages/ngx-yeti/<item>/ng-package.json`, `<item>/src/index.ts`, and the `ngx-yeti/<item>` path alias in `tsconfig.base.json`. It also prefixes the new folder to a copy of every pattern already in `packages/ngx-yeti/tsconfig.lib.json`, so that file grows with each entry point and lists folders that do not exist (`lift/card/src/**/*.ts`). Revert its edit to that file: the `*/src/**/*.ts` include and the `**/`-rooted excludes already cover every entry point, as `tsconfig.spec.json` does.
 
 Files in `packages/ngx-yeti/<item>/src/`:
 
