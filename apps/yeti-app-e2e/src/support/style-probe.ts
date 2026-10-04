@@ -182,7 +182,25 @@ export async function recordFrames(
     await page.evaluate(sampleFrames, args);
   }
 
-  return reader(page, key);
+  const read = reader(page, key);
+
+  // Headless WebKit on Linux fires only a few animation frames a second, so
+  // the list can end before the state the caller just reached. Each read
+  // waits for one more sample, taken after the call.
+  return async () => {
+    const sampled = (await read()).length;
+
+    await page.waitForFunction(
+      ([name, count]) => {
+        const frames: unknown = Reflect.get(window, name);
+
+        return Array.isArray(frames) && frames.length > count;
+      },
+      [key, sampled] as const,
+    );
+
+    return read();
+  };
 }
 
 /**
