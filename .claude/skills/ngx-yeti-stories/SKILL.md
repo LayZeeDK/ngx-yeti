@@ -37,7 +37,7 @@ const meta: Meta<YetiBadge> = {
   id: 'badge',
   component: YetiBadge,
   decorators: [moduleMetadata({ imports: [YetiBadge] })],
-  args: { variant: 'info' },
+  args: { variant: 'success' },
   render: (args) => ({
     props: { badgeVariant: args.variant },
     template: '<span yetiBadge [variant]="badgeVariant">New</span>',
