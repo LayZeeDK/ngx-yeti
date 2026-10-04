@@ -265,7 +265,7 @@ for (const { kind, prefix } of routeKinds) {
           type: 'a4-frames',
           description: `${browserName}, critical-CSS inlining on (production): ${String(frames.filter((value) => value === '0px').length)} of ${String(frames.length)} frames without Yeti`,
         });
-      } else if (browserName === 'chromium') {
+      } else if (browserName !== 'firefox') {
         expect(
           frames.filter((value) => value === '0px'),
           'no frame after first paint shows the card without Yeti',

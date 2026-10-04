@@ -170,7 +170,8 @@ for (const { kind, prefix } of routeKinds) {
         description: `${browserName}: ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
       });
 
-      if (browserName === 'chromium') {
+      // Firefox's frames are recorded against upstream bug A4 (setup.md:338).
+      if (browserName !== 'firefox') {
         expect(unstyled, 'no frame shows the card without Yeti').toEqual([]);
       }
     });
