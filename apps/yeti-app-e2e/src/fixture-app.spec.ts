@@ -11,7 +11,12 @@ for (const { kind, prefix } of routeKinds) {
       const button = page.getByRole('button');
 
       await page.goto(`${prefix}replay`, { waitUntil: 'commit' });
-      await button.click();
+      // With the bundle held, WebKit sometimes paints no frame at all (when the
+      // card style preload lands after parsing ends), so the click's wait for
+      // two stable animation frames never ends. The forced click is still a
+      // real pointer event before hydration, which the assertions below need.
+      // eslint-disable-next-line playwright/no-force-option -- the page may paint no frame until hydration, see above
+      await button.click({ force: true });
 
       await expect(
         button,
