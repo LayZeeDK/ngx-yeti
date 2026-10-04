@@ -1,14 +1,15 @@
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { yetiPin, yetiRank } from './yeti-rank';
+import { yetiRank } from './yeti-rank';
 
 const workspaceRoot = join(import.meta.dirname, '../../../..');
 const yetiRoot = join(workspaceRoot, 'vendor/yeti');
 
 describe('the generated rank table', () => {
-  it("is what the generator writes from Yeti's built yeti.css", () => {
-    // Exits 1, and so throws, when a committed output differs.
+  it("is what the generator writes from Yeti's build: yeti-types.ts, the rank table, and the pin", () => {
+    // Exits 1, and so throws, when yeti-types.ts differs from yeti.d.ts or the
+    // rank table and its pin differ from yeti.css and COMMIT.
     expect(() =>
       execFileSync(
         process.execPath,
@@ -29,9 +30,5 @@ describe('the generated rank table', () => {
         ({ path }) => !existsSync(join(yetiRoot, 'dist/css', path)),
       ),
     ).toStrictEqual([]);
-  });
-
-  it('pins the vendored Yeti commit', () => {
-    expect(yetiPin).toBe(readFileSync(join(yetiRoot, 'COMMIT'), 'utf8').trim());
   });
 });
