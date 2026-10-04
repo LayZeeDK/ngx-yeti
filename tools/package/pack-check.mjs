@@ -94,6 +94,9 @@ const extract = run(
   consumerDir,
 );
 check(extract.status === 0, 'the tarball extracted', extract.output);
+const manifest = JSON.parse(
+  readFileSync(path.join(installed, 'package.json'), 'utf8'),
+);
 
 for (const file of ['consumer.ts', 'tsconfig.json']) {
   copyFileSync(path.join(fixtureDir, file), path.join(consumerDir, file));
@@ -114,10 +117,7 @@ const entryPoints = [
     .map(({ name }) => `ngx-yeti/${name}`),
 ];
 const specifiers = [...entryPoints, 'ngx-yeti/accessibility.css'];
-const packedExports = Object.keys(
-  JSON.parse(readFileSync(path.join(installed, 'package.json'), 'utf8'))
-    .exports,
-)
+const packedExports = Object.keys(manifest.exports)
   .filter((key) => key !== './package.json')
   .map((key) => path.posix.join('ngx-yeti', key));
 check(
@@ -247,9 +247,6 @@ check(
 );
 
 // 8. The packed package.json declares no yeti-css and carries the version.
-const manifest = JSON.parse(
-  readFileSync(path.join(installed, 'package.json'), 'utf8'),
-);
 const yetiFields = [
   'dependencies',
   'devDependencies',
