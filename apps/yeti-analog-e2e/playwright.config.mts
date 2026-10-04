@@ -1,6 +1,13 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig, devices } from '@playwright/test';
 import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
+
+// Run Nx through this Node and the installed nx entry, not `npx nx`. Every
+// npx and Nx layer prepends node_modules/.bin dirs to PATH; in a deep
+// worktree the nested tasks' PATH passes cmd.exe's 8191-character limit and
+// `node` or `nx` stops resolving. Dropping the npx layer keeps it under.
+const nx = `"${process.execPath}" "${fileURLToPath(import.meta.resolve('nx'))}"`;
 
 // For CI, you may want to set BASE_URL to the deployed application.
 const baseURL = process.env['BASE_URL'] ?? 'http://localhost:4300';
@@ -31,7 +38,7 @@ export default defineConfig({
   },
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npx nx run yeti-analog:serve',
+    command: `${nx} run yeti-analog:serve`,
     url: 'http://localhost:4300',
     reuseExistingServer: true,
     cwd: workspaceRoot,
