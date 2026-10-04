@@ -69,8 +69,9 @@ Scope: in
 - Layouts: `box` (with the any-element `yetiBorder`, `yetiPaint`, and `yetiText`), `breakout`, `center`, `cluster`, `columns`, `container` (with the any-element `yetiShow` and `yetiHide`), `cover`, `frame`, `grid`, `icon`, `layer`, `masonry`, `overlay`, `scroller`, `sidebar`, `stack`, and `timeline`.
 - The items the layouts' tests compose: `table` (with `yetiNumeric`), `button` (with `YetiButtonDisabledLink`), `spinner`, `enter`, and `visually-hidden`.
 - Ledger rows A11Y-1a (button's forced-colours rule, the first rule in `ngx-yeti/accessibility.css`), A11Y-9, A11Y-10a, A11Y-10b, A11Y-10c, A11Y-13, A11Y-21, A11Y-22 (sidebar as owner, with the stack and table usage rules), and A11Y-23.
-- The setup spec's order-sensitive pairs (`stack` with `center`, `cover` with `center`) proven on real items.
+- The setup spec's order-sensitive pairs (`stack` with `center`, `cover` with `center`) proven on real items, through `setup--item-links` and the setup spec's layer-4 order case.
 - card's composite stories with `grid` and `layer`, carried over from M001.
+- Cases carried over from M001: `setup--item-links` and the setup spec's layer-4 order case; the button-link assertions of card's section 8 markup; `lift--default` with its three cards in a `yetiCluster`; the card Fixture route's grid of cards as a `yetiGrid`; and the setup spec's Tailwind C1 and C2 Fixture build configurations.
 
 Scope: out
 - Composite cases that need `nav`, such as `container--in-nav`: they land with nav in M007.
@@ -78,8 +79,8 @@ Scope: out
 - Every item that uses `generated-ids`, `events`, `fragment-links`, or `navigation-close`: later milestones.
 
 Success criteria
-1. In Storybook, every story these 22 specs name, except the cases listed for M005 and M007, passes its play function and the axe gate. That includes the exact-formula contrast assertions of A11Y-10a, A11Y-10b, A11Y-10c, and A11Y-21.
-2. On the Fixture app, each of the 22 items has a prerendered and a server-rendered route that passes `yeti-app-e2e` with JavaScript on and off, axe-clean and with no hydration mismatch. `enter` arrives after hydration, and behaves inside `hydrate never` as its spec states.
+1. In Storybook, every story these 22 specs name, except the cases listed for M005 and M007, and every case carried over from M001, passes its play function and the axe gate. That includes the exact-formula contrast assertions of A11Y-10a, A11Y-10b, A11Y-10c, and A11Y-21.
+2. On the Fixture app, each of the 22 items has a prerendered and a server-rendered route that passes `yeti-app-e2e` with JavaScript on and off, axe-clean and with no hydration mismatch. `enter` arrives after hydration, and behaves inside `hydrate never` as its spec states. The card route shows its cards in a `yetiGrid` with the footer links as `yetiButton`, the setup spec's layer-4 order case passes, and the Tailwind C1 and C2 Fixture build configurations pass (cases carried over from M001).
 3. A consuming build against the `npm pack` tarball imports each of the 22 new entry points, and the contract check passes for all 22 items.
 4. Under `forcedColors: 'active'`, a pressed toggle `yetiButton` draws its state through the package rule from `ngx-yeti/accessibility.css` (A11Y-1a, layer 4).
 5. On the Fixture app, with the main bundle held back by the e2e helper, a click on a toggle `yetiButton` made before hydration reaches the consumer's handler after hydration, and `aria-pressed` becomes `true` (event replay, charter criterion 10).
@@ -155,14 +156,15 @@ Scope: in
 - Utilities `attention`, `billboard`, `lede`, and `print`.
 - Recipes `hero` and `media`.
 - Ledger rows A11Y-1e, A11Y-1f, A11Y-10d, A11Y-10e, and A11Y-20, including its layer-4 zoom measurement and the decision that follows it.
+- Cases carried over from M001: `card--default`, the card SSR smoke, and the card Fixture route with section 8's `yetiBadge` and `yetiButton`, including the SSR assertion that the card link sits after the `button` and `badge` links; and the setup spec's layer-3 SSR fixture with `card`, `badge`, and `center`.
 
 Scope: out
 - The `shell` recipe: M007, with nav.
 - `alert`: M006, because it follows the events spec's rules for its `closed` output.
 
 Success criteria
-1. In Storybook, every story these 11 specs name passes its play function and the axe gate, including the contrast assertions of A11Y-10d and A11Y-10e and `badge--in-control`.
-2. On the Fixture app, each of the 11 items has a prerendered and a server-rendered route that passes `yeti-app-e2e` with JavaScript on and off, axe-clean and with no hydration mismatch, and billboard's 200 % zoom case runs in three engines in CI (A11Y-20).
+1. In Storybook, every story these 11 specs name, and `card--default` carried over from M001, passes its play function and the axe gate, including the contrast assertions of A11Y-10d and A11Y-10e and `badge--in-control`.
+2. On the Fixture app, each of the 11 items has a prerendered and a server-rendered route that passes `yeti-app-e2e` with JavaScript on and off, axe-clean and with no hydration mismatch, and billboard's 200 % zoom case runs in three engines in CI (A11Y-20). The card route shows section 8's `yetiBadge` and `yetiButton` with the same checks, and under `nx test ngx-yeti` the card SSR smoke places the card link after the `button` and `badge` links and the setup spec's layer-3 SSR fixture with `card`, `badge`, and `center` passes (cases carried over from M001).
 3. A consuming build against the `npm pack` tarball imports each of the 11 new entry points, and the contract check passes for all 11 items.
 4. Under `forcedColors: 'active'`, the progress bar and the current pagination link are drawn by rules from `ngx-yeti/accessibility.css` (A11Y-1e, A11Y-1f).
 5. On the Fixture app, with the main bundle held back by the e2e helper, a click on the pagination's Next link and on a breadcrumbs `routerLink` step made before hydration is replayed and ends on the target route (event replay, charter criterion 10).
@@ -233,6 +235,7 @@ Scope: in
 - `toc`: the current link found from its headings, and the `currentLink` model with its `current` output.
 - Ledger rows A11Y-1d, A11Y-6, A11Y-7, A11Y-14, A11Y-16 (its toc-link case), A11Y-19, A11Y-24, and A11Y-28.
 - Cases carried over: the events cases for `invalid` and `current`, and the fragment-links case on toc links.
+- Cases carried over from M001: `setup--client-defer-preload` and the setup spec's layer-3 `alert` preload assertion; and `setup--accessibility-layer`, which needs ledger A11Y-6's rule.
 
 Scope: out
 - A validation engine and an error summary, and scripts or syntax highlighting in the demo frame: the specs' own Out of Scope.
@@ -240,7 +243,7 @@ Scope: out
 - The carousel: M007.
 
 Success criteria
-1. In Storybook, every story the five specs name passes its play function and the axe gate. That includes a field whose accessible name leaves out the required `*` (A11Y-6), a refused submit that focuses the first invalid control (A11Y-14), and the demo grip's single-pointer step (A11Y-24).
+1. In Storybook, every story the five specs name, and `setup--client-defer-preload` and `setup--accessibility-layer` carried over from M001, passes its play function and the axe gate, and under `nx test ngx-yeti` the setup spec's layer-3 `alert` preload assertion passes. That includes a field whose accessible name leaves out the required `*` (A11Y-6), a refused submit that focuses the first invalid control (A11Y-14), and the demo grip's single-pointer step (A11Y-24).
 2. On the Fixture app, each of the five items has a prerendered and a server-rendered route that passes `yeti-app-e2e` with JavaScript on and off, axe-clean and with no hydration mismatch, and the following hold:
    - With `main.js` held back, a submit before hydration does nothing (A11Y-19), and a value typed before hydration survives it (A11Y-28).
    - Under `/sub/`, a toc link does not reload with JavaScript off, before hydration, or after it (A11Y-16).
