@@ -44,6 +44,7 @@
       "inputs": [
         "default",
         "^production",
+        "{workspaceRoot}/tools/yeti/generate-sources.mjs",
         {
           "env": "CI"
         },
