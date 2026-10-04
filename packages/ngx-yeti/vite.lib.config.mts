@@ -38,8 +38,8 @@ interface EntryPoint {
 
 /**
  * The primary entry point plus every folder one level below the project root
- * that holds an `ng-package.json`, as ng-packagr discovers secondary entry
- * points, so a new entry point needs no edit here.
+ * that holds an `ng-package.json`, so a new entry point needs no edit here.
+ * ng-packagr searches every depth; this package has one entry per item folder.
  */
 const entryPoints: readonly EntryPoint[] = [
   { name: 'ngx-yeti', subpath: '.', entryFile: entryFileOf('.') },
