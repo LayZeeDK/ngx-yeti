@@ -2,7 +2,7 @@ import { NgOptimizedImage } from '@angular/common';
 import { provideLocationMocks } from '@angular/common/testing';
 import { Component, signal, type WritableSignal } from '@angular/core';
 import { RouterLink, RouterOutlet, provideRouter } from '@angular/router';
-import { contrastRatio, parseColor } from '@ngx-yeti/testing';
+import { contrastRatio, itemStylesLoaded, parseColor } from '@ngx-yeti/testing';
 import {
   applicationConfig,
   moduleMetadata,
@@ -101,20 +101,7 @@ function element(canvas: HTMLElement, selector: string): HTMLElement {
  * computed styles right after a stylesheet is inserted (upstream bug O2).
  */
 async function cardStyled(card: HTMLElement): Promise<void> {
-  const link = document.head.querySelector<HTMLLinkElement>(
-    'link[data-ngx-yeti-styles="card"]',
-  );
-
-  if (link === null) {
-    throw new Error('No card item link in <head>');
-  }
-
-  if (link.sheet === null) {
-    await new Promise((resolve, reject) => {
-      link.addEventListener('load', resolve, { once: true });
-      link.addEventListener('error', reject, { once: true });
-    });
-  }
+  await itemStylesLoaded('card');
 
   await waitFor(async () => {
     await expect(getComputedStyle(card).display).toBe('flex');
