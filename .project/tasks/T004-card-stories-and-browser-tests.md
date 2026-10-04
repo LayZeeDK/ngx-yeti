@@ -3,9 +3,9 @@ id: T004
 title: Write the card stories and the card browser tests
 wave: 1
 deps: [T002]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T004
+base: c25ae9ada299fffdd4cd23d405f5cfe2b134fad2
 worktree: null
 task_branch: null
 files:
@@ -62,3 +62,27 @@ Heavy: yes
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — coder (build_T004): wrote `card.stories.ts` (seven ids: default, stretched-link, inputs, figure, list, rtl, anti-pattern-wrapped-link; Router with `provideLocationMocks`, `NgOptimizedImage` with `priority` on a `?no-inline` Vite import of `.storybook/assets/trail.svg`; every geometry check waits for the card link's `load` and `display: flex` first, upstream O2), `card.spec.ts` (13 layer-2 tests; the card+lift host case left to the lift task), and `trail.svg`. Readings taken: (1) card.md:299 asks `card--default` for no `data-ratio` and for "the explicit ratio set for the story"; the play function asserts the unset attributes first, then sets `ratio` to `4/3` through the story's bound state and measures. (2) The seven ids are fixed, so `card--default`, `card--inputs`, and `card--figure` assert light and dark contrast in one story by setting `color-scheme` on the story's frame, not with a separate `withColorScheme('dark')` story; the axe gate runs in light. (3) Play functions change inputs through a per-story signal the render binds, since portable stories cannot update args.
+- 2026-10-04 — Verify passed (exit 0): `npm ci` ok; `nx test ngx-yeti -- card.spec` 13/13; `nx test-storybook ngx-yeti -- card.stories` 7/7; `nx typecheck ngx-yeti` ok. Also `nx run-many -t lint typecheck test test-storybook -p ngx-yeti` passed (158 unit, 10 stories) and `npx prettier --check .` clean. Chromium only. `.storybook/main.ts` unchanged.
+- 2026-10-04 — orchestrator Verify (isolate gsd-path-task/T004): pass, exit 0; output tail:
+  ```
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```
