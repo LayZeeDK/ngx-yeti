@@ -1,6 +1,6 @@
 import { expect, routeKinds, test } from './support/fixtures';
 import { waitForHydration } from './support/hydration';
-import { holdBackMainBundle } from './support/main-bundle';
+import { clickWhileHeld, holdBackMainBundle } from './support/main-bundle';
 import { delayCss, itemLinks, recordFrames } from './support/style-probe';
 
 /**
@@ -51,6 +51,7 @@ for (const { kind, prefix } of routeKinds) {
     });
 
     test('loses a click on replaced markup made before hydration', async ({
+      browserName,
       page,
     }) => {
       const release = await holdBackMainBundle(page);
@@ -59,7 +60,7 @@ for (const { kind, prefix } of routeKinds) {
       });
 
       await page.goto(`${prefix}setup-boundaries`, { waitUntil: 'commit' });
-      await fallbackButton.click();
+      await clickWhileHeld(fallbackButton, browserName);
       release();
       await waitForHydration(page);
 
