@@ -3,9 +3,9 @@ id: T005
 title: Serve the card Fixture route and prove the loader adopts the server's links at hydration
 wave: 1
 deps: [T001, T002]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T005
+base: 8dbddcbabdb58952c1a15cd0c06400c1a2140a6d
 worktree: null
 task_branch: null
 files:
@@ -61,3 +61,28 @@ Heavy: yes
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — coder: added `CardFixture` (section 8 markup, plain `span` and `tabindex="-1"` footer link stand-ins, `routerLink="/replay"` as the existing destination, `NgOptimizedImage` on `public/trail.svg` 1600x900), the `card` row in fixtures.ts, `support/style-probe.ts` (the three contract exports), and `card.spec.ts` (both route kinds; JS on: clean hydration in dev, 0 link/style mutations after DOMContentLoaded, 0 card-host attribute value changes, link `rel`/`href`/resolved href under `/sub/`/`data-ngx-yeti-app`/`data-beasties-skip`, `itemLinks` = `['card']`, Chromium frames never `padding-top: 0px`; JS off: server HTML attributes, geometry equal to a JS-on context at the same viewport, corner click navigates to the stretched link's href, axe `[]`).
+- 2026-10-04 — coder findings: ADR 0060 adoption holds — the loader adopts the server's link, 0 link/style mutations after DOMContentLoaded on both routes in development and production builds (positive control: an injected link and a removed card link were both recorded by the probe, then the control file was deleted). Hydration rewrites every static and bound card-host attribute with its existing value (MutationObserver records with equal old and new values, measured in Chromium), and Angular's event replay removes RouterLink's `jsaction` from the stretched link; the host-attribute check therefore counts value changes and excludes Angular's own `jsaction` — reviewer to confirm this reading of "0 attribute mutations". Hydration-done signal is `[jsaction]` count 0, because two `ngh` attributes stay after hydration. Added an `h2` before the card so the section 8 `h3` passes axe `heading-order` under the app's `h1`. The inline template carries an `eslint-disable-next-line @angular-eslint/component-max-inline-declarations` with a reason, because a `templateUrl` file is outside `files`.
+- 2026-10-04 — coder Verify: `npm ci --no-audit --no-fund && npx nx run-many -t typecheck -p yeti-app yeti-app-e2e && test -f apps/yeti-app-e2e/src/card.spec.ts && npx nx e2e yeti-app-e2e -- card.spec.ts` passed (12 passed, Chromium). Also: `npx prettier --check .` clean; `npx nx run-many -t lint typecheck test -p yeti-app yeti-app-e2e` passed (4 lint warnings, 0 errors); full `nx e2e yeti-app-e2e` 24 passed; `FIXTURE_CONFIGURATION=production` card.spec.ts 10 passed, 2 skipped (dev-only hydration diagnostics).
+- 2026-10-04 — orchestrator Verify (isolate gsd-path-task/T005): pass, exit 0; output tail:
+  ```
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```
