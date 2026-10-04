@@ -29,15 +29,30 @@ export default defineConfig({
     baseURL,
     trace: 'on-first-retry',
   },
-  webServer: {
-    command: `${nx} run yeti-app:serve-ssr:${configuration}`,
-    url: `${baseURL}highlight`,
-    // `env` also keeps @nx/playwright from inferring a dependency on
-    // serve-ssr, which would drop the configuration.
-    env: { PORT: String(port) },
-    reuseExistingServer: !process.env['CI'],
-    timeout: 300_000,
-    cwd: workspaceRoot,
-  },
+  webServer: [
+    {
+      command: `${nx} run yeti-app:serve-ssr:${configuration}`,
+      url: `${baseURL}highlight`,
+      // `env` also keeps @nx/playwright from inferring a dependency on
+      // serve-ssr, which would drop the configuration.
+      env: { PORT: String(port) },
+      reuseExistingServer: !process.env['CI'],
+      timeout: 300_000,
+      cwd: workspaceRoot,
+    },
+    // The development server (`nx serve`) for setup-serving.spec.ts, which
+    // opens it by this absolute URL. The production run skips that test.
+    ...(configuration === 'development'
+      ? [
+          {
+            command: `${nx} run yeti-app:serve:development --port=4312`,
+            url: 'http://localhost:4312/sub/setup',
+            reuseExistingServer: !process.env['CI'],
+            timeout: 300_000,
+            cwd: workspaceRoot,
+          },
+        ]
+      : []),
+  ],
   projects: browserProjects(),
 });

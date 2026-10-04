@@ -3,9 +3,9 @@ id: T010
 title: Prove the setup serving cases on the Fixture app (dev server, strict-CSP nonce, A4 frames)
 wave: 2
 deps: [T001, T005, T007]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T010
+base: 08f39eafc33a420e3ace7f3cc761699a3329a8a2
 worktree: null
 task_branch: null
 files:
@@ -59,3 +59,27 @@ Heavy: yes
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — build_T010: implemented. `server.ts` answers a `?csp` request (e.g. `/sub/server/card?csp`) with a per-request nonce: `angularApp.handle(req, { cspNonce })`, `Content-Security-Policy: style-src 'self' 'nonce-...'`, `ngCspNonce` added on `<app-root>` for the client, and the nonce added to any `<style>` without one (Angular's runtime Beasties step only knows a build-time nonce); every other request falls through unchanged. `app.config.server.ts` provides `CSP_NONCE` from `REQUEST_CONTEXT` (null otherwise). `playwright.config.mts`: `webServer` is now an array; the `serve-ssr` entry keeps its command, port, `env`, comment, and readiness URL; a second entry (development configuration only) runs `yeti-app:serve:development --port=4312` with readiness `http://localhost:4312/sub/setup`. New `setup-serving.spec.ts`: dev-server case (skipped under production), strict-CSP case (nonce on item link and every style, critical style nonced in production, card styled, no `securitypolicyviolation` event or CSP console message), unflagged route has no policy or nonce, and the A4 frame count as an annotation. `project.json` unchanged.
+- 2026-10-04 — build_T010: Verify passed (exit 0): development 4 passed; production 3 passed, 1 skipped (dev-server case). A4 readings (Chromium only locally): inlining off (development) 0 of 3 frames with padding: 0; inlining on (production) 16 of 18 frames with padding: 0. Negative control: with the `<style>` nonce rewrite disabled, the production CSP test failed on the un-nonced style, then the rewrite was restored. Also passed: `npx prettier --check .`, `npx nx run-many -t lint typecheck test -p yeti-app yeti-app-e2e`, and the full development `nx e2e yeti-app-e2e` (74 passed, 4 skipped as designed).
+- 2026-10-04 — orchestrator Verify (isolate gsd-path-task/T010): pass, exit 0; output tail:
+  ```
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```
