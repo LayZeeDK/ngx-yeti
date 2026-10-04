@@ -20,7 +20,7 @@ import { NgxYetiLift } from 'ngx-yeti/lift';
  * `boundary-probe.ts` (ticket 37).
  */
 @Directive({ selector: '[appConstructorFault]' })
-export class ConstructorFault {
+class ConstructorFault {
   constructor() {
     const platform = isPlatformServer(inject(PLATFORM_ID))
       ? 'server'
@@ -37,7 +37,7 @@ export class ConstructorFault {
   selector: '[appUpdateFault]',
   host: { '[attr.data-app-probe]': 'probe()' },
 })
-export class UpdateFault {
+class UpdateFault {
   readonly appUpdateFault = input(false);
 
   protected readonly probe = computed(() => {
@@ -73,7 +73,7 @@ const serverErrorTemplate = `@boundary {
   template: serverErrorTemplate,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ServerErrorCase {}
+class ServerErrorCase {}
 
 const replacedClickTemplate = `<p id="replaced-clicks">Clicks on the fallback: {{ clicks() }}</p>
   @boundary {
@@ -93,7 +93,7 @@ const replacedClickTemplate = `<p id="replaced-clicks">Clicks on the fallback: {
   template: replacedClickTemplate,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ReplacedClickCase {
+class ReplacedClickCase {
   protected readonly clicks = signal(0);
 }
 
@@ -118,7 +118,7 @@ const deferOutsideTemplate = `<section id="defer-outside" aria-label="Boundary o
   template: deferOutsideTemplate,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DeferOutsideCase {}
+class DeferOutsideCase {}
 
 const deferInsideTemplate = `<section id="defer-inside" aria-label="Boundary inside the defer">
     @defer (on interaction) {
@@ -141,7 +141,7 @@ const deferInsideTemplate = `<section id="defer-inside" aria-label="Boundary ins
   template: deferInsideTemplate,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DeferInsideCase {}
+class DeferInsideCase {}
 
 const resetTemplate = `<button type="button" [disabled]="broken()" (click)="broken.set(true)">
     Break the card
@@ -161,7 +161,7 @@ const resetTemplate = `<button type="button" [disabled]="broken()" (click)="brok
   template: resetTemplate,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ResetCase {
+class ResetCase {
   protected readonly broken = signal(false);
 }
 
