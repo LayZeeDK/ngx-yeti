@@ -76,10 +76,7 @@ for (const { kind, prefix } of routeKinds) {
       await expect(shared).toHaveAttribute('data-ngx-yeti-item-card', '');
       await expect(shared).toHaveAttribute('data-ngx-yeti-item-lift', '');
 
-      expectHydrationFrames(
-        (await cardPadding()).filter((value) => value !== ''),
-        browserName,
-      );
+      expectHydrationFrames(await cardPadding(), browserName);
     });
 
     test("keeps the dehydrated hosts' links after every live host leaves, and after hydrating one", async ({
@@ -166,8 +163,8 @@ for (const { kind, prefix } of routeKinds) {
       await expect(leaving).toHaveCount(0);
       await expect.poll(() => itemLinks(page)).toEqual([]);
 
-      const present = (await leavingPadding()).filter((value) => value !== '');
-      const leaveFrames = (await leaveWindow()).filter((value) => value !== '');
+      const present = await leavingPadding();
+      const leaveFrames = await leaveWindow();
 
       expect(present.length, 'the leaving host was sampled').toBeGreaterThan(0);
       expect(
@@ -228,13 +225,13 @@ for (const { kind, prefix } of routeKinds) {
       );
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const card = (await cardPadding()).filter((value) => value !== '');
+      const card = await cardPadding();
 
       expect(card.length, 'the client-only card was sampled').toBeGreaterThan(
         0,
       );
 
-      const lift = (await liftTransition()).filter((value) => value !== '');
+      const lift = await liftTransition();
 
       // The server's card already used the preload, and routing turns the
       // HTTP cache off, so the re-inserted card link refetches: recorded, not
@@ -410,7 +407,7 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('padding-top', '0px');
       expect(await itemLinks(page)).toEqual(['card']);
 
-      const frames = (await cardPadding()).filter((value) => value !== '');
+      const frames = await cardPadding();
 
       expect(frames.length, 'the deferred card was sampled').toBeGreaterThan(0);
       expect(

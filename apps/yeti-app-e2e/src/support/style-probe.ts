@@ -138,8 +138,8 @@ let frameProbes = 0;
 
 /**
  * The returned function lists the computed value of `property` on the first
- * element matching `selector` in every animation frame, `''` while nothing
- * matches. With `start: 'load'`, call it before `goto` to sample from the
+ * element matching `selector` in every animation frame; frames where nothing
+ * matched are left out. With `start: 'load'`, call it before `goto` to sample from the
  * page's first frame; with `start: 'now'`, it samples the loaded page from
  * the next frame on. Each call records under its own key.
  */
@@ -199,7 +199,7 @@ export async function recordFrames(
       [key, sampled] as const,
     );
 
-    return read();
+    return (await read()).filter((value) => value !== '');
   };
 }
 

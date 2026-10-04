@@ -159,10 +159,7 @@ for (const { kind, prefix } of routeKinds) {
       await expect(link).toHaveAttribute('data-ngx-yeti-app', /.+/);
       await expect(link).toHaveAttribute('data-beasties-skip', '');
 
-      expectHydrationFrames(
-        (await cardPadding()).filter((value) => value !== ''),
-        browserName,
-      );
+      expectHydrationFrames(await cardPadding(), browserName);
     });
 
     test("keeps the hydrate-never host's card and lift links, lift, and border after every live card leaves", async ({
@@ -218,7 +215,7 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('padding-top', '0px');
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const frames = (await cardPadding()).filter((value) => value !== '');
+      const frames = await cardPadding();
 
       expect(frames.length, 'the client-only card was sampled').toBeGreaterThan(
         0,
@@ -252,7 +249,7 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('padding-top', '0px');
       expect(await itemLinks(page)).toEqual(['card']);
 
-      const frames = (await cardPadding()).filter((value) => value !== '');
+      const frames = await cardPadding();
 
       expect(frames.length, 'the client-only card was sampled').toBeGreaterThan(
         0,

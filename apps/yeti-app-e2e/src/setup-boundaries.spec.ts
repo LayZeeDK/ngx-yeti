@@ -120,8 +120,8 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('transition-property', 'all');
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const card0 = (await cardPadding()).filter((value) => value !== '');
-      const lift = (await liftTransition()).filter((value) => value !== '');
+      const card0 = await cardPadding();
+      const lift = await liftTransition();
 
       test.info().annotations.push(
         {

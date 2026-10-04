@@ -124,7 +124,7 @@ for (const { kind, prefix } of routeKinds) {
       await expectLiftSheetApplied(card);
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const frames = (await liftFrames()).filter((value) => value !== '');
+      const frames = await liftFrames();
 
       expect(frames.length, 'the client-only card was sampled').toBeGreaterThan(
         0,

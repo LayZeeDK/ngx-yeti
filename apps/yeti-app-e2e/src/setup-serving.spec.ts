@@ -141,7 +141,7 @@ test.describe('upstream bug A4', () => {
     await waitForHydration(page);
     await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
 
-    const frames = (await cardPadding()).filter((value) => value !== '');
+    const frames = await cardPadding();
 
     expect(frames.length, 'the card was sampled').toBeGreaterThan(0);
     test.info().annotations.push({
