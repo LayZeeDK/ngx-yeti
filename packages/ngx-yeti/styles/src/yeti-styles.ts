@@ -21,6 +21,12 @@ export interface YetiStylesConfig {
    * `<base href>` itself. Default `'yeti-css/'`. Keep it in agreement with the
    * `assets` entry's `output` (setup usage rule 5). The type rejects a URL
    * without the slash, which would make every item file a 404.
+   *
+   * Item files follow `<base href>`, never `APP_BASE_HREF`, which sets where
+   * routes live. For files under a prefix that `<base href>` does not name,
+   * give the prefixed path relative to `<base href>`, such as
+   * `'basehref/yeti-css/'`. An absolute or root-relative URL and `deployUrl`
+   * are not supported (usage rule 6).
    */
   readonly url?: '' | `${string}/`;
   /**

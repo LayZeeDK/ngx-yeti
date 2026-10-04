@@ -21,7 +21,11 @@ import {
  * instead of at application start.
  *
  * - `url`: the `assets` entry's `output` with a trailing slash (usage rule 5),
- *   relative to `<base href>`; `deployUrl` is not supported (usage rule 6).
+ *   relative to `<base href>`. Item files follow `<base href>`, never
+ *   `APP_BASE_HREF`, which sets where routes live; for files under a prefix
+ *   that `<base href>` does not name, give the prefixed path, such as
+ *   `'basehref/yeti-css/'`. `deployUrl` and an absolute or root-relative
+ *   `url` are not supported (usage rule 6).
  * - `preload`: name every item that first renders on the client, in a
  *   client-only `@defer`, an `@if`, a growing `@for`, or a route reached by
  *   client navigation, when a flash-free first frame matters (usage rule 8).
