@@ -25,8 +25,10 @@ The file suffix routes a spec to its Vitest project (`packages/ngx-yeti/vitest.u
 | `wcagTags`                                                      | The six axe tags of every accessibility check                                                                                           |
 | `parseColor`, `composite`, `relativeLuminance`, `contrastRatio` | Exact WCAG contrast from computed styles (`ngx-yeti-accessibility` skill)                                                               |
 | `replayShapedEvent(event)`                                      | Patches an event as Angular's replay does (`preventDefault()` throws after running), to prove a handler changes state before calling it |
+| `itemLinks`, `preloadHrefs`, `removeItemLinks`                  | Read or remove the item stylesheet links and preload hints in `<head>` (`src/lib/item-links.ts`)                                        |
+| `stylesheetLoaded`, `itemStylesLoaded`, `nextFrame`             | Wait until a link's sheet has loaded, until the item files have loaded, or for the next animation frame (`src/lib/item-links.ts`)       |
 
-`@ngx-yeti/testing/server` holds Node-only helpers: `renderServer(rootComponent, { providers, hydrationFeatures, url, document })` renders through `renderApplication` with `provideServerRendering()` and `provideClientHydration(withI18nSupport())` and resolves the page HTML. Calls started together must pass the same `hydrationFeatures`, because Angular keeps i18n hydration support in a process-wide flag.
+`@ngx-yeti/testing/server` holds Node-only helpers: `renderServer(rootComponent, { providers, hydrationFeatures, url, document })` renders through `renderApplication` with `provideServerRendering()` and `provideClientHydration(withI18nSupport())` and resolves the page HTML. It also exports the HTML helpers of `src/lib/html.ts` (`openingTags`, `allOpeningTags`, `attributeValue`, `head`, `headLinks`) and `checkContract`. Calls started together must pass the same `hydrationFeatures`, because Angular keeps i18n hydration support in a process-wide flag.
 
 ## Layer 2
 
@@ -38,11 +40,11 @@ The file suffix routes a spec to its Vitest project (`packages/ngx-yeti/vitest.u
 ## Layer 3
 
 - Every item has `<item>.ssr.spec.ts`: a fixture component with one `i18n` text (building-blocks 1.11 decision 11), rendered with `renderServer()`, asserting the server HTML. `packages/ngx-yeti/card/src/card.ssr.spec.ts` is the pattern.
-- The contract check (ADR 0014 point 3) reads `yeti-css/manifest` (typed by Yeti's own declarations) and asserts every class, attribute, marker, value, and event the spec maps has its input, union member, or output, and that no union holds a value the manifest lacks. The first item spec designs the per-item API in a `*.node.spec.ts`; later specs reuse it. `packages/ngx-yeti/src/yeti-manifest.node.spec.ts` already pins the manifest's component count.
+- The contract check (ADR 0014 point 3) reads `yeti-css/manifest` (its types come from `yeti-css`; the mapping's `classes` field is optional for an item without modifier classes) and asserts every class, attribute, marker, value, and event the spec maps has its input, union member, or output, and that no union holds a value the manifest lacks. The first item spec designs the per-item API in a `*.node.spec.ts`; later specs reuse it. `packages/ngx-yeti/src/yeti-manifest.node.spec.ts` already pins the manifest's component count.
 
 ## Layer 4
 
-`apps/ngx-yeti-e2e` opens stories of the static Storybook build on port 4401. Playwright always starts that server itself and fails if the port is taken, so stop a running `npm run static-storybook` first. Open a story with `await openStory(page, '<item>--<story>')` from `src/open-story.ts`, which returns the story root. It navigates to the story with `embed=true`, so the play function does not run again, and fails if Storybook ever runs it or the id is unknown. It waits until Storybook has finished rendering the story, the preview's `console.error` check included, and fails if Storybook then shows an error. It uses only `page.goto` and DOM reads, so the floor jobs run it under older Playwright releases too. `expectNoAxeViolations(page)` in `src/axe.ts` runs axe with `wcagTags` on the story, for states no play function reaches. Give a story its state through args; `openStory` takes none.
+`apps/ngx-yeti-e2e` opens stories of the static Storybook build on port 4401. Playwright always starts that server itself and fails if the port is taken, so stop a running `npm run static-storybook` first. Open a story with `await openStory(page, '<item>--<story>')` from `src/open-story.ts`, which returns the story root. It navigates to the story with `embed=true`, so the play function does not run again, and fails if Storybook ever runs it or the id is unknown. It waits until Storybook has finished rendering the story, the preview's `console.error` check included, and fails if Storybook then shows an error. It uses only `page.goto` and DOM reads, so the floor jobs run it under older Playwright releases too. `expectNoAxeViolations(page)` in `src/axe.ts` runs axe with `wcagTags` on the story, for states no play function reaches. `openStory(page, id, { args })` sets Storybook's `args` URL parameter, so a story opens with the state a test needs (`{ raised: true }` becomes `args=raised:!true`). `expectItemSheetsApplied(page, items)` in `src/item-styles.ts` waits until each named item's stylesheet has loaded and applied before a test reads geometry.
 
 `apps/yeti-app` is the Fixture app, set up exactly as the setup spec documents for a consumer: `<base href="/sub/">`, the `yeti-css` assets entry (through the workspace link), the global stylesheet, and `provideClientHydration(withI18nSupport())`. Add a fixture as one row in `apps/yeti-app/src/app/fixtures/fixtures.ts`; it is served at `/sub/<item>` (`RenderMode.Prerender`) and `/sub/server/<item>` (`RenderMode.Server`). Give every fixture one `i18n` text.
 
@@ -55,7 +57,17 @@ The file suffix routes a spec to its Vitest project (`packages/ngx-yeti/vitest.u
 | `watchHydration(page)` before `goto`                    | Returns a check function; await it after the page loads. It expects Angular's summary to report 0 skipped components and no `NG05xx` message (development build only)                                                                                                  |
 | `holdBackMainBundle(page)`                              | Holds the main script so the page stays server HTML; navigate with `waitUntil: 'commit'`, act, then call the returned release function to test event replay                                                                                                            |
 
-Test the JavaScript-off page with Playwright's own option: put the tests in a `describe` that calls `test.use({ javaScriptEnabled: false })` and use the built-in `page`. `apps/yeti-app-e2e/src/fixture-app.spec.ts` shows each helper on both render modes.
+Test the JavaScript-off page with Playwright's own option: put the tests in a `describe` that calls `test.use({ javaScriptEnabled: false })` and use the built-in `page`. `apps/yeti-app-e2e/src/card.spec.ts` holds the card route's JavaScript-off checks.
+
+The other helpers in `apps/yeti-app-e2e/src/support/`:
+
+| Helper                                                                                                         | Use                                                                                |
+| -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `waitForHydration`, `nextFrames` from `hydration.ts`                                                           | Wait until the page has hydrated; wait for animation frames                        |
+| `recordFrames` (with its `start` option), `recordStyleMutations`, `recordHostAttributes` from `style-probe.ts` | Record frames, style changes, and host attributes while the page loads or hydrates |
+| `itemLinks`, `itemSheetsLoaded`, `delayCss` from `style-probe.ts`                                              | Read the item links, check their sheets have loaded, and delay CSS responses       |
+| `expectHydrationFrames` from `style-probe.ts`                                                                  | Assert the unstyled-frame count of a hydration run                                 |
+| `removeEveryHost`, `removeDehydratedHosts`, `expectHoverLifts` from `hosts.ts`                                 | Remove item hosts from the page; check that hovering lifts an item                 |
 
 ## Engines
 
