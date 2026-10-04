@@ -15,7 +15,9 @@ import { yetiCardToken } from './card-tokens';
  *    `button`.
  * 3. For a whole-card link, put the link inside the card's heading, write
  *    `yetiCardLink stretch` on it, and let the heading's text be its text.
- *    Give one link per card `stretch`.
+ *    Give one link per card `stretch`. The stretched link's pseudo-element
+ *    also makes the card's text hard to select with a pointer, which is the
+ *    pattern's known cost.
  * 4. If the footer repeats the stretched link's destination as a link, give
  *    that footer link `tabindex="-1"`. Every other control keeps its own Tab
  *    stop and click.
@@ -23,11 +25,15 @@ import { yetiCardToken } from './card-tokens';
  * 6. Put the card's picture first, and write alternative text that describes
  *    what is visible after the crop (or empty text for a decorative picture).
  * 7. Use `NgOptimizedImage` on the card's `img` with `width` and `height`,
- *    never in `fill` mode.
+ *    never in `fill` mode. Where the card's crop or its row form gives the
+ *    image a rendered ratio more than 0.1 from its intrinsic one,
+ *    `NgOptimizedImage` logs its development-mode distortion warning; that is
+ *    expected, as `object-fit: cover` crops rather than distorts.
  * 8. Put the `footer` last.
  * 9. Do not write `class="card"`, `data-variant`, `data-threshold`,
  *    `data-ratio`, `data-raised`, `data-stretch`, or `data-ngx-yeti-item-card`
- *    by hand on either host; the directives bind them.
+ *    by hand on either host; the directives bind them. A value newer than the
+ *    pin goes through `$any` (`[threshold]="$any('3xl')"`).
  * 10. Bind every input from values that are the same on the server and the
  *     client, never from a browser-only read.
  * 11. Import `YetiCard`, and `YetiCardLink` where a template writes it, in

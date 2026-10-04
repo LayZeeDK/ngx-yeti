@@ -13,13 +13,16 @@ import { yetiCardToken } from './card-tokens';
  * 2. Never wrap a card in a link.
  * 3. Put this link inside the card's heading, write `yetiCardLink stretch`
  *    on it, and let the heading's text be its text. Give one link per card
- *    `stretch`.
+ *    `stretch`. Its pseudo-element makes the card's text hard to select with
+ *    a pointer, which is the pattern's known cost.
  * 4. A footer link to the same destination takes `tabindex="-1"`; every other
  *    control keeps its own Tab stop and click above the stretched link.
  * 5. Put no positioned element between the card and this link.
  * 6. Put the card's picture first, with alternative text for what is visible
  *    after the crop.
- * 7. Use `NgOptimizedImage` with `width` and `height`, never `fill`.
+ * 7. Use `NgOptimizedImage` with `width` and `height`, never `fill`. Its
+ *    development-mode distortion warning for a cropped picture is expected:
+ *    `object-fit: cover` crops rather than distorts.
  * 8. Put the `footer` last.
  * 9. Do not write `data-stretch` by hand; the directive binds it.
  * 10. Bind `stretch` from a value that is the same on the server and the
