@@ -18,11 +18,9 @@ describe('the generated rank table', () => {
     ).not.toThrow();
   });
 
-  it('lists the 49 items in rank order', () => {
+  // The order is yeti.css's: the generator check above proves it.
+  it('lists the 49 items', () => {
     expect(Object.keys(yetiRank)).toHaveLength(49);
-    expect(Object.values(yetiRank).map(({ rank }) => rank)).toStrictEqual(
-      Object.keys(yetiRank).map((_name, index) => index),
-    );
   });
 
   it("names files present in Yeti's build", () => {
