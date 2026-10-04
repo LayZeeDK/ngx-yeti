@@ -76,6 +76,19 @@ async function globalStylesheet(): Promise<void> {
   }
 }
 
+/**
+ * The element's computed style with its running transitions jumped to their
+ * end: lift.md specifies the hover's end state, and under CI load headless
+ * WebKit had moved Yeti's transition only part of the way when a poll ran out.
+ */
+function settledStyle(element: Element): CSSStyleDeclaration {
+  for (const transition of element.getAnimations()) {
+    transition.finish();
+  }
+
+  return getComputedStyle(element);
+}
+
 async function setupLift(bound?: YetiLift | '') {
   const gesture = signal<YetiLift | ''>(bound ?? '');
   const fixture = TestBed.createDirective(NgxYetiLift, {
@@ -258,17 +271,16 @@ describe(NgxYetiLift, () => {
       rise.append(probe);
       const distance = parseFloat(getComputedStyle(probe).marginTop);
       probe.remove();
-      // The end state, not the animation: on a busy runner headless WebKit
-      // advances the transition in a few frames and the poll ran out midway.
-      rise.style.transition = 'none';
 
       await page.elementLocator(rise).hover();
 
+      await expect.poll(() => settledStyle(rise).boxShadow).not.toBe(shadow);
       await expect
-        .poll(() => getComputedStyle(rise).boxShadow)
-        .not.toBe(shadow);
-      await expect
-        .poll(() => top - rise.getBoundingClientRect().top)
+        .poll(() => {
+          settledStyle(rise);
+
+          return top - rise.getBoundingClientRect().top;
+        })
         .toBeCloseTo(distance, 1);
     });
 
@@ -283,7 +295,7 @@ describe(NgxYetiLift, () => {
 
       await page.elementLocator(scale).hover();
 
-      await expect.poll(() => getComputedStyle(scale).scale).toBe(token);
+      await expect.poll(() => settledStyle(scale).scale).toBe(token);
       expect(getComputedStyle(scale).translate).toBe('none');
     });
 
