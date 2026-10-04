@@ -88,6 +88,8 @@ Locally, every browser layer runs Chromium only: Playwright's browsers are x64 u
 
 To reproduce a job locally, install its browser the way the job does. `npx --no-install @puppeteer/browsers install chrome@<version> --path <dir>` prints `chrome@<version> <path>`; the path is the second field. For the container jobs, run the job's image with Docker and install the job's Playwright release in it, as the job does.
 
+Firefox 145 to 152 cannot render Yeti's sizes: they reject `atan2()` with a relative length, and Yeti's scale divides `100vw - 320px` through `tan(atan2(...))`, so every Yeti size token is invalid and a card has no padding (measured 2026-10-04 on stock 145 to 156 through WebdriverIO and on Playwright's 146; 153 is the first that accepts it). Tag every e2e test that reads a size Yeti derives from its scale (padding, a card's form, a frame count of `padding-top`) with `{ tag: '@yeti-scale' }`; the `firefox-146-e2e` project leaves those out.
+
 Edge 141 is the Chromium 141 engine. No GitHub runner ships Safari 26.2, so Playwright's WebKit stands in for it at the floor and the `safari` job covers current real Safari, beside the static checks: `.browserslistrc` and the `css/use-baseline` and `baseline-js/use-baseline` lint rules at Baseline 2025. Use a newer feature only with the fallback its spec names, behind a described disable comment.
 
 ## Gates

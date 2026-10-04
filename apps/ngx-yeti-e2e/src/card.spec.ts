@@ -77,69 +77,77 @@ async function cardForm(
 }
 
 test.describe('card--default', () => {
-  test('switches between the row and the stacked form across the xs stop of its container', async ({
-    page,
-  }) => {
-    const root = await openStory(page, 'card--default');
-    const frame = root.getByTestId('frame');
+  test(
+    'switches between the row and the stacked form across the xs stop of its container',
+    { tag: '@yeti-scale' },
+    async ({ page }) => {
+      const root = await openStory(page, 'card--default');
+      const frame = root.getByTestId('frame');
 
-    await expectCardStyled(page, root.getByRole('article'));
+      await expectCardStyled(page, root.getByRole('article'));
 
-    const stop = await xsStop(frame);
+      const stop = await xsStop(frame);
 
-    expect(await cardForm(frame, stop + 4)).toBe('row');
-    expect(await cardForm(frame, stop - 4)).toBe('stacked');
-    expect(await cardForm(frame, stop + 4)).toBe('row');
-  });
+      expect(await cardForm(frame, stop + 4)).toBe('row');
+      expect(await cardForm(frame, stop - 4)).toBe('stacked');
+      expect(await cardForm(frame, stop + 4)).toBe('row');
+    },
+  );
 
-  test('reflows at a 320 px viewport without horizontal overflow', async ({
-    page,
-  }) => {
-    await page.setViewportSize({ width: 320, height: 640 });
-    const root = await openStory(page, 'card--default');
-    const frame = root.getByTestId('frame');
+  test(
+    'reflows at a 320 px viewport without horizontal overflow',
+    { tag: '@yeti-scale' },
+    async ({ page }) => {
+      await page.setViewportSize({ width: 320, height: 640 });
+      const root = await openStory(page, 'card--default');
+      const frame = root.getByTestId('frame');
 
-    await expectCardStyled(page, root.getByRole('article'));
+      await expectCardStyled(page, root.getByRole('article'));
 
-    // The story's frame starts at a fixed 40rem so it can be resized by hand;
-    // reflow is about the card at the page's own width, so drop that width.
-    await frame.evaluate((element) => {
-      if (element instanceof HTMLElement) {
-        element.style.inlineSize = '';
-      }
-    });
+      // The story's frame starts at a fixed 40rem so it can be resized by hand;
+      // reflow is about the card at the page's own width, so drop that width.
+      await frame.evaluate((element) => {
+        if (element instanceof HTMLElement) {
+          element.style.inlineSize = '';
+        }
+      });
 
-    expect(await cardForm(frame, null)).toBe('stacked');
-    expect(
+      expect(await cardForm(frame, null)).toBe('stacked');
+      expect(
+        await page.evaluate(() => {
+          const { scrollWidth, clientWidth } = document.documentElement;
+
+          return scrollWidth - clientWidth;
+        }),
+        'horizontal overflow in px',
+      ).toBeLessThanOrEqual(0);
+    },
+  );
+
+  test(
+    'raises its switching width with 200 % text zoom',
+    { tag: '@yeti-scale' },
+    async ({ page }) => {
+      const root = await openStory(page, 'card--default');
+      const frame = root.getByTestId('frame');
+
+      await expectCardStyled(page, root.getByRole('article'));
+
+      const stop = await xsStop(frame);
+
+      expect(await cardForm(frame, stop + 4)).toBe('row');
+
+      // Text zoom: the root font size at 200 %, so every rem doubles.
       await page.evaluate(() => {
-        const { scrollWidth, clientWidth } = document.documentElement;
+        document.documentElement.style.fontSize = '200%';
+      });
+      const zoomedStop = await xsStop(frame);
 
-        return scrollWidth - clientWidth;
-      }),
-      'horizontal overflow in px',
-    ).toBeLessThanOrEqual(0);
-  });
-
-  test('raises its switching width with 200 % text zoom', async ({ page }) => {
-    const root = await openStory(page, 'card--default');
-    const frame = root.getByTestId('frame');
-
-    await expectCardStyled(page, root.getByRole('article'));
-
-    const stop = await xsStop(frame);
-
-    expect(await cardForm(frame, stop + 4)).toBe('row');
-
-    // Text zoom: the root font size at 200 %, so every rem doubles.
-    await page.evaluate(() => {
-      document.documentElement.style.fontSize = '200%';
-    });
-    const zoomedStop = await xsStop(frame);
-
-    expect(zoomedStop).toBeGreaterThan(stop + 4);
-    expect(await cardForm(frame, stop + 4)).toBe('stacked');
-    expect(await cardForm(frame, zoomedStop + 4)).toBe('row');
-  });
+      expect(zoomedStop).toBeGreaterThan(stop + 4);
+      expect(await cardForm(frame, stop + 4)).toBe('stacked');
+      expect(await cardForm(frame, zoomedStop + 4)).toBe('row');
+    },
+  );
 });
 
 test.describe('card--stretched-link', () => {

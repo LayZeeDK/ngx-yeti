@@ -120,68 +120,77 @@ for (const { kind, prefix } of routeKinds) {
       }
     });
 
-    test('keeps the leaving host styled while it leaves and drops its link after', async ({
-      browserName,
-      page,
-    }) => {
-      const leavingPadding = await recordFrames(
-        page,
-        '#leaving-host',
-        'padding-top',
-      );
+    test(
+      'keeps the leaving host styled while it leaves and drops its link after',
+      { tag: '@yeti-scale' },
+      async ({ browserName, page }) => {
+        const leavingPadding = await recordFrames(
+          page,
+          '#leaving-host',
+          'padding-top',
+        );
 
-      await page.goto(`${prefix}setup`);
-      await waitForHydration(page, interactionHost);
+        await page.goto(`${prefix}setup`);
+        await waitForHydration(page, interactionHost);
 
-      const leaving = page.locator('#leaving-host');
+        const leaving = page.locator('#leaving-host');
 
-      // Upstream bug A4 reaches only the frames before the global stylesheet
-      // applies; from here on every frame is inside the asserted leave window.
-      await expect(leaving).not.toHaveCSS('padding-top', '0px');
+        // Upstream bug A4 reaches only the frames before the global stylesheet
+        // applies; from here on every frame is inside the asserted leave window.
+        await expect(leaving).not.toHaveCSS('padding-top', '0px');
 
-      const leaveWindow = await recordFrames(
-        page,
-        '#leaving-host',
-        'padding-top',
-        { start: 'now' },
-      );
+        const leaveWindow = await recordFrames(
+          page,
+          '#leaving-host',
+          'padding-top',
+          { start: 'now' },
+        );
 
-      // Only the live hosts hold the card link now.
-      await removeDehydratedHosts(page, dehydratedHosts);
-      await page.getByRole('button', { name: 'Remove the live hosts' }).click();
+        // Only the live hosts hold the card link now.
+        await removeDehydratedHosts(page, dehydratedHosts);
+        await page
+          .getByRole('button', { name: 'Remove the live hosts' })
+          .click();
 
-      await expect(leaving, 'the host is leaving').toHaveClass(
-        /app-setup-leaving/,
-      );
-      expect(await itemLinks(page)).toContain('card');
-      await expect(leaving).toHaveCount(0);
-      await expect.poll(() => itemLinks(page)).toEqual([]);
+        await expect(leaving, 'the host is leaving').toHaveClass(
+          /app-setup-leaving/,
+        );
+        expect(await itemLinks(page)).toContain('card');
+        await expect(leaving).toHaveCount(0);
+        await expect.poll(() => itemLinks(page)).toEqual([]);
 
-      const present = (await leavingPadding()).filter((value) => value !== '');
-      const leaveFrames = (await leaveWindow()).filter((value) => value !== '');
+        const present = (await leavingPadding()).filter(
+          (value) => value !== '',
+        );
+        const leaveFrames = (await leaveWindow()).filter(
+          (value) => value !== '',
+        );
 
-      expect(present.length, 'the leaving host was sampled').toBeGreaterThan(0);
-      expect(
-        leaveFrames.length,
-        'the leaving host was sampled while it left',
-      ).toBeGreaterThan(0);
-      expect(
-        leaveFrames.filter((value) => value === '0px'),
-        'no frame shows the leaving card without Yeti while it leaves',
-      ).toEqual([]);
-
-      if (isProduction) {
-        test.info().annotations.push({
-          type: 'a4-frames',
-          description: `${browserName}, critical-CSS inlining on (production): ${String(present.filter((value) => value === '0px').length)} of ${String(present.length)} frames without Yeti from first paint`,
-        });
-      } else {
+        expect(present.length, 'the leaving host was sampled').toBeGreaterThan(
+          0,
+        );
         expect(
-          present.filter((value) => value === '0px'),
-          'no frame after first paint shows the leaving card without Yeti',
+          leaveFrames.length,
+          'the leaving host was sampled while it left',
+        ).toBeGreaterThan(0);
+        expect(
+          leaveFrames.filter((value) => value === '0px'),
+          'no frame shows the leaving card without Yeti while it leaves',
         ).toEqual([]);
-      }
-    });
+
+        if (isProduction) {
+          test.info().annotations.push({
+            type: 'a4-frames',
+            description: `${browserName}, critical-CSS inlining on (production): ${String(present.filter((value) => value === '0px').length)} of ${String(present.length)} frames without Yeti from first paint`,
+          });
+        } else {
+          expect(
+            present.filter((value) => value === '0px'),
+            'no frame after first paint shows the leaving card without Yeti',
+          ).toEqual([]);
+        }
+      },
+    );
 
     test("records the client-only @defer's frames after every host has left", async ({
       page,
@@ -245,44 +254,46 @@ for (const { kind, prefix } of routeKinds) {
     test.describe('with JavaScript off', () => {
       test.use({ javaScriptEnabled: false });
 
-      test("styles the card as Yeti's full stylesheet does", async ({
-        page,
-      }) => {
-        await page.goto(`${prefix}setup`);
+      test(
+        "styles the card as Yeti's full stylesheet does",
+        { tag: '@yeti-scale' },
+        async ({ page }) => {
+          await page.goto(`${prefix}setup`);
 
-        const card = page.locator('#shared-host');
+          const card = page.locator('#shared-host');
 
-        await expect(card).not.toHaveCSS('padding-top', '0px');
+          await expect(card).not.toHaveCSS('padding-top', '0px');
 
-        const padding = await card.evaluate(
-          (element) => getComputedStyle(element).padding,
-        );
+          const padding = await card.evaluate(
+            (element) => getComputedStyle(element).padding,
+          );
 
-        expect(await itemLinks(page)).toEqual(['card', 'lift']);
+          expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-        // Swap the item links for Yeti's full yeti.css, which the assets glob
-        // copies beside the item files.
-        await page.evaluate(() => {
-          for (const link of document.head.querySelectorAll(
-            'link[data-ngx-yeti-styles]',
-          )) {
-            link.remove();
-          }
-        });
-        await expect(card, 'the item link styled the card').toHaveCSS(
-          'padding-top',
-          '0px',
-        );
-        await page.evaluate(() => {
-          const link = document.createElement('link');
+          // Swap the item links for Yeti's full yeti.css, which the assets glob
+          // copies beside the item files.
+          await page.evaluate(() => {
+            for (const link of document.head.querySelectorAll(
+              'link[data-ngx-yeti-styles]',
+            )) {
+              link.remove();
+            }
+          });
+          await expect(card, 'the item link styled the card').toHaveCSS(
+            'padding-top',
+            '0px',
+          );
+          await page.evaluate(() => {
+            const link = document.createElement('link');
 
-          link.rel = 'stylesheet';
-          link.href = 'yeti-css/yeti.css';
-          document.head.append(link);
-        });
+            link.rel = 'stylesheet';
+            link.href = 'yeti-css/yeti.css';
+            document.head.append(link);
+          });
 
-        await expect(card).toHaveCSS('padding', padding);
-      });
+          await expect(card).toHaveCSS('padding', padding);
+        },
+      );
 
       test('applies the global stylesheet', async ({ page }) => {
         await page.goto(`${prefix}setup`);
@@ -357,58 +368,64 @@ for (const { kind, prefix } of routeKinds) {
       await expectCleanHydration();
     });
 
-    test('renders the client-only card with 0 unstyled frames through the preload', async ({
-      page,
-    }) => {
-      const styleMutations = await recordStyleMutations(page);
-      const cardPadding = await recordFrames(
-        page,
-        '#deferred-card',
-        'padding-top',
-      );
+    test(
+      'renders the client-only card with 0 unstyled frames through the preload',
+      { tag: '@yeti-scale' },
+      async ({ page }) => {
+        const styleMutations = await recordStyleMutations(page);
+        const cardPadding = await recordFrames(
+          page,
+          '#deferred-card',
+          'padding-top',
+        );
 
-      // Item CSS delayed from the start.
-      await delayCss(page);
-      await page.goto(`${prefix}setup-defer`);
-      await waitForHydration(page, interactionHost);
+        // Item CSS delayed from the start.
+        await delayCss(page);
+        await page.goto(`${prefix}setup-defer`);
+        await waitForHydration(page, interactionHost);
 
-      expect(
-        await styleMutations(),
-        'no link or style element is added or removed after DOMContentLoaded',
-      ).toEqual([]);
-      expect(await itemLinks(page), 'the server rendered no card').toEqual([]);
-      await expect(
-        page.locator('head link[rel="preload"][as="style"]'),
-      ).toHaveAttribute('href', /components\/card\/card\.css/);
-      // The preload response has arrived before the interaction.
-      await expect
-        .poll(() =>
-          page.evaluate(() =>
-            performance
-              .getEntriesByType('resource')
-              .some(({ name }) => name.includes('components/card/card.css')),
-          ),
-        )
-        .toBe(true);
+        expect(
+          await styleMutations(),
+          'no link or style element is added or removed after DOMContentLoaded',
+        ).toEqual([]);
+        expect(await itemLinks(page), 'the server rendered no card').toEqual(
+          [],
+        );
+        await expect(
+          page.locator('head link[rel="preload"][as="style"]'),
+        ).toHaveAttribute('href', /components\/card\/card\.css/);
+        // The preload response has arrived before the interaction.
+        await expect
+          .poll(() =>
+            page.evaluate(() =>
+              performance
+                .getEntriesByType('resource')
+                .some(({ name }) => name.includes('components/card/card.css')),
+            ),
+          )
+          .toBe(true);
 
-      await page
-        .getByRole('button', { name: 'Show the deferred card' })
-        .click();
+        await page
+          .getByRole('button', { name: 'Show the deferred card' })
+          .click();
 
-      const card = page.locator('#deferred-card');
+        const card = page.locator('#deferred-card');
 
-      await expect(card).toBeVisible();
-      await expect(card).not.toHaveCSS('padding-top', '0px');
-      expect(await itemLinks(page)).toEqual(['card']);
+        await expect(card).toBeVisible();
+        await expect(card).not.toHaveCSS('padding-top', '0px');
+        expect(await itemLinks(page)).toEqual(['card']);
 
-      const frames = (await cardPadding()).filter((value) => value !== '');
+        const frames = (await cardPadding()).filter((value) => value !== '');
 
-      expect(frames.length, 'the deferred card was sampled').toBeGreaterThan(0);
-      expect(
-        frames.filter((value) => value === '0px'),
-        'no frame shows the preloaded card without Yeti',
-      ).toEqual([]);
-    });
+        expect(frames.length, 'the deferred card was sampled').toBeGreaterThan(
+          0,
+        );
+        expect(
+          frames.filter((value) => value === '0px'),
+          'no frame shows the preloaded card without Yeti',
+        ).toEqual([]);
+      },
+    );
 
     test.describe('with JavaScript off', () => {
       test.use({ javaScriptEnabled: false });

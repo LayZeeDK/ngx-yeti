@@ -195,76 +195,82 @@ for (const { kind, prefix } of routeKinds) {
     // The server hosts keep the card link in <head>, so the client-only card
     // reuses it and the preload plays no part; the setup-defer route carries
     // the preload claim (card.md:337).
-    test('renders a client-only card with 0 unstyled frames while the server hosts hold the card link', async ({
-      page,
-    }) => {
-      const cardPadding = await recordFrames(
-        page,
-        '#client-card',
-        'padding-top',
-      );
+    test(
+      'renders a client-only card with 0 unstyled frames while the server hosts hold the card link',
+      { tag: '@yeti-scale' },
+      async ({ page }) => {
+        const cardPadding = await recordFrames(
+          page,
+          '#client-card',
+          'padding-top',
+        );
 
-      await delayCss(page);
-      await page.goto(`${prefix}card`);
-      await waitForHydration(page);
+        await delayCss(page);
+        await page.goto(`${prefix}card`);
+        await waitForHydration(page);
 
-      await page
-        .getByRole('button', { name: 'Show the client-only card' })
-        .click();
+        await page
+          .getByRole('button', { name: 'Show the client-only card' })
+          .click();
 
-      const card = page.locator('#client-card');
+        const card = page.locator('#client-card');
 
-      await expect(card).toBeVisible();
-      await expect(card).not.toHaveCSS('padding-top', '0px');
-      expect(await itemLinks(page)).toEqual(['card', 'lift']);
+        await expect(card).toBeVisible();
+        await expect(card).not.toHaveCSS('padding-top', '0px');
+        expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const frames = (await cardPadding()).filter((value) => value !== '');
+        const frames = (await cardPadding()).filter((value) => value !== '');
 
-      expect(frames.length, 'the client-only card was sampled').toBeGreaterThan(
-        0,
-      );
-      expect(
-        frames.filter((value) => value === '0px'),
-        'no frame shows the client-only card without Yeti',
-      ).toEqual([]);
-    });
+        expect(
+          frames.length,
+          'the client-only card was sampled',
+        ).toBeGreaterThan(0);
+        expect(
+          frames.filter((value) => value === '0px'),
+          'no frame shows the client-only card without Yeti',
+        ).toEqual([]);
+      },
+    );
 
-    test("records the client-only card's frames after every card host has left", async ({
-      page,
-    }) => {
-      const cardPadding = await recordFrames(
-        page,
-        '#client-card',
-        'padding-top',
-      );
+    test(
+      "records the client-only card's frames after every card host has left",
+      { tag: '@yeti-scale' },
+      async ({ page }) => {
+        const cardPadding = await recordFrames(
+          page,
+          '#client-card',
+          'padding-top',
+        );
 
-      await page.goto(`${prefix}card`);
-      await waitForHydration(page);
-      await removeEveryHost(page, 'Remove the live cards', '#never-card');
+        await page.goto(`${prefix}card`);
+        await waitForHydration(page);
+        await removeEveryHost(page, 'Remove the live cards', '#never-card');
 
-      await delayCss(page);
-      await page
-        .getByRole('button', { name: 'Show the client-only card' })
-        .click();
+        await delayCss(page);
+        await page
+          .getByRole('button', { name: 'Show the client-only card' })
+          .click();
 
-      const card = page.locator('#client-card');
+        const card = page.locator('#client-card');
 
-      await expect(card).not.toHaveCSS('padding-top', '0px');
-      expect(await itemLinks(page)).toEqual(['card']);
+        await expect(card).not.toHaveCSS('padding-top', '0px');
+        expect(await itemLinks(page)).toEqual(['card']);
 
-      const frames = (await cardPadding()).filter((value) => value !== '');
+        const frames = (await cardPadding()).filter((value) => value !== '');
 
-      expect(frames.length, 'the client-only card was sampled').toBeGreaterThan(
-        0,
-      );
-      // The server's card link used the preload at load, and routing turns
-      // the HTTP cache off, so the re-inserted link refetches: recorded, not
-      // asserted. The setup-defer route carries the 0-frame preload claim.
-      test.info().annotations.push({
-        type: 'frames',
-        description: `${String(frames.filter((value) => value === '0px').length)} of ${String(frames.length)} frames without the card file (re-inserted)`,
-      });
-    });
+        expect(
+          frames.length,
+          'the client-only card was sampled',
+        ).toBeGreaterThan(0);
+        // The server's card link used the preload at load, and routing turns
+        // the HTTP cache off, so the re-inserted link refetches: recorded, not
+        // asserted. The setup-defer route carries the 0-frame preload claim.
+        test.info().annotations.push({
+          type: 'frames',
+          description: `${String(frames.filter((value) => value === '0px').length)} of ${String(frames.length)} frames without the card file (re-inserted)`,
+        });
+      },
+    );
 
     test('removes the card link on leaving the route and re-inserts it once on returning', async ({
       page,
@@ -306,49 +312,51 @@ for (const { kind, prefix } of routeKinds) {
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
     });
 
-    test("records NgOptimizedImage's development-mode messages for the cropped picture and the row form", async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'NgOptimizedImage logs its checks in development mode only',
-      );
+    test(
+      "records NgOptimizedImage's development-mode messages for the cropped picture and the row form",
+      { tag: '@yeti-scale' },
+      async ({ page }) => {
+        test.skip(
+          isProduction,
+          'NgOptimizedImage logs its checks in development mode only',
+        );
 
-      const messages: string[] = [];
+        const messages: string[] = [];
 
-      page.on('console', (message) => {
-        messages.push(message.text());
-      });
+        page.on('console', (message) => {
+          messages.push(message.text());
+        });
 
-      await page.goto(`${prefix}card`);
-      await waitForHydration(page);
-      await expectCardSheetApplied(page);
-      await expect(
-        page
-          .locator('img[ngsrc]')
-          .evaluateAll((images) =>
-            images.every(
-              (image) => image instanceof HTMLImageElement && image.complete,
+        await page.goto(`${prefix}card`);
+        await waitForHydration(page);
+        await expectCardSheetApplied(page);
+        await expect(
+          page
+            .locator('img[ngsrc]')
+            .evaluateAll((images) =>
+              images.every(
+                (image) => image instanceof HTMLImageElement && image.complete,
+              ),
             ),
-          ),
-      ).resolves.toBe(true);
-      await nextFrames(page);
+        ).resolves.toBe(true);
+        await nextFrames(page);
 
-      const imageMessages = messages.filter((text) =>
-        /NgOptimizedImage|NG029\d\d/.test(text),
-      );
+        const imageMessages = messages.filter((text) =>
+          /NgOptimizedImage|NG029\d\d/.test(text),
+        );
 
-      test.info().annotations.push(
-        {
-          type: 'NgOptimizedImage',
-          description: `${String(imageMessages.length)} message(s) with the row-form card (section 8) and the square-cropped card`,
-        },
-        ...imageMessages.map((description) => ({
-          type: 'NgOptimizedImage',
-          description,
-        })),
-      );
-    });
+        test.info().annotations.push(
+          {
+            type: 'NgOptimizedImage',
+            description: `${String(imageMessages.length)} message(s) with the row-form card (section 8) and the square-cropped card`,
+          },
+          ...imageMessages.map((description) => ({
+            type: 'NgOptimizedImage',
+            description,
+          })),
+        );
+      },
+    );
 
     test.describe('with JavaScript off', () => {
       test.use({ javaScriptEnabled: false });
@@ -369,53 +377,55 @@ for (const { kind, prefix } of routeKinds) {
         expect(await itemLinks(page)).toEqual(['card', 'lift']);
       });
 
-      test('styles the card with the geometry it has with JavaScript on', async ({
-        browser,
-        page,
-        viewport,
-      }) => {
-        await page.goto(`${prefix}card`);
-        await expectCardSheetApplied(page);
+      test(
+        'styles the card with the geometry it has with JavaScript on',
+        { tag: '@yeti-scale' },
+        async ({ browser, page, viewport }) => {
+          await page.goto(`${prefix}card`);
+          await expectCardSheetApplied(page);
 
-        // A test's `use` options are this context's defaults too.
-        const context = await browser.newContext({
-          javaScriptEnabled: true,
-          viewport,
-        });
-        const javaScriptPage = await context.newPage();
+          // A test's `use` options are this context's defaults too.
+          const context = await browser.newContext({
+            javaScriptEnabled: true,
+            viewport,
+          });
+          const javaScriptPage = await context.newPage();
 
-        await javaScriptPage.goto(page.url());
-        await waitForHydration(javaScriptPage);
-        await expectCardSheetApplied(javaScriptPage);
+          await javaScriptPage.goto(page.url());
+          await waitForHydration(javaScriptPage);
+          await expectCardSheetApplied(javaScriptPage);
 
-        expect(await cardGeometry(page)).toEqual(
-          await cardGeometry(javaScriptPage),
-        );
+          expect(await cardGeometry(page)).toEqual(
+            await cardGeometry(javaScriptPage),
+          );
 
-        await context.close();
-      });
+          await context.close();
+        },
+      );
 
-      test("navigates to the stretched link's href on a click near the card's corner", async ({
-        page,
-      }) => {
-        await page.goto(`${prefix}card`);
-        await expectCardSheetApplied(page);
+      test(
+        "navigates to the stretched link's href on a click near the card's corner",
+        { tag: '@yeti-scale' },
+        async ({ page }) => {
+          await page.goto(`${prefix}card`);
+          await expectCardSheetApplied(page);
 
-        const href = await page
-          .getByRole('link', { name: 'Weekend in the hills' })
-          .getAttribute('href');
-        const box = await page.locator('article').boundingBox();
+          const href = await page
+            .getByRole('link', { name: 'Weekend in the hills' })
+            .getAttribute('href');
+          const box = await page.locator('article').boundingBox();
 
-        if (href === null || box === null) {
-          throw new Error('The card or its stretched link is missing');
-        }
+          if (href === null || box === null) {
+            throw new Error('The card or its stretched link is missing');
+          }
 
-        const expected = new URL(href, page.url()).href;
+          const expected = new URL(href, page.url()).href;
 
-        await page.mouse.click(box.x + box.width - 4, box.y + box.height - 4);
+          await page.mouse.click(box.x + box.width - 4, box.y + box.height - 4);
 
-        await expect(page).toHaveURL(expected);
-      });
+          await expect(page).toHaveURL(expected);
+        },
+      );
 
       test('serves server HTML that axe passes', async ({
         axeViolations,

@@ -23,8 +23,13 @@ export function browserProjects() {
     return [webkit];
   }
 
+  // Stock Firefox 145 to 152, and Playwright's Firefox 146, reject atan2()
+  // with a relative length as invalid at parse time; 153 accepts it
+  // (measured 2026-10-04). Yeti's scale divides `100vw - 320px` through
+  // `tan(atan2(...))`, so every Yeti size token is invalid on this engine and
+  // a card has no padding. Tests tagged @yeti-scale read Yeti sizes.
   if (process.env['FLOOR_FIREFOX_E2E'] === 'true') {
-    return [firefox];
+    return [{ ...firefox, grepInvert: /@yeti-scale/ }];
   }
 
   return process.env['CI'] && !chromiumFloor
