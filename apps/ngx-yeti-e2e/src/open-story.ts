@@ -15,10 +15,16 @@ declare global {
  * Opens one story of the static Storybook build and returns its root. The
  * `embed=true` parameter turns Storybook's autoplay off, so the play function
  * does not run again (docs/specs/adr/0014-testing-stack-for-yeti.md, point 4).
- * Only `page.goto` and DOM reads are used, so every Playwright release the
- * floor jobs install can run it.
+ * `args` overrides the story's args through Storybook's `args` URL
+ * parameter, such as `{ raised: true }` for `args=raised:!true`. Only
+ * `page.goto` and DOM reads are used, so every Playwright release the floor
+ * jobs install can run it.
  */
-export async function openStory(page: Page, storyId: string): Promise<Locator> {
+export async function openStory(
+  page: Page,
+  storyId: string,
+  { args = {} }: { args?: Readonly<Record<string, string | boolean>> } = {},
+): Promise<Locator> {
   const index: unknown = await (await page.request.get('index.json')).json();
 
   if (!hasStory(index, storyId)) {
@@ -27,8 +33,15 @@ export async function openStory(page: Page, storyId: string): Promise<Locator> {
     );
   }
 
+  const argsParam = Object.entries(args)
+    .map(
+      ([name, value]) =>
+        `${name}:${typeof value === 'boolean' ? `!${String(value)}` : value}`,
+    )
+    .join(';');
+
   await page.goto(
-    `iframe.html?id=${encodeURIComponent(storyId)}&viewMode=story&embed=true`,
+    `iframe.html?id=${encodeURIComponent(storyId)}&viewMode=story&embed=true${argsParam === '' ? '' : `&args=${encodeURIComponent(argsParam)}`}`,
   );
   await page.waitForFunction(
     () =>

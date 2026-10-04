@@ -2,14 +2,6 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
 
-declare global {
-  interface Window {
-    __STORYBOOK_ADDONS_CHANNEL__?: {
-      emit: (eventName: string, ...args: unknown[]) => void;
-    };
-  }
-}
-
 type CardForm = 'row' | 'stacked' | 'neither';
 
 /** Waits for the card's item file, then for the card to lay out with it. */
@@ -220,23 +212,13 @@ test.describe('card--inputs', () => {
       'Playwright emulates forced colours in Chromium and Firefox only',
     );
 
-    const root = await openStory(page, 'card--inputs');
+    const root = await openStory(page, 'card--inputs', {
+      args: { raised: true },
+    });
     const card = root.getByRole('article');
 
     await expectCardStyled(page, card);
-    await page.evaluate(() => {
-      const channel = window.__STORYBOOK_ADDONS_CHANNEL__;
-
-      if (channel === undefined) {
-        throw new Error('No Storybook channel');
-      }
-
-      channel.emit('updateStoryArgs', {
-        storyId: 'card--inputs',
-        updatedArgs: { raised: true },
-      });
-    });
-    await expect(root.getByRole('article')).toHaveAttribute('data-raised', '');
+    await expect(card).toHaveAttribute('data-raised', '');
     await page.emulateMedia({ forcedColors: 'active' });
 
     await page.keyboard.press('Tab');
