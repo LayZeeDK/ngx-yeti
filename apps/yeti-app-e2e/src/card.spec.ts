@@ -1,14 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { workspaceRoot } from '@nx/devkit';
-import { type Locator, type Page } from '@playwright/test';
+import { type Page } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
+import { expectHoverLifts, removeEveryHost } from './support/hosts';
 import {
   nextFrames,
   waitForHydration,
   watchHydration,
 } from './support/hydration';
 import {
+  delayCss,
   itemLinks,
   recordFrames,
   recordStyleMutations,
@@ -88,50 +90,6 @@ async function expectCardSheetApplied(page: Page): Promise<void> {
     'the card stylesheet is loaded',
   ).toBe(true);
   await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
-}
-
-/** Delays every Yeti file 300 ms; Playwright's routing also turns the HTTP cache off. */
-async function delayItemCss(page: Page): Promise<void> {
-  await page.route('**/yeti-css/**', async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    await route.continue();
-  });
-}
-
-/**
- * Removes every live card with the control, then the `hydrate never` host:
- * Angular keeps a dehydrated block's server DOM even after its parent view is
- * destroyed (measured on the setup route), so no control can remove it.
- */
-async function removeEveryHost(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Remove the live cards' }).click();
-  await page.locator('#never-card').evaluate((card) => {
-    card.remove();
-  });
-  await expect(page.locator('[data-ngx-yeti-item-card]')).toHaveCount(0);
-  await expect.poll(() => itemLinks(page)).toEqual([]);
-}
-
-/** Hovers the card with the real pointer and expects its top to rise. */
-async function expectHoverLifts(page: Page, card: Locator): Promise<void> {
-  // Yeti's `.lift` transition list; an element without Yeti computes `all`.
-  await expect(card).not.toHaveCSS('transition-property', 'all');
-
-  const before = await card.boundingBox();
-
-  if (before === null) {
-    throw new Error('The card is not rendered');
-  }
-
-  // Away from the card first, so the hover starts from rest.
-  await page.mouse.move(0, 0);
-  await card.hover();
-
-  await expect
-    .poll(async () => (await card.boundingBox())?.y, {
-      message: "the hovered card's top decreases",
-    })
-    .toBeLessThan(before.y);
 }
 
 /**
@@ -304,7 +262,7 @@ for (const { kind, prefix } of routeKinds) {
         'padding-top',
       );
 
-      await delayItemCss(page);
+      await delayCss(page);
       await page.goto(`${prefix}card`);
       await waitForHydration(page);
 
@@ -340,9 +298,9 @@ for (const { kind, prefix } of routeKinds) {
 
       await page.goto(`${prefix}card`);
       await waitForHydration(page);
-      await removeEveryHost(page);
+      await removeEveryHost(page, 'Remove the live cards', '#never-card');
 
-      await delayItemCss(page);
+      await delayCss(page);
       await page
         .getByRole('button', { name: 'Show the client-only card' })
         .click();

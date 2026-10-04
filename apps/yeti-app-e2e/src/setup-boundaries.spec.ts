@@ -1,7 +1,7 @@
 import { expect, test } from './support/fixtures';
 import { waitForHydration } from './support/hydration';
 import { holdBackMainBundle } from './support/main-bundle';
-import { itemLinks, recordFrames } from './support/style-probe';
+import { delayCss, itemLinks, recordFrames } from './support/style-probe';
 
 /**
  * Ticket 37's consumer `@boundary` cases as setup.md:343 keeps them, as
@@ -111,11 +111,7 @@ for (const { kind, prefix } of routeKinds) {
         { start: 'now' },
       );
 
-      // Playwright's routing also turns the HTTP cache off.
-      await page.route('**/yeti-css/**', async (route) => {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        await route.continue();
-      });
+      await delayCss(page);
       await page.getByRole('button', { name: 'Reset the card' }).click();
 
       const card = page.locator('#reset-card');

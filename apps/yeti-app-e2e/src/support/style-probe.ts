@@ -139,6 +139,20 @@ export async function recordFrames(
   return reader(page, key);
 }
 
+/**
+ * Delays every request matching `url`, Yeti's files by default, by 300 ms.
+ * Playwright's routing also turns the HTTP cache off.
+ */
+export async function delayCss(
+  page: Page,
+  url: string | RegExp = '**/yeti-css/**',
+): Promise<void> {
+  await page.route(url, async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    await route.continue();
+  });
+}
+
 /** The `data-ngx-yeti-styles` values of the item links in `<head>`, in document order. */
 export async function itemLinks(page: Page): Promise<readonly string[]> {
   return page

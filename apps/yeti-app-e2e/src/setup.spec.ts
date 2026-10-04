@@ -1,11 +1,12 @@
-import { type Page } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
+import { removeDehydratedHosts, removeEveryHost } from './support/hosts';
 import {
   nextFrames,
   waitForHydration,
   watchHydration,
 } from './support/hydration';
 import {
+  delayCss,
   itemLinks,
   recordFrames,
   recordStyleMutations,
@@ -19,26 +20,8 @@ const routeKinds = [
 /** The `hydrate on interaction` host, which keeps `jsaction` until it hydrates. */
 const interactionHost = '#interaction-host';
 
-/**
- * Angular keeps a dehydrated block's server DOM even after its parent view is
- * destroyed (measured with an `@if` around the `hydrate never` block), so no
- * control can remove the dehydrated hosts; the test does.
- */
-async function removeDehydratedHosts(page: Page): Promise<void> {
-  await page.locator('#never-host, #interaction-host').evaluateAll((hosts) => {
-    for (const host of hosts) {
-      host.remove();
-    }
-  });
-}
-
-/** Removes every host and waits for `<head>` to hold no item link. */
-async function removeEveryHost(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Remove the live hosts' }).click();
-  await removeDehydratedHosts(page);
-  await expect(page.locator('[data-ngx-yeti-item-card]')).toHaveCount(0);
-  await expect.poll(() => itemLinks(page)).toEqual([]);
-}
+/** The `hydrate never` and `hydrate on interaction` hosts. */
+const dehydratedHosts = `#never-host, ${interactionHost}`;
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} setup route`, () => {
@@ -185,7 +168,7 @@ for (const { kind, prefix } of routeKinds) {
       );
 
       // Only the live hosts hold the card link now.
-      await removeDehydratedHosts(page);
+      await removeDehydratedHosts(page, dehydratedHosts);
       await page.getByRole('button', { name: 'Remove the live hosts' }).click();
 
       await expect(leaving, 'the host is leaving').toHaveClass(
@@ -232,7 +215,7 @@ for (const { kind, prefix } of routeKinds) {
 
       await page.goto(`${prefix}setup`);
       await waitForHydration(page, interactionHost);
-      await removeEveryHost(page);
+      await removeEveryHost(page, 'Remove the live hosts', dehydratedHosts);
 
       await expect(
         page.locator('head link[rel="preload"][as="style"]'),
@@ -246,11 +229,7 @@ for (const { kind, prefix } of routeKinds) {
         { start: 'now' },
       );
 
-      // Playwright's routing also turns the HTTP cache off.
-      await page.route('**/yeti-css/**', async (route) => {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        await route.continue();
-      });
+      await delayCss(page);
       await page
         .getByRole('button', { name: 'Show the client-only items' })
         .click();
@@ -409,12 +388,8 @@ for (const { kind, prefix } of routeKinds) {
         'padding-top',
       );
 
-      // Item CSS delayed 300 ms from the start; routing also turns the HTTP
-      // cache off.
-      await page.route('**/yeti-css/**', async (route) => {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        await route.continue();
-      });
+      // Item CSS delayed from the start.
+      await delayCss(page);
       await page.goto(`${prefix}setup-defer`);
       await waitForHydration(page, interactionHost);
 

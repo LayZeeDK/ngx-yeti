@@ -1,7 +1,7 @@
 import { type Page } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
 import { waitForHydration } from './support/hydration';
-import { itemLinks, recordFrames } from './support/style-probe';
+import { delayCss, itemLinks, recordFrames } from './support/style-probe';
 
 /** The `nx serve` entry of `playwright.config.mts`. */
 const devServerURL = 'http://localhost:4312/sub/';
@@ -136,11 +136,7 @@ test.describe('upstream bug A4', () => {
   }) => {
     const cardPadding = await recordFrames(page, 'article', 'padding');
 
-    // Routing also turns the HTTP cache off.
-    await page.route(/\/styles(-[A-Z0-9]+)?\.css$/, async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 300));
-      await route.continue();
-    });
+    await delayCss(page, /\/styles(-[A-Z0-9]+)?\.css$/);
     await page.goto('server/card');
     await waitForHydration(page);
     await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');

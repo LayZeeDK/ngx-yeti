@@ -1,11 +1,13 @@
 import { type Locator, type Page } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
+import { expectHoverLifts, removeEveryHost } from './support/hosts';
 import {
   nextFrames,
   waitForHydration,
   watchHydration,
 } from './support/hydration';
 import {
+  delayCss,
   itemLinks,
   recordFrames,
   recordStyleMutations,
@@ -60,27 +62,6 @@ async function recordHostAttributes(
 /** Upstream bug O2: read geometry only once the lift's sheet has applied. */
 async function expectLiftSheetApplied(card: Locator): Promise<void> {
   await expect(card).not.toHaveCSS('transition-property', unstyledTransition);
-}
-
-/** Hovers the card with the real pointer and expects its top to rise. */
-async function expectHoverLifts(page: Page, card: Locator): Promise<void> {
-  await expectLiftSheetApplied(card);
-
-  const before = await card.boundingBox();
-
-  if (before === null) {
-    throw new Error('The card is not rendered');
-  }
-
-  // Away from the card first, so the hover starts from rest.
-  await page.mouse.move(0, 0);
-  await card.hover();
-
-  await expect
-    .poll(async () => (await card.boundingBox())?.y, {
-      message: "the hovered card's top decreases",
-    })
-    .toBeLessThan(before.y);
 }
 
 for (const { kind, prefix } of routeKinds) {
@@ -161,23 +142,13 @@ for (const { kind, prefix } of routeKinds) {
       await page.goto(`${prefix}lift`);
       await waitForHydration(page);
 
-      // Empty <head> of the lift link, so the client inserts it again. Angular
-      // keeps a dehydrated block's server DOM even after its parent view is
-      // destroyed (measured with an `@if` around the `hydrate never` block),
-      // so no control can remove that card; the test does.
-      await page
-        .getByRole('button', { name: 'Remove the live lifted cards' })
-        .click();
-      await page.locator('#never-card').evaluate((card) => {
-        card.remove();
-      });
-      await expect.poll(() => itemLinks(page)).toEqual([]);
-
-      // Playwright's routing also turns the HTTP cache off.
-      await page.route('**/yeti-css/**', async (route) => {
-        await new Promise((resolve) => setTimeout(resolve, 300));
-        await route.continue();
-      });
+      // Empty <head> of the lift link, so the client inserts it again.
+      await removeEveryHost(
+        page,
+        'Remove the live lifted cards',
+        '#never-card',
+      );
+      await delayCss(page);
       await page
         .getByRole('button', { name: 'Show the client-only lifted card' })
         .click();
