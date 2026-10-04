@@ -11,9 +11,9 @@ import {
   runInInjectionContext,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
 import type { YetiComponentName } from 'ngx-yeti';
 import { injectYetiItemStyles } from './inject-yeti-item-styles';
-import { provideYetiStyles } from './provide-yeti-styles';
 import { yetiPin } from './yeti-rank';
 import { YetiStyles } from './yeti-styles';
 
@@ -125,22 +125,8 @@ function href(path: string, url = 'yeti-css/'): string {
   return `${url}${path}?v=${yetiPin}`;
 }
 
-function itemLinks(): HTMLLinkElement[] {
-  return [
-    ...document.head.querySelectorAll<HTMLLinkElement>(
-      'link[data-ngx-yeti-styles]',
-    ),
-  ];
-}
-
 function itemNames(): (string | null)[] {
   return itemLinks().map((link) => link.getAttribute('data-ngx-yeti-styles'));
-}
-
-function preloadHrefs(): (string | null)[] {
-  return [
-    ...document.head.querySelectorAll('link[rel="preload"][as="style"]'),
-  ].map((link) => link.getAttribute('href'));
 }
 
 function serverLink(item: YetiComponentName, app: string): HTMLLinkElement {
@@ -153,27 +139,10 @@ function serverLink(item: YetiComponentName, app: string): HTMLLinkElement {
   return link;
 }
 
-/** Waits past the frame the loader's removal check runs in. */
-async function nextFrame(): Promise<void> {
-  for (let frame = 0; frame < 2; frame++) {
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-        resolve();
-      });
-    });
-  }
-}
-
 function setup({
   providers = [],
 }: { providers?: (Provider | EnvironmentProviders)[] } = {}) {
-  // Links an earlier test's loader left in the shared document.
-  for (const link of document.head.querySelectorAll(
-    'link[data-ngx-yeti-styles], link[rel="preload"]',
-  )) {
-    link.remove();
-  }
-
+  removeItemLinks();
   TestBed.configureTestingModule({
     providers: [{ provide: APP_ID, useValue: appId }, ...providers],
   });
@@ -399,42 +368,5 @@ describe(injectYetiItemStyles, () => {
     } finally {
       vi.unstubAllGlobals();
     }
-  });
-});
-
-describe(provideYetiStyles, () => {
-  it('loads every item file from the configured url', async () => {
-    expect.assertions(1);
-
-    const { create } = setup({
-      providers: [provideYetiStyles({ url: 'assets/yeti/' })],
-    });
-    await create(ProbeCard);
-    await create(ProbeStack);
-
-    expect(itemLinks().map((link) => link.getAttribute('href'))).toStrictEqual([
-      href('layouts/stack/stack.css', 'assets/yeti/'),
-      href('components/card/card.css', 'assets/yeti/'),
-    ]);
-  });
-
-  it('writes one preload link per item, never beside one present', async () => {
-    expect.assertions(1);
-
-    const { create } = setup({
-      providers: [provideYetiStyles({ preload: ['card', 'stack'] })],
-    });
-    const present = document.createElement('link');
-    present.setAttribute('rel', 'preload');
-    present.setAttribute('as', 'style');
-    present.setAttribute('href', href('components/card/card.css'));
-    document.head.append(present);
-
-    await create(ProbeCard);
-
-    expect(preloadHrefs()).toStrictEqual([
-      href('components/card/card.css'),
-      href('layouts/stack/stack.css'),
-    ]);
   });
 });

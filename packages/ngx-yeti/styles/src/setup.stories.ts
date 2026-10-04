@@ -4,26 +4,14 @@ import {
   type Meta,
   type StoryObj,
 } from '@storybook/angular-vite';
+import { itemLinks, nextFrame } from '@ngx-yeti/testing';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
 import { NgxYetiLift } from 'ngx-yeti/lift';
 import { expect, userEvent, waitFor } from 'storybook/test';
 
 /** The item links in `<head>`, by item name, in document order. */
-function itemLinks(): (string | null)[] {
-  return [...document.head.querySelectorAll('link[data-ngx-yeti-styles]')].map(
-    (link) => link.getAttribute('data-ngx-yeti-styles'),
-  );
-}
-
-/** Resolves in the frame after the current one. */
-async function nextFrame(): Promise<void> {
-  for (let frame = 0; frame < 2; frame++) {
-    await new Promise<void>((resolve) => {
-      requestAnimationFrame(() => {
-        resolve();
-      });
-    });
-  }
+function itemNames(): (string | null)[] {
+  return itemLinks().map((link) => link.getAttribute('data-ngx-yeti-styles'));
 }
 
 const meta: Meta<YetiCard> = {
@@ -59,7 +47,7 @@ export const SharedHost: Story = {
     await expect(card).toHaveAttribute('data-ngx-yeti-item-card', '');
     await expect(card).toHaveAttribute('data-ngx-yeti-item-lift', '');
     // Yeti's order: components before utilities.
-    await expect(itemLinks()).toStrictEqual(['card', 'lift']);
+    await expect(itemNames()).toStrictEqual(['card', 'lift']);
 
     await userEvent.click(
       canvas.getByRole('button', { name: 'Remove the card' }),
@@ -69,6 +57,6 @@ export const SharedHost: Story = {
     });
     await nextFrame();
 
-    await expect(itemLinks()).toStrictEqual([]);
+    await expect(itemNames()).toStrictEqual([]);
   },
 };
