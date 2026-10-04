@@ -1,4 +1,3 @@
-import { type Page } from '@playwright/test';
 import { expect, test } from './support/fixtures';
 import { waitForHydration } from './support/hydration';
 import { holdBackMainBundle } from './support/main-bundle';
@@ -13,42 +12,6 @@ const routeKinds = [
   { kind: 'prerendered', prefix: '' },
   { kind: 'server-rendered', prefix: 'server/' },
 ] as const;
-
-/** Samples `property` on `selector` in every animation frame from now on. */
-async function sampleFrames(
-  page: Page,
-  selector: string,
-  property: string,
-): Promise<() => Promise<string[]>> {
-  await page.evaluate(
-    ([frameSelector, frameProperty]) => {
-      const frames: string[] = [];
-
-      Reflect.set(window, '__boundaryFrames', frames);
-
-      const sample = (): void => {
-        const element = document.querySelector(frameSelector);
-
-        frames.push(
-          element === null
-            ? ''
-            : getComputedStyle(element).getPropertyValue(frameProperty),
-        );
-        requestAnimationFrame(sample);
-      };
-
-      requestAnimationFrame(sample);
-    },
-    [selector, property] as const,
-  );
-
-  return () =>
-    page.evaluate(() => {
-      const frames: unknown = Reflect.get(window, '__boundaryFrames');
-
-      return Array.isArray(frames) ? frames.map(String) : [];
-    });
-}
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} setup-boundaries route`, () => {
@@ -141,10 +104,11 @@ for (const { kind, prefix } of routeKinds) {
       await expect(page.locator('#reset-card')).toHaveCount(0);
       await expect.poll(() => itemLinks(page)).toEqual([]);
 
-      const liftTransition = await sampleFrames(
+      const liftTransition = await recordFrames(
         page,
         '#reset-card',
         'transition-property',
+        { start: 'now' },
       );
 
       // Playwright's routing also turns the HTTP cache off.

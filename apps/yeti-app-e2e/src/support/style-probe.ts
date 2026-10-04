@@ -88,39 +88,53 @@ export async function recordStyleMutations(
   return reader(page, key);
 }
 
+let frameProbes = 0;
+
 /**
- * Call before `goto`. The returned function lists the computed value of
- * `property` on the first element matching `selector` in every animation
- * frame from the first one, `''` while nothing matches.
+ * The returned function lists the computed value of `property` on the first
+ * element matching `selector` in every animation frame, `''` while nothing
+ * matches. With `start: 'load'`, call it before `goto` to sample from the
+ * page's first frame; with `start: 'now'`, it samples the loaded page from
+ * the next frame on. Each call records under its own key.
  */
 export async function recordFrames(
   page: Page,
   selector: string,
   property: string,
+  { start = 'load' }: { start?: 'load' | 'now' } = {},
 ): Promise<() => Promise<readonly string[]>> {
-  const key = '__ngxYetiFrames';
+  frameProbes += 1;
 
-  await page.addInitScript(
-    ([name, frameSelector, frameProperty]) => {
-      const frames: string[] = [];
+  const key = `__ngxYetiFrames${String(frameProbes)}`;
+  const sampleFrames = ([name, frameSelector, frameProperty]: readonly [
+    string,
+    string,
+    string,
+  ]): void => {
+    const frames: string[] = [];
 
-      Reflect.set(window, name, frames);
+    Reflect.set(window, name, frames);
 
-      const sample = (): void => {
-        const element = document.querySelector(frameSelector);
+    const sample = (): void => {
+      const element = document.querySelector(frameSelector);
 
-        frames.push(
-          element === null
-            ? ''
-            : getComputedStyle(element).getPropertyValue(frameProperty),
-        );
-        requestAnimationFrame(sample);
-      };
-
+      frames.push(
+        element === null
+          ? ''
+          : getComputedStyle(element).getPropertyValue(frameProperty),
+      );
       requestAnimationFrame(sample);
-    },
-    [key, selector, property] as const,
-  );
+    };
+
+    requestAnimationFrame(sample);
+  };
+  const args = [key, selector, property] as const;
+
+  if (start === 'load') {
+    await page.addInitScript(sampleFrames, args);
+  } else {
+    await page.evaluate(sampleFrames, args);
+  }
 
   return reader(page, key);
 }

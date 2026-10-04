@@ -20,48 +20,6 @@ const routeKinds = [
 const interactionHost = '#interaction-host';
 
 /**
- * Starts sampling `property` on `selector` in every animation frame, like
- * `recordFrames` but from now on, for a second probe on the same page.
- */
-async function sampleFrames(
-  page: Page,
-  selector: string,
-  property: string,
-): Promise<() => Promise<string[]>> {
-  const key = await page.evaluate(
-    ([frameSelector, frameProperty]) => {
-      const name = `__setupFrames${frameSelector}`;
-      const frames: string[] = [];
-
-      Reflect.set(window, name, frames);
-
-      const sample = (): void => {
-        const element = document.querySelector(frameSelector);
-
-        frames.push(
-          element === null
-            ? ''
-            : getComputedStyle(element).getPropertyValue(frameProperty),
-        );
-        requestAnimationFrame(sample);
-      };
-
-      requestAnimationFrame(sample);
-
-      return name;
-    },
-    [selector, property] as const,
-  );
-
-  return () =>
-    page.evaluate((name) => {
-      const frames: unknown = Reflect.get(window, name);
-
-      return Array.isArray(frames) ? frames.map(String) : [];
-    }, key);
-}
-
-/**
  * Angular keeps a dehydrated block's server DOM even after its parent view is
  * destroyed (measured with an `@if` around the `hydrate never` block), so no
  * control can remove the dehydrated hosts; the test does.
@@ -219,10 +177,11 @@ for (const { kind, prefix } of routeKinds) {
       // applies; from here on every frame is inside the asserted leave window.
       await expect(leaving).not.toHaveCSS('padding-top', '0px');
 
-      const leaveWindow = await sampleFrames(
+      const leaveWindow = await recordFrames(
         page,
         '#leaving-host',
         'padding-top',
+        { start: 'now' },
       );
 
       // Only the live hosts hold the card link now.
@@ -280,10 +239,11 @@ for (const { kind, prefix } of routeKinds) {
         'the app preloads the card file only',
       ).toHaveAttribute('href', /components\/card\/card\.css/);
 
-      const liftTransition = await sampleFrames(
+      const liftTransition = await recordFrames(
         page,
         '#client-lift',
         'transition-property',
+        { start: 'now' },
       );
 
       // Playwright's routing also turns the HTTP cache off.
