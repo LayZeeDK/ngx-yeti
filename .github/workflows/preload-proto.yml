@@ -12,6 +12,8 @@ permissions:
 
 jobs:
   variants:
+    # A commit whose message holds [real-only] reruns only the real page.
+    if: ${{ !contains(github.event.head_commit.message, '[real-only]') }}
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -59,6 +61,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      # The probe folders' package.json files would otherwise be Nx projects without a name.
+      - run: printf '/preload-proto\n/safari-probe\n' >> .nxignore
       - run: npx nx run yeti-app:build:production --output-style=static
       - name: Start the app's Node server
         run: |
