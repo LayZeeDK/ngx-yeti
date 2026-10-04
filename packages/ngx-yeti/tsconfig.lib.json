@@ -11,7 +11,11 @@
     "src/**/*.ts",
     "styles/src/**/*.ts",
     "card/src/**/*.ts",
-    "card/styles/src/**/*.ts"
+    "card/styles/src/**/*.ts",
+    "lift/src/**/*.ts",
+    "lift/styles/src/**/*.ts",
+    "lift/card/src/**/*.ts",
+    "lift/card/styles/src/**/*.ts"
   ],
   "exclude": [
     "src/**/*.spec.ts",
@@ -30,6 +34,22 @@
     "card/styles/src/**/*.spec.ts",
     "card/styles/src/**/*.test.ts",
     "card/styles/**/*.stories.ts",
-    "card/styles/**/*.stories.js"
+    "card/styles/**/*.stories.js",
+    "lift/src/**/*.spec.ts",
+    "lift/src/**/*.test.ts",
+    "lift/**/*.stories.ts",
+    "lift/**/*.stories.js",
+    "lift/styles/src/**/*.spec.ts",
+    "lift/styles/src/**/*.test.ts",
+    "lift/styles/**/*.stories.ts",
+    "lift/styles/**/*.stories.js",
+    "lift/card/src/**/*.spec.ts",
+    "lift/card/src/**/*.test.ts",
+    "lift/card/**/*.stories.ts",
+    "lift/card/**/*.stories.js",
+    "lift/card/styles/src/**/*.spec.ts",
+    "lift/card/styles/src/**/*.test.ts",
+    "lift/card/styles/**/*.stories.ts",
+    "lift/card/styles/**/*.stories.js"
   ]
 }

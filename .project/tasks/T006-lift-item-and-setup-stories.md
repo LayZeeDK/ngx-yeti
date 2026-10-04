@@ -3,9 +3,9 @@ id: T006
 title: Ship the lift item with the setup shared-host story and the setup SSR smoke
 wave: 2
 deps: [T002, T004]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T006
+base: 764ecb4c7d25e80ad2ef5adbff2796f29c9c1f52
 worktree: null
 task_branch: null
 files:
@@ -75,3 +75,27 @@ Heavy: yes
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — build_T006: entry point made with `npx nx g @nx/angular:library-secondary-entry-point --library=ngx-yeti --name=lift --skipModule`; its `tsconfig.base.json` alias and `tsconfig.lib.json` lines kept as written (including the generator's extra `lift/styles`, `lift/card` patterns); `README.md` left as generated; `greeting` replaced by `export { NgxYetiLift }`. `lift.ts`: `NgxYetiLift` per contract (`[attr.data-lift]` = `yetiLift() || null`, static `lift` class and `data-ngx-yeti-item-lift`, `injectYetiItemStyles('lift')` last; JSDoc numbers usage rules 1 to 6). Stories: `lift--default` (three cards in a plain `div`; DOM plus role/name tree compared with a lift-stripped copy), `lift--keyboard`, `lift--bound` (three buttons drive a signal), `lift--without`; `card--with-lift` appended (story-level `moduleMetadata` imports `NgxYetiLift`, existing stories unchanged); `setup--shared-host` (button removes the `@if` host; asserts both presence attributes, links `card, lift` in head, then none two frames after disconnect). Layer 2 `lift.spec.ts`: lift.md:233-237, the card+lift host, and the hover cases moved from the stories, using `page.elementLocator(el).hover()` from `vitest/browser` (the same Playwright hover; `userEvent` is flagged by `@angular-eslint/no-experimental`), with Yeti's always-loaded files and item files served through `provideYetiStyles({ url: '/@fs/<root>/../../node_modules/yeti-css/dist/css/' })`. Layer 3: `lift.ssr.spec.ts` and `setup.ssr.spec.ts` (custom `APP_ID`, `lift` preload, nonce on all three links, two concurrent renders with equal heads).
+- 2026-10-04 — build_T006: Verify passed (exit 0): build and build-fast emit `dist/packages/ngx-yeti/fesm2022/ngx-yeti-lift.mjs` and `dist/fast/packages/ngx-yeti/fesm2022/ngx-yeti-lift.mjs`; `typecheck -c src` and `typecheck` pass; `nx test ngx-yeti -- lift.spec lift.ssr.spec setup.ssr.spec` 3 files, 20 tests passed; `nx test-storybook ngx-yeti` 5 files, 16 tests passed. Also run: `npx prettier --check .` clean, `nx lint ngx-yeti` clean, full `nx test ngx-yeti` 12 files, 178 tests passed. Chromium only (local).
+- 2026-10-04 — orchestrator Verify (sidecar gsd-path-verify/task-t006-verify): pass, exit 0; output tail:
+  ```
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```

@@ -13,6 +13,7 @@ import type { YetiRatio, YetiVariant, YetiWidth } from 'ngx-yeti';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 // Kept a URL in the static build too: NgOptimizedImage refuses `data:` URLs.
 import trail from '../../.storybook/assets/trail.svg?no-inline';
+import { NgxYetiLift } from 'ngx-yeti/lift';
 import { YetiCard } from './card';
 import { YetiCardLink } from './card-link';
 
@@ -609,5 +610,52 @@ export const AntiPatternWrappedLink: Story = {
 
     await expect(link).toHaveAccessibleName(expect.stringContaining(heading));
     await expect(link).toHaveAccessibleName(expect.stringContaining(summary));
+  },
+};
+
+/**
+ * Yeti's lift example: three raised cards with `yetiLift`, each with a
+ * stretched link. The lift's own cases are the lift stories'.
+ */
+export const WithLift: Story = {
+  decorators: [moduleMetadata({ imports: [NgxYetiLift] })],
+  render: () => ({
+    props: { trails },
+    template: `
+      @for (item of trails; track item.path) {
+        <article yetiCard raised yetiLift>
+          <h3><a yetiCardLink stretch [routerLink]="item.path">{{ item.name }}</a></h3>
+          <p>${summary}</p>
+        </article>
+      }`,
+  }),
+  play: async ({ canvas }) => {
+    const cards = canvas.getAllByRole('article');
+    const [first] = cards;
+
+    await expect(cards).toHaveLength(trails.length);
+
+    for (const card of cards) {
+      await expect(card).toHaveClass('card', 'lift');
+      await expect(card).toHaveAttribute('data-ngx-yeti-item-card', '');
+      await expect(card).toHaveAttribute('data-ngx-yeti-item-lift', '');
+    }
+
+    if (first === undefined) {
+      throw new Error('No card');
+    }
+
+    await cardStyled(first);
+
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
+    await userEvent.tab();
+
+    await expect(within(first).getByRole('link')).toHaveFocus();
+    await waitFor(async () => {
+      await expect(getComputedStyle(first).translate).not.toBe('none');
+    });
   },
 };

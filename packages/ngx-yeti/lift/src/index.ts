@@ -1,0 +1,1 @@
+export { NgxYetiLift } from './lift';
