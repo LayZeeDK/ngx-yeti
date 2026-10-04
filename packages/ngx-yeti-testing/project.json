@@ -1,6 +1,7 @@
 {
   "name": "ngx-yeti-testing",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["yeti-css"],
   "sourceRoot": "packages/ngx-yeti-testing/src",
   "projectType": "library",
   "tags": ["type:testing"],
