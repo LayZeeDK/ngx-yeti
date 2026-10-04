@@ -1,6 +1,6 @@
 {
   "name": "ngx-yeti",
-  "version": "0.0.1",
+  "version": "0.220200.0-yeti.7.0.0-alpha.0.gf52d1e8",
   "peerDependencies": {
     "@angular/core": "^22.2.0"
   },

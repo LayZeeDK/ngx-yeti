@@ -3,9 +3,9 @@ id: T013
 title: Make the package release-ready with the ADR 0017 version, a changelog, and a packed consuming build
 wave: 3
 deps: [T002, T003, T006, T012]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T013
+base: 40e59de44daaf7c2d47d010cb8095add09734cc9
 worktree: null
 task_branch: null
 files:
@@ -72,3 +72,27 @@ Heavy: no
 - 2026-10-04 — created by planner
 - 2026-10-04 — coder: BLOCKED at preflight, no product path changed. The Approach ships `CHANGELOG.md` through an `assets` entry in `packages/ngx-yeti/ng-package.json` (ng-packagr copies only `README.md` and `LICENSE` on its own, `node_modules/ng-packagr/src/lib/ng-package/entry-point/write-package.transform.js:89-92`), but the landed T003 spec `packages/ngx-yeti/src/accessibility.node.spec.ts` asserts `expect(ngPackage).toHaveProperty('assets', ['accessibility.css'])`, a deep equality on the whole array. Adding `"CHANGELOG.md"` makes that spec fail under `nx test ngx-yeti` (AC5), and the spec is not in this task's `files`. Completion needs an unlisted path. Proposed repair: add `packages/ngx-yeti/src/accessibility.node.spec.ts` to `files` so its assertion becomes `toHaveProperty('assets', expect.arrayContaining(['accessibility.css']))` (or the exact new array). Preflight otherwise clean: `npm ci` exit 0, `nx build ngx-yeti` exit 0; dist holds an empty `fesm2022/ngx-yeti.mjs`, no `.d.ts` imports `yeti-css`, ng-packagr adds `dependencies.tslib`; `vendor/yeti/COMMIT` = `f52d1e8b93de5bbde322480ba77d5be26c49b0ef`, Yeti version `7.0.0-alpha.0`; SC3 and SC5 exist in INTENT.md.
 - 2026-10-04 — orchestrator plan-defect repair (`files` only): added `packages/ngx-yeti/src/accessibility.node.spec.ts`, which T003 landed with a whole-array assertion on `ng-package.json` `assets`; shipping `CHANGELOG.md` through `assets` (the only ng-packagr route) must update that assertion. The dispatch at base 1ded745 was unwound with no product change; the task returns to pending for redispatch at the new base.
+- 2026-10-04 — coder (base 40e59de): package.json version `0.220200.0-yeti.7.0.0-alpha.0.gf52d1e8` (peers and exports unchanged, no yeti-css); `CHANGELOG.md` entry naming the full commit, the four entry points, and accessibility.css, shipped through `ng-package.json` `assets: ["accessibility.css", "CHANGELOG.md"]`; `accessibility.node.spec.ts` now asserts that exact array. `project.json`: `test` dependsOn `["build", "^yeti-build"]`; new `pack-check` target (`node tools/package/pack-check.mjs`, dependsOn `build`, uncached). `version.node.spec.ts` (setup.md:331): format regex, Angular part equals the `@angular/core` peer minor, Yeti version equals `vendor/yeti/package.json`, SHA is a prefix of `vendor/yeti/COMMIT`, plus four rejected versions (old devkit form, `+` build metadata, missing `g`). `published-output.node.spec.ts` (setup.md:329): reads `dist/packages/ngx-yeti`; FESM bundles scanned for `@layer yeti` and a manifest-class selector followed by `{`, stylesheets parsed with lightningcss for `yeti` layers and manifest-class selectors; a negative control proves each detector fires and ignores `host.card` property access. `pack-check.mjs`: `npm pack --json` into `tmp/pack-check`, `tar --strip-components=1` into `tmp/pack-check/consumer/node_modules/ngx-yeti` (Angular resolves from the workspace node_modules above), requires `ngx-yeti`, `/card`, `/lift`, `/styles`, and the stylesheet's last-line specifier to resolve inside the extracted tarball, compiles the copied consumer with `ngc` under `strictTemplates`, requires a generated `threshold="medium"` probe to fail with TS2322 naming `YetiWidth`, imports the primary entry and requires zero runtime exports, scans `.d.ts` for `from`/`import()`/`reference types` of yeti-css (a plain string match falsely flagged the `'yeti-css/'` default URL in a doc comment), checks no dependency field names yeti-css, the version format plus Yeti version and SHA, and the shipped changelog's full commit; it prints the tarball name. No `npm publish` anywhere. `eslint.config.mjs` unchanged: `tools/` is in no Nx project, so no ignore is needed.
+- 2026-10-04 — coder: Verify (verbatim, including `npm ci`) exit 0; pack-check printed `ngx-yeti-0.220200.0-yeti.7.0.0-alpha.0.gf52d1e8.tgz`; version and published-output specs 9/9 passed. `npx nx run ngx-yeti:pack-check --skip-nx-cache` exit 0. `npx prettier --check .` exit 0. `npm run check` exit 0 (21 tasks; Nx flagged `yeti-css:yeti-build` as flaky but it passed).
+- 2026-10-04 — orchestrator Verify (sidecar gsd-path-verify/task-t013-verify): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```
