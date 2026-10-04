@@ -14,7 +14,7 @@ export default [
   { ignores: ['src/yeti-types.ts'] },
   // The inline templates of this spec use `@boundary`, which the template
   // linter's bundled compiler does not parse yet.
-  { ignores: ['styles/src/yeti-styles.spec.ts/**/*.html'] },
+  { ignores: ['styles/src/inject-yeti-item-styles.spec.ts/**/*.html'] },
   {
     files: ['**/*.json'],
     rules: {
