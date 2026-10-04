@@ -38,11 +38,12 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
-  /* Run your local dev server before starting the tests */
+  // Never reuse a server: one left on this port by another checkout or an
+  // interrupted run serves another build, and Nx would cache its pass.
   webServer: {
     command: `${nx} run yeti-analog:serve`,
     url: 'http://localhost:4300',
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     cwd: workspaceRoot,
   },
   projects: [

@@ -29,6 +29,8 @@ export default defineConfig({
     baseURL,
     trace: 'on-first-retry',
   },
+  // Never reuse a server: a server left on these ports by another checkout or
+  // an interrupted run serves another build, and Nx would cache its pass.
   webServer: [
     {
       command: `${nx} run yeti-app:serve-ssr:${configuration}`,
@@ -36,7 +38,7 @@ export default defineConfig({
       // `env` also keeps @nx/playwright from inferring a dependency on
       // serve-ssr, which would drop the configuration.
       env: { PORT: String(port) },
-      reuseExistingServer: !process.env['CI'],
+      reuseExistingServer: false,
       timeout: 300_000,
       cwd: workspaceRoot,
     },
@@ -47,7 +49,7 @@ export default defineConfig({
           {
             command: `${nx} run yeti-app:serve:development --port=4312`,
             url: 'http://localhost:4312/sub/setup',
-            reuseExistingServer: !process.env['CI'],
+            reuseExistingServer: false,
             timeout: 300_000,
             cwd: workspaceRoot,
           },
