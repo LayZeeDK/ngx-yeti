@@ -290,7 +290,7 @@ describe(injectYetiItemStyles, () => {
   });
 
   it('keeps two loaders of two applications apart', async () => {
-    expect.assertions(2);
+    expect.assertions(3);
 
     setup();
     const parent = TestBed.inject(EnvironmentInjector);
@@ -316,6 +316,12 @@ describe(injectYetiItemStyles, () => {
     ).toStrictEqual(['app-a', 'app-b', appId]);
 
     first.destroy();
+
+    // A destroyed loader removes its unused links at once, with no frame.
+    expect(
+      itemLinks().map((link) => link.getAttribute('data-ngx-yeti-app')),
+    ).toStrictEqual(['app-b', appId]);
+
     await nextFrame();
 
     expect(

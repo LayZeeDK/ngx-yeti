@@ -64,6 +64,7 @@ export class YetiStyles {
   /** Created by the first render callback, which runs on the client only. */
   #observer: MutationObserver | undefined;
   #checkScheduled = false;
+  #destroyed = false;
 
   constructor() {
     // Rule 3: adopt this application's links from the server's HTML. The
@@ -109,7 +110,17 @@ export class YetiStyles {
       });
       this.#scheduleCheck();
     });
-    inject(DestroyRef).onDestroy(() => this.#observer?.disconnect());
+    // A destroyed loader removes its unused links at once, then acts no more:
+    // a check it scheduled before, or a release after, never reaches a link
+    // that a later loader of the same `APP_ID` adopted.
+    inject(DestroyRef).onDestroy(() => {
+      if (this.#observer !== undefined) {
+        this.#observer.disconnect();
+        this.#check(true);
+      }
+
+      this.#destroyed = true;
+    });
   }
 
   /** Rule 1: counts the item and inserts its link on the first acquisition. */
@@ -201,11 +212,19 @@ export class YetiStyles {
     });
   }
 
-  /** Removes a link only at count zero with no connected host (ADR 0045). */
-  #check(): void {
+  /**
+   * Removes a link only with no connected host (ADR 0045) and at count zero,
+   * or at any count while the loader is destroyed: every acquisition it
+   * counted ends with its application, and the releases may still follow.
+   */
+  #check(destroying = false): void {
+    if (this.#destroyed) {
+      return;
+    }
+
     for (const [item, { link, count }] of this.#links) {
       if (
-        count === 0 &&
+        (count === 0 || destroying) &&
         !this.#document.querySelector(`[data-ngx-yeti-item-${item}]`)
       ) {
         link.remove();
