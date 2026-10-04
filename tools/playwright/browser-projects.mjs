@@ -1,4 +1,14 @@
+import { fileURLToPath } from 'node:url';
 import { devices } from '@playwright/test';
+
+/**
+ * The command the e2e web servers start Nx with: this Node and the installed
+ * nx entry, not `npx nx`. Every npx and Nx layer prepends node_modules/.bin
+ * dirs to PATH; in a deep worktree the nested tasks' PATH passes cmd.exe's
+ * 8191-character limit and `node` or `nx` stops resolving. Dropping the npx
+ * layer keeps it under.
+ */
+export const nx = `"${process.execPath}" "${fileURLToPath(import.meta.resolve('nx'))}"`;
 
 /**
  * The Playwright projects of every e2e project. A floor job of floor.yml
