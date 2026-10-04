@@ -43,7 +43,7 @@ Build Yeti at that commit and install it under the name `yeti-css`:
 - **In an Nx workspace**, vendor Yeti's source at the commit as an npm workspace package named `yeti-css`, with its `COMMIT` file. A small local `createNodes` plugin gives it a cached `yeti-build` target that runs `node bin/build.js` through `nx:run-commands`, with `dist/` as its output and git-ignored. Nx 24 keeps `nx:run-commands`.
 - **Outside Nx**, clone Yeti at the commit, run `npm ci && npm run build`, and install the result as a `file:` or packed tarball dependency named `yeti-css`.
 
-A Yeti build at any other commit is unsupported: its CSS is served under the package's pin.
+A Yeti build at any other commit is unsupported: its CSS is served with the package's pin in the `?v=` query, so the URL names a commit the files do not match.
 
 ### B. Serve Yeti's CSS
 
