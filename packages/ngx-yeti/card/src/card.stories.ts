@@ -282,11 +282,15 @@ export const Default: Story = {
     await expect(
       link.getAttributeNames().filter((name) => name.startsWith('data-ngx-')),
     ).toStrictEqual([]);
-    // The footer link's own tabindex is the consumer's; the package adds none.
-    await expect(card.querySelectorAll('[role]')).toHaveLength(0);
-    await expect([...card.querySelectorAll('[tabindex]')]).toStrictEqual([
-      footerLink,
-    ]);
+    // The footer link's own tabindex is the consumer's; the package adds none,
+    // on the host or inside it.
+    const marked = (selector: string): Element[] =>
+      [card, ...card.querySelectorAll(selector)].filter((found) =>
+        found.matches(selector),
+      );
+
+    await expect(marked('[role]')).toStrictEqual([]);
+    await expect(marked('[tabindex]')).toStrictEqual([footerLink]);
 
     await cardStyled(card);
     await expectReadable(frame, card, [link, canvas.getByText(summary)]);
