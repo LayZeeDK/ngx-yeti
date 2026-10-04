@@ -26,6 +26,9 @@ const baseURL = 'http://localhost:4300';
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
+  // In CI a test that passes only on a retry fails the run: the retry keeps
+  // its trace, and a timing regression no longer passes as flaky.
+  failOnFlakyTests: Boolean(process.env['CI']),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,

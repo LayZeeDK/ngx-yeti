@@ -21,6 +21,9 @@ const baseURL = `http://localhost:${String(port)}/sub/`;
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
+  // In CI a test that passes only on a retry fails the run: the retry keeps
+  // its trace, and a timing regression no longer passes as flaky.
+  failOnFlakyTests: Boolean(process.env['CI']),
   use: {
     baseURL,
     trace: 'on-first-retry',
