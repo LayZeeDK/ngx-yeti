@@ -55,3 +55,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — plan — patch plan gates: check_handoffs plan and review_panel pass; gate-plan's brief check lints landed T012 at HEAD (helper passes no landed_bases), so the brief check ran via validate_task_briefs with each done task at its recorded base: pass (16 tasks)
 - 2026-10-04 — plan — patch plan approved
 - 2026-10-04 — build — build started
+- 2026-10-04 — build — wave 5 review passed (cycle 1): .project/review/wave-5.cycle1.md
