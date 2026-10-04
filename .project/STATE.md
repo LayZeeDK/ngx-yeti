@@ -62,3 +62,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — plan — patch plan gates (wave 6, T017): check_handoffs plan pass; brief check with landed tasks at recorded bases pass (gate-plan mis-lints landed T012)
 - 2026-10-04 — plan — patch plan approved
 - 2026-10-04 — build — build started
+- 2026-10-04 — build — wave 6 review passed (cycle 1): .project/review/wave-6.cycle1.md
