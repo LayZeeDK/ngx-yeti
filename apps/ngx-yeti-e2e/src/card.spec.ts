@@ -184,6 +184,11 @@ test.describe('card--stretched-link', () => {
     const card = root.getByRole('article');
 
     await expectCardStyled(page, card);
+    await page.evaluate(() => {
+      const after = document.createElement('button');
+      after.textContent = 'After the card';
+      document.body.append(after);
+    });
 
     await page.keyboard.press('Tab');
     await expect(
@@ -193,12 +198,13 @@ test.describe('card--stretched-link', () => {
     await expect(root.getByRole('button', { name: 'Save' })).toBeFocused();
     await page.keyboard.press('Tab');
 
-    expect(
-      await card.evaluate((element) =>
-        element.contains(document.activeElement),
-      ),
+    // Without a control after the card, headless Firefox keeps focus on its
+    // last control at the end of the document, so the test gives Tab
+    // somewhere to go outside the story's markup.
+    await expect(
+      page.getByRole('button', { name: 'After the card' }),
       'focus has left the card',
-    ).toBe(false);
+    ).toBeFocused();
   });
 });
 
