@@ -3,9 +3,9 @@ id: T003
 title: Publish ngx-yeti/accessibility.css and resolve it in Storybook and yeti-app
 wave: 1
 deps: []
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T003
+base: 5ecb15d82792a80be67e0f23a67fd8fbd57b4570
 worktree: null
 task_branch: null
 files:
@@ -64,3 +64,29 @@ Heavy: no
 ## Log
 
 - 2026-10-04 — created by planner
+- 2026-10-04 — coder: created `packages/ngx-yeti/accessibility.css` (comment plus empty `@layer ngx-yeti {}`); `ng-package.json` `assets: ["accessibility.css"]`; source `package.json` `exports["./accessibility.css"]`. Resolution: `packages/ngx-yeti` added to root `workspaces` (lockfile gains only the `node_modules/ngx-yeti` link and the `packages/ngx-yeti` entry), so `node_modules/ngx-yeti` links to the source package. `@import 'ngx-yeti/accessibility.css';` appended as the last line of both global stylesheets. `.storybook/main.ts` unchanged (no alias needed). Layer-3 spec `packages/ngx-yeti/src/accessibility.node.spec.ts` parses with lightningcss visitors (top-level rules must be `layer-block` named `ngx-yeti`; `--_yeti-*` declarations and `var()` reads; `ngx-yeti*` class selectors), includes a negative-control CSS sample proving each check fires, and asserts the asset and exports entries. Skill: Departures row for setup.md:210 added; one-time bullet replaced with the built resolution.
+- 2026-10-04 — coder: built `dist/packages/ngx-yeti` holds `accessibility.css` at its root and its `package.json` `exports` maps `"./accessibility.css": "./accessibility.css"` beside the generated `.` and `./package.json` entries.
+- 2026-10-04 — coder: resolution-removal check (all `--skip-nx-cache`): link moved aside only -> `build yeti-app` exit 1 (`Could not resolve "ngx-yeti/accessibility.css"`), `build-storybook ngx-yeti` exit 0, because Storybook's Vite resolves the specifier as a package self-reference through the `exports` map of `packages/ngx-yeti/package.json` (probe: a temporary `a[aria-current]` rule appeared in the Storybook CSS with the link absent; file restored). `exports` removed with link present -> both exit 0 (no `exports` means plain subpath resolution). Link and `exports` both removed -> `build yeti-app` exit 1 and `build-storybook ngx-yeti` exit 1 (`Unable to resolve @import "ngx-yeti/accessibility.css"`). Link and `exports` restored afterwards.
+- 2026-10-04 — coder: Verify (full command, including `npm ci`) exit 0: build ngx-yeti, dist file found, both imports present, build yeti-app, build-storybook ngx-yeti, accessibility.node.spec 3/3 passed, typecheck ngx-yeti. Also `npx nx run-many -t lint typecheck test -p ngx-yeti yeti-app` exit 0. `npx prettier --check .` passes for every changed path; it reports 8 pre-existing `.project/` pipeline files (CHARTER, INTENT, PLAN, DOCS-AUDIT, evidence-codebase, RESEARCH, ROADMAP, STATE) that this task does not own.
+- 2026-10-04 — orchestrator Verify (isolate gsd-path-task/T003): pass, exit 0; output tail:
+  ```
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected a flaky task[39m
+  
+    yeti-css:yeti-build
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```

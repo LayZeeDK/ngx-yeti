@@ -4,5 +4,8 @@
   "peerDependencies": {
     "@angular/core": "^22.2.0"
   },
+  "exports": {
+    "./accessibility.css": "./accessibility.css"
+  },
   "sideEffects": false
 }
