@@ -55,7 +55,7 @@
   "targetDefaults": {
     "@angular/build:application": {
       "cache": true,
-      "dependsOn": ["^build", "^yeti-build"],
+      "dependsOn": ["^yeti-build"],
       "inputs": ["production", "^production"]
     },
     "@angular/build:unit-test": {
