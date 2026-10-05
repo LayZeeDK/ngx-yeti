@@ -38,16 +38,58 @@ export function removeItemLinks(): void {
   }
 }
 
-/** Resolves once `link`'s stylesheet has loaded; rejects if it fails to. */
+/** Whether `sheet` exists and has a rule it can read. */
+function hasRules(sheet: CSSStyleSheet | null): boolean {
+  try {
+    return (sheet?.cssRules.length ?? 0) > 0;
+  } catch {
+    // An aborted load leaves a sheet whose rules throw a SecurityError.
+    return false;
+  }
+}
+
+/**
+ * Resolves once `link`'s stylesheet has loaded with at least one rule. Rejects
+ * with an Error naming the href if it fails to load or the link leaves the
+ * document while it is pending.
+ */
 export async function stylesheetLoaded(link: HTMLLinkElement): Promise<void> {
-  if (link.sheet !== null) {
-    return;
+  if (link.sheet === null) {
+    // A failed load still sets an empty sheet, and Chromium fires `load` for
+    // a 200 served as text/html, so either event only ends the wait. A link
+    // removed while pending fires neither.
+    await new Promise<void>((resolve, reject) => {
+      const removal = new MutationObserver(() => {
+        if (!link.isConnected) {
+          stop();
+          reject(new Error(`${link.href} was removed before it loaded`));
+        }
+      });
+      const settle = (): void => {
+        stop();
+        resolve();
+      };
+      const stop = (): void => {
+        removal.disconnect();
+        link.removeEventListener('load', settle);
+        link.removeEventListener('error', settle);
+      };
+
+      if (!link.isConnected) {
+        reject(new Error(`${link.href} is not in the document`));
+
+        return;
+      }
+
+      removal.observe(document, { childList: true, subtree: true });
+      link.addEventListener('load', settle);
+      link.addEventListener('error', settle);
+    });
   }
 
-  await new Promise((resolve, reject) => {
-    link.addEventListener('load', resolve, { once: true });
-    link.addEventListener('error', reject, { once: true });
-  });
+  if (!hasRules(link.sheet)) {
+    throw new Error(`${link.href} did not load a stylesheet with rules`);
+  }
 }
 
 /** Resolves once `item`'s file has loaded; fails if it has no link. */
