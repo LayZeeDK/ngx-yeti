@@ -197,6 +197,7 @@ describe(injectYetiItemStyles, () => {
     const { create, destroy } = setup();
     const first = await create(ProbeCard);
     const second = await create(ProbeCard);
+
     // Detached hosts, as a reused route's: only the count keeps the link.
     for (const fixture of [first, second]) {
       const element: unknown = fixture.nativeElement;
@@ -220,6 +221,7 @@ describe(injectYetiItemStyles, () => {
 
     const { create } = setup();
     await create(ProbeCard);
+
     for (const link of itemLinks()) {
       link.remove();
     }
@@ -392,6 +394,8 @@ describe(injectYetiItemStyles, () => {
     expect(
       itemLinks().map((link) => link.getAttribute('data-ngx-yeti-app')),
     ).toStrictEqual([appId, 'app-b']);
+
+    second.destroy();
   });
 
   it('removes no link once its loader is destroyed', async () => {
@@ -409,12 +413,15 @@ describe(injectYetiItemStyles, () => {
 
     destroyed.destroy();
     // The new application's card acquires before its host is connected.
-    runInInjectionContext(createEnvironmentInjector(providers, parent), () => {
+    const next = createEnvironmentInjector(providers, parent);
+    runInInjectionContext(next, () => {
       injectYetiItemStyles('card');
     });
     await nextFrame();
 
     expect(itemLinks('card')).toHaveLength(1);
+
+    next.destroy();
   });
 
   it('leaks no link and no count from a constructor that throws first', async () => {

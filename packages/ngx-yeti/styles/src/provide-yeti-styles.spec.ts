@@ -155,7 +155,7 @@ describe(provideYetiStyles, () => {
     expect.assertions(2);
 
     const { root } = setup();
-    createEnvironmentInjector(
+    const route = createEnvironmentInjector(
       [provideYetiStyles({ url: 'x/', preload: ['card'] })],
       root,
     );
@@ -165,5 +165,7 @@ describe(provideYetiStyles, () => {
     expect(itemLinks('stack')[0]?.getAttribute('href')).toBe(
       href('layouts/stack/stack.css'),
     );
+
+    route.destroy();
   });
 });
