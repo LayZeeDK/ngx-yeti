@@ -42,7 +42,7 @@ You need Node.js 24 or later, which Yeti's build requires.
 
    To run all three engines the way CI does, install `firefox` and `webkit` too and set `CI=true`.
 
-Nx builds Yeti before any task that needs it, so you never run its build by hand. To build it alone, run `npx nx yeti-build yeti-css`.
+Nx builds Yeti before any task that needs it, e2e runs included, so you never run its build by hand. To build it alone, run `npx nx yeti-build yeti-css`.
 
 ## Run common tasks
 

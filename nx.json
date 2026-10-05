@@ -197,6 +197,7 @@
       }
     },
     "e2e": {
+      "dependsOn": ["^yeti-build"],
       "inputs": ["e2e", "^default"]
     },
     "@angular/build:dev-server": {
@@ -212,6 +213,7 @@
       }
     },
     "e2e-ci--**/*": {
+      "dependsOn": ["^yeti-build"],
       "inputs": ["e2e", "^default"]
     }
   },
