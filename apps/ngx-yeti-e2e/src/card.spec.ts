@@ -101,11 +101,14 @@ test.describe('card--default', () => {
 
     await expectCardStyled(page, root.getByRole('article'));
 
-    // The story's frame starts at a fixed 40rem so it can be resized by hand;
-    // reflow is about the card at the page's own width, so drop that width.
+    // The story's frame starts at a fixed 40rem and scrolls its overflow so it
+    // can be resized by hand; reflow is about the card at the page's own
+    // width, so drop that width, and let the card's overflow reach the page,
+    // where the check below can see it (review finding G2-02).
     await frame.evaluate((element) => {
       if (element instanceof HTMLElement) {
         element.style.inlineSize = '';
+        element.style.overflow = '';
       }
     });
 
