@@ -55,6 +55,8 @@ Add one `assets` entry to your application's build options. It copies Yeti's 66 
 
 The item files' URLs follow your `<base href>`, so an application under a subpath needs only `<base href>`. `APP_BASE_HREF` does not move them; usage rule 6 covers it and other prefixes. `deployUrl` is not supported.
 
+Serve the `yeti-css/` folder with a long `Cache-Control: max-age`. That is safe, because every item URL carries `?v=<pin>`. It lets the client's preload reuse the server's prefetch (usage rule 8); without it, Chromium fetches the file again at startup, and an item that renders during that request paints unstyled.
+
 ### C. Order the global stylesheet
 
 Your application's global stylesheet (its `styles` entry) starts with the cascade-layer statement, then Yeti's always-loaded group in Yeti's order with `layers.css` first, then the package's accessibility stylesheet:
@@ -110,7 +112,7 @@ In your application configuration:
 - `provideClientHydration(withI18nSupport())` when the application renders on the server or prerenders. In Angular 22.2 `provideClientHydration()` turns on incremental hydration and event replay by default, so you need no other feature. `withI18nSupport()` is required wherever the application uses `i18n`; without it a component with `i18n` text is rendered again at hydration instead of hydrated.
 - `provideYetiStyles({ url, preload })` from `ngx-yeti/styles`, only when you need it. Both options are optional:
   - `url` is the folder the `assets` entry copies Yeti's CSS to, relative to `<base href>`, with a trailing slash. It defaults to `'yeti-css/'`. An absolute or root-relative `url` is not supported.
-  - `preload` lists the items that first render on the client: in a client-only `@defer` block, an `@if`, a `@for` that grows, or a route reached by client navigation. The server writes one `<link rel="prefetch">` per listed item and the client one `<link rel="preload" as="style">`, so the file is fetched before the item renders and its first frame is styled in Chromium and Firefox. The server writes no style preload because one holds Safari's first paint on a sparse page. Safari ignores the prefetch, so it shows the item unstyled until its file arrives. The names are typed with Yeti's item names, so a misspelt item fails to compile.
+  - `preload` lists the items that first render on the client: in a client-only `@defer` block, an `@if`, a `@for` that grows, or a route reached by client navigation. The server writes one `<link rel="prefetch">` per listed item and the client one `<link rel="preload" as="style">`, so the file is fetched before the item renders and its first frame is styled in Chromium and Firefox. The server writes no style preload because one holds Safari's first paint on a sparse page. Safari ignores the prefetch, so its fetch starts at startup, from the client's preload. It loses only the head start the prefetch gives Chromium and Firefox. Browsers check the prefetch against the Content Security Policy's `default-src`, not `style-src`. A `default-src` that leaves out the `yeti-css/` path, such as `'none'`, blocks the prefetch with a console error and a policy report; styling still works through the client's preload. The names are typed with Yeti's item names, so a misspelt item fails to compile.
 
 ```ts
 import { type ApplicationConfig } from '@angular/core';
@@ -138,10 +140,10 @@ The package's JSDoc cites these rules by number.
 2. Write `@layer yeti, ngx-yeti;` (or the Tailwind form) before any other CSS in the global stylesheet, and import `layers.css` first among Yeti's files.
 3. Import the always-loaded group globally, in Yeti's order, and never an item file: item files belong to the loader.
 4. Import the package's accessibility stylesheet after the always-loaded group. Without it, the accessibility gaps its rules close are open again.
-5. Keep the `assets` entry's `output` and `provideYetiStyles({ url })` in agreement: `url` is the `output` with a trailing slash. They default to `yeti-css` and `yeti-css/`.
+5. Keep the `assets` entry's `output` and `provideYetiStyles({ url })` in agreement: `url` is the path of the folder that `output` names, relative to `<base href>`, with a trailing slash. Usage rule 6 covers a prefix that `<base href>` does not name. They default to `yeti-css` and `yeti-css/`.
 6. Use `<base href>` for a subpath: item files follow it, so a subpath needs nothing else. `APP_BASE_HREF` sets where routes live and does not move item files, as it does not move Angular's own asset links. When the application's files sit under a prefix that `<base href>` does not name (Analog's subpath guide keeps `<base href="/">` and sets Vite's `base`), set `<base href>` to that prefix, or give `url` the prefixed path relative to `<base href>`, for example `url: 'basehref/yeti-css/'`. `deployUrl` and absolute or root-relative `url` values are not supported.
 7. Write no Yeti class, no Yeti `data-*` attribute, and no `data-ngx-yeti-*` attribute by hand. Presence attributes belong to the package.
-8. Name every item that first renders on the client in `preload`, when a flash-free first frame matters. The server writes a prefetch for it and the client a preload. Safari ignores the prefetch and shows the item unstyled until its file arrives.
+8. Name every item that first renders on the client in `preload`, when a flash-free first frame matters. The server writes a prefetch for it and the client a preload. Safari ignores the prefetch, so it fetches the file from the client's preload at startup instead.
 9. Provide `withI18nSupport()` wherever the application uses `i18n`.
 10. Call `provideYetiStyles()` at most once, in the root providers. The loader is a root service, so a call in a route's providers has no effect.
 11. Put a `@boundary` inside a `@defer` block, never only around it, when the deferred content holds package directives.

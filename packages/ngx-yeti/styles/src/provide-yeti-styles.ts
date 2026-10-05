@@ -20,20 +20,21 @@ import {
  * preloads nothing, and is created by the first item directive on the client
  * instead of at application start.
  *
- * - `url`: the `assets` entry's `output` with a trailing slash (usage rule 5),
- *   relative to `<base href>`. Item files follow `<base href>`, never
- *   `APP_BASE_HREF`, which sets where routes live; for files under a prefix
- *   that `<base href>` does not name, give the prefixed path, such as
- *   `'basehref/yeti-css/'`. `deployUrl` and an absolute or root-relative
- *   `url` are not supported (usage rule 6).
+ * - `url`: the path of the folder the `assets` entry's `output` names,
+ *   relative to `<base href>`, with a trailing slash (usage rule 5). Item
+ *   files follow `<base href>`, never `APP_BASE_HREF`, which sets where routes
+ *   live; for files under a prefix that `<base href>` does not name, give the
+ *   prefixed path, such as `'basehref/yeti-css/'`. `deployUrl` and an
+ *   absolute or root-relative `url` are not supported (usage rule 6).
  * - `preload`: name every item that first renders on the client, in a
  *   client-only `@defer`, an `@if`, a growing `@for`, or a route reached by
  *   client navigation, when a flash-free first frame matters (usage rule 8).
  *   Each gets one `<link rel="prefetch">` from the server and one
  *   `<link rel="preload" as="style">` from the client, never a second beside
  *   one already in `<head>`. A server style preload holds WebKit's first paint
- *   on a sparse page (upstream bug O4); WebKit ignores the prefetch, so Safari
- *   shows the item unstyled until its file arrives.
+ *   on a sparse page (upstream bug O4); WebKit ignores the prefetch, so
+ *   Safari's fetch starts at bootstrap, from the client's preload, without the
+ *   head start the prefetch gives Chromium and Firefox.
  *
  * The rest of the one-time setup is build configuration: build Yeti at the
  * pin the package version names (usage rule 1), write the layer statement

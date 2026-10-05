@@ -19,9 +19,9 @@ export interface YetiStylesConfig {
   /**
    * The folder the application's `assets` entry copies Yeti's `dist/css/` to,
    * relative to `<base href>`, with a trailing slash, or `''` for
-   * `<base href>` itself. Default `'yeti-css/'`. Keep it in agreement with the
-   * `assets` entry's `output` (setup usage rule 5). The type rejects a URL
-   * without the slash, which would make every item file a 404.
+   * `<base href>` itself. Default `'yeti-css/'`. It is the path of the folder
+   * the `assets` entry's `output` names (setup usage rule 5). The type
+   * rejects a URL without the slash, which would make every item file a 404.
    *
    * Item files follow `<base href>`, never `APP_BASE_HREF`, which sets where
    * routes live. For files under a prefix that `<base href>` does not name,
@@ -36,7 +36,8 @@ export interface YetiStylesConfig {
    * usage rule 8). The server writes `<link rel="prefetch">` and the client
    * `<link rel="preload" as="style">`, because a server style preload holds
    * WebKit's first paint on a sparse page (upstream bug O4). WebKit ignores
-   * the prefetch, so Safari shows the item unstyled until its file arrives.
+   * the prefetch, so Safari's fetch starts at bootstrap, from the client's
+   * preload, without the head start the prefetch gives Chromium and Firefox.
    */
   readonly preload?: readonly YetiComponentName[];
 }
