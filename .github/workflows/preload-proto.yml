@@ -31,19 +31,22 @@ jobs:
         run: npm i --no-save --no-package-lock --no-audit --no-fund selenium-webdriver
       - name: Variants in Safari
         working-directory: preload-proto
-        run: node run.mjs --browser=safari --runs=20 | tee proto-safari.log
+        # Set a ran in run 37241351000; set b adds the app's two module scripts.
+        run: node run.mjs --browser=safari --runs=20 --set=b | tee proto-safari-b.log
       - name: Summary
         if: always()
         working-directory: preload-proto
-        run: cat proto-safari.md >> "$GITHUB_STEP_SUMMARY" || true
+        run: cat proto-safari*.md >> "$GITHUB_STEP_SUMMARY" || true
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: proto-safari
           path: |
-            preload-proto/proto-safari.*
+            preload-proto/proto-safari*
 
   real-page:
+    # A commit whose message holds [variants-only] skips the real page.
+    if: ${{ !contains(github.event.head_commit.message, '[variants-only]') }}
     runs-on: macos-latest
     timeout-minutes: 45
     strategy:

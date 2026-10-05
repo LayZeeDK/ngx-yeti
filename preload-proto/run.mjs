@@ -19,7 +19,7 @@ const itemMs = 200;
 const reportAt = [1500, 4500];
 
 // Server-written tag in <head> per variant, and what main.js adds.
-const variants = {
+const variantsA = {
   V0: { head: (h) => `<link rel="preload" as="style" href="${h}">`, clientPreload: false, clientLink: true, what: 'current: server preload' },
   V1: { head: () => '', clientPreload: true, clientLink: true, what: 'client-only preload (inserted when main.js runs)' },
   V2: { head: (h) => `<link rel="stylesheet" href="${h}">`, clientPreload: false, clientLink: false, what: 'server stylesheet' },
@@ -28,6 +28,25 @@ const variants = {
   V5: { head: (h) => `<link rel="prefetch" href="${h}">`, clientPreload: false, clientLink: true, what: 'server prefetch' },
   N: { head: () => '', clientPreload: false, clientLink: true, what: 'control: no preload anywhere' },
 };
+
+// Set b (--set=b): the real app's shape, two module scripts (poly.js, then
+// main.js, both +mainMs), and pages where the item also renders on the server,
+// so late.css is also a render-blocking stylesheet ("d", as on /sub/card).
+const preload = (h) => `<link rel="preload" as="style" href="${h}">`;
+const notAll = (h) => `<link rel="stylesheet" href="${h}" media="not all">`;
+const sheet = (h) => `<link rel="stylesheet" href="${h}">`;
+const variantsB = {
+  N2: { head: () => '', scripts: 2, clientPreload: false, clientLink: true, what: '2 scripts: no preload anywhere' },
+  V0_2: { head: preload, scripts: 2, clientPreload: false, clientLink: true, what: '2 scripts: server preload (current)' },
+  V1_2: { head: () => '', scripts: 2, clientPreload: true, clientLink: true, what: '2 scripts: client-only preload' },
+  V4_2: { head: notAll, scripts: 2, clientPreload: false, clientLink: true, what: '2 scripts: media="not all"' },
+  V0d_2: { head: (h) => preload(h) + sheet(h), scripts: 2, clientPreload: false, clientLink: false, what: '2 scripts: preload, then item stylesheet (current /sub/card shape)' },
+  V4d_2: { head: (h) => notAll(h) + sheet(h), scripts: 2, clientPreload: false, clientLink: false, what: '2 scripts: media="not all", then item stylesheet' },
+  V4e_2: { head: (h) => sheet(h) + notAll(h), scripts: 2, clientPreload: false, clientLink: false, what: '2 scripts: item stylesheet, then media="not all"' },
+  V4d_1: { head: (h) => notAll(h) + sheet(h), scripts: 1, clientPreload: false, clientLink: false, what: '1 script: media="not all", then item stylesheet' },
+};
+const set = arg('set', 'a');
+const variants = set === 'b' ? variantsB : variantsA;
 
 const lateHref = (r) => `late.css?r=${r}`;
 
@@ -44,6 +63,7 @@ ${variants[v].head(lateHref(r))}
 <body>
 <h1>Visible text: preload prototype ${v}</h1>
 <p>late.css +${preMs} ms, main.js +${mainMs} ms, client-only item ${itemMs} ms after main.js runs</p>
+${variants[v].scripts === 2 ? `<script type="module" src="poly.js?r=${r}"></script>` : ''}
 <script type="module" src="main.js?r=${r}&v=${v}"></script>
 </body>
 </html>
@@ -114,6 +134,12 @@ const server = createServer(async (req, res) => {
 
     // Cacheable, like the app's express.static (maxAge 1y); the run id keeps runs apart.
     return send('text/css', '.item { color: rgb(0, 102, 51); }', 'public, max-age=31536000');
+  }
+
+  if (url.pathname === '/poly.js') {
+    await sleep(mainMs);
+
+    return send('text/javascript', 'window.__probe.polyAt = performance.now();\n');
   }
 
   if (url.pathname === '/main.js') {
@@ -190,15 +216,15 @@ server.close();
 
 const out = [`\n## ${driver.version}: ${runs} runs per variant\n`];
 out.push('ms of document time, median (min..max). late.css +300 ms, main.js +3000 ms, item inserted 200 ms after main.js runs.\n');
-out.push('| variant | setup | reports | stall | FP | FCP | late.css first end | item inserted | item styled | styled - inserted | unstyled frames | late.css requests |');
-out.push('|---|---|---|---|---|---|---|---|---|---|---|---|');
+out.push('| variant | setup | reports | stall | FP | FCP | late.css first end | interactive | item inserted | item styled | styled - inserted | unstyled frames | late.css requests |');
+out.push('|---|---|---|---|---|---|---|---|---|---|---|---|---|');
 
 for (const [v, { what }] of Object.entries(variants)) {
   const vr = rows.filter((x) => x.variant === v && x.reports > 0);
   const counts = Object.entries(Object.groupBy(vr, (x) => x.lateRequests)).map(([k, xs]) => `${k}x${xs.length}`).join(' ');
   out.push(
     `| ${v} | ${what} | ${vr.length}/${runs} | ${vr.filter((x) => x.stall).length}/${vr.length} | ${med(vr.map((x) => x.fp))} | ${med(vr.map((x) => x.fcp))} | ` +
-      `${med(vr.map((x) => x.lateEnd))} | ${med(vr.map((x) => x.itemAt))} | ${med(vr.map((x) => x.styledAt))} | ` +
+      `${med(vr.map((x) => x.lateEnd))} | ${med(vr.map((x) => x.interactive))} | ${med(vr.map((x) => x.itemAt))} | ${med(vr.map((x) => x.styledAt))} | ` +
       `${med(vr.map((x) => x.styledAt - x.itemAt))} | ${med(vr.map((x) => x.unstyled))} | ${counts} |`,
   );
 }
@@ -206,5 +232,6 @@ for (const [v, { what }] of Object.entries(variants)) {
 out.push(`\nuser agent: ${rows.find((x) => x.ua)?.ua}`);
 const summary = out.join('\n');
 console.log(summary);
-writeFileSync(`proto-${browserName}.json`, JSON.stringify({ version: driver.version, variants: Object.fromEntries(Object.entries(variants).map(([k, x]) => [k, x.what])), rows }, null, 1));
-writeFileSync(`proto-${browserName}.md`, summary);
+const name = `proto-${browserName}${set === 'b' ? '-b' : ''}`;
+writeFileSync(`${name}.json`, JSON.stringify({ version: driver.version, variants: Object.fromEntries(Object.entries(variants).map(([k, x]) => [k, x.what])), rows }, null, 1));
+writeFileSync(`${name}.md`, summary);
