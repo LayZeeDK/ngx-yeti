@@ -1,5 +1,5 @@
 import { test as base, expect } from '@playwright/test';
-import { axeViolations } from './axe';
+import { axeViolations, axeViolationsOfSnapshot } from './axe';
 
 export { expect };
 
@@ -24,15 +24,13 @@ export const routeKinds = [
 
 export const test = base.extend<{ axeViolations: () => Promise<string[]> }>({
   axeViolations: async (
-    { browserName, javaScriptEnabled, page },
+    { browser, browserName, javaScriptEnabled, page },
     use,
-    testInfo,
   ) => {
-    testInfo.skip(
-      !javaScriptEnabled && browserName === 'firefox',
-      'Firefox runs no microtask on a JavaScript-disabled page, so axe cannot run there',
+    await use(() =>
+      !javaScriptEnabled && browserName === 'firefox'
+        ? axeViolationsOfSnapshot(browser, page)
+        : axeViolations(page, javaScriptEnabled),
     );
-
-    await use(() => axeViolations(page, javaScriptEnabled));
   },
 });
