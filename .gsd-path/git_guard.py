@@ -1,9 +1,34 @@
 #!/usr/bin/env python3
 # gsd-path guard — stable runtime launcher
+import os
+import subprocess
 import sys
 sys.dont_write_bytecode = True
 from pathlib import Path
 from status_runtime import run_guard
+
+
+def same_dir(a, b):
+    return os.path.normcase(str(Path(a).resolve())) == os.path.normcase(str(Path(b).resolve()))
+
+
+# Local patch, until GSD Path runs its own git calls without the hook's
+# environment (docs/specs/upstream-bugs.md O5): in a linked worktree git
+# exports an absolute GIT_DIR to hooks, and the runtime's placement probe in
+# ~/.gsd-path/projects inherits it and mistakes that directory for part of
+# this repository. Drop GIT_DIR only when git finds the same directory from
+# the hook's working directory without it. GIT_INDEX_FILE stays, because
+# `git commit -a` and `git commit <paths>` stage into a temporary index.
+# A `--hooks-refresh` or runtime upgrade overwrites this file.
+git_dir = os.environ.get('GIT_DIR')
+if git_dir:
+    found = subprocess.run(
+        ['git', 'rev-parse', '--absolute-git-dir'],
+        env={key: value for key, value in os.environ.items() if key != 'GIT_DIR'},
+        capture_output=True, encoding='utf-8', errors='replace', check=False,
+    )
+    if found.returncode == 0 and same_dir(found.stdout.strip(), git_dir):
+        del os.environ['GIT_DIR']
 try:
     run_guard(Path(__file__).resolve().parent.parent, 'git_guard.py')
 except (OSError, ValueError) as error:
