@@ -365,7 +365,6 @@ for (const { kind, prefix } of routeKinds) {
     });
 
     test('renders the client-only card with 0 unstyled frames through the preload', async ({
-      browserName,
       page,
     }) => {
       const styleMutations = await recordStyleMutations(page);
@@ -426,20 +425,10 @@ for (const { kind, prefix } of routeKinds) {
 
       expect(frames.length, 'the deferred card was sampled').toBeGreaterThan(0);
 
-      // WebKit ships prefetch off, so only the client's preload fetches the
-      // card file there (the user's ruling of 2026-10-05): recorded, not
-      // asserted. Real Safari shows the card unstyled until the file arrives.
-      if (browserName === 'webkit') {
-        test.info().annotations.push({
-          type: 'frames',
-          description: `${browserName}: ${String(unstyled.length)} of ${String(frames.length)} frames without the card file (client preload only)`,
-        });
-      } else {
-        expect(
-          unstyled,
-          'no frame shows the preloaded card without Yeti',
-        ).toEqual([]);
-      }
+      expect(
+        unstyled,
+        'no frame shows the preloaded card without Yeti',
+      ).toEqual([]);
     });
 
     test.describe('with JavaScript off', () => {
