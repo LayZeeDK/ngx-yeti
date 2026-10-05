@@ -42,12 +42,12 @@ for (const { kind, prefix } of routeKinds) {
         'Fallback: the boundary inside caught the error.',
       );
       await expect(inside.locator('article')).toHaveCount(0);
-      await expect(outside.locator('article')).toHaveCount(0);
-      await expect(outside).not.toContainText('Fallback');
       await expect(
         outside.getByRole('button'),
         'the placeholder has gone',
       ).toHaveCount(0);
+      await expect(outside.locator('article')).toHaveCount(0);
+      await expect(outside).not.toContainText('Fallback');
     });
 
     test('loses a click on replaced markup made before hydration', async ({
