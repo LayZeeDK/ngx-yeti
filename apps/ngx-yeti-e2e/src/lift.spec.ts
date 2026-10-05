@@ -109,8 +109,8 @@ test.describe('lift--keyboard', () => {
     page,
   }) => {
     test.skip(
-      browserName === 'webkit',
-      'Headless WebKit does not move focus on Tab',
+      browserName === 'webkit' && process.platform !== 'linux',
+      'WebKit moves focus on Tab to form controls only, not links, outside Linux',
     );
 
     const root = await openStory(page, 'lift--keyboard');
