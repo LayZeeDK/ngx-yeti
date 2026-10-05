@@ -89,9 +89,10 @@ export class SetupFixture {
 /**
  * The setup spec's client-only `@defer` with the preload list
  * (setup.md:341; ADR 0060 point 6): the page's only card first renders on the
- * client, so the server writes no card link and the app's `card` preload is
- * the only card request before the interaction. The `routerLink` gives the
- * server HTML a `jsaction` marker, which the e2e `waitForHydration` waits on.
+ * client, so the server writes no card link and the app's `card` hints (the
+ * server's prefetch and the client's preload) are the only card requests
+ * before the interaction. The `routerLink` gives the server HTML a `jsaction`
+ * marker, which the e2e `waitForHydration` waits on.
  */
 @Component({
   selector: 'app-setup-defer-fixture',

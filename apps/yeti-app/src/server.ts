@@ -34,7 +34,7 @@ app.use(
  * gets the nonce as `CSP_NONCE` through the request context
  * (`app.config.server.ts`) and puts it on the item links, and the client reads
  * it from `ngCspNonce` on the root element. A prerendered route is served from
- * HTML rendered at build time, so its item and preload links carry no nonce
+ * HTML rendered at build time, so its item and prefetch links carry no nonce
  * and load under `'self'`: `?csp` proves nonces on server-rendered routes
  * only. The critical CSS Angular inlines
  * at runtime only carries a nonce fixed at build time, so its `<style>` gets
