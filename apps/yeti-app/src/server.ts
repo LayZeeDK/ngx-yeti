@@ -30,9 +30,13 @@ app.use(
 /**
  * Strict-CSP case of the setup spec (setup.md, layer 4): a `?csp` request,
  * such as `/sub/server/card?csp`, is answered with a per-request nonce in a
- * `style-src 'self' 'nonce-...'` policy. Angular gets the nonce as `CSP_NONCE`
- * through the request context (`app.config.server.ts`), and the client reads
- * it from `ngCspNonce` on the root element. The critical CSS Angular inlines
+ * `style-src 'self' 'nonce-...'` policy. On a server-rendered route, Angular
+ * gets the nonce as `CSP_NONCE` through the request context
+ * (`app.config.server.ts`) and puts it on the item links, and the client reads
+ * it from `ngCspNonce` on the root element. A prerendered route is served from
+ * HTML rendered at build time, so its item and preload links carry no nonce
+ * and load under `'self'`: `?csp` proves nonces on server-rendered routes
+ * only. The critical CSS Angular inlines
  * at runtime only carries a nonce fixed at build time, so its `<style>` gets
  * the request's nonce here, as Angular's build-time `addNonce` step would.
  */
@@ -53,7 +57,8 @@ async function withNonce(response: Response, nonce: string): Promise<Response> {
 
 /**
  * Handle all other requests by rendering the Angular application, with a
- * nonce for a `?csp` request.
+ * nonce for a `?csp` request (see `withNonce` for what a prerendered route
+ * does not get).
  */
 app.use('/**', (req, res, next) => {
   const nonce = 'csp' in req.query ? randomBytes(16).toString('base64') : null;
