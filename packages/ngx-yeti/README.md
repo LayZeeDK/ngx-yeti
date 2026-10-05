@@ -124,7 +124,7 @@ export const appConfig: ApplicationConfig = {
 };
 ```
 
-Generated ids need no provider, and zoneless change detection, Angular 22's default, needs nothing from the package. The setup works with zone.js too.
+Generated ids need no provider, and zoneless change detection, Angular 22's default, needs nothing from the package.
 
 ### E. Install the package
 
