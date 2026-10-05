@@ -16,7 +16,8 @@ declare global {
  * `embed=true` parameter turns Storybook's autoplay off, so the play function
  * does not run again (docs/specs/adr/0014-testing-stack-for-yeti.md, point 4).
  * `args` overrides the story's args through Storybook's `args` URL
- * parameter, such as `{ raised: true }` for `args=raised:!true`. Only
+ * parameter, such as `{ raised: true }` for `args=raised:!true`, and
+ * throws before navigating on an arg Storybook would drop. Only
  * `page.goto` and DOM reads are used, so every Playwright release the floor
  * jobs install can run it.
  */
@@ -25,6 +26,14 @@ export async function openStory(
   storyId: string,
   { args = {} }: { args?: Readonly<Record<string, string | boolean>> } = {},
 ): Promise<Locator> {
+  for (const [name, value] of Object.entries(args)) {
+    if (!isUrlSafeArg(name, value)) {
+      throw new Error(
+        `openStory('${storyId}'): Storybook drops the URL arg ${name}=${JSON.stringify(value)}. Use only letters, digits, spaces, _ and -, or a number, hex or colour string.`,
+      );
+    }
+  }
+
   const index: unknown = await (await page.request.get('index.json')).json();
 
   if (!hasStory(index, storyId)) {
@@ -93,6 +102,30 @@ async function throwIfStoryErrored(page: Page, storyId: string): Promise<void> {
   if (error !== null) {
     throw new Error(`openStory('${storyId}'): Storybook shows "${error}".`);
   }
+}
+
+/**
+ * Storybook's own rule for a URL arg, copied from `validateArgs` in
+ * code/core/src/preview-api/modules/preview-web/parseArgsParam.ts (v10.6.1).
+ * Storybook drops a failing arg with only a console warning. Every string
+ * this accepts is free of `:` and `;`, which separate the encoded args.
+ */
+function isUrlSafeArg(name: string, value: string | boolean): boolean {
+  const safe = /^[a-zA-Z0-9 _-]*$/;
+
+  if (name === '' || !safe.test(name)) {
+    return false;
+  }
+
+  return (
+    typeof value === 'boolean' ||
+    safe.test(value) ||
+    /^-?[0-9]+(\.[0-9]+)?$/.test(value) ||
+    /^#([a-f0-9]{3,4}|[a-f0-9]{6}|[a-f0-9]{8})$/i.test(value) ||
+    /^(rgba?|hsla?)\(([0-9]{1,3}),\s?([0-9]{1,3})%?,\s?([0-9]{1,3})%?,?\s?([0-9](\.[0-9]{1,2})?)?\)$/i.test(
+      value,
+    )
+  );
 }
 
 function hasStory(index: unknown, storyId: string): boolean {
