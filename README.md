@@ -18,7 +18,7 @@ The package is pre-release. The specs in [`docs/specs/`](docs/specs/README.md) d
 | `vendor/yeti`               | Yeti's source at the pinned commit, as the npm workspace package `yeti-css`                                                                      |
 | `tools/yeti`                | The script that vendors Yeti, the Nx plugin that builds it, and the generator of `yeti-types.ts` and `yeti-rank.ts`                              |
 | `tools/package`             | `pack-check.mjs`, which packs the package and builds a consumer against the tarball                                                              |
-| `tools/playwright`          | The Playwright browser projects that `apps/yeti-app-e2e` and `apps/ngx-yeti-e2e` share                                                           |
+| `tools/playwright`          | The Playwright browser projects that `apps/yeti-app-e2e`, `apps/ngx-yeti-e2e`, and `apps/yeti-analog-e2e` share                                  |
 | `docs/specs`                | The specs, ADRs, and records the package is built from; a verbatim copy, never edited except its two ledgers, `ledger.md` and `upstream-bugs.md` |
 | `docs/decisions`            | Decision trails of larger changes                                                                                                                |
 | `references`                | Notes for contributors, such as [`fast-compile.md`](references/fast-compile.md)                                                                  |
@@ -92,12 +92,12 @@ Yeti has no npm release. The workspace vendors its source at one `develop` commi
 
 Both workflows run on every pull request and every push to `main` or `release/**`.
 
-- `.github/workflows/ci.yml` runs its checks as parallel jobs: `static` (`prettier --check`, lint, typecheck), `package` (every build and the packed consuming build), `unit` (unit and story tests in Chromium, Firefox, and WebKit), and one `e2e` job per engine and Fixture app configuration (every e2e project on the development build, the Fixture app again on its production build). Its `safari` job runs the unit tests in real Safari on a macOS runner.
+- `.github/workflows/ci.yml` runs its checks as parallel jobs: `static` (`prettier --check`, lint, typecheck), `package` (the library build, both app builds, and the packed consuming build), `unit` (unit and story tests in Chromium, Firefox, and WebKit), and one `e2e` job per engine and Fixture app configuration (every e2e project on the development build, the Fixture app again on its production build). Its `safari` job runs the unit tests in real Safari on a macOS runner.
 - `.github/workflows/floor.yml` runs the unit tests and both e2e projects at the floor: Chrome for Testing 141 runs both, Firefox 145 runs the unit tests, and the earliest Playwright Firefox and WebKit not older than the floor run the rest, because no Playwright release bundles Firefox 145 or WebKit 26.2. The workflow names each version.
 
 ## Contribute
 
-Read [`AGENTS.md`](AGENTS.md) first. Commits follow Conventional Commits, and every commit must pass `npx prettier --check .` and `npm exec nx -- run-many -t lint typecheck test` on its own. To implement a spec, start with the [`ngx-yeti-specs` skill](.claude/skills/ngx-yeti-specs/SKILL.md).
+Read [`AGENTS.md`](AGENTS.md) first. Commits made by the GSD Path pipeline use its subjects, and every other commit follows Conventional Commits. Every commit must pass `npx prettier --check .` and `npm exec nx -- affected -t lint typecheck test test-storybook --base=<commit>~1 --head=<commit>` on its own. To implement a spec, start with the [`ngx-yeti-specs` skill](.claude/skills/ngx-yeti-specs/SKILL.md).
 
 ## License
 
