@@ -17,6 +17,17 @@ test.describe('openStory', () => {
     );
   });
 
+  test('fails before navigating on an arg that Storybook drops from the URL', async ({
+    page,
+  }) => {
+    await expect(
+      openStory(page, 'card--inputs', { args: { ratio: '4/3' } }),
+    ).rejects.toThrow(
+      `openStory('card--inputs'): Storybook drops the URL arg ratio="4/3".`,
+    );
+    expect(page.url()).toBe('about:blank');
+  });
+
   test('opens a story that has no axe violations in the dark colour scheme', async ({
     page,
   }) => {
