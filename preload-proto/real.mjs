@@ -26,6 +26,9 @@ const setups = {
   MPc: { main: 3000, polyfills: 3000, css: 300, strip: false, what: 'main and polyfills +3000, card.css +300' },
   'MPc-nopre': { main: 3000, polyfills: 3000, css: 300, strip: true, what: 'main and polyfills +3000, card.css +300, server preload removed' },
   'MPc-v4': { main: 3000, polyfills: 3000, css: 300, strip: false, v4: true, what: 'main and polyfills +3000, card.css +300, preload rewritten to stylesheet media="not all"' },
+  'MP-v4end': { main: 3000, polyfills: 3000, css: 0, strip: false, v4end: true, what: 'main and polyfills +3000, media="not all" link at the end of head' },
+  'MPc-v4end': { main: 3000, polyfills: 3000, css: 300, strip: false, v4end: true, what: 'main and polyfills +3000, card.css +300, media="not all" link at the end of head' },
+  'Mc-v4end': { main: 3000, polyfills: 0, css: 300, strip: false, v4end: true, what: 'main +3000, card.css +300, media="not all" link at the end of head' },
 };
 const routes = (arg('routes', 'server/card,card')).split(',');
 const setupKeys = arg('setups', 'M,MP,Mc,Mc-nopre,Mc-v4').split(',');
@@ -80,6 +83,11 @@ const proxy = createServer(async (req, res) => {
   const run = current;
   const s = setups[run?.setup ?? 'M'];
   run?.requests.push(url.pathname);
+
+  // When the proxy received the first card.css request, ms after the driver's navigate call.
+  if (run && url.pathname.endsWith('/card/card.css') && run.cardAsked === undefined) {
+    run.cardAsked = Date.now() - run.t0;
+  }
   const delay = delayFor(url.pathname, s);
 
   if (delay) {
@@ -126,6 +134,17 @@ const proxy = createServer(async (req, res) => {
         html = html.replace(/<link rel="preload" as="style" href="([^"]*)"[^>]*>/g, '<link rel="stylesheet" href="$1" media="not all">');
       }
 
+      // V4 hint moved to the end of <head>, after the item stylesheet links.
+      if (s.v4end) {
+        const hints = [];
+        html = html.replace(/<link rel="preload" as="style" href="([^"]*)"[^>]*>/g, (_, href) => {
+          hints.push(`<link rel="stylesheet" href="${href}" media="not all">`);
+
+          return '';
+        });
+        html = html.replace('</head>', `${hints.join('')}</head>`);
+      }
+
       html = html.replace(/<head>/i, `<head><script>${probeScript(run.r, reportAt)}</script>`);
       delete out['content-length'];
       res.writeHead(upRes.statusCode, out);
@@ -156,7 +175,7 @@ const isCard = (path) => path.endsWith('/card/card.css');
 
 async function once({ route, setup }, i) {
   const r = `${route.replace(/\W/g, '_')}-${setup}-${i}-${Date.now()}`;
-  current = { r, setup, requests: [] };
+  current = { r, setup, requests: [], t0: Date.now() };
   await driver.open(`${origin}/sub/${route}`);
   const deadline = Date.now() + Math.max(...reportAt) + 5000;
 
@@ -191,6 +210,7 @@ async function once({ route, setup }, i) {
         ? fcp >= Math.min(mainEnd, setups[setup].polyfills ? (polyEnd ?? Infinity) : Infinity) - 50
         : null,
     cardRequests: run.requests.filter(isCard).length,
+    cardAsked: run.cardAsked,
     cardStatus: (last?.res ?? []).filter((e) => isCard(e.path)).map((e) => e.status),
     cardUpstream: run.cardUpstream ?? [],
     preloadsInHtml: run.preloadsInHtml,
@@ -200,7 +220,7 @@ async function once({ route, setup }, i) {
   console.log(
     `${route} ${setup} ${i}: stall=${row.stall} ticks@1500=${row.ticks1500 ?? '-'} firstTick=${f(row.firstTick)} FCP=${f(fcp)} ` +
       `card.css=${f(row.cardEnd)} polyfills=${f(polyEnd)} main=${f(mainEnd)} interactive=${f(row.interactive)} ` +
-      `waited=${row.fcpWaited} cardReq=${row.cardRequests} cardHttp=${row.cardUpstream.join('/')} preloads=${row.preloadsInHtml}`,
+      `waited=${row.fcpWaited} cardReq=${row.cardRequests} cardAsked=${f(row.cardAsked)} cardHttp=${row.cardUpstream.join('/')} preloads=${row.preloadsInHtml}`,
   );
 
   return row;
@@ -225,8 +245,8 @@ proxy.close();
 
 const out = [`\n## Real page, ${driver.version}: ${runs} runs per configuration\n`];
 out.push('ms of document time, median (min..max). stall = 0 rAF ticks at 1500 ms (the delayed scripts still pending). waited = FCP no earlier than 50 ms before the first delayed module script finished loading.\n');
-out.push('| route | setup | reports | stall | first tick | FCP | FCP waited | card.css end | polyfills end | main end | interactive | card.css requests | style preloads in HTML |');
-out.push('|---|---|---|---|---|---|---|---|---|---|---|---|---|');
+out.push('| route | setup | reports | stall | first tick | FCP | FCP waited | card.css end | polyfills end | main end | interactive | card.css requests | card.css asked (proxy, ms after navigate) | style preloads in HTML |');
+out.push('|---|---|---|---|---|---|---|---|---|---|---|---|---|---|');
 
 for (const { route, setup } of configs) {
   const vr = rows.filter((x) => x.route === route && x.setup === setup && x.reports > 0);
@@ -234,7 +254,7 @@ for (const { route, setup } of configs) {
     `| /sub/${route} | ${setups[setup].what} | ${vr.length}/${runs} | ${vr.filter((x) => x.stall).length}/${vr.length} | ${med(vr.map((x) => x.firstTick))} | ` +
       `${med(vr.map((x) => x.fcp))} | ${vr.filter((x) => x.fcpWaited).length}/${vr.filter((x) => x.fcpWaited !== null).length} | ` +
       `${med(vr.map((x) => x.cardEnd))} | ${med(vr.map((x) => x.polyEnd))} | ${med(vr.map((x) => x.mainEnd))} | ${med(vr.map((x) => x.interactive))} | ` +
-      `${med(vr.map((x) => x.cardRequests))} | ${med(vr.map((x) => x.preloadsInHtml))} |`,
+      `${med(vr.map((x) => x.cardRequests))} | ${med(vr.map((x) => x.cardAsked))} | ${med(vr.map((x) => x.preloadsInHtml))} |`,
   );
 }
 
