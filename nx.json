@@ -124,6 +124,7 @@
           "{projectRoot}/package.json",
           "{workspaceRoot}/tsconfig.base.json",
           "^default",
+          "{workspaceRoot}/tools/playwright/*.mjs",
           {
             "dependentTasksOutputFiles": "**/*.{d.ts,d.cts,d.mts,tsbuildinfo}",
             "transitive": true
@@ -210,7 +211,18 @@
       "dependsOn": ["^yeti-build"],
       "options": {
         "max-warnings": 0
-      }
+      },
+      "inputs": [
+        "default",
+        "^default",
+        "{workspaceRoot}/eslint.config.mjs",
+        "{projectRoot}/eslint.config.mjs",
+        "{workspaceRoot}/tools/eslint-rules/**/*",
+        "{workspaceRoot}/tools/playwright/*.mjs",
+        {
+          "externalDependencies": ["eslint"]
+        }
+      ]
     },
     "e2e-ci--**/*": {
       "dependsOn": ["^yeti-build"],
