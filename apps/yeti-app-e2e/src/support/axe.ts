@@ -9,7 +9,11 @@ import axe from 'axe-core';
  * axe only uses `setTimeout` to yield, so a microtask does the same job
  * there. Page scripts never run on such a page, so nothing else sees the
  * change. Firefox runs no microtask on such a page either, so the fixture
- * skips axe there (measured).
+ * skips axe there (measured). The shim would also fire axe's preload
+ * timeout at once and log "Couldn't load preload assets", so preload is off
+ * there. axe then runs its preload rules (css-orientation-lock, which
+ * `wcagTags` leaves out as experimental, and no-autoplay-audio) without the
+ * preloaded CSSOM and media, as it did after that timeout.
  */
 const microtaskTimers = `window.setTimeout = (callback) => {
   Promise.resolve().then(callback);
@@ -29,6 +33,8 @@ export async function axeViolations(
     page,
     ...(javaScriptEnabled ? {} : { axeSource: microtaskTimers + axe.source }),
   })
+    // options() replaces every run option, so it comes before withTags().
+    .options(javaScriptEnabled ? {} : { preload: false })
     .withTags([...wcagTags])
     .analyze();
 
