@@ -10,7 +10,24 @@ import tseslint from 'typescript-eslint';
 
 const typeScriptFiles = ['**/*.ts', '**/*.tsx', '**/*.cts', '**/*.mts'];
 
+const scriptFiles = [
+  ...typeScriptFiles,
+  '**/*.js',
+  '**/*.jsx',
+  '**/*.cjs',
+  '**/*.mjs',
+];
+
 const baselineYear = 2025;
+
+const privateAngularMessage =
+  "Angular's ɵ-prefixed symbols are private. Use a public API or derive the answer from one; otherwise test it in another runtime or layer. As a last resort, put the access in one function named after the internal (getDirectiveDef) and disable this rule there with a reason (type-safety skill).";
+
+// A string key such as Reflect.get(directive, 'ɵdir').
+const privateAngularLiteral = {
+  selector: 'Literal[value=/^ɵ/]',
+  message: privateAngularMessage,
+};
 
 const neverShippedFiles = [
   '**/*.spec.ts',
@@ -212,6 +229,24 @@ export default [
       ],
     },
   },
+  {
+    files: scriptFiles,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@angular/*'],
+              importNamePattern: '^ɵ',
+              message: privateAngularMessage,
+            },
+          ],
+        },
+      ],
+      'no-restricted-syntax': ['error', privateAngularLiteral],
+    },
+  },
   ...storybook.configs['flat/recommended'],
   ...storybook.configs['flat/csf-strict'],
   {
@@ -233,6 +268,7 @@ export default [
           message:
             "Stories never opt out of test-storybook with the '!test' tag.",
         },
+        privateAngularLiteral,
       ],
     },
   },

@@ -20,6 +20,7 @@ Lint and typecheck catch different things. Run both. `nx test` compiles with Ana
 - `consistent-type-exports`, `consistent-type-definitions: interface`.
 - `explicit-function-return-type` with `allowExpressions`, `allowTypedFunctionExpressions`, and `allowHigherOrderFunctions`. Specs are exempt.
 - `@eslint-community/eslint-comments/require-description`. Every `eslint-disable` comment needs a `-- reason`.
+- `no-restricted-imports` (`importNamePattern: '^ɵ'` on `@angular/*`) and `no-restricted-syntax` (a string literal starting with `ɵ`) ban Angular's private `ɵ` and `ɵɵ` symbols. In order of preference: a public API, or an answer derived from one; then another runtime or test layer; last, one function named after the internal (`getDirectiveDef`) whose `eslint-disable` gives the reason.
 - `angularConfig`: angular-eslint `tsAll` and `templateAll` with a few rules turned off. See [rules/angular-components.md](rules/angular-components.md).
 - `vitestConfig` for `**/*.spec.ts` in the Vitest projects only (`ngx-yeti`, `ngx-yeti-testing`, `yeti-app`, `yeti-analog`). It enables `vitest.configs.recommended`, about 40 more vitest rules at error, and `vitest/no-hooks`. The Playwright e2e projects do not spread it.
 - Storybook `flat/recommended` and `flat/csf-strict` for stories.
