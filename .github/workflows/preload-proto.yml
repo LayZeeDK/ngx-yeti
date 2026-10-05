@@ -2,6 +2,7 @@ name: Preload prototype
 
 # Throwaway measurement: how should ngx-yeti write item preloads on the server,
 # given WebKit's rendering stall behind a late style preload?
+# Round 2: the finalists V5+V1, V0+svg and V4+V1 against the V0 and V1 controls.
 on:
   push:
     branches: ['probe/**']
@@ -11,11 +12,16 @@ permissions:
   contents: read
 
 jobs:
-  variants:
+  probe-page:
     # A commit whose message holds [real-only] reruns only the real page.
     if: ${{ !contains(github.event.head_commit.message, '[real-only]') }}
     runs-on: macos-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        text: [176, 301]
+    name: probe-page (${{ matrix.text }} visible chars)
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -26,34 +32,40 @@ jobs:
         run: |
           sw_vers
           safaridriver --version
+          defaults read /Applications/Safari.app/Contents/Info CFBundleShortVersionString
+          defaults read /Applications/Safari.app/Contents/Info CFBundleVersion
       - name: Install selenium-webdriver in the prototype folder only
         working-directory: preload-proto
         run: npm i --no-save --no-package-lock --no-audit --no-fund selenium-webdriver
-      - name: Variants in Safari
+      - name: Probe page in Safari
         working-directory: preload-proto
-        # Set a ran in run 37241351000; set b adds the app's two module scripts.
-        run: node run.mjs --browser=safari --runs=20 --set=b | tee proto-safari-b.log
+        run: node round2.mjs --browser=safari --runs=20 --text=${{ matrix.text }} --out="$PWD" | tee round2-safari-t${{ matrix.text }}.log
       - name: Summary
         if: always()
         working-directory: preload-proto
-        run: cat proto-safari*.md >> "$GITHUB_STEP_SUMMARY" || true
+        run: cat round2-safari*.md >> "$GITHUB_STEP_SUMMARY" || true
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: proto-safari
-          path: |
-            preload-proto/proto-safari*
+          name: round2-probe-${{ matrix.text }}
+          path: preload-proto/round2-safari*
 
   real-page:
-    # A commit whose message holds [variants-only] skips the real page.
-    if: ${{ !contains(github.event.head_commit.message, '[variants-only]') }}
+    # A commit whose message holds [probe-only] skips the real page.
+    if: ${{ !contains(github.event.head_commit.message, '[probe-only]') }}
     runs-on: macos-latest
     timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
-        routes: ['server/card,card', 'server/setup-defer,setup-defer']
-    name: real-page (${{ matrix.routes }})
+        route: ['setup-defer', 'server/setup-defer']
+        beasties: ['built', 'nob']
+        include:
+          - beasties: built
+            setups: R-V0,R-V1,R-V5V1,R-V0svg,R-V0svgS,R-V4V1
+          - beasties: nob
+            setups: R-V0-nob,R-V1-nob,R-V5V1-nob,R-V0svg-nob,R-V0svgS-nob,R-V4V1-nob
+    name: real-page (/sub/${{ matrix.route }}, Beasties ${{ matrix.beasties }})
     env:
       NX_NO_CLOUD: 'true'
       NX_DAEMON: 'false'
@@ -70,18 +82,22 @@ jobs:
       - name: Start the app's Node server
         run: |
           PORT=4000 nohup node dist/apps/yeti-app/server/server.mjs > app.log 2>&1 &
-          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:4000/sub/card && break; sleep 1; done
-          for p in server/card card server/setup-defer setup-defer; do
-            echo "== /sub/$p"
-            curl -s "http://localhost:4000/sub/$p" | node -e "let s='';process.stdin.on('data',(c)=>(s+=c)).on('end',()=>console.log((s.match(/<link[^>]*>|<script[^>]*>/g)||[]).join('\n')))"
-          done
+          for i in $(seq 1 60); do curl -sf -o /dev/null http://localhost:4000/sub/setup-defer && break; sleep 1; done
+          echo "== /sub/${{ matrix.route }}"
+          curl -s "http://localhost:4000/sub/${{ matrix.route }}" | node -e "let s='';process.stdin.on('data',(c)=>(s+=c)).on('end',()=>console.log((s.match(/<link[^>]*>|<script[^>]*>|<body[^>]*>/g)||[]).join('\n')))"
       - run: sudo safaridriver --enable
+      - name: Versions
+        run: |
+          sw_vers
+          safaridriver --version
+          defaults read /Applications/Safari.app/Contents/Info CFBundleShortVersionString
+          defaults read /Applications/Safari.app/Contents/Info CFBundleVersion
       - name: Install selenium-webdriver in the prototype folder only
         working-directory: preload-proto
         run: npm i --no-save --no-package-lock --no-audit --no-fund selenium-webdriver
       - name: Real page in Safari
         working-directory: preload-proto
-        run: node real.mjs --browser=safari --runs=20 --routes=${{ matrix.routes }} --setups=MP,MP-nob,MP-nob-nopre,MP-nob-v4end,MPc-nob,MPc-nob-nopre,MPc-nob-v4end | tee real-safari.log
+        run: node real.mjs --browser=safari --runs=20 --routes=${{ matrix.route }} --setups=${{ matrix.setups }} --out="$PWD" --tag=safari-${{ strategy.job-index }} | tee real-safari-${{ strategy.job-index }}.log
       - name: Summary
         if: always()
         working-directory: preload-proto
