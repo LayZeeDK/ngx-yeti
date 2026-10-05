@@ -21,12 +21,19 @@ const config: StorybookConfig = {
       'name' in plugin &&
       typeof plugin.name === 'string' &&
       /^@?analogjs[-/]/.test(plugin.name);
-    const plugins = (config.plugins ?? []).flat();
-    const analogIndex = plugins.findIndex(isAnalogPlugin);
 
     // The framework preset offers no fastCompile option, so the `fast`
     // configurations swap its Analog plugins for an equivalent set.
-    if (process.env['ANGULAR_FAST_COMPILE'] === 'true' && analogIndex !== -1) {
+    if (process.env['ANGULAR_FAST_COMPILE'] === 'true') {
+      const plugins = (config.plugins ?? []).flat();
+      const analogIndex = plugins.findIndex(isAnalogPlugin);
+
+      if (analogIndex === -1) {
+        throw new Error(
+          'ANGULAR_FAST_COMPILE=true, but the Vite config has no Analog plugin to swap for the fastCompile set. Update isAnalogPlugin in packages/ngx-yeti/.storybook/main.ts to match the plugin names @storybook/angular-vite adds.',
+        );
+      }
+
       const fastCompilePlugins = angular({
         fastCompile: true,
         jit: true,
@@ -40,7 +47,7 @@ const config: StorybookConfig = {
       );
 
       config.plugins = [
-        ...plugins.slice(0, analogIndex).filter((p) => !isAnalogPlugin(p)),
+        ...plugins.slice(0, analogIndex),
         ...fastCompilePlugins,
         ...plugins.slice(analogIndex).filter((p) => !isAnalogPlugin(p)),
       ];
