@@ -18,6 +18,7 @@ The package is pre-release. The specs in [`docs/specs/`](docs/specs/README.md) d
 | `vendor/yeti`               | Yeti's source at the pinned commit, as the npm workspace package `yeti-css`                                                                      |
 | `tools/yeti`                | The script that vendors Yeti, the Nx plugin that builds it, and the generator of `yeti-types.ts` and `yeti-rank.ts`                              |
 | `tools/package`             | `pack-check.mjs`, which packs the package and builds a consumer against the tarball                                                              |
+| `tools/ci-local`            | `run-job.mjs`, which runs a container job of the CI or floor workflow locally in Docker                                                          |
 | `tools/playwright`          | The Playwright browser projects that `apps/yeti-app-e2e`, `apps/ngx-yeti-e2e`, and `apps/yeti-analog-e2e` share                                  |
 | `docs/specs`                | The specs, ADRs, and records the package is built from; a verbatim copy, never edited except its two ledgers, `ledger.md` and `upstream-bugs.md` |
 | `docs/decisions`            | Decision trails of larger changes                                                                                                                |
@@ -40,7 +41,7 @@ You need Node.js 24 or later, which Yeti's build requires.
    npx playwright install chromium
    ```
 
-   To run all three engines the way CI does, install `firefox` and `webkit` too and set `CI=true`.
+   To run all three engines the way CI does, install `firefox` and `webkit` too and set `CI=true`. To run any CI or browser floor job locally, see [`references/ci-local.md`](references/ci-local.md).
 
 Nx builds Yeti before any task that needs it, e2e runs included, so you never run its build by hand. To build it alone, run `npx nx yeti-build yeti-css`.
 

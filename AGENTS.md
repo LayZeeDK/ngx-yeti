@@ -246,6 +246,12 @@ Run `nx typecheck-watch <project>` beside `serve` or `storybook` for type feedba
 
 Read `references/fast-compile.md` before you change a Vite, Vitest, or Storybook config, add an Angular project, or move a target onto or off `fastCompile`.
 
+# Run CI locally
+
+Every job in `.github/workflows/ci.yml` and `floor.yml` runs locally except `ci.yml` `safari`, which needs real Safari on macOS. Run a job that has a `container` with `node tools/ci-local/run-job.mjs <workflow> <job>`.
+
+Read `references/ci-local.md` before you run a CI or floor job locally. After `npm install --no-save playwright@<release>`, run `npm ci` before anything else, and then `npx playwright install chromium firefox webkit`.
+
 # Specs and skills
 
 `docs/specs/` holds the specs, ADRs, and records `ngx-yeti` is built from. Start with `docs/specs/README.md`. The folder is a verbatim copy of the planning bundle: never edit it, except its two living ledgers. Add and update rows in `docs/specs/ledger.md` for every accessibility, standards, parity, or compatibility change the package adds over Yeti, and in `docs/specs/upstream-bugs.md` for every upstream bug found.

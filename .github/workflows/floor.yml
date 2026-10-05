@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     # Playwright's --shard splits each project's tests into the same halves on
-    # every run, so the two runners share the suite; act runs both at once.
+    # every run, so the two runners share the suite.
     strategy:
       fail-fast: false
       matrix:
