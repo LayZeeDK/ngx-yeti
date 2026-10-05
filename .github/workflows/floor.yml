@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: floor-${{ github.event.pull_request.number || github.sha }}
+  group: floor-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 # Read-only token for every job, whatever the repository default.
