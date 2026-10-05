@@ -88,10 +88,21 @@ test.describe('the axe fixture', () => {
   test.describe('with JavaScript off', () => {
     test.use({ javaScriptEnabled: false });
 
-    test('reports a violation', async ({ axeViolations, page }) => {
+    test('reports a violation without logging a warning', async ({
+      axeViolations,
+      page,
+    }) => {
+      const warnings: string[] = [];
+      page.on('console', (message) => {
+        if (message.type() === 'warning') {
+          warnings.push(message.text());
+        }
+      });
+
       expect(
         await violationsWithImageMissingAlt(page, axeViolations),
       ).toContainEqual(expect.stringMatching(/^image-alt: /));
+      expect(warnings).toEqual([]);
     });
   });
 });
