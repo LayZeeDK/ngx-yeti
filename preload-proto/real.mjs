@@ -34,6 +34,12 @@ const setups = {
   'MP-nomp-nopre': { main: 3000, polyfills: 3000, css: 0, strip: true, nomp: true, what: 'main and polyfills +3000, modulepreload and style preload removed' },
   'MPc-nomp': { main: 3000, polyfills: 3000, css: 300, strip: false, nomp: true, what: 'main and polyfills +3000, card.css +300, modulepreload removed' },
   'MPc-nomp-nopre': { main: 3000, polyfills: 3000, css: 300, strip: true, nomp: true, what: 'main and polyfills +3000, card.css +300, modulepreload and style preload removed' },
+  'MP-nob': { main: 3000, polyfills: 3000, css: 0, strip: false, nob: true, what: 'main and polyfills +3000, Beasties print link made ordinary' },
+  'MP-nob-nopre': { main: 3000, polyfills: 3000, css: 0, strip: true, nob: true, what: 'main and polyfills +3000, Beasties print link made ordinary, style preload removed' },
+  'MP-nob-v4end': { main: 3000, polyfills: 3000, css: 0, strip: false, nob: true, v4end: true, what: 'main and polyfills +3000, Beasties print link made ordinary, media="not all" link at the end of head' },
+  'MPc-nob': { main: 3000, polyfills: 3000, css: 300, strip: false, nob: true, what: 'main and polyfills +3000, card.css +300, Beasties print link made ordinary' },
+  'MPc-nob-nopre': { main: 3000, polyfills: 3000, css: 300, strip: true, nob: true, what: 'main and polyfills +3000, card.css +300, Beasties print link made ordinary, style preload removed' },
+  'MPc-nob-v4end': { main: 3000, polyfills: 3000, css: 300, strip: false, nob: true, v4end: true, what: 'main and polyfills +3000, card.css +300, Beasties print link made ordinary, media="not all" link at the end of head' },
   'MPc-nomp-v4end': { main: 3000, polyfills: 3000, css: 300, strip: false, nomp: true, v4end: true, what: 'main and polyfills +3000, card.css +300, modulepreload removed, media="not all" link at the end of head' },
 };
 const routes = (arg('routes', 'server/card,card')).split(',');
@@ -127,6 +133,14 @@ const proxy = createServer(async (req, res) => {
       let html = Buffer.concat(chunks).toString('utf8');
       run.preloadsInHtml = (html.match(/<link rel="preload" as="style"[^>]*>/g) ?? []).length;
       run.modulepreloads = (html.match(/<link[^>]*rel="modulepreload"[^>]*>/g) ?? []).length;
+
+      // nob: Beasties' deferred global stylesheet (media="print" plus the
+      // data-beasties-media swap) becomes an ordinary stylesheet link.
+      run.beastiesLinks = (html.match(/<link[^>]*data-beasties-media[^>]*>/g) ?? []).length;
+
+      if (s.nob) {
+        html = html.replace(/<link([^>]*?) media="print" data-beasties-media="[^"]*"([^>]*)>/g, '<link$1$2>');
+      }
 
       if (s.nomp) {
         html = html.replace(/<link[^>]*rel="modulepreload"[^>]*>/g, '');
@@ -226,13 +240,14 @@ async function once({ route, setup }, i) {
     cardUpstream: run.cardUpstream ?? [],
     preloadsInHtml: run.preloadsInHtml,
     modulepreloads: run.modulepreloads,
+    beastiesLinks: run.beastiesLinks,
     ua: last?.ua ?? early?.ua,
   };
   const f = (x) => (Number.isFinite(x) ? Math.round(x) : '-');
   console.log(
     `${route} ${setup} ${i}: stall=${row.stall} ticks@1500=${row.ticks1500 ?? '-'} firstTick=${f(row.firstTick)} FCP=${f(fcp)} ` +
       `card.css=${f(row.cardEnd)} polyfills=${f(polyEnd)} main=${f(mainEnd)} interactive=${f(row.interactive)} ` +
-      `waited=${row.fcpWaited} cardReq=${row.cardRequests} cardAsked=${f(row.cardAsked)} cardHttp=${row.cardUpstream.join('/')} preloads=${row.preloadsInHtml} modulepreloads=${row.modulepreloads}`,
+      `waited=${row.fcpWaited} cardReq=${row.cardRequests} cardAsked=${f(row.cardAsked)} cardHttp=${row.cardUpstream.join('/')} preloads=${row.preloadsInHtml} modulepreloads=${row.modulepreloads} beasties=${row.beastiesLinks}`,
   );
 
   return row;
