@@ -424,6 +424,34 @@ describe(injectYetiItemStyles, () => {
     next.destroy();
   });
 
+  it('removes no link at a release after its loader is destroyed', async () => {
+    expect.assertions(1);
+
+    setup();
+    const parent = TestBed.inject(EnvironmentInjector);
+    const providers = [{ provide: APP_ID, useValue: 'same' }, YetiStyles];
+    const destroyed = createEnvironmentInjector(providers, parent);
+    const styles = destroyed.get(YetiStyles);
+    styles.acquire('card');
+    const host = document.createElement('article');
+    host.setAttribute('data-ngx-yeti-item-card', '');
+    document.body.append(host);
+    // A render gives the loader its observer; without one it never checks.
+    await TestBed.createDirective(ProbeStack, { tagName: 'div' }).whenStable();
+
+    // The connected host keeps the link through the destroyed loader's sweep.
+    destroyed.destroy();
+    const next = createEnvironmentInjector(providers, parent);
+    next.get(YetiStyles).acquire('card');
+    styles.release('card');
+    host.remove();
+    await nextFrame();
+
+    expect(itemLinks('card')).toHaveLength(1);
+
+    next.destroy();
+  });
+
   it('leaks no link and no count from a constructor that throws first', async () => {
     expect.assertions(3);
 
