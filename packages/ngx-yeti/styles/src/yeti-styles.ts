@@ -195,7 +195,10 @@ export class YetiStyles {
     return link;
   }
 
-  /** Inserts before the first item link of a later rank: `yeti.css`'s order. */
+  /**
+   * Inserts before the first later-ranked item link in `<head>`, of any
+   * application: `yeti.css`'s order, and the cascade is the document's.
+   */
   #insert(item: YetiComponentName): HTMLLinkElement {
     const link = this.#createLink({
       rel: 'stylesheet',
@@ -207,24 +210,19 @@ export class YetiStyles {
     });
 
     const rank = yetiRank[item].rank;
-    let next: HTMLLinkElement | null = null;
-    let nextRank = Infinity;
+    const next = [
+      ...this.#document.head.querySelectorAll(`link[${itemAttribute}]`),
+    ].find((other) => {
+      const name = other.getAttribute(itemAttribute);
 
-    for (const [other, { link: otherLink }] of this.#links) {
-      const otherRank = yetiRank[other].rank;
+      return (
+        other.parentNode === this.#document.head &&
+        isItem(name) &&
+        yetiRank[name].rank > rank
+      );
+    });
 
-      if (otherRank > rank && otherRank < nextRank) {
-        next = otherLink;
-        nextRank = otherRank;
-      }
-    }
-
-    // A tracked link that something else took out of `<head>` cannot be the
-    // reference node; the new link then goes last.
-    this.#document.head.insertBefore(
-      link,
-      next?.parentNode === this.#document.head ? next : null,
-    );
+    this.#document.head.insertBefore(link, next ?? null);
 
     return link;
   }
