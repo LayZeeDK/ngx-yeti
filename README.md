@@ -41,7 +41,7 @@ You need Node.js 24 or later, which Yeti's build requires.
    npx playwright install chromium
    ```
 
-   To run all three engines the way CI does, install `firefox` and `webkit` too and set `CI=true`. To run any CI or browser floor job locally, see [`references/ci-local.md`](references/ci-local.md).
+   To run other engines, install `firefox` and `webkit` too and set `BROWSERS`, such as `BROWSERS=chromium,firefox,webkit`. For its other names, and to run any CI or browser floor job locally, see [`references/ci-local.md`](references/ci-local.md).
 
 Nx builds Yeti before any task that needs it, e2e runs included, so you never run its build by hand. To build it alone, run `npx nx yeti-build yeti-css`.
 

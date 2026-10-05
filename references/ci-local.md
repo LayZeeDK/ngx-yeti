@@ -45,13 +45,32 @@ Without `--matrix`, every combination runs in turn. A job without a `container` 
 
 ## Container jobs without Docker
 
-- The three current engines: `CI=true npm exec nx -- run-many -t test test-storybook --parallel=1` and `CI=true npm exec nx -- run-many -t e2e -p <projects> -- --project=<engine>`, with `FIXTURE_CONFIGURATION=production` for the production e2e run. Without `CI=true`, the browser projects declare Chromium only.
+- The three current engines: `BROWSERS=chromium,firefox,webkit npm exec nx -- run-many -t test test-storybook --parallel=1` and `CI=true npm exec nx -- run-many -t e2e -p <projects> -- --project=<engine>`, with `FIXTURE_CONFIGURATION=production` for the production e2e run. The e2e run keeps `CI=true` for the job's CI settings, which `BROWSERS` skips (below). Without `CI` or `BROWSERS`, the browser projects declare Chromium only.
 - `webkit-26-4` and `firefox-146-e2e`: `npm install --no-save playwright@<release> @playwright/test@<release>`, `npx playwright install <browser>`, then the job's steps with its `FLOOR_*` variable. Run `npm ci` before anything else afterwards.
+
+## Choose browsers with BROWSERS
+
+`BROWSERS` is a comma-separated list read by `tools/playwright/engines.mjs` for every Vitest browser project and every e2e project. Each name runs once, in list order. An unknown or empty entry, such as `safari` or the end of `webkit,`, throws while the config loads, so every Nx command that builds the project graph fails until you fix or unset `BROWSERS`. An empty `BROWSERS` counts as unset.
+
+- `chromium`, `firefox` and `webkit` run Playwright's pinned builds, the ones CI runs.
+- `msedge` and `chrome` run the installed Microsoft Edge or Google Chrome through a Playwright channel; `moz-firefox` runs the installed Firefox through WebDriver BiDi. On Windows on ARM64 these are native arm64, unlike Playwright's x64 Windows builds.
+- The channels are the installed releases, not Playwright's pinned ones. Use them locally only, and never as evidence for what CI runs. They auto-update, and their version is not an Nx cache input, so add `--skip-nx-cache` after a browser update.
+- `BROWSERS` wins over `CI`. A floor variable or `SAFARI` wins over `BROWSERS` in the targets it changes. `FLOOR_FIREFOX` and `SAFARI` are the only paths to the `webdriverio` provider, so a channel never reaches it.
+- `BROWSERS` without `CI` skips the e2e configs' CI settings: retries, a single worker, blob reports, `forbidOnly` and `failOnFlakyTests`. Vitest's `allowOnly` also defaults to `!CI`, so a stray `.only` passes locally under `BROWSERS` and fails on CI.
+- `moz-firefox` looks only in Firefox's default install folders, not in a Microsoft Store install. For any other install, set `FIREFOX_PATH` to its `firefox.exe`. A Microsoft Store install needs the `firefox.exe` inside its package folder; the app execution alias under `%LOCALAPPDATA%\Microsoft\WindowsApps` does not launch. Find the folder with `(Get-AppxPackage Mozilla.Firefox).InstallLocation` and append `\VFS\ProgramFiles\Firefox Package Root\firefox.exe`.
+
+```sh
+BROWSERS=msedge npm exec nx -- test ngx-yeti -- --project=browser
+BROWSERS=msedge,webkit npm exec nx -- e2e ngx-yeti-e2e
+FIREFOX_PATH='C:\Program Files\WindowsApps\Mozilla.Firefox_<version>_arm64__n80bbvh6b1yt2\VFS\ProgramFiles\Firefox Package Root\firefox.exe' BROWSERS=moz-firefox npm exec nx -- test ngx-yeti -- --project=browser
+```
+
+Measured on 2026-10-05 on Windows 11 on ARM64 with Edge 154.0.4258.53 and Store Firefox 157.0; `chrome` was not measured. `msedge` passed `nx test ngx-yeti`, `test-storybook`, `ngx-yeti-testing` and `ngx-yeti-e2e`. Under `moz-firefox`, the three `under a real pointer` hover tests of `lift.spec.ts` time out waiting for a stable element, and the `ngx-yeti-e2e` reduced-motion shadow and dark colour scheme checks fail.
 
 ## Pitfalls
 
 - A Playwright `install` from an older release deletes the other releases' browsers from the shared `ms-playwright` cache. After `npm ci`, `npx playwright install chromium firefox webkit` puts the current release's browsers back. `run-job.mjs` avoids this: each image carries its own browsers.
-- On Windows on ARM64, Playwright's Windows browsers and Chrome for Testing are x64 builds that run under emulation. Native `CI=true` unit runs need `--parallel=1`: at Nx's default of 3, Firefox's browser session times out at start. The Playwright images are arm64 and need neither.
+- On Windows on ARM64, Playwright's Windows browsers and Chrome for Testing are x64 builds that run under emulation. Native unit runs in Playwright's Firefox (`CI=true`, or `BROWSERS` naming `firefox`) need `--parallel=1`: at Nx's default of 3, Firefox's browser session times out at start. The Playwright images are arm64 and need neither.
 - Git Bash rewrites arguments that look like POSIX paths. `run-job.mjs` starts Docker without a shell, but the command after `--` passes through Git Bash first: prefix the call with `MSYS_NO_PATHCONV=1` when that command holds an absolute path, or run it from PowerShell.
 - The e2e ports are fixed (4310 to 4312 and 4401), so two native e2e runs, in two checkouts or two sessions, cannot overlap.
 - Remove the volumes with `docker volume rm` and the names `docker volume ls -q -f name=ngx-yeti-run-job` lists.
