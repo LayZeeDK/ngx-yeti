@@ -147,6 +147,7 @@ The package's JSDoc cites these rules by number.
 9. Provide `withI18nSupport()` wherever the application uses `i18n`.
 10. Call `provideYetiStyles()` at most once, in the root providers. The loader is a root service, so a call in a route's providers has no effect.
 11. Put a `@boundary` inside a `@defer` block, never only around it, when the deferred content holds package directives.
+12. Never remove a `link[data-ngx-yeti-styles]` from `<head>`, by hand or through a head manager. The item it styles stays unstyled until that item is acquired again, by a new instance of it or of an item that loads its file.
 
 ## Error boundaries
 
