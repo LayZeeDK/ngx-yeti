@@ -82,10 +82,8 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      # Each e2e web server starts its own Nx process, and Nx shares no
-      # discrete task between processes; built once here, yeti-build is a
-      # cache hit in all of them instead of racing over dist/.
-      - run: npx nx run yeti-css:yeti-build
+      # e2e depends on ^yeti-build, so Nx builds Yeti before Playwright starts
+      # the web servers, whose own Nx processes then hit the cache.
       # The production configuration changes the Fixture app only.
       - run: npx nx run-many --output-style=static -t e2e -p ${{ matrix.configuration == 'production' && 'yeti-app-e2e' || 'yeti-analog-e2e ngx-yeti-e2e yeti-app-e2e' }} -- --project=${{ matrix.engine }}
 

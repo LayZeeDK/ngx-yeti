@@ -39,10 +39,9 @@ jobs:
           path=$(npx --no-install @puppeteer/browsers install "chrome@$CHROME_FLOOR_VERSION" --path "$RUNNER_TEMP/floor" | awk '{print $2}')
           test -x "$path"
           echo "FLOOR_CHROMIUM_PATH=$path" >> "$GITHUB_ENV"
-      # Each e2e web server starts its own Nx process, and Nx shares no
-      # discrete task between processes; built once here, yeti-build is a
-      # cache hit in all of them instead of racing over dist/.
-      - run: npx nx run yeti-css:yeti-build
+      # test and e2e depend on ^yeti-build, so Nx builds Yeti before
+      # Playwright starts the web servers, whose own Nx processes then hit
+      # the cache.
       - run: npx nx test ngx-yeti -- --project=browser
       - run: npx nx run-many --output-style=static -t e2e -p ngx-yeti-e2e yeti-app-e2e
 
@@ -80,10 +79,9 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm install --no-save playwright@1.59.1 @playwright/test@1.59.1
-      # Each e2e web server starts its own Nx process, and Nx shares no
-      # discrete task between processes; built once here, yeti-build is a
-      # cache hit in all of them instead of racing over dist/.
-      - run: npx nx run yeti-css:yeti-build
+      # test and e2e depend on ^yeti-build, so Nx builds Yeti before
+      # Playwright starts the web servers, whose own Nx processes then hit
+      # the cache.
       - run: npx nx test ngx-yeti -- --project=browser
       - run: npx nx run-many --output-style=static -t e2e -p ngx-yeti-e2e yeti-app-e2e
 
@@ -114,10 +112,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm install --no-save playwright@1.58.2 @playwright/test@1.58.2
-      # Each e2e web server starts its own Nx process, and Nx shares no
-      # discrete task between processes; built once here, yeti-build is a
-      # cache hit in all of them instead of racing over dist/.
-      - run: npx nx run yeti-css:yeti-build
+      # e2e depends on ^yeti-build, so Nx builds Yeti before Playwright starts
+      # the web servers, whose own Nx processes then hit the cache.
       # Two workers on the runner's four CPUs: 30% less test time than one,
       # and no more past two, measured in this image at four CPUs.
       - run: npx nx run-many --output-style=static -t e2e -p ngx-yeti-e2e yeti-app-e2e -- --shard=${{ matrix.shard }}/2 --workers=2
