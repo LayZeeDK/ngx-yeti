@@ -1,4 +1,10 @@
-import { expect, isProduction, routeKinds, test } from './support/fixtures';
+import {
+  clientCardPreload,
+  expect,
+  isProduction,
+  routeKinds,
+  test,
+} from './support/fixtures';
 import { expectHoverLifts, removeEveryHost } from './support/hosts';
 import {
   nextFrames,
@@ -50,8 +56,8 @@ for (const { kind, prefix } of routeKinds) {
 
       expect(
         await styleMutations(),
-        'no link or style element is added or removed after parsing ends',
-      ).toEqual([]);
+        'only the client card preload is added after parsing ends',
+      ).toEqual([clientCardPreload]);
       expect(
         await hostAttributes(),
         'hydration changes no attribute on the hosts',

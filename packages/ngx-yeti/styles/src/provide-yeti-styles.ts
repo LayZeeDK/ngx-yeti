@@ -29,8 +29,11 @@ import {
  * - `preload`: name every item that first renders on the client, in a
  *   client-only `@defer`, an `@if`, a growing `@for`, or a route reached by
  *   client navigation, when a flash-free first frame matters (usage rule 8).
- *   Each gets one `<link rel="preload" as="style">`, never a second beside one
- *   already in `<head>`.
+ *   Each gets one `<link rel="prefetch">` from the server and one
+ *   `<link rel="preload" as="style">` from the client, never a second beside
+ *   one already in `<head>`. A server style preload holds WebKit's first paint
+ *   on a sparse page (upstream bug O4); WebKit ignores the prefetch, so Safari
+ *   shows the item unstyled until its file arrives.
  *
  * The rest of the one-time setup is build configuration: build Yeti at the
  * pin the package version names (usage rule 1), write the layer statement
@@ -46,9 +49,10 @@ export function provideYetiStyles(
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
     { provide: yetiStylesConfigToken, useValue: config },
-    // Created at application start, the loader writes the preload links and
-    // adopts the server's links at bootstrap (ADR 0060 point 5), so its check
-    // removes a server link with no host even before any item renders.
+    // Created at application start, the loader writes the prefetch or preload
+    // links and adopts the server's links at bootstrap (ADR 0060 point 5), so
+    // its check removes a server link with no host even before any item
+    // renders.
     provideEnvironmentInitializer(() => {
       inject(YetiStyles);
     }),

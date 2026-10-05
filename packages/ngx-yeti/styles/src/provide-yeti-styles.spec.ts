@@ -110,6 +110,25 @@ describe(provideYetiStyles, () => {
     ]);
   });
 
+  it("writes one style preload per item beside the server's prefetch, which it keeps", () => {
+    expect.assertions(2);
+
+    removeItemLinks();
+    const prefetch = document.createElement('link');
+    prefetch.setAttribute('rel', 'prefetch');
+    prefetch.setAttribute('href', href('components/card/card.css'));
+    document.head.append(prefetch);
+    TestBed.configureTestingModule({
+      providers: [provideYetiStyles({ preload: ['card', 'card'] })],
+    });
+    TestBed.inject(EnvironmentInjector);
+
+    expect(preloadHrefs()).toStrictEqual([href('components/card/card.css')]);
+    expect([
+      ...document.head.querySelectorAll('link[rel="prefetch"]'),
+    ]).toStrictEqual([prefetch]);
+  });
+
   it('creates the loader at application start without a preload list', async () => {
     expect.assertions(1);
 

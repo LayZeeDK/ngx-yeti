@@ -1,4 +1,10 @@
-import { expect, isProduction, routeKinds, test } from './support/fixtures';
+import {
+  clientCardPreload,
+  expect,
+  isProduction,
+  routeKinds,
+  test,
+} from './support/fixtures';
 import { removeDehydratedHosts, removeEveryHost } from './support/hosts';
 import {
   nextFrames,
@@ -55,8 +61,8 @@ for (const { kind, prefix } of routeKinds) {
 
       expect(
         await styleMutations(),
-        'no link or style element is added or removed after parsing ends',
-      ).toEqual([]);
+        'only the client card preload is added after parsing ends',
+      ).toEqual([clientCardPreload]);
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
       for (const item of ['card', 'lift']) {
@@ -112,8 +118,8 @@ for (const { kind, prefix } of routeKinds) {
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
       expect(
         await styleMutations(),
-        'no item link is removed or added again on the way',
-      ).toEqual([]);
+        'no item link is removed or added again on the way, only the client card preload is added',
+      ).toEqual([clientCardPreload]);
 
       const host = page.locator(interactionHost);
 
@@ -359,6 +365,7 @@ for (const { kind, prefix } of routeKinds) {
     });
 
     test('renders the client-only card with 0 unstyled frames through the preload', async ({
+      browserName,
       page,
     }) => {
       const styleMutations = await recordStyleMutations(page);
@@ -368,6 +375,18 @@ for (const { kind, prefix } of routeKinds) {
         'padding-top',
       );
 
+      await page.addInitScript(() => {
+        // `load` does not bubble; a capturing listener sees the link's.
+        document.addEventListener(
+          'load',
+          ({ target }) => {
+            if (target instanceof HTMLLinkElement && target.rel === 'preload') {
+              Reflect.set(window, '__ngxYetiPreloaded', true);
+            }
+          },
+          true,
+        );
+      });
       // Item CSS delayed from the start.
       await delayCss(page);
       await page.goto(`${prefix}setup-defer`);
@@ -375,19 +394,19 @@ for (const { kind, prefix } of routeKinds) {
 
       expect(
         await styleMutations(),
-        'no link or style element is added or removed after parsing ends',
-      ).toEqual([]);
+        'only the client card preload is added after parsing ends',
+      ).toEqual([clientCardPreload]);
       expect(await itemLinks(page), 'the server rendered no card').toEqual([]);
       await expect(
         page.locator('head link[rel="preload"][as="style"]'),
       ).toHaveAttribute('href', /components\/card\/card\.css/);
-      // The preload response has arrived before the interaction.
+      // The client's preload has loaded before the interaction. Routing turns
+      // the HTTP cache off, so the server's prefetch, whose response would
+      // otherwise serve it, cannot stand in for it here.
       await expect
         .poll(() =>
-          page.evaluate(() =>
-            performance
-              .getEntriesByType('resource')
-              .some(({ name }) => name.includes('components/card/card.css')),
+          page.evaluate((): unknown =>
+            Reflect.get(window, '__ngxYetiPreloaded'),
           ),
         )
         .toBe(true);
@@ -403,18 +422,30 @@ for (const { kind, prefix } of routeKinds) {
       expect(await itemLinks(page)).toEqual(['card']);
 
       const frames = await cardPadding();
+      const unstyled = frames.filter((value) => value === '0px');
 
       expect(frames.length, 'the deferred card was sampled').toBeGreaterThan(0);
-      expect(
-        frames.filter((value) => value === '0px'),
-        'no frame shows the preloaded card without Yeti',
-      ).toEqual([]);
+
+      // WebKit ships prefetch off, so only the client's preload fetches the
+      // card file there (the user's ruling of 2026-10-05): recorded, not
+      // asserted. Real Safari shows the card unstyled until the file arrives.
+      if (browserName === 'webkit') {
+        test.info().annotations.push({
+          type: 'frames',
+          description: `${browserName}: ${String(unstyled.length)} of ${String(frames.length)} frames without the card file (client preload only)`,
+        });
+      } else {
+        expect(
+          unstyled,
+          'no frame shows the preloaded card without Yeti',
+        ).toEqual([]);
+      }
     });
 
     test.describe('with JavaScript off', () => {
       test.use({ javaScriptEnabled: false });
 
-      test('serves the placeholder with the card preload and no card link', async ({
+      test('serves the placeholder with the card prefetch, no style preload, and no card link', async ({
         page,
       }) => {
         await page.goto(`${prefix}setup-defer`);
@@ -423,9 +454,14 @@ for (const { kind, prefix } of routeKinds) {
           page.getByRole('button', { name: 'Show the deferred card' }),
         ).toBeVisible();
         expect(await itemLinks(page)).toEqual([]);
+        await expect(page.locator('head link[rel="prefetch"]')).toHaveAttribute(
+          'href',
+          /components\/card\/card\.css/,
+        );
         await expect(
-          page.locator('head link[rel="preload"][as="style"]'),
-        ).toHaveAttribute('href', /components\/card\/card\.css/);
+          page.locator('head link[rel="preload"]'),
+          'a server style preload holds the first paint in WebKit (upstream bug O4)',
+        ).toHaveCount(0);
         await expect(
           page.locator('[jsaction]'),
           'a jsaction marker that waitForHydration waits on',

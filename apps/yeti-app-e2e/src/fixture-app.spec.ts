@@ -1,5 +1,10 @@
 import { type Page } from '@playwright/test';
-import { expect, routeKinds, test } from './support/fixtures';
+import {
+  clientCardPreload,
+  expect,
+  routeKinds,
+  test,
+} from './support/fixtures';
 import { waitForHydration } from './support/hydration';
 import {
   clickWhileHeld,
@@ -60,6 +65,7 @@ test('the style mutation probe sees an item link moved while the main bundle run
     'add link[data-ngx-yeti-styles="card"]',
     'remove link[data-ngx-yeti-styles="lift"]',
     'add link[data-ngx-yeti-styles="lift"]',
+    clientCardPreload,
   ]);
 });
 

@@ -4,6 +4,7 @@ import {
   DOCUMENT,
   DestroyRef,
   InjectionToken,
+  PLATFORM_ID,
   Service,
   afterNextRender,
   inject,
@@ -30,9 +31,12 @@ export interface YetiStylesConfig {
    */
   readonly url?: '' | `${string}/`;
   /**
-   * Items whose files are preloaded on the server and the client at
-   * application start: every item that first renders on the client, when a
-   * flash-free first frame matters (setup usage rule 8).
+   * Items whose files are fetched ahead at application start: every item that
+   * first renders on the client, when a flash-free first frame matters (setup
+   * usage rule 8). The server writes `<link rel="prefetch">` and the client
+   * `<link rel="preload" as="style">`, because a server style preload holds
+   * WebKit's first paint on a sparse page (upstream bug O4). WebKit ignores
+   * the prefetch, so Safari shows the item unstyled until its file arrives.
    */
   readonly preload?: readonly YetiComponentName[];
 }
@@ -87,10 +91,18 @@ export class YetiStyles {
       }
     }
 
-    // Rule 4: one preload link per item, never beside one already in `<head>`.
-    // The `href` is compared as a string, never put into a selector.
-    const preloaded = new Set(
-      [...this.#document.head.querySelectorAll('link[rel="preload"]')].map(
+    // Rule 4: one hint per item, never beside one already in `<head>`. The
+    // server writes a prefetch and the client a style preload (the user's
+    // ruling of 2026-10-05): a server style preload holds WebKit's first paint
+    // on a sparse page (upstream bug O4), and WebKit ignores a prefetch. The
+    // client keeps the server's prefetch, the measured shape. `PLATFORM_ID` is
+    // compared as `isPlatformServer` does, since the package's only peer is
+    // `@angular/core`. The `href` is compared as a string, never put into a
+    // selector.
+    const onServer = inject(PLATFORM_ID) === 'server';
+    const rel = onServer ? 'prefetch' : 'preload';
+    const hinted = new Set(
+      [...this.#document.head.querySelectorAll(`link[rel="${rel}"]`)].map(
         (link) => link.getAttribute('href'),
       ),
     );
@@ -98,16 +110,19 @@ export class YetiStyles {
     for (const item of this.#config?.preload ?? []) {
       const href = this.#href(item);
 
-      if (!preloaded.has(href)) {
-        preloaded.add(href);
+      if (!hinted.has(href)) {
+        hinted.add(href);
         this.#document.head.appendChild(
-          this.#createLink({ rel: 'preload', as: 'style', href }),
+          this.#createLink(
+            onServer ? { rel, href } : { rel, as: 'style', href },
+          ),
         );
       }
     }
 
-    // Render callbacks are the only platform split (building-blocks 1.11):
-    // the observer, and with it every removal, exists on the client only.
+    // Render callbacks split the rest of the platform work (building-blocks
+    // 1.11): the observer, and with it every removal, exists on the client
+    // only.
     afterNextRender(() => {
       this.#observer = new MutationObserver(() => {
         this.#scheduleCheck();

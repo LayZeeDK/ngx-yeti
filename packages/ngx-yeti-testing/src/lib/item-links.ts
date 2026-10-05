@@ -27,12 +27,12 @@ export function preloadHrefs(): (string | null)[] {
 }
 
 /**
- * Removes the item and preload links an earlier test's loader left in the
+ * Removes the item, preload, and prefetch links an earlier test left in the
  * shared document.
  */
 export function removeItemLinks(): void {
   for (const link of document.head.querySelectorAll(
-    'link[data-ngx-yeti-styles], link[rel="preload"]',
+    'link[data-ngx-yeti-styles], link[rel="preload"], link[rel="prefetch"]',
   )) {
     link.remove();
   }

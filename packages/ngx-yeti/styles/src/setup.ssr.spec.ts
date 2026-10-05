@@ -63,7 +63,7 @@ describe('setup', () => {
     ]);
   });
 
-  it('ignores APP_BASE_HREF in the item and preload links', async () => {
+  it('ignores APP_BASE_HREF in the item and prefetch links', async () => {
     expect.assertions(2);
 
     const html = head(
@@ -72,7 +72,7 @@ describe('setup', () => {
 
     expect(html).not.toContain('/other/');
     expect(headLinks(html)).toStrictEqual([
-      `<link rel="preload" as="style" href="yeti-css/utilities/lift/lift.css?v=${yetiPin}">`,
+      `<link rel="prefetch" href="yeti-css/utilities/lift/lift.css?v=${yetiPin}">`,
       itemLink('components/card/card.css', 'card'),
       itemLink('utilities/lift/lift.css', 'lift'),
     ]);
@@ -89,16 +89,19 @@ describe('setup', () => {
     expect(lifted).toContain('data-ngx-yeti-item-lift=""');
   });
 
-  it('writes the lift preload link', async () => {
-    expect.assertions(1);
+  it('writes a prefetch link for the lift preload and no style preload', async () => {
+    expect.assertions(2);
 
-    const preloads = headLinks(await render()).filter((link) =>
-      link.includes('rel="preload"'),
-    );
+    const links = headLinks(await render());
 
-    expect(preloads).toStrictEqual([
-      `<link rel="preload" as="style" href="yeti-css/utilities/lift/lift.css?v=${yetiPin}">`,
+    expect(
+      links.filter((link) => link.includes('rel="prefetch"')),
+    ).toStrictEqual([
+      `<link rel="prefetch" href="yeti-css/utilities/lift/lift.css?v=${yetiPin}">`,
     ]);
+    expect(
+      links.filter((link) => link.includes('rel="preload"')),
+    ).toStrictEqual([]);
   });
 
   it('writes no item link for a preloaded item that is not rendered', async () => {
@@ -123,7 +126,7 @@ describe('setup', () => {
     );
 
     expect(links).toStrictEqual([
-      `<link rel="preload" as="style" href="yeti-css/utilities/lift/lift.css?v=${yetiPin}" nonce="yeti-nonce">`,
+      `<link rel="prefetch" href="yeti-css/utilities/lift/lift.css?v=${yetiPin}" nonce="yeti-nonce">`,
       itemLink('components/card/card.css', 'card', ' nonce="yeti-nonce"'),
       itemLink('utilities/lift/lift.css', 'lift', ' nonce="yeti-nonce"'),
     ]);
