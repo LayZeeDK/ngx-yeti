@@ -29,6 +29,12 @@ const setups = {
   'MP-v4end': { main: 3000, polyfills: 3000, css: 0, strip: false, v4end: true, what: 'main and polyfills +3000, media="not all" link at the end of head' },
   'MPc-v4end': { main: 3000, polyfills: 3000, css: 300, strip: false, v4end: true, what: 'main and polyfills +3000, card.css +300, media="not all" link at the end of head' },
   'Mc-v4end': { main: 3000, polyfills: 0, css: 300, strip: false, v4end: true, what: 'main +3000, card.css +300, media="not all" link at the end of head' },
+  // nomp: the build's <link rel="modulepreload"> hints removed as well.
+  'MP-nomp': { main: 3000, polyfills: 3000, css: 0, strip: false, nomp: true, what: 'main and polyfills +3000, modulepreload removed' },
+  'MP-nomp-nopre': { main: 3000, polyfills: 3000, css: 0, strip: true, nomp: true, what: 'main and polyfills +3000, modulepreload and style preload removed' },
+  'MPc-nomp': { main: 3000, polyfills: 3000, css: 300, strip: false, nomp: true, what: 'main and polyfills +3000, card.css +300, modulepreload removed' },
+  'MPc-nomp-nopre': { main: 3000, polyfills: 3000, css: 300, strip: true, nomp: true, what: 'main and polyfills +3000, card.css +300, modulepreload and style preload removed' },
+  'MPc-nomp-v4end': { main: 3000, polyfills: 3000, css: 300, strip: false, nomp: true, v4end: true, what: 'main and polyfills +3000, card.css +300, modulepreload removed, media="not all" link at the end of head' },
 };
 const routes = (arg('routes', 'server/card,card')).split(',');
 const setupKeys = arg('setups', 'M,MP,Mc,Mc-nopre,Mc-v4').split(',');
@@ -120,6 +126,11 @@ const proxy = createServer(async (req, res) => {
     upRes.on('end', () => {
       let html = Buffer.concat(chunks).toString('utf8');
       run.preloadsInHtml = (html.match(/<link rel="preload" as="style"[^>]*>/g) ?? []).length;
+      run.modulepreloads = (html.match(/<link[^>]*rel="modulepreload"[^>]*>/g) ?? []).length;
+
+      if (s.nomp) {
+        html = html.replace(/<link[^>]*rel="modulepreload"[^>]*>/g, '');
+      }
       // One Safari session keeps stylesheets in its memory cache despite no-store
       // (measured: no card.css request after the first load), so every stylesheet
       // URL in the server's HTML gets the run id. Links the client inserts keep
@@ -214,13 +225,14 @@ async function once({ route, setup }, i) {
     cardStatus: (last?.res ?? []).filter((e) => isCard(e.path)).map((e) => e.status),
     cardUpstream: run.cardUpstream ?? [],
     preloadsInHtml: run.preloadsInHtml,
+    modulepreloads: run.modulepreloads,
     ua: last?.ua ?? early?.ua,
   };
   const f = (x) => (Number.isFinite(x) ? Math.round(x) : '-');
   console.log(
     `${route} ${setup} ${i}: stall=${row.stall} ticks@1500=${row.ticks1500 ?? '-'} firstTick=${f(row.firstTick)} FCP=${f(fcp)} ` +
       `card.css=${f(row.cardEnd)} polyfills=${f(polyEnd)} main=${f(mainEnd)} interactive=${f(row.interactive)} ` +
-      `waited=${row.fcpWaited} cardReq=${row.cardRequests} cardAsked=${f(row.cardAsked)} cardHttp=${row.cardUpstream.join('/')} preloads=${row.preloadsInHtml}`,
+      `waited=${row.fcpWaited} cardReq=${row.cardRequests} cardAsked=${f(row.cardAsked)} cardHttp=${row.cardUpstream.join('/')} preloads=${row.preloadsInHtml} modulepreloads=${row.modulepreloads}`,
   );
 
   return row;
