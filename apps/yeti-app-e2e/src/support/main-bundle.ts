@@ -20,9 +20,10 @@ export async function holdBackMainBundle(page: Page): Promise<() => void> {
 }
 
 /**
- * Clicks while the main bundle is held. With the bundle held, WebKit sometimes
- * paints no frame at all (when the card style preload lands after parsing
- * ends), so a plain click's wait for two stable animation frames never ends.
+ * Clicks while the main bundle is held. With the bundle held, WebKit can paint
+ * no frame at all on a sparse page while a non-render-blocking style file is
+ * still loading (upstream bugs O4 and O7; in production builds, the critical-CSS
+ * link), so a plain click's wait for two stable animation frames never ends.
  * In WebKit the click is forced, which is still a real pointer event before
  * hydration; the other engines keep Playwright's actionability checks.
  */
