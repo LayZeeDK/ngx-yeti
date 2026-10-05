@@ -10,6 +10,12 @@ export const createNodes = [
   (files) =>
     files.map((file) => {
       const root = dirname(file);
+      // bin/build.js resolves these from Yeti's own node_modules first, where
+      // npm nests a copy when Yeti's range excludes the root version. Nx's
+      // externalDependencies hashes only the root copy, and both directories
+      // are gitignored, so print the version of the copy Node resolves. The
+      // empty externalDependencies stops Nx from hashing every npm package.
+      const toolVersions = `node -p "['esbuild','lightningcss','parse5'].map(p=>{const f=['${root}/node_modules/','node_modules/'].map(d=>d+p+'/package.json').find(require('fs').existsSync);return p+'@'+JSON.parse(require('fs').readFileSync(f)).version}).join(' ')"`;
 
       return [
         file,
@@ -25,13 +31,8 @@ export const createNodes = [
                   inputs: [
                     'default',
                     '{workspaceRoot}/tools/yeti/nx-plugin.mjs',
-                    {
-                      externalDependencies: [
-                        'esbuild',
-                        'lightningcss',
-                        'parse5',
-                      ],
-                    },
+                    { runtime: toolVersions },
+                    { externalDependencies: [] },
                   ],
                   outputs: ['{projectRoot}/dist'],
                   metadata: {
