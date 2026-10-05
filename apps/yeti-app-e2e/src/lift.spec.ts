@@ -50,7 +50,7 @@ for (const { kind, prefix } of routeKinds) {
 
       expect(
         await styleMutations(),
-        'no link or style element is added or removed after DOMContentLoaded',
+        'no link or style element is added or removed after parsing ends',
       ).toEqual([]);
       expect(
         await hostAttributes(),

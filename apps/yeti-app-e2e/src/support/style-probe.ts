@@ -31,8 +31,10 @@ function reader(page: Page, key: string): () => Promise<readonly string[]> {
 
 /**
  * Call before `goto`. The returned function lists one entry per `link` or
- * `style` element added to or removed from the document after
- * `DOMContentLoaded`, such as `add link[data-ngx-yeti-styles="card"]`.
+ * `style` element added to or removed from the document once parsing ends,
+ * such as `add link[data-ngx-yeti-styles="card"]`. Recording starts when
+ * `document.readyState` becomes `interactive`, before any module script
+ * runs: Firefox hydrates the routed component before `DOMContentLoaded`.
  */
 export async function recordStyleMutations(
   page: Page,
@@ -41,12 +43,8 @@ export async function recordStyleMutations(
 
   await page.addInitScript((name) => {
     const entries: string[] = [];
-    let afterContentLoaded = false;
 
     Reflect.set(window, name, entries);
-    document.addEventListener('DOMContentLoaded', () => {
-      afterContentLoaded = true;
-    });
 
     const entryFor = (change: string, node: Node): string | null => {
       if (!(
@@ -64,11 +62,7 @@ export async function recordStyleMutations(
       return `${change} ${node.localName}${detail}`;
     };
 
-    new MutationObserver((mutations) => {
-      if (!afterContentLoaded) {
-        return;
-      }
-
+    const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         for (const [change, nodes] of [
           ['add', mutation.addedNodes],
@@ -83,7 +77,13 @@ export async function recordStyleMutations(
           }
         }
       }
-    }).observe(document, { childList: true, subtree: true });
+    });
+
+    document.addEventListener('readystatechange', () => {
+      if (document.readyState === 'interactive') {
+        observer.observe(document, { childList: true, subtree: true });
+      }
+    });
   }, key);
 
   return reader(page, key);
