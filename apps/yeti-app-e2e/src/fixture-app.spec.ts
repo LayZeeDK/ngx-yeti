@@ -110,5 +110,27 @@ test.describe('the axe fixture', () => {
       ).toContainEqual(expect.stringMatching(/^image-alt: /));
       expect(warnings).toEqual([]);
     });
+
+    test('reports a contrast violation that only the global stylesheet causes', async ({
+      axeViolations,
+      page,
+    }) => {
+      await page.goto('card');
+      await page.locator('main').evaluate((main) => {
+        const text = document.createElement('p');
+        text.id = 'global-token-contrast';
+        text.textContent = 'Black text on a Yeti token background';
+        // Without the global stylesheet's tokens the fallback is white, which passes.
+        text.setAttribute(
+          'style',
+          'color: #000; background-color: var(--yeti-color-primary-text, #fff)',
+        );
+        main.append(text);
+      });
+
+      expect(await axeViolations()).toContainEqual(
+        expect.stringMatching(/^color-contrast: .*#global-token-contrast/),
+      );
+    });
   });
 });
