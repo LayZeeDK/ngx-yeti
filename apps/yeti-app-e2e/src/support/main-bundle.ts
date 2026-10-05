@@ -1,6 +1,6 @@
 import { type Locator, type Page } from '@playwright/test';
 
-const mainBundle = /\/main(-[0-9A-Z]+)?\.js$/;
+export const mainBundle = /\/main(-[0-9A-Z]+)?\.js$/;
 
 /**
  * Navigate with `waitUntil: 'commit'`, because a held module script also
