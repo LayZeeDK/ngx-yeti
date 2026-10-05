@@ -3,7 +3,8 @@ import { expect, type Page } from '@playwright/test';
 /**
  * Upstream bug O2: read geometry only once the item files of `items` have
  * loaded and applied. Expects one link per item in `<head>`, then waits until
- * each has a stylesheet.
+ * each has a stylesheet with rules: a failed load leaves an empty sheet in
+ * `document.styleSheets` (review finding G4-02).
  */
 export async function expectItemSheetsApplied(
   page: Page,
@@ -16,16 +17,30 @@ export async function expectItemSheetsApplied(
   }
 
   await expect
-    .poll(() =>
-      page.evaluate(
-        (names) =>
-          [...document.styleSheets].filter(
-            ({ ownerNode }) =>
-              ownerNode instanceof HTMLLinkElement &&
-              names.includes(ownerNode.dataset['ngxYetiStyles'] ?? ''),
-          ).length,
-        items,
-      ),
+    .poll(
+      () =>
+        page.evaluate(
+          (names) =>
+            [...document.styleSheets].filter((sheet) => {
+              const { ownerNode } = sheet;
+
+              if (
+                !(ownerNode instanceof HTMLLinkElement) ||
+                !names.includes(ownerNode.dataset['ngxYetiStyles'] ?? '')
+              ) {
+                return false;
+              }
+
+              try {
+                return sheet.cssRules.length > 0;
+              } catch {
+                // An aborted load leaves a sheet whose rules throw.
+                return false;
+              }
+            }).length,
+          items,
+        ),
+      { message: 'item sheets loaded with rules' },
     )
     .toBe(items.length);
 }
