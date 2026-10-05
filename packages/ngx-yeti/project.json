@@ -112,6 +112,11 @@
     "pack-check": {
       "command": "node tools/package/pack-check.mjs",
       "dependsOn": ["build"],
+      "inputs": [
+        "production",
+        "^production",
+        "{workspaceRoot}/tools/package/**/*"
+      ],
       "metadata": {
         "description": "npm pack the built package and compile a consumer against the tarball; never publishes"
       }

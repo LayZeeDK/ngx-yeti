@@ -24,6 +24,7 @@ export const createNodes = [
                   cache: true,
                   inputs: [
                     'default',
+                    '{workspaceRoot}/tools/yeti/nx-plugin.mjs',
                     {
                       externalDependencies: [
                         'esbuild',
