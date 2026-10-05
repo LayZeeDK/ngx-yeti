@@ -133,7 +133,7 @@ test.describe('lift--keyboard', () => {
   }) => {
     test.skip(
       browserName === 'webkit',
-      'Playwright emulates forced colours in Chromium and Firefox only, and headless WebKit does not move focus on Tab',
+      'WebKit has no forced colours mode; Playwright emulates only the media query',
     );
 
     await page.emulateMedia({ forcedColors: 'active' });

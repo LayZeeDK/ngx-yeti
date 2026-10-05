@@ -218,7 +218,7 @@ test.describe('card--inputs', () => {
   }) => {
     test.skip(
       browserName === 'webkit',
-      'Playwright emulates forced colours in Chromium and Firefox only',
+      'WebKit has no forced colours mode; Playwright emulates only the media query',
     );
 
     const root = await openStory(page, 'card--inputs', {
