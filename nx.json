@@ -49,6 +49,9 @@
       },
       {
         "env": "FLOOR_FIREFOX_E2E"
+      },
+      {
+        "env": "BROWSERS"
       }
     ]
   },
@@ -95,8 +98,12 @@
             "playwright"
           ]
         },
+        "{workspaceRoot}/tools/playwright/engines.mjs",
         {
           "env": "CI"
+        },
+        {
+          "env": "BROWSERS"
         }
       ],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],

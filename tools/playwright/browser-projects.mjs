@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { devices } from '@playwright/test';
+import { engines } from './engines.mjs';
 
 /**
  * The command the e2e web servers start Nx with: this Node and the installed
@@ -10,34 +11,48 @@ import { devices } from '@playwright/test';
  */
 export const nx = `"${process.execPath}" "${fileURLToPath(import.meta.resolve('nx'))}"`;
 
+const device = {
+  chromium: 'Desktop Chrome',
+  firefox: 'Desktop Firefox',
+  webkit: 'Desktop Safari',
+};
+
+/** @param {import('./engines.mjs').Browser} browser */
+function project({ name, engine, launchOptions }) {
+  return {
+    name,
+    use: {
+      ...devices[device[engine]],
+      ...(launchOptions && { launchOptions }),
+    },
+  };
+}
+
 /**
  * The Playwright projects of every e2e project. A floor job of floor.yml
- * sets one FLOOR_* variable and runs that engine only; with CI set, the
- * three current engines run; locally, Chromium runs.
+ * sets one FLOOR_* variable and runs that engine only; otherwise
+ * `engines()` picks them.
  */
 export function browserProjects() {
   const chromiumFloor = process.env['FLOOR_CHROMIUM_PATH'];
-  const chromium = {
-    name: 'chromium',
-    use: {
-      ...devices['Desktop Chrome'],
-      ...(chromiumFloor && {
-        launchOptions: { executablePath: chromiumFloor },
-      }),
-    },
-  };
-  const firefox = { name: 'firefox', use: { ...devices['Desktop Firefox'] } };
-  const webkit = { name: 'webkit', use: { ...devices['Desktop Safari'] } };
 
   if (process.env['FLOOR_WEBKIT'] === 'true') {
-    return [webkit];
+    return [project({ name: 'webkit', engine: 'webkit' })];
   }
 
   if (process.env['FLOOR_FIREFOX_E2E'] === 'true') {
-    return [firefox];
+    return [project({ name: 'firefox', engine: 'firefox' })];
   }
 
-  return process.env['CI'] && !chromiumFloor
-    ? [chromium, firefox, webkit]
-    : [chromium];
+  if (chromiumFloor) {
+    return [
+      project({
+        name: 'chromium',
+        engine: 'chromium',
+        launchOptions: { executablePath: chromiumFloor },
+      }),
+    ];
+  }
+
+  return engines().map((browser) => project(browser));
 }

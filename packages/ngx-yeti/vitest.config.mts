@@ -3,6 +3,7 @@ import { defineConfig } from 'vitest/config';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import { storybookAngularVitest } from '@storybook/angular-vite/vitest';
 import { playwright } from '@vitest/browser-playwright';
+import { engines } from '../../tools/playwright/engines.mjs';
 
 // More info at: https://storybook.js.org/docs/writing-tests/integrations/vitest-addon
 export default defineConfig({
@@ -30,13 +31,7 @@ export default defineConfig({
             enabled: true,
             headless: true,
             provider: playwright(),
-            instances: process.env['CI']
-              ? [
-                  { browser: 'chromium' },
-                  { browser: 'firefox' },
-                  { browser: 'webkit' },
-                ]
-              : [{ browser: 'chromium' }],
+            instances: engines().map(({ engine }) => ({ browser: engine })),
           },
         },
       },

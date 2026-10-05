@@ -2,6 +2,7 @@ import type { ServerResponse } from 'node:http';
 import angular from '@analogjs/vite-plugin-angular';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig, type Plugin } from 'vitest/config';
+import { engines } from '../../tools/playwright/engines.mjs';
 
 const browserSpecs = 'src/**/*.browser.spec.ts';
 
@@ -65,13 +66,7 @@ export default defineConfig({
             enabled: true,
             headless: true,
             provider: playwright(),
-            instances: process.env['CI']
-              ? [
-                  { browser: 'chromium' },
-                  { browser: 'firefox' },
-                  { browser: 'webkit' },
-                ]
-              : [{ browser: 'chromium' }],
+            instances: engines().map(({ engine }) => ({ browser: engine })),
           },
         },
       },

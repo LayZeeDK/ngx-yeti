@@ -15,8 +15,12 @@
       "inputs": [
         "default",
         "^production",
+        "{workspaceRoot}/tools/playwright/engines.mjs",
         {
           "env": "CI"
+        },
+        {
+          "env": "BROWSERS"
         }
       ]
     },

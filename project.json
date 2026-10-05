@@ -2,6 +2,12 @@
   "name": "@ngx-yeti/source",
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "targets": {
+    "test": {
+      "command": "node --test tools/playwright/engines.test.mjs",
+      "dependsOn": [],
+      "cache": true,
+      "inputs": ["{workspaceRoot}/tools/playwright/**/*"]
+    },
     "local-registry": {
       "executor": "@nx/js:verdaccio",
       "options": {

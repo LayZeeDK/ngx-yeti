@@ -45,6 +45,7 @@
         "default",
         "^production",
         "{workspaceRoot}/tools/yeti/generate-sources.mjs",
+        "{workspaceRoot}/tools/playwright/engines.mjs",
         {
           "env": "CI"
         },
@@ -59,6 +60,9 @@
         },
         {
           "env": "SAFARI"
+        },
+        {
+          "env": "BROWSERS"
         }
       ],
       "outputs": ["{workspaceRoot}/coverage/unit/{projectRoot}"]
