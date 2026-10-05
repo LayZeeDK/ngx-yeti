@@ -33,6 +33,22 @@ test('falls back to the default for an empty BROWSERS', () => {
   ]);
 });
 
+test('sets FIREFOX_PATH as the executable of moz-firefox only', () => {
+  const env = {
+    BROWSERS: 'moz-firefox,msedge,firefox',
+    FIREFOX_PATH: 'ff.exe',
+  };
+
+  assert.deepEqual(
+    engines(env).map(({ launchOptions }) => launchOptions),
+    [
+      { channel: 'moz-firefox', executablePath: 'ff.exe' },
+      { channel: 'msedge' },
+      undefined,
+    ],
+  );
+});
+
 test('names the entry it cannot run', () => {
   assert.throws(() => engines({ BROWSERS: ',' }), /"" is not one of/);
   assert.throws(() => engines({ BROWSERS: 'webkit,' }), /"" is not one of/);

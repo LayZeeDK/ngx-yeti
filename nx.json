@@ -52,6 +52,9 @@
       },
       {
         "env": "BROWSERS"
+      },
+      {
+        "env": "FIREFOX_PATH"
       }
     ]
   },
@@ -104,6 +107,9 @@
         },
         {
           "env": "BROWSERS"
+        },
+        {
+          "env": "FIREFOX_PATH"
         }
       ],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],

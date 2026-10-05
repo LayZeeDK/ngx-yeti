@@ -4,7 +4,7 @@ import { playwright } from '@vitest/browser-playwright';
 import { webdriverio } from '@vitest/browser-webdriverio';
 import { defineConfig } from 'vitest/config';
 import type { BrowserConfigOptions } from 'vitest/node';
-import { engines } from '../../tools/playwright/engines.mjs';
+import { vitestInstances } from '../../tools/playwright/engines.mjs';
 
 function browserEngines(): Pick<
   BrowserConfigOptions,
@@ -47,7 +47,7 @@ function browserEngines(): Pick<
 
   return {
     provider: playwright(),
-    instances: engines().map(({ engine }) => ({ browser: engine })),
+    instances: vitestInstances(playwright),
   };
 }
 

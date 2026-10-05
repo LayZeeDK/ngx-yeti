@@ -21,6 +21,9 @@
         },
         {
           "env": "BROWSERS"
+        },
+        {
+          "env": "FIREFOX_PATH"
         }
       ]
     },
