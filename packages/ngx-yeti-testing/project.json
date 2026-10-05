@@ -12,7 +12,13 @@
         "cwd": "{projectRoot}"
       },
       "cache": true,
-      "inputs": ["default", "^production"]
+      "inputs": [
+        "default",
+        "^production",
+        {
+          "env": "CI"
+        }
+      ]
     },
     "typecheck": {}
   }
