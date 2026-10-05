@@ -4,8 +4,6 @@ export {
   type ContractEvent,
   type ContractMapping,
   type ContractMember,
-  directiveInputs,
-  directiveOutputs,
 } from './lib/contract';
 export {
   allOpeningTags,

@@ -11,10 +11,12 @@ expectTypeOf<ReturnType<NgxYetiLift['yetiLift']>>().toEqualTypeOf<
 >();
 
 describe('lift contract', () => {
-  it('maps the manifest component to NgxYetiLift', () => {
-    expect(
+  it('maps the manifest component to NgxYetiLift', async () => {
+    expect.assertions(1);
+
+    await expect(
       checkContract(manifest.components.lift, {
-        class: 'lift',
+        class: NgxYetiLift,
         attributes: {
           'data-lift': {
             directive: NgxYetiLift,
@@ -25,6 +27,6 @@ describe('lift contract', () => {
         markers: {},
         events: {},
       }),
-    ).toStrictEqual([]);
+    ).resolves.toStrictEqual([]);
   });
 });

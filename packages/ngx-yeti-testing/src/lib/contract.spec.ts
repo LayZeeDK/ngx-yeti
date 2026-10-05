@@ -4,19 +4,54 @@ import {
   type ContractComponent,
   type ContractMember,
   type ContractMapping,
-  directiveInputs,
-  directiveOutputs,
 } from './contract';
 
-@Directive({ selector: '[yetiSample]' })
+@Directive({
+  selector: '[yetiSample]',
+  host: {
+    class: 'sample',
+    '[attr.data-size]': 'size() ?? null',
+    '[attr.data-flag]': "flag() ? '' : null",
+    '[attr.data-label]': 'label() ?? null',
+    '[class.is-wide]': 'wide()',
+  },
+})
 class Sample {
   readonly size = input<'a' | 'b'>();
   readonly flag = input(false);
+  readonly label = input<string>();
+  readonly wide = input(false);
   readonly changed = output<string>();
 }
 
-@Directive({ selector: 'a[yetiSampleLink]' })
+@Directive({
+  selector: 'a[yetiSampleLink]',
+  host: { '[attr.data-stretch]': "stretch() ? '' : null" },
+})
 class SampleLink {
+  readonly stretch = input(false);
+}
+
+/** Sample's defects: a renamed class, a misnamed attribute, a wrong value. */
+@Directive({
+  selector: '[yetiMisbound]',
+  host: {
+    class: 'samples',
+    '[attr.data-sise]': 'size() ?? null',
+    '[attr.data-flag]': "flag() ? 'true' : null",
+  },
+})
+class Misbound {
+  readonly size = input<'a' | 'b'>();
+  readonly flag = input(false);
+}
+
+/** SampleLink's defect: it matches any element, not only `a`. */
+@Directive({
+  selector: '[yetiAnyLink]',
+  host: { '[attr.data-stretch]': "stretch() ? '' : null" },
+})
+class AnyLink {
   readonly stretch = input(false);
 }
 
@@ -31,6 +66,7 @@ const component: ContractComponent = {
       description: 'Size',
     },
     { name: 'data-flag', type: 'boolean', description: 'Flag' },
+    { name: 'data-label', type: 'string', description: 'Label' },
   ],
   markers: [
     { name: 'data-stretch', type: 'boolean', on: 'a', description: 'Link' },
@@ -50,60 +86,100 @@ const size: ContractMember = {
   values: ['a', 'b'],
 };
 const flag: ContractMember = { directive: Sample, input: 'flag' };
-const stretch: ContractMember = { directive: SampleLink, input: 'stretch' };
+const label: ContractMember = { directive: Sample, input: 'label' };
+const stretch: ContractMember = {
+  directive: SampleLink,
+  input: 'stretch',
+  selectorAttribute: 'yetiSampleLink',
+};
 
 const mapping: ContractMapping = {
-  class: 'sample',
-  attributes: { 'data-size': size, 'data-flag': flag },
+  class: Sample,
+  attributes: { 'data-size': size, 'data-flag': flag, 'data-label': label },
   markers: { 'data-stretch': stretch },
   events: { 'yeti:changed': { directive: Sample, output: 'changed' } },
 };
 
 describe(checkContract, () => {
-  it('passes a mapping that matches the manifest component', () => {
-    expect(checkContract(component, mapping)).toStrictEqual([]);
+  it('passes a mapping that matches the manifest component', async () => {
+    expect.assertions(1);
+
+    await expect(checkContract(component, mapping)).resolves.toStrictEqual([]);
   });
 
-  it('fails an attribute whose input is missing', () => {
-    expect(
+  it('fails an attribute whose input is missing', async () => {
+    expect.assertions(1);
+
+    await expect(
       checkContract(component, {
         ...mapping,
         attributes: {
-          'data-size': size,
+          ...mapping.attributes,
           'data-flag': { directive: Sample, input: 'absent' },
         },
       }),
-    ).toStrictEqual(['attribute data-flag: Sample has no input absent']);
+    ).resolves.toStrictEqual([
+      'attribute data-flag: Sample has no input absent',
+    ]);
   });
 
-  it('fails a union that holds a value the manifest lacks', () => {
-    expect(
+  it('fails a renamed class, a misnamed attribute, and a wrong value', async () => {
+    expect.assertions(1);
+
+    await expect(
+      checkContract(component, {
+        ...mapping,
+        class: Misbound,
+        attributes: {
+          ...mapping.attributes,
+          'data-size': { ...size, directive: Misbound },
+          'data-flag': { directive: Misbound, input: 'flag' },
+        },
+      }),
+    ).resolves.toStrictEqual([
+      'class sample: Misbound does not write it',
+      'attribute data-size: Misbound with size = "a" renders no data-size',
+      'attribute data-size: Misbound with size = "b" renders no data-size',
+      'attribute data-flag: Misbound with flag = true renders data-flag="true"',
+    ]);
+  });
+
+  it('fails a union that holds a value the manifest lacks', async () => {
+    expect.assertions(1);
+
+    await expect(
       checkContract(component, {
         ...mapping,
         attributes: {
+          ...mapping.attributes,
           'data-size': { ...size, values: ['a', 'b', 'c'] },
-          'data-flag': flag,
         },
       }),
-    ).toStrictEqual([
+    ).resolves.toStrictEqual([
       'attribute data-size: the union holds c, which the manifest lacks',
     ]);
   });
 
-  it('fails a union that lacks a vocabulary value', () => {
-    expect(
+  it('fails a union that lacks a vocabulary value', async () => {
+    expect.assertions(1);
+
+    await expect(
       checkContract(component, {
         ...mapping,
         attributes: {
+          ...mapping.attributes,
           'data-size': { ...size, values: ['a'] },
-          'data-flag': flag,
         },
       }),
-    ).toStrictEqual(['attribute data-size: the union lacks the value b']);
+    ).resolves.toStrictEqual([
+      'attribute data-size: the union lacks the value b',
+    ]);
   });
 
-  it('fails an enum mapped without values and an enum with none listed', () => {
-    expect(
+  it('fails an enum the manifest lists no values for', async () => {
+    expect.assertions(1);
+
+    await expect(
       checkContract(
         {
           ...component,
@@ -120,51 +196,83 @@ describe(checkContract, () => {
           },
         },
       ),
-    ).toStrictEqual([
+    ).resolves.toStrictEqual([
       'attribute data-size: an enum the manifest lists no values for',
     ]);
-    expect(
+  });
+
+  it("fails an enum mapped without the union's values", async () => {
+    expect.assertions(1);
+
+    await expect(
       checkContract(component, {
         ...mapping,
         attributes: {
+          ...mapping.attributes,
           'data-size': { directive: Sample, input: 'size' },
-          'data-flag': flag,
         },
       }),
-    ).toStrictEqual([
+    ).resolves.toStrictEqual([
       "attribute data-size: an enum mapped without the union's values",
     ]);
   });
 
-  it('fails an unmapped attribute, a wrong class, and a missing output', () => {
-    expect(
+  it('fails an unmapped attribute, a wrong class directive, and a missing output', async () => {
+    expect.assertions(1);
+
+    await expect(
       checkContract(component, {
         ...mapping,
-        class: 'other',
-        attributes: { 'data-size': size },
+        class: SampleLink,
+        attributes: { 'data-size': size, 'data-label': label },
         events: { 'yeti:changed': { directive: Sample, output: 'absent' } },
       }),
-    ).toStrictEqual([
-      'class sample is mapped as other',
+    ).resolves.toStrictEqual([
+      'class sample: SampleLink does not write it',
       'attribute data-flag is not mapped',
       'event yeti:changed: Sample has no output absent',
     ]);
   });
 
-  it('fails a mapped marker and a mapped event absent from the manifest', () => {
-    expect(
+  it('fails a mapped marker and a mapped event absent from the manifest', async () => {
+    expect.assertions(1);
+
+    await expect(
       checkContract(
         { ...component, js: null },
         { ...mapping, markers: { ...mapping.markers, 'data-extra': flag } },
       ),
-    ).toStrictEqual([
+    ).resolves.toStrictEqual([
       'marker data-extra is mapped but absent from the manifest',
       'event yeti:changed is mapped but absent from the manifest',
     ]);
   });
 
-  it('fails an unmapped modifier class and a mapped one the manifest lacks', () => {
-    expect(
+  it('passes a modifier class its input writes and fails one it does not', async () => {
+    expect.assertions(2);
+
+    const wide: ContractComponent = {
+      ...component,
+      classes: [{ name: 'is-wide', type: 'boolean', description: '' }],
+    };
+
+    await expect(
+      checkContract(wide, {
+        ...mapping,
+        classes: { 'is-wide': { directive: Sample, input: 'wide' } },
+      }),
+    ).resolves.toStrictEqual([]);
+    await expect(
+      checkContract(wide, { ...mapping, classes: { 'is-wide': flag } }),
+    ).resolves.toStrictEqual([
+      'class is-wide: Sample with flag = true renders no class is-wide',
+    ]);
+  });
+
+  it('fails an unmapped modifier class and a mapped one the manifest lacks', async () => {
+    expect.assertions(1);
+
+    await expect(
       checkContract(
         {
           ...component,
@@ -172,27 +280,53 @@ describe(checkContract, () => {
         },
         { ...mapping, classes: { 'is-tall': flag } },
       ),
-    ).toStrictEqual([
+    ).resolves.toStrictEqual([
       'class is-wide is not mapped',
       'class is-tall is mapped but absent from the manifest',
     ]);
   });
 
-  it('fails a marker whose directive matches elements its on excludes', () => {
-    expect(
+  it('fails a marker whose directive matches elements its on excludes', async () => {
+    expect.assertions(1);
+
+    await expect(
       checkContract(component, {
         ...mapping,
-        markers: { 'data-stretch': { directive: Sample, input: 'flag' } },
+        markers: {
+          'data-stretch': {
+            directive: AnyLink,
+            input: 'stretch',
+            selectorAttribute: 'yetiAnyLink',
+          },
+        },
       }),
-    ).toStrictEqual([
-      'marker data-stretch: Sample matches elements other than a',
+    ).resolves.toStrictEqual([
+      'marker data-stretch: AnyLink matches elements other than a',
     ]);
   });
-});
 
-describe(directiveInputs, () => {
-  it('lists the public inputs and outputs of a directive', () => {
-    expect(directiveInputs(Sample)).toStrictEqual(['size', 'flag']);
-    expect(directiveOutputs(Sample)).toStrictEqual(['changed']);
+  it('fails a marker whose selector attribute does not select it', async () => {
+    expect.assertions(2);
+
+    await expect(
+      checkContract(component, {
+        ...mapping,
+        markers: {
+          'data-stretch': { ...stretch, selectorAttribute: 'yetiAnyLink' },
+        },
+      }),
+    ).resolves.toStrictEqual([
+      'marker data-stretch: SampleLink does not match <a yetiAnyLink>',
+    ]);
+    await expect(
+      checkContract(component, {
+        ...mapping,
+        markers: {
+          'data-stretch': { directive: SampleLink, input: 'stretch' },
+        },
+      }),
+    ).resolves.toStrictEqual([
+      "marker data-stretch: on a needs the mapping's selectorAttribute",
+    ]);
   });
 });

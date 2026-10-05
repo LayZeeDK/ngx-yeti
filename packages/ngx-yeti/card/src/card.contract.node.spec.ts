@@ -32,10 +32,12 @@ expectTypeOf<ReturnType<YetiCard['raised']>>().toEqualTypeOf<boolean>();
 expectTypeOf<ReturnType<YetiCardLink['stretch']>>().toEqualTypeOf<boolean>();
 
 describe('card contract', () => {
-  it('maps the manifest component to YetiCard and YetiCardLink', () => {
-    expect(
+  it('maps the manifest component to YetiCard and YetiCardLink', async () => {
+    expect.assertions(1);
+
+    await expect(
       checkContract(manifest.components.card, {
-        class: 'card',
+        class: YetiCard,
         attributes: {
           'data-variant': {
             directive: YetiCard,
@@ -55,10 +57,14 @@ describe('card contract', () => {
           'data-raised': { directive: YetiCard, input: 'raised' },
         },
         markers: {
-          'data-stretch': { directive: YetiCardLink, input: 'stretch' },
+          'data-stretch': {
+            directive: YetiCardLink,
+            input: 'stretch',
+            selectorAttribute: 'yetiCardLink',
+          },
         },
         events: {},
       }),
-    ).toStrictEqual([]);
+    ).resolves.toStrictEqual([]);
   });
 });
