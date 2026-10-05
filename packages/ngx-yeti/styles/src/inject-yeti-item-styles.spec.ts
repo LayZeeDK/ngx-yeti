@@ -229,6 +229,22 @@ describe(injectYetiItemStyles, () => {
     expect(itemNames()).toStrictEqual(['card']);
   });
 
+  it("keeps yeti.css's order when something else took a tracked link out of <head>", async () => {
+    expect.assertions(1);
+
+    const { create } = setup();
+    await create(ProbeCenter);
+    await create(ProbeCard);
+
+    for (const link of itemLinks('center')) {
+      link.remove();
+    }
+
+    await create(ProbeStack);
+
+    expect(itemNames()).toStrictEqual(['stack', 'card']);
+  });
+
   it('keeps the link while a host with no directive is connected', async () => {
     expect.assertions(2);
 
@@ -325,6 +341,19 @@ describe(injectYetiItemStyles, () => {
     expect(itemLinks()).toStrictEqual([other]);
   });
 
+  it('inserts before the first later-ranked link in <head>, whatever its application', async () => {
+    expect.assertions(1);
+
+    const { create } = setup();
+    const other = serverLink('card', 'other-app');
+    const own = serverLink('card', appId);
+    document.head.append(other, own);
+
+    await create(ProbeStack);
+
+    expect(itemNames()).toStrictEqual(['stack', 'card', 'card']);
+  });
+
   it('keeps two loaders of two applications apart', async () => {
     expect.assertions(3);
 
@@ -349,20 +378,20 @@ describe(injectYetiItemStyles, () => {
 
     expect(
       itemLinks().map((link) => link.getAttribute('data-ngx-yeti-app')),
-    ).toStrictEqual(['app-a', 'app-b', appId]);
+    ).toStrictEqual([appId, 'app-a', 'app-b']);
 
     first.destroy();
 
     // A destroyed loader removes its unused links at once, with no frame.
     expect(
       itemLinks().map((link) => link.getAttribute('data-ngx-yeti-app')),
-    ).toStrictEqual(['app-b', appId]);
+    ).toStrictEqual([appId, 'app-b']);
 
     await nextFrame();
 
     expect(
       itemLinks().map((link) => link.getAttribute('data-ngx-yeti-app')),
-    ).toStrictEqual(['app-b', appId]);
+    ).toStrictEqual([appId, 'app-b']);
   });
 
   it('removes no link once its loader is destroyed', async () => {
