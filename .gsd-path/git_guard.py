@@ -12,14 +12,7 @@ def same_dir(a, b):
     return os.path.normcase(str(Path(a).resolve())) == os.path.normcase(str(Path(b).resolve()))
 
 
-# Local patch, until GSD Path runs its own git calls without the hook's
-# environment (docs/specs/upstream-bugs.md O5): in a linked worktree git
-# exports an absolute GIT_DIR to hooks, and the runtime's placement probe in
-# ~/.gsd-path/projects inherits it and mistakes that directory for part of
-# this repository. Drop GIT_DIR only when git finds the same directory from
-# the hook's working directory without it. GIT_INDEX_FILE stays, because
-# `git commit -a` and `git commit <paths>` stage into a temporary index.
-# A `--hooks-refresh` or runtime upgrade overwrites this file.
+# Local patch for docs/specs/upstream-bugs.md O5; keep GIT_INDEX_FILE, a temporary index during `commit -a`.
 git_dir = os.environ.get('GIT_DIR')
 if git_dir:
     found = subprocess.run(
