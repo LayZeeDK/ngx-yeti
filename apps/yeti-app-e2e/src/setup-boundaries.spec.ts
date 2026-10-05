@@ -74,15 +74,9 @@ for (const { kind, prefix } of routeKinds) {
       );
     });
 
-    test("records WebKit's unstyled frames after $reset() with and without a preload", async ({
-      browserName,
+    test('records the unstyled frames after $reset() with and without a preload', async ({
       page,
     }) => {
-      test.skip(
-        browserName !== 'webkit',
-        'setup.md:343 records this case in WebKit only (ticket 37 finding 2)',
-      );
-
       const cardPadding = await recordFrames(
         page,
         '#reset-card',
