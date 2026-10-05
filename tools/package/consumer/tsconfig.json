@@ -7,7 +7,7 @@
     "types": [],
     "strict": true,
     "noUnusedLocals": true,
-    "skipLibCheck": true,
+    "skipLibCheck": false,
     "isolatedModules": true,
     "outDir": "out"
   },
