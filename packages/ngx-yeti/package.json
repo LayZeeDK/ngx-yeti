@@ -8,5 +8,7 @@
   "exports": {
     "./accessibility.css": "./accessibility.css"
   },
-  "sideEffects": false
+  "sideEffects": [
+    "*.css"
+  ]
 }
