@@ -40,40 +40,23 @@ class HoverHost {}
 /** Yeti's built CSS, served by Vite from the workspace's node_modules. */
 const yetiCss: `${string}/` = `/@fs/${server.config.root.replaceAll('\\', '/')}/../../node_modules/yeti-css/dist/css/`;
 
-/**
- * The part of the setup spec's global stylesheet the pointer cases read: the
- * layer order, the tokens, and the reset. Not the whole always-loaded group.
- */
-const globalFiles = [
-  'layers.css',
-  'tokens/scale.css',
-  'tokens/space.css',
-  'tokens/type.css',
-  'tokens/color.css',
-  'tokens/tone.css',
-  'tokens/motion.css',
-  'tokens/surface.css',
-  'tokens/components.css',
-  'base/reset.css',
-];
+/** Storybook's global stylesheet, which Vite serves with its imports inlined. */
+const globalHref = `/@fs/${server.config.root.replaceAll('\\', '/')}/.storybook/styles.css`;
 
 /** Adds the global stylesheet once per test file, as an application does. */
 async function globalStylesheet(): Promise<void> {
-  for (const file of globalFiles) {
-    const href = `${yetiCss}${file}`;
-    let link = document.head.querySelector<HTMLLinkElement>(
-      `link[href="${href}"]`,
-    );
+  let link = document.head.querySelector<HTMLLinkElement>(
+    `link[href="${globalHref}"]`,
+  );
 
-    if (link === null) {
-      link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = href;
-      document.head.append(link);
-    }
-
-    await stylesheetLoaded(link);
+  if (link === null) {
+    link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = globalHref;
+    document.head.append(link);
   }
+
+  await stylesheetLoaded(link);
 }
 
 /**

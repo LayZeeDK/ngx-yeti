@@ -1,27 +1,16 @@
 import { stylesheetLoaded } from '@ngx-yeti/testing';
 import { server } from 'vitest/browser';
 
-const root = server.config.root.replaceAll('\\', '/');
-const stylesheets = [
-  `/@fs/${root}/../../node_modules/yeti-css/dist/css/layers.css`,
-  `/@fs/${root}/../../node_modules/yeti-css/dist/css/tokens/scale.css`,
-  `/@fs/${root}/../../node_modules/yeti-css/dist/css/tokens/space.css`,
-  `/@fs/${root}/accessibility.css`,
-];
+/** Storybook's global stylesheet, which Vite serves with its imports inlined. */
+const globalStylesheet = `/@fs/${server.config.root.replaceAll('\\', '/')}/.storybook/styles.css`;
 
-/** The setup spec's layer statement, then Yeti's scale and the package's stylesheet. */
+/** The global stylesheet of the setup spec, which ends with the package's. */
 async function setup(): Promise<{ readonly probe: HTMLElement }> {
-  const order = document.createElement('style');
-  order.textContent = '@layer yeti, ngx-yeti;';
-  document.head.append(order);
-
-  for (const href of stylesheets) {
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = href;
-    document.head.append(link);
-    await stylesheetLoaded(link);
-  }
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = globalStylesheet;
+  document.head.append(link);
+  await stylesheetLoaded(link);
 
   const probe = document.createElement('div');
   probe.style.paddingTop = 'var(--yeti-space-md)';
