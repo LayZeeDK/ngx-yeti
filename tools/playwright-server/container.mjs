@@ -7,8 +7,20 @@
  * Playwright's wsServer.ts answers 403 to every request whose Host is not
  * localhost, 127.0.0.1 or [::1] and to every upgrade with a non-loopback
  * Origin; bound to another address it checks neither.
+ *
+ * The pipe admits a connection only when its first request is
+ * `GET /<token>`: Playwright's `/json` answers the token path to any request
+ * with an allowed Host, and Docker publishes the port to other containers as
+ * well as to this machine, so without this check any container could read
+ * the token. A connection is closed at the first byte of `GET /` that
+ * differs, or 5 s after it opened without the whole line; the line itself
+ * is compared once, in constant time, so no byte of the token is confirmed
+ * before the whole line arrives. Later requests on a kept-alive connection
+ * pass unchecked; a client that got the first one through already holds the
+ * token.
  */
 import { spawn } from 'node:child_process';
+import { timingSafeEqual } from 'node:crypto';
 import net from 'node:net';
 
 /**
@@ -35,17 +47,77 @@ export function serve({ cli, innerPort, port, token, listenHost = '0.0.0.0' }) {
     ],
     { stdio: 'inherit' },
   );
+  const requestLine = Buffer.from(`GET /${token} HTTP/1.1\r\n`, 'latin1');
+  // Only this public prefix is checked byte by byte; a per-byte check of the
+  // token would tell a guesser which digit is right.
+  const publicPrefix = 'GET /'.length;
+  // Connections still before the line check, oldest first. At most 16 wait
+  // at a time, so tokenless clients cannot fill the server's connection cap;
+  // a new connection evicts the oldest waiting one.
+  /** @type {Set<net.Socket>} */
+  const pending = new Set();
+
+  const close = () => {
+    forwarder.close();
+    server.kill();
+  };
+
   const forwarder = net
     .createServer((socket) => {
-      const upstream = net.connect(innerPort, '127.0.0.1');
-      const close = () => {
-        socket.destroy();
-        upstream.destroy();
-      };
+      if (pending.size >= 16) {
+        for (const oldest of pending) {
+          oldest.destroy();
+          break;
+        }
+      }
 
-      socket.pipe(upstream).pipe(socket);
-      socket.on('error', close);
-      upstream.on('error', close);
+      let head = Buffer.alloc(0);
+      const deadline = setTimeout(() => socket.destroy(), 5000);
+
+      pending.add(socket);
+      socket.on('error', () => socket.destroy());
+      socket.on('close', () => {
+        clearTimeout(deadline);
+        pending.delete(socket);
+      });
+      socket.on('data', function onData(chunk) {
+        head = Buffer.concat([head, chunk]);
+        const seen = Math.min(head.length, publicPrefix);
+
+        if (!head.subarray(0, seen).equals(requestLine.subarray(0, seen))) {
+          socket.destroy();
+
+          return;
+        }
+
+        if (head.length < requestLine.length) {
+          return;
+        }
+
+        socket.off('data', onData);
+        clearTimeout(deadline);
+
+        if (
+          !timingSafeEqual(head.subarray(0, requestLine.length), requestLine)
+        ) {
+          socket.destroy();
+
+          return;
+        }
+
+        pending.delete(socket);
+
+        const upstream = net.connect(innerPort, '127.0.0.1');
+        const drop = () => {
+          socket.destroy();
+          upstream.destroy();
+        };
+
+        upstream.on('error', drop);
+        socket.on('error', drop);
+        upstream.write(head);
+        socket.pipe(upstream).pipe(socket);
+      });
     })
     .listen(port, listenHost);
 
@@ -53,16 +125,10 @@ export function serve({ cli, innerPort, port, token, listenHost = '0.0.0.0' }) {
   forwarder.maxConnections = 64;
   forwarder.on('error', (error) => {
     console.error(error);
-    server.kill();
+    close();
   });
 
-  return {
-    server,
-    close() {
-      forwarder.close();
-      server.kill();
-    },
-  };
+  return { server, close };
 }
 
 if (import.meta.main) {

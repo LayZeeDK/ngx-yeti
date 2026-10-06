@@ -181,13 +181,13 @@ async function waitUntilReady(token) {
     }
 
     try {
-      const response = await fetch(`http://${address}/json`, {
+      // The pipe admits the token path only; any HTTP answer there means
+      // run-server is up.
+      await fetch(`http://${address}/${token}`, {
         signal: AbortSignal.timeout(2000),
       });
 
-      if (response.ok) {
-        return;
-      }
+      return;
     } catch {
       // Not listening yet.
     }
