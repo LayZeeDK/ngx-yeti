@@ -48,6 +48,8 @@ await expect(contrastRatio(color, backgroundColor)).toBeGreaterThanOrEqual(4.5);
 
 ## Known limits
 
-- Playwright emulates `forced-colors` in Chromium and Firefox, not WebKit (`docs/specs/specs/tooltip.md`, ticket 17).
-- Playwright's WebKit skips links on Tab, its default "Tab to links" setting (`docs/specs/research/yeti-accessibility-and-standards.md`); focus them from script or use Alt+Tab as Yeti's own tests do.
+- `emulateMedia({ forcedColors: 'active' })` matches the query in WebKit too, but WebKit forces no colours, so a WebKit contrast measured under it checks the page's own palette (a departure from `docs/specs/specs/tooltip.md`, ticket 17; the `ngx-yeti-specs` skill's departures table has the row).
+- Safari on macOS skips links on Tab unless Option+Tab (Playwright's `Alt+Tab`) is used or "Press Tab to highlight each item" is on; WebKitGTK and WPE on Linux, and so CI's Playwright WebKit, tab to links (a departure from `docs/specs/research/yeti-accessibility-and-standards.md`, same table).
+- Playwright's Windows WebKit is a test build only, and reaches links by neither Tab nor Alt+Tab; don't design around it.
+- A test that must run everywhere focuses links from script.
 - Axe found 0 violations on Yeti's 49 docs examples in three engines and both schemes, so a gate failure almost always points at the package's own markup or bindings.
