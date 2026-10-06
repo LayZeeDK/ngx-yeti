@@ -65,7 +65,7 @@ BROWSERS=msedge,webkit npm exec nx -- e2e ngx-yeti-e2e
 FIREFOX_PATH='C:\Program Files\WindowsApps\Mozilla.Firefox_<version>_arm64__n80bbvh6b1yt2\VFS\ProgramFiles\Firefox Package Root\firefox.exe' BROWSERS=moz-firefox npm exec nx -- test ngx-yeti -- --project=browser
 ```
 
-Measured on 2026-10-05 on Windows 11 on ARM64 with Edge 154.0.4258.53 and Store Firefox 157.0; `chrome` was not measured. `msedge` passed `nx test ngx-yeti`, `test-storybook`, `ngx-yeti-testing` and `ngx-yeti-e2e`. Under `moz-firefox`, the three `under a real pointer` hover tests of `lift.spec.ts` time out waiting for a stable element, and the `ngx-yeti-e2e` reduced-motion shadow and dark colour scheme checks fail.
+Measured on 2026-10-05 and 2026-10-06 on Windows 11 on ARM64 with Edge 154.0.4258.53, Chrome 154.0.8037.98 and Store Firefox 157.0. `msedge` and `chrome` passed `nx test ngx-yeti`, `test-storybook`, `ngx-yeti-testing` and `ngx-yeti-e2e`. Under `moz-firefox`, the three `under a real pointer` hover tests of `lift.spec.ts` time out, the `card.stories.ts` "Stretched Link" and "With Lift" stories fail, and the `ngx-yeti-e2e` reduced-motion shadow and dark colour scheme checks fail; Mozilla's 155.0 aarch64 build, the pinned version, fails the same way. The causes are Playwright 1.63's WebDriver BiDi gaps (`docs/specs/upstream-bugs.md` O13 and O14), not the tests: `page.emulateMedia` is a no-op over BiDi, and a pointer action never finds an element inside Vitest's CSS-scaled tester iframe.
 
 ## Pitfalls
 
