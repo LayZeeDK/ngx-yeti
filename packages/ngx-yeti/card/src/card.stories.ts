@@ -620,6 +620,7 @@ export const WithLift: Story = {
     }
 
     await cardStyled(first);
+    await itemStylesLoaded('lift');
 
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
