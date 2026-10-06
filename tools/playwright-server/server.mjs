@@ -21,7 +21,15 @@ const { version } = require('playwright-core/package.json');
 const playwrightCore = path.dirname(
   require.resolve('playwright-core/package.json'),
 );
-const image = `mcr.microsoft.com/playwright:v${version}-noble`;
+// The image is pinned by digest, so a moved or replaced tag never runs. On
+// a Playwright upgrade, pull the new tag and set both fields from
+// `docker image inspect --format '{{index .RepoDigests 0}}' <image>`.
+const pinned = {
+  version: '1.63.0',
+  digest:
+    'sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27',
+};
+const image = `mcr.microsoft.com/playwright:v${pinned.version}-noble@${pinned.digest}`;
 const address = '127.0.0.1:3000';
 const name = 'ngx-yeti-playwright-server';
 // A network of its own: on Docker's default bridge, any other container
@@ -123,7 +131,15 @@ function start() {
       '--label',
       `${label}.token=${token}`,
       '--init',
-      '--ipc=host',
+      // No capabilities and no privilege gain for the browsers, which a
+      // token holder drives; Chromium's shared memory comes from --shm-size,
+      // not from the host's IPC namespace.
+      '--cap-drop',
+      'ALL',
+      '--security-opt',
+      'no-new-privileges',
+      '--shm-size',
+      '1g',
       '--network',
       network,
       '-p',
@@ -237,6 +253,12 @@ try {
       console.log(`${name} is not running`);
     }
   } else {
+    if (version !== pinned.version) {
+      throw new Error(
+        `playwright-core is ${version}, the pinned image is v${pinned.version}: update \`pinned\` in ${fileURLToPath(import.meta.url)}`,
+      );
+    }
+
     token = start();
     const endpoint = `ws://${address}/${token}`;
 
