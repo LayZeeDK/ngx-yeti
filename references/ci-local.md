@@ -45,7 +45,7 @@ Without `--matrix`, every combination runs in turn. A job without a `container` 
 
 ## Container jobs without Docker
 
-- The three current engines: `BROWSERS=chromium,firefox,webkit npm exec nx -- run-many -t test test-storybook --parallel=1` and `CI=true npm exec nx -- run-many -t e2e -p <projects> -- --project=<engine>`, with `FIXTURE_CONFIGURATION=production` for the production e2e run. The e2e run keeps `CI=true` for the job's CI settings, which `BROWSERS` skips (below). Without `CI` or `BROWSERS`, the browser projects declare Chromium only.
+- The three current engines: `BROWSERS=chromium,firefox,webkit npm exec nx -- run-many -t test test-storybook` and `CI=true npm exec nx -- run-many -t e2e -p <projects> -- --project=<engine>`, with `FIXTURE_CONFIGURATION=production` for the production e2e run. The e2e run keeps `CI=true` for the job's CI settings, which `BROWSERS` skips (below). Without `CI` or `BROWSERS`, the browser projects declare Chromium only.
 - `webkit-26-4` and `firefox-146-e2e`: `npm install --no-save playwright@<release> @playwright/test@<release>`, `npx playwright install <browser>`, then the job's steps with its `FLOOR_*` variable. Run `npm ci` before anything else afterwards.
 
 ## Choose browsers with BROWSERS
@@ -70,7 +70,9 @@ Measured on 2026-10-05 on Windows 11 on ARM64 with Edge 154.0.4258.53 and Store 
 ## Pitfalls
 
 - A Playwright `install` from an older release deletes the other releases' browsers from the shared `ms-playwright` cache. After `npm ci`, `npx playwright install chromium firefox webkit` puts the current release's browsers back. `run-job.mjs` avoids this: each image carries its own browsers.
-- On Windows on ARM64, Playwright's Windows browsers and Chrome for Testing are x64 builds that run under emulation. Native unit runs in Playwright's Firefox (`CI=true`, or `BROWSERS` naming `firefox`) need `--parallel=1`: at Nx's default of 3, Firefox's browser session times out at start. The Playwright images are arm64 and need neither.
+- On Windows on ARM64, Playwright's Windows browsers and Chrome for Testing are x64 builds that run under emulation. The Playwright images are arm64 and need no emulation.
+- Under heavy CPU load, emulated Firefox on Windows on ARM64 can exceed Vitest's 15 s browser test timeout or its 60 s browser connect timeout. `--parallel=1` lightens the load.
+- Hyper-V and WinNAT reserve port ranges on Windows, for example once Docker Desktop or WSL2 starts. A server that fails with `listen EACCES` on a fixed port (the e2e ports 4310 to 4312 and 4401, Storybook's 4400) sits in one; `netsh interface ipv4 show excludedportrange protocol=tcp` lists them. The Vitest browser servers pick a free port and are not affected.
 - Git Bash rewrites arguments that look like POSIX paths. `run-job.mjs` starts Docker without a shell, but the command after `--` passes through Git Bash first: prefix the call with `MSYS_NO_PATHCONV=1` when that command holds an absolute path, or run it from PowerShell.
 - The e2e ports are fixed (4310 to 4312 and 4401), so two native e2e runs, in two checkouts or two sessions, cannot overlap.
 - Remove the volumes with `docker volume rm` and the names `docker volume ls -q -f name=ngx-yeti-run-job` lists.
