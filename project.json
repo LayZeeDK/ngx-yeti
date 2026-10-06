@@ -3,14 +3,16 @@
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "targets": {
     "test": {
-      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs",
+      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright-server/container.test.mjs",
       "dependsOn": [],
       "cache": true,
       "inputs": [
         "{workspaceRoot}/tools/playwright/**/*",
         "{workspaceRoot}/packages/ngx-yeti/vitest.config.mts",
         "{workspaceRoot}/packages/ngx-yeti/vitest.unit.config.mts",
-        "{workspaceRoot}/packages/ngx-yeti-testing/vitest.config.mts"
+        "{workspaceRoot}/packages/ngx-yeti-testing/vitest.config.mts",
+        "{workspaceRoot}/tools/playwright-server/container.mjs",
+        "{workspaceRoot}/tools/playwright-server/container.test.mjs"
       ]
     },
     "local-registry": {
