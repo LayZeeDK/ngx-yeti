@@ -3,7 +3,17 @@ import net from 'node:net';
 
 /** @typedef {'chromium' | 'firefox' | 'webkit'} Engine */
 /** @typedef {{ channel?: string, executablePath?: string }} LaunchOptions */
-/** @typedef {{ name: string, engine: Engine, launchOptions?: LaunchOptions }} Browser */
+/** @typedef {{ wsEndpoint: string, exposeNetwork?: string }} ConnectOptions */
+/**
+ * The Playwright options of a browser, in the shape both consumers take as
+ * is: Vitest's `PlaywrightProviderOptions` and Playwright Test's `use`.
+ *
+ * @typedef {{
+ *   launchOptions?: LaunchOptions,
+ *   connectOptions?: ConnectOptions,
+ * }} Options
+ */
+/** @typedef {{ name: string, engine: Engine, options?: Options }} Browser */
 
 /**
  * @param {NodeJS.ProcessEnv} env
@@ -14,18 +24,26 @@ function known(env) {
 
   return new Map([
     ['chromium', { engine: 'chromium' }],
-    ['chrome', { engine: 'chromium', launchOptions: { channel: 'chrome' } }],
-    ['msedge', { engine: 'chromium', launchOptions: { channel: 'msedge' } }],
+    [
+      'chrome',
+      { engine: 'chromium', options: { launchOptions: { channel: 'chrome' } } },
+    ],
+    [
+      'msedge',
+      { engine: 'chromium', options: { launchOptions: { channel: 'msedge' } } },
+    ],
     ['firefox', { engine: 'firefox' }],
     [
       'moz-firefox',
       {
         engine: 'firefox',
-        launchOptions: {
-          channel: 'moz-firefox',
-          // The channel looks only in Firefox's default install folders, not
-          // in a Microsoft Store install.
-          ...(firefoxPath ? { executablePath: firefoxPath } : {}),
+        options: {
+          launchOptions: {
+            channel: 'moz-firefox',
+            // The channel looks only in Firefox's default install folders,
+            // not in a Microsoft Store install.
+            ...(firefoxPath ? { executablePath: firefoxPath } : {}),
+          },
         },
       },
     ],
@@ -87,17 +105,19 @@ export async function vitestBrowserApi() {
 }
 
 /**
- * `engines()` as the instances of a Vitest browser project. A channel gets
- * its own provider, made by the `provider` passed in (`playwright` from
- * `@vitest/browser-playwright`), so this file imports no Vitest code.
+ * `engines()` as the instances of a Vitest browser project. A browser with
+ * options gets its own provider, made by the `provider` passed in
+ * (`playwright` from `@vitest/browser-playwright`), so this file imports no
+ * Vitest code.
  *
  * @template P
- * @param {(options: { launchOptions: LaunchOptions }) => P} provider
+ * @param {(options: Options) => P} provider
+ * @param {NodeJS.ProcessEnv} env
  */
-export function vitestInstances(provider) {
-  return engines().map(({ name, engine, launchOptions }) =>
-    launchOptions
-      ? { browser: engine, name, provider: provider({ launchOptions }) }
+export function vitestInstances(provider, env = process.env) {
+  return engines(env).map(({ name, engine, options }) =>
+    options
+      ? { browser: engine, name, provider: provider(options) }
       : { browser: engine },
   );
 }

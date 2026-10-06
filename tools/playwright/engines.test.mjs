@@ -41,7 +41,7 @@ test('sets FIREFOX_PATH as the executable of moz-firefox only', () => {
   };
 
   assert.deepEqual(
-    engines(env).map(({ launchOptions }) => launchOptions),
+    engines(env).map(({ options }) => options?.launchOptions),
     [
       { channel: 'moz-firefox', executablePath: 'ff.exe' },
       { channel: 'msedge' },

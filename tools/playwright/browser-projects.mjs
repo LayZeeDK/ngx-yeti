@@ -18,13 +18,10 @@ const device = {
 };
 
 /** @param {import('./engines.mjs').Browser} browser */
-function project({ name, engine, launchOptions }) {
+function project({ name, engine, options }) {
   return {
     name,
-    use: {
-      ...devices[device[engine]],
-      ...(launchOptions && { launchOptions }),
-    },
+    use: { ...devices[device[engine]], ...options },
   };
 }
 
@@ -49,7 +46,7 @@ export function browserProjects() {
       project({
         name: 'chromium',
         engine: 'chromium',
-        launchOptions: { executablePath: chromiumFloor },
+        options: { launchOptions: { executablePath: chromiumFloor } },
       }),
     ];
   }
