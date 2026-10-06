@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
+import { skipUnlessTabReachesLinks } from './tab-to-links';
 
 type CardForm = 'row' | 'stacked' | 'neither';
 
@@ -178,10 +179,7 @@ test.describe('card--stretched-link', () => {
     browserName,
     page,
   }) => {
-    test.skip(
-      browserName === 'webkit' && process.platform !== 'linux',
-      'WebKit moves focus on Tab to form controls only, not links, outside Linux',
-    );
+    await skipUnlessTabReachesLinks(page, browserName);
 
     const root = await openStory(page, 'card--stretched-link');
     const card = root.getByRole('article');

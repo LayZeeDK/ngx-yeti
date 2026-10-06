@@ -1,6 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
+import { skipUnlessTabReachesLinks } from './tab-to-links';
 
 interface Reading {
   readonly top: number;
@@ -108,10 +109,7 @@ test.describe('lift--keyboard', () => {
     browserName,
     page,
   }) => {
-    test.skip(
-      browserName === 'webkit' && process.platform !== 'linux',
-      'WebKit moves focus on Tab to form controls only, not links, outside Linux',
-    );
+    await skipUnlessTabReachesLinks(page, browserName);
 
     const root = await openStory(page, 'lift--keyboard');
     const link = root.getByRole('link', { name: 'Hover me' });
