@@ -44,6 +44,10 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: false,
     cwd: workspaceRoot,
+    // Vite's CLI flushes Node's compile cache synchronously 10 s after it
+    // starts, which held the first test's `page.goto` for up to 58 s on fresh
+    // Windows runners (upstream bug O12).
+    env: { NODE_DISABLE_COMPILE_CACHE: '1' },
   },
   projects: browserProjects(),
 });
