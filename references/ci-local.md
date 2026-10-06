@@ -53,6 +53,7 @@ Without `--matrix`, every combination runs in turn. A job without a `container` 
 `BROWSERS` is a comma-separated list read by `tools/playwright/engines.mjs` for every Vitest browser project and every e2e project. Each name runs once, in list order. An unknown or empty entry, such as `safari` or the end of `webkit,`, throws while the config loads, so every Nx command that builds the project graph fails until you fix or unset `BROWSERS`. An empty `BROWSERS` counts as unset.
 
 - `chromium`, `firefox` and `webkit` run Playwright's pinned builds, the ones CI runs.
+- `remote-chromium`, `remote-firefox` and `remote-webkit` run the same pinned revisions in a Playwright server; see [The remote engines](#the-remote-engines).
 - `msedge` and `chrome` run the installed Microsoft Edge or Google Chrome through a Playwright channel; `moz-firefox` runs the installed Firefox through WebDriver BiDi. On Windows on ARM64 these are native arm64, unlike Playwright's x64 Windows builds.
 - The channels are the installed releases, not Playwright's pinned ones. Use them locally only, and never as evidence for what CI runs. They auto-update, and their version is not an Nx cache input, so add `--skip-nx-cache` after a browser update.
 - `BROWSERS` wins over `CI`. A floor variable or `SAFARI` wins over `BROWSERS` in the targets it changes. `FLOOR_FIREFOX` and `SAFARI` are the only paths to the `webdriverio` provider, so a channel never reaches it.
@@ -66,6 +67,30 @@ FIREFOX_PATH='C:\Program Files\WindowsApps\Mozilla.Firefox_<version>_arm64__n80b
 ```
 
 Measured on 2026-10-05 and 2026-10-06 on Windows 11 on ARM64 with Edge 154.0.4258.53, Chrome 154.0.8037.98 and Store Firefox 157.0. `msedge` and `chrome` passed `nx test ngx-yeti`, `test-storybook`, `ngx-yeti-testing` and `ngx-yeti-e2e`. Under `moz-firefox`, the three `under a real pointer` hover tests of `lift.spec.ts` time out, the `card.stories.ts` "Stretched Link" and "With Lift" stories fail, and the `ngx-yeti-e2e` reduced-motion shadow and dark colour scheme checks fail; Mozilla's 155.0 aarch64 build, the pinned version, fails the same way. The causes are Playwright 1.63's WebDriver BiDi gaps (`docs/specs/upstream-bugs.md` O13 and O14), not the tests: `page.emulateMedia` is a no-op over BiDi, and a pointer action never finds an element inside Vitest's CSS-scaled tester iframe.
+
+### The remote engines
+
+The `remote-*` names connect to the Playwright server at `PLAYWRIGHT_SERVER`, else the endpoint that `tools/playwright-server/server.mjs` wrote to `tmp/playwright-server`; with neither, the config throws and names both. The script runs `playwright run-server` of the installed release in Playwright's Linux image, `mcr.microsoft.com/playwright:v<release>-noble`, with the pinned Chromium, Firefox and WebKit at the same revisions CI runs (CI pulls linux/amd64; this machine runs the linux/arm64 builds). The runners, the Vite servers and the e2e web servers stay on this machine; the browsers reach only the web servers under test here, through the `exposeNetwork` rule each config builds from its own server addresses. On Windows on ARM64 this is the native way to run Playwright's Firefox and WebKit. Docker Desktop must be running.
+
+```sh
+node tools/playwright-server/server.mjs
+BROWSERS=remote-chromium,remote-firefox,remote-webkit npm exec nx -- run-many -t test test-storybook e2e
+node tools/playwright-server/server.mjs stop
+```
+
+Prefer `msedge` for a quick native Chromium check: it needs no Docker and its edit-to-result loop matches the emulated Chromium's. Prefer the `remote-*` names for Firefox and WebKit, and for a run of the pinned builds before a push. Fonts and rendering are Linux, as in CI; a Windows rendering question still needs a Windows browser. [Remote engine runs](#remote-engine-runs) has the counts.
+
+`PLAYWRIGHT_SERVER` may name the server as `ws://localhost:3000/<path>` too; Playwright accepts that `Host`. `stop` stops the container and keeps it for a fast restart, token included, and the container stops itself after 30 minutes without a connection; after either, remote runs fail to connect until `server.mjs` runs again, which resumes it with the same token. A start after a Playwright upgrade, a change to the forwarder script or the setup replaces the container with a new token; the upgrade first needs the `pinned` version and digest in `server.mjs` updated from `docker image inspect --format '{{index .RepoDigests 0}}'` on the new tag. The endpoint file belongs to the checkout that started the server: after a replace, another checkout's `tmp/playwright-server` is stale, so run `server.mjs` there again.
+
+The layers between the world and the browsers, and what each leaves open:
+
+- The port is published on `127.0.0.1:3000` only, so nothing off this machine reaches it; every local process does, and one that reads `tmp/playwright-server` drives the browsers until `stop` or the idle stop.
+- Inside the container, a pipe admits only a first request of `GET /<path>`, the token path, compared once in constant time; `/json` and every other path never reach Playwright, and the path is a 128-bit guess.
+- Playwright's own `run-server`, bound to loopback, refuses a non-loopback `Host` (DNS rebinding) or web-page `Origin`; a `localhost` page, a Chromium `file:` page or an extension passes it, and only the path stops it.
+- The container runs on a Docker network of its own, so no other container reaches the SOCKS proxy that `exposeNetwork` opens inside it on every interface, without authentication (O15); other containers still reach the published port, where the pipe applies.
+- What a connection reaches on this machine is the `exposeNetwork` rule, never `<loopback>`; nothing else on this machine's loopback is reachable through the browsers.
+- The container runs with `--cap-drop ALL`, `--security-opt no-new-privileges` and `--shm-size 1g` in place of `--ipc=host`, from an image pinned by digest in `server.mjs`, so a moved tag never runs.
+- The browsers have outbound internet and root, as in CI and Playwright's image; with `--no-sandbox` in `run-server` mode, a non-root user alone adds no sandbox.
 
 ## Pitfalls
 
@@ -93,4 +118,8 @@ Measured on 2026-10-05 on Windows 11 on ARM64 with Docker Desktop (linux/arm64),
 | `ci.yml` `static`                       | native                                       | 39 s     | prettier clean; lint and typecheck pass                                                |
 | `ci.yml` `package`                      | native                                       | 26 s     | build and pack-check pass                                                              |
 
-The development e2e runs also pass `yeti-analog-e2e` (1) and `ngx-yeti-e2e` (16 in Chromium and Firefox, 12 passed and 4 skipped in WebKit).
+The development e2e runs also pass `yeti-analog-e2e` (1) and `ngx-yeti-e2e` (16 in Chromium and Firefox, 12 passed and 4 skipped in WebKit, 14 and 2 since `fe50220`).
+
+### Remote engine runs
+
+Measured on 2026-10-06 on Windows 11 on ARM64 with Docker Desktop (linux/arm64) and Playwright 1.63.0: `BROWSERS=remote-<engine> npm exec nx -- run-many -t test test-storybook e2e --skip-nx-cache` passes every project in each engine with the counts CI's emulated builds give (`ngx-yeti` 204 and 13 stories, `ngx-yeti-testing` 75, `ngx-yeti-e2e` 16, or 14 passed and 2 skipped in WebKit, `yeti-app-e2e` 82 passed and 2 skipped, `yeti-analog-e2e` 1), in about 2 minutes per engine on an idle machine, plus about 50 s for the first WebKit launch in a fresh container.

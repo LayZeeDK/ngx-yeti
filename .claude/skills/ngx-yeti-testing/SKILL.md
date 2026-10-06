@@ -76,6 +76,8 @@ Locally, every browser layer runs Chromium only: Playwright's browsers are x64 u
 
 `BROWSERS` also takes `msedge`, `chrome`, and `moz-firefox`, which run the installed browser, native arm64 on the Windows on Arm machine. They auto-update and are not Playwright's pinned builds, so use them locally only and never as evidence for a CI claim. `references/ci-local.md` lists the names, `FIREFOX_PATH`, and the measured channel runs.
 
+`remote-chromium`, `remote-firefox`, and `remote-webkit` run the pinned revisions in a Playwright server that `node tools/playwright-server/server.mjs` starts in Playwright's Linux image, native arm64; `references/ci-local.md` has the commands, when to prefer them over `msedge`, and the measured runs.
+
 The `safari` job of `.github/workflows/ci.yml` sets `SAFARI=true` and runs `nx test ngx-yeti` in the real Safari of the `macos-latest` image, through WebdriverIO and `safaridriver`, headed because `safaridriver` has no headless mode. The Safari version moves with the image. Playwright cannot drive branded Safari, so stories and e2e run in Playwright's WebKit only.
 
 ## The browser floor
@@ -89,7 +91,7 @@ The `safari` job of `.github/workflows/ci.yml` sets `SAFARI=true` and runs `nx t
 | `FLOOR_FIREFOX_E2E=true`     | `firefox-146-e2e` | Both e2e projects in Firefox only, with the Playwright release of the job's image                       |
 | `FLOOR_WEBKIT=true`          | `webkit-26-4`     | `nx test ngx-yeti` and both e2e projects in WebKit only, with the Playwright release of the job's image |
 
-`FLOOR_FIREFOX`, `FLOOR_FIREFOX_E2E`, and `FLOOR_WEBKIT` act only when set to `true`, in `packages/ngx-yeti/vitest.unit.config.mts` and in `tools/playwright/browser-projects.mjs`, which all three e2e configs share; any other value leaves the default engines. Each variable, `BROWSERS`, and `FIREFOX_PATH` is a cache input of the targets it changes. `e2e` depends on `^yeti-build`, so Nx builds Yeti before Playwright starts the web servers, and the servers' nested Nx processes reuse that build instead of each rebuilding `dist/`.
+`FLOOR_FIREFOX`, `FLOOR_FIREFOX_E2E`, and `FLOOR_WEBKIT` act only when set to `true`, in `packages/ngx-yeti/vitest.unit.config.mts` and in `tools/playwright/browser-projects.mjs`, which all three e2e configs share; any other value leaves the default engines. Each variable, `BROWSERS`, `FIREFOX_PATH`, and `PLAYWRIGHT_SERVER` is a cache input of the targets it changes (the `browserEngines` named input in `nx.json` holds the last three). `e2e` depends on `^yeti-build`, so Nx builds Yeti before Playwright starts the web servers, and the servers' nested Nx processes reuse that build instead of each rebuilding `dist/`.
 
 To reproduce a CI or floor job locally, read `references/ci-local.md`. A job with a `container` runs from its workflow with `node tools/ci-local/run-job.mjs <workflow> <job>`, such as `node tools/ci-local/run-job.mjs floor firefox-146-e2e --matrix shard=1`.
 
