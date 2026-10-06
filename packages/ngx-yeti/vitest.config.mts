@@ -8,6 +8,8 @@ import {
   vitestInstances,
 } from '../../tools/playwright/engines.mjs';
 
+const api = await vitestBrowserApi();
+
 // More info at: https://storybook.js.org/docs/writing-tests/integrations/vitest-addon
 export default defineConfig({
   test: {
@@ -34,10 +36,10 @@ export default defineConfig({
           name: 'storybook',
           browser: {
             enabled: true,
-            api: await vitestBrowserApi(),
+            api,
             headless: true,
             provider: playwright(),
-            instances: vitestInstances(playwright),
+            instances: vitestInstances(playwright, api),
           },
         },
       },

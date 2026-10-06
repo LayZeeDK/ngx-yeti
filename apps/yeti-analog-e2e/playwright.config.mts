@@ -50,5 +50,5 @@ export default defineConfig({
     // Windows runners (upstream bug O12).
     env: { NODE_DISABLE_COMPILE_CACHE: '1' },
   },
-  projects: browserProjects(),
+  projects: browserProjects([baseURL]),
 });

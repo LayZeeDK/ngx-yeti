@@ -26,5 +26,5 @@ export default defineConfig({
     cwd: workspaceRoot,
     timeout: 180_000,
   },
-  projects: browserProjects(),
+  projects: browserProjects([storybookURL]),
 });

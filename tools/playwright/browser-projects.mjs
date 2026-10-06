@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { devices } from '@playwright/test';
-import { engines } from './engines.mjs';
+import { engines, localEnv } from './engines.mjs';
 
 /**
  * The command the e2e web servers start Nx with: this Node and the installed
@@ -25,19 +25,30 @@ function project({ name, engine, options }) {
   };
 }
 
+/** @param {string} url */
+function hostPort(url) {
+  const { hostname, port, protocol } = new URL(url);
+
+  return `${hostname}:${port || (protocol === 'https:' ? '443' : '80')}`;
+}
+
 /**
  * The Playwright projects of every e2e project. A floor job of floor.yml
  * sets one FLOOR_* variable and runs that engine only; otherwise
- * `engines()` picks them.
+ * `engines()` picks them. `webServerUrls` are the config's web server URLs,
+ * the only addresses on this machine the remote engines may reach.
+ *
+ * @param {string[]} webServerUrls
+ * @param {NodeJS.ProcessEnv} env
  */
-export function browserProjects() {
-  const chromiumFloor = process.env['FLOOR_CHROMIUM_PATH'];
+export function browserProjects(webServerUrls, env = localEnv()) {
+  const chromiumFloor = env['FLOOR_CHROMIUM_PATH'];
 
-  if (process.env['FLOOR_WEBKIT'] === 'true') {
+  if (env['FLOOR_WEBKIT'] === 'true') {
     return [project({ name: 'webkit', engine: 'webkit' })];
   }
 
-  if (process.env['FLOOR_FIREFOX_E2E'] === 'true') {
+  if (env['FLOOR_FIREFOX_E2E'] === 'true') {
     return [project({ name: 'firefox', engine: 'firefox' })];
   }
 
@@ -51,5 +62,7 @@ export function browserProjects() {
     ];
   }
 
-  return engines().map((browser) => project(browser));
+  return engines(env, webServerUrls.map(hostPort)).map((browser) =>
+    project(browser),
+  );
 }

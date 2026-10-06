@@ -38,6 +38,9 @@
       },
       {
         "env": "FIREFOX_PATH"
+      },
+      {
+        "env": "PLAYWRIGHT_SERVER"
       }
     ],
     "e2e": [

@@ -42,6 +42,8 @@ const stylesheetResponses: Plugin = {
   },
 };
 
+const api = await vitestBrowserApi();
+
 export default defineConfig({
   plugins: [angular({ fastCompile: true, jit: false })],
   test: {
@@ -69,10 +71,10 @@ export default defineConfig({
           include: [browserSpecs],
           browser: {
             enabled: true,
-            api: await vitestBrowserApi(),
+            api,
             headless: true,
             provider: playwright(),
-            instances: vitestInstances(playwright),
+            instances: vitestInstances(playwright, api),
           },
         },
       },

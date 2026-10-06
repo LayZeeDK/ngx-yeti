@@ -3,7 +3,7 @@
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "targets": {
     "test": {
-      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/vitest-configs.test.mjs",
+      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs",
       "dependsOn": [],
       "cache": true,
       "inputs": [

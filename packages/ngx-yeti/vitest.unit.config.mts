@@ -9,6 +9,8 @@ import {
   vitestInstances,
 } from '../../tools/playwright/engines.mjs';
 
+const api = await vitestBrowserApi();
+
 function browserEngines(): Pick<
   BrowserConfigOptions,
   'provider' | 'instances'
@@ -50,7 +52,7 @@ function browserEngines(): Pick<
 
   return {
     provider: playwright(),
-    instances: vitestInstances(playwright),
+    instances: vitestInstances(playwright, api),
   };
 }
 
@@ -84,7 +86,7 @@ export default defineConfig({
           setupFiles: ['src/test-setup.ts'],
           browser: {
             enabled: true,
-            api: await vitestBrowserApi(),
+            api,
             headless: true,
             ...browserEngines(),
           },
