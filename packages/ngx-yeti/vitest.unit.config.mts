@@ -65,6 +65,8 @@ export default defineConfig({
   resolve: { tsconfigPaths: true },
   test: {
     globals: true,
+    onConsoleLog: (log) =>
+      !log.startsWith('Angular is running in development mode.'),
     coverage: {
       provider: 'istanbul',
       reportsDirectory: path.join(

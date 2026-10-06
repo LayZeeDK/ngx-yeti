@@ -11,6 +11,8 @@ import {
 // More info at: https://storybook.js.org/docs/writing-tests/integrations/vitest-addon
 export default defineConfig({
   test: {
+    onConsoleLog: (log) =>
+      !log.startsWith('Angular is running in development mode.'),
     coverage: {
       provider: 'istanbul',
       reportsDirectory: path.join(

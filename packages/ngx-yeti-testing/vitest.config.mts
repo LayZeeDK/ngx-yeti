@@ -46,6 +46,8 @@ export default defineConfig({
   plugins: [angular({ fastCompile: true, jit: false })],
   test: {
     globals: true,
+    onConsoleLog: (log) =>
+      !log.startsWith('Angular is running in development mode.'),
     projects: [
       {
         extends: true,
