@@ -76,7 +76,7 @@ Locally, every browser layer runs Chromium only: Playwright's browsers are x64 u
 
 `BROWSERS` also takes `msedge`, `chrome`, and `moz-firefox`, which run the installed browser, native arm64 on the Windows on Arm machine. They auto-update and are not Playwright's pinned builds, so use them locally only and never as evidence for a CI claim. `references/ci-local.md` lists the names, `FIREFOX_PATH`, and the measured channel runs.
 
-`remote-chromium`, `remote-firefox`, and `remote-webkit` run the pinned revisions in a Playwright server that `node tools/playwright-server/server.mjs` starts in Playwright's Linux image, native arm64; `references/ci-local.md` has the commands, when to prefer them over `msedge`, and the measured runs.
+`remote-chromium`, `remote-firefox`, and `remote-webkit` run the pinned revisions in a Playwright server that `node tools/playwright-server/server.mjs` starts in Playwright's Linux image, native arm64; `references/ci-local.md` has the commands, when to prefer them over `msedge`, and the measured runs. A new Vitest or e2e config must declare its servers for them (`references/fast-compile.md`).
 
 The `safari` job of `.github/workflows/ci.yml` sets `SAFARI=true` and runs `nx test ngx-yeti` in the real Safari of the `macos-latest` image, through WebdriverIO and `safaridriver`, headed because `safaridriver` has no headless mode. The Safari version moves with the image. Playwright cannot drive branded Safari, so stories and e2e run in Playwright's WebKit only.
 

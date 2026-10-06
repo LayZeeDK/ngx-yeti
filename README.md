@@ -19,7 +19,8 @@ The package is pre-release. The specs in [`docs/specs/`](docs/specs/README.md) d
 | `tools/yeti`                | The script that vendors Yeti, the Nx plugin that builds it, and the generator of `yeti-types.ts` and `yeti-rank.ts`                              |
 | `tools/package`             | `pack-check.mjs`, which packs the package and builds a consumer against the tarball                                                              |
 | `tools/ci-local`            | `run-job.mjs`, which runs a container job of the CI or floor workflow locally in Docker                                                          |
-| `tools/playwright`          | The Playwright browser projects that `apps/yeti-app-e2e`, `apps/ngx-yeti-e2e`, and `apps/yeti-analog-e2e` share                                  |
+| `tools/playwright`          | `engines.mjs`, which picks every Vitest browser and e2e project's browsers from `BROWSERS`, and the shared e2e Playwright projects               |
+| `tools/playwright-server`   | `server.mjs`, the Playwright server in Docker that the `remote-*` engines connect to; see `references/ci-local.md`                               |
 | `docs/specs`                | The specs, ADRs, and records the package is built from; a verbatim copy, never edited except its two ledgers, `ledger.md` and `upstream-bugs.md` |
 | `docs/decisions`            | Decision trails of larger changes                                                                                                                |
 | `references`                | Notes for contributors, such as [`fast-compile.md`](references/fast-compile.md)                                                                  |
