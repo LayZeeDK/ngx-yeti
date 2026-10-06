@@ -26,14 +26,15 @@ const baseURL = 'http://localhost:4300';
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
-  // In CI a test that passes only on a retry fails the run: the retry keeps
-  // its trace, and a timing regression no longer passes as flaky.
+  // In CI a test that passes only on a retry fails the run, so a timing
+  // regression no longer passes as flaky.
   failOnFlakyTests: Boolean(process.env['CI']),
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL,
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    // Keep the trace of the attempt that failed. A trace recorded only on
+    // the retry shows a passing run when the test is flaky.
+    trace: 'retain-on-first-failure',
   },
   // Never reuse a server: one left on this port by another checkout or an
   // interrupted run serves another build, and Nx would cache its pass.
