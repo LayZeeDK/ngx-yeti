@@ -3,10 +3,15 @@
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "targets": {
     "test": {
-      "command": "node --test tools/playwright/engines.test.mjs",
+      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/vitest-configs.test.mjs",
       "dependsOn": [],
       "cache": true,
-      "inputs": ["{workspaceRoot}/tools/playwright/**/*"]
+      "inputs": [
+        "{workspaceRoot}/tools/playwright/**/*",
+        "{workspaceRoot}/packages/ngx-yeti/vitest.config.mts",
+        "{workspaceRoot}/packages/ngx-yeti/vitest.unit.config.mts",
+        "{workspaceRoot}/packages/ngx-yeti-testing/vitest.config.mts"
+      ]
     },
     "local-registry": {
       "executor": "@nx/js:verdaccio",

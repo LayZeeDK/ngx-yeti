@@ -4,7 +4,10 @@ import { playwright } from '@vitest/browser-playwright';
 import { webdriverio } from '@vitest/browser-webdriverio';
 import { defineConfig } from 'vitest/config';
 import type { BrowserConfigOptions } from 'vitest/node';
-import { vitestInstances } from '../../tools/playwright/engines.mjs';
+import {
+  vitestBrowserApi,
+  vitestInstances,
+} from '../../tools/playwright/engines.mjs';
 
 function browserEngines(): Pick<
   BrowserConfigOptions,
@@ -79,6 +82,7 @@ export default defineConfig({
           setupFiles: ['src/test-setup.ts'],
           browser: {
             enabled: true,
+            api: await vitestBrowserApi(),
             headless: true,
             ...browserEngines(),
           },

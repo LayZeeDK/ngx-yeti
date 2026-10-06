@@ -1,3 +1,6 @@
+import { once } from 'node:events';
+import net from 'node:net';
+
 /** @typedef {'chromium' | 'firefox' | 'webkit'} Engine */
 /** @typedef {{ channel?: string, executablePath?: string }} LaunchOptions */
 /** @typedef {{ name: string, engine: Engine, launchOptions?: LaunchOptions }} Browser */
@@ -57,6 +60,30 @@ export function engines(env = process.env) {
 
     return { name, ...browser };
   });
+}
+
+/**
+ * The `browser.api` of a Vitest browser config: 127.0.0.1 and a port the OS
+ * hands out there now. Vitest's default port can be shared on Windows or sit
+ * in a Hyper-V excluded range, and Vitest replaces `port: 0` with its default
+ * (upstream bugs O8 to O11).
+ *
+ * @returns {Promise<{ host: string, port: number }>}
+ */
+export async function vitestBrowserApi() {
+  const host = '127.0.0.1';
+  const server = net.createServer().listen(0, host);
+
+  await once(server, 'listening');
+  const address = server.address();
+  server.close();
+  await once(server, 'close');
+
+  if (typeof address !== 'object' || address === null) {
+    throw new Error(`No TCP address for a free port on ${host}`);
+  }
+
+  return { host, port: address.port };
 }
 
 /**

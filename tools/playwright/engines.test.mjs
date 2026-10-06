@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { engines } from './engines.mjs';
+import { createServer } from 'vite';
+import { engines, vitestBrowserApi } from './engines.mjs';
 
 /** @param {NodeJS.ProcessEnv} env */
 const names = (env) => engines(env).map(({ name }) => name);
@@ -56,4 +57,25 @@ test('names the entry it cannot run', () => {
     () => engines({ BROWSERS: 'safari' }),
     /"safari" is not one of/,
   );
+});
+
+test('names the Vite server URL 127.0.0.1 at the port vitestBrowserApi() picks', async () => {
+  const api = await vitestBrowserApi();
+  const server = await createServer({
+    configFile: false,
+    logLevel: 'silent',
+    appType: 'custom',
+    optimizeDeps: { noDiscovery: true },
+    server: { ...api, hmr: false, watch: null },
+  });
+
+  try {
+    await server.listen();
+
+    assert.deepEqual(server.resolvedUrls?.local, [
+      `http://127.0.0.1:${String(api.port)}/`,
+    ]);
+  } finally {
+    await server.close();
+  }
 });

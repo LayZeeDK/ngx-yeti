@@ -2,7 +2,10 @@ import type { ServerResponse } from 'node:http';
 import angular from '@analogjs/vite-plugin-angular';
 import { playwright } from '@vitest/browser-playwright';
 import { defineConfig, type Plugin } from 'vitest/config';
-import { vitestInstances } from '../../tools/playwright/engines.mjs';
+import {
+  vitestBrowserApi,
+  vitestInstances,
+} from '../../tools/playwright/engines.mjs';
 
 const browserSpecs = 'src/**/*.browser.spec.ts';
 
@@ -64,6 +67,7 @@ export default defineConfig({
           include: [browserSpecs],
           browser: {
             enabled: true,
+            api: await vitestBrowserApi(),
             headless: true,
             provider: playwright(),
             instances: vitestInstances(playwright),
