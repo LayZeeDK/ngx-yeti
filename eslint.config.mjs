@@ -217,6 +217,9 @@ export default [
   },
   {
     files: typeScriptFiles,
+    // Vitest, Vite and Playwright configs run in Node only, never in a
+    // browser, so browser Baseline does not apply to them.
+    ignores: ['**/*.config.mts'],
     plugins: { 'baseline-js': baselineJs },
     rules: {
       'baseline-js/use-baseline': [
