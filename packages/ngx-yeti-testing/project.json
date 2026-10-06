@@ -12,20 +12,7 @@
         "cwd": "{projectRoot}"
       },
       "cache": true,
-      "inputs": [
-        "default",
-        "^production",
-        "{workspaceRoot}/tools/playwright/engines.mjs",
-        {
-          "env": "CI"
-        },
-        {
-          "env": "BROWSERS"
-        },
-        {
-          "env": "FIREFOX_PATH"
-        }
-      ]
+      "inputs": ["default", "^production", "browserEngines"]
     },
     "typecheck": {}
   }
