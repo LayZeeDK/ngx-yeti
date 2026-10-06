@@ -275,3 +275,34 @@ test('admits an upgrade while 16 tokenless connections are pending', async () =>
     release();
   }
 });
+
+test('stops once no admitted connection has been open for the idle time', async () => {
+  const [outer, inner] = await twoFreePorts();
+  const idleToken = randomBytes(16).toString('hex');
+  const idle = serve({
+    cli,
+    innerPort: inner,
+    port: outer,
+    token: idleToken,
+    listenHost: '127.0.0.1',
+    idleMs: 500,
+  });
+  // A tokenless peer every 300 ms must not keep the server up.
+  const peer = setInterval(() => {
+    const socket = net.connect(outer, '127.0.0.1', () => socket.write('GET /'));
+
+    socket.on('error', () => socket.destroy());
+  }, 300);
+
+  try {
+    await ready(outer, idleToken);
+    await once(idle.server, 'exit');
+    clearInterval(peer);
+    await assert.rejects(
+      request(outer, `/${idleToken}`, { Host: `127.0.0.1:${String(outer)}` }),
+    );
+  } finally {
+    clearInterval(peer);
+    idle.close();
+  }
+});

@@ -30,9 +30,18 @@ import net from 'node:net';
  *   port: number,
  *   token: string,
  *   listenHost?: string,
- * }} options
+ *   idleMs?: number,
+ * }} options `idleMs`: stop the server once no admitted connection has been
+ * open for that long.
  */
-export function serve({ cli, innerPort, port, token, listenHost = '0.0.0.0' }) {
+export function serve({
+  cli,
+  innerPort,
+  port,
+  token,
+  listenHost = '0.0.0.0',
+  idleMs,
+}) {
   const server = spawn(
     process.execPath,
     [
@@ -56,10 +65,22 @@ export function serve({ cli, innerPort, port, token, listenHost = '0.0.0.0' }) {
   // a new connection evicts the oldest waiting one.
   /** @type {Set<net.Socket>} */
   const pending = new Set();
+  let admitted = 0;
+  /** @type {NodeJS.Timeout | undefined} */
+  let idle;
 
   const close = () => {
+    clearTimeout(idle);
     forwarder.close();
     server.kill();
+  };
+
+  const armIdleTimer = () => {
+    clearTimeout(idle);
+
+    if (idleMs !== undefined && admitted === 0) {
+      idle = setTimeout(close, idleMs);
+    }
   };
 
   const forwarder = net
@@ -72,6 +93,7 @@ export function serve({ cli, innerPort, port, token, listenHost = '0.0.0.0' }) {
       }
 
       let head = Buffer.alloc(0);
+      let passed = false;
       const deadline = setTimeout(() => socket.destroy(), 5000);
 
       pending.add(socket);
@@ -79,6 +101,11 @@ export function serve({ cli, innerPort, port, token, listenHost = '0.0.0.0' }) {
       socket.on('close', () => {
         clearTimeout(deadline);
         pending.delete(socket);
+
+        if (passed) {
+          admitted -= 1;
+          armIdleTimer();
+        }
       });
       socket.on('data', function onData(chunk) {
         head = Buffer.concat([head, chunk]);
@@ -105,7 +132,10 @@ export function serve({ cli, innerPort, port, token, listenHost = '0.0.0.0' }) {
           return;
         }
 
+        passed = true;
         pending.delete(socket);
+        admitted += 1;
+        clearTimeout(idle);
 
         const upstream = net.connect(innerPort, '127.0.0.1');
         const drop = () => {
@@ -125,8 +155,10 @@ export function serve({ cli, innerPort, port, token, listenHost = '0.0.0.0' }) {
   forwarder.maxConnections = 64;
   forwarder.on('error', (error) => {
     console.error(error);
+    process.exitCode = 1;
     close();
   });
+  armIdleTimer();
 
   return { server, close };
 }
@@ -138,9 +170,13 @@ if (import.meta.main) {
     innerPort: 3001,
     port: 3000,
     token,
+    idleMs: 30 * 60_000,
   });
 
-  server.on('exit', (code) => {
-    process.exit(code ?? 1);
+  // The idle stop ends run-server with SIGTERM and exits 0; a pipe error
+  // does the same but has set exitCode 1 first. Any other signal, such as
+  // the kernel's SIGKILL on memory exhaustion, is a failure.
+  server.on('exit', (code, signal) => {
+    process.exit(signal === 'SIGTERM' ? (process.exitCode ?? 0) : (code ?? 1));
   });
 }
