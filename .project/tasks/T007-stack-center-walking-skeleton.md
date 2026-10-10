@@ -3,9 +3,9 @@ id: T007
 title: Ship stack and center end to end with setup's item-links story and order case
 wave: 2
 deps: [T001, T002, T003]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T007
+base: ee7397e3c2a32a98c7cb1308560f608356fa6158
 worktree: null
 task_branch: null
 files:
@@ -110,3 +110,29 @@ Heavy: yes
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — coder: preflight clean (every named path exists or is declared; SC1 to SC5 exist; the Interface contract lines match T001, T002, T003, and T008). Implemented: `YetiStack`, `YetiStackChild`, `yetiStackToken`, and `YetiCenter` with numbered usage rules in JSDoc, their layer-2, SSR, and contract specs, and stories `stack--default|settings|align|rule|sticky` and `center--default|unset|intrinsic|in-stack|controls|themed`; `setup--item-links`; `compile-errors.node.spec.ts` with `compileErrorCases` (`center-max-large.ts`, 2322), which compiles through `performCompilation` with the options of `tsconfig.lib.json`; `compile-fixtures/**` ignored in the package ESLint config (`tsconfig.spec.json` needed no change: no include reaches the folder); the stack, center, and setup-order Fixture components and their e2e specs; the Storybook-half `stack.spec.ts`; consumer, name-collision, item-names, README, and CHANGELOG. E8 pass followed: static `align` kept.
+- 2026-10-11 — coder: choices inside the contract. (1) `stack--sticky` scrolls the page, not an inner box, because Yeti reads `--yeti-scroll-padding` on the root only; the Tab walk starts with the page scrolled to its end, so the first Tab pulls a link in from above. Measured in Chromium at 1280 px: sticky offset 18 px, pinned child 85 px; with the padding set to the pinned child's height (usage rule 7 as written) a link pulled in from above keeps its height less the offset clear, so "not entirely covered" holds while most of the link is under the pinned child. The test records the first link's and the pinned child's positions as a `focus-not-obscured` annotation. (2) `stack--rule` rows are plain `div`s until `cluster` lands, and `center--intrinsic` and the center route use a plain `button` until `button` lands; no task is named for adding them. (3) The child's token case uses a probe directive that injects as `YetiStackChild` does (the card precedent); the child exposes nothing to read. (4) The client-only `@defer` cases assert 0 unstyled frames while server hosts hold the link, as the card route does; no route I own renders these items only on the client except setup-order. (5) Usage rules 10 (stack) and 4 (center) name Angular's NG8002 for a forgotten import with a bound input; no fixture is in `files` for it. (6) Importing `@angular/compiler-cli` in the node project prints Vite sourcemap warnings, because `vitest.unit.config.mts` inlines `@angular/*`; the test passes and that config is not in `files`.
+- 2026-10-11 — coder: Verify exit 0, run twice as written on the final tree (the second run replayed the local Nx cache for the host tasks and re-ran the four container jobs). lint and typecheck of 4 projects pass; `nx test` 13 files, 191 tests; `test-storybook` 3 files, 13 stories; `ngx-yeti-e2e stack.spec.ts` 8 passed in Chromium, Firefox, and WebKit; `yeti-app-e2e` stack, center, and setup specs 72 passed, 2 skipped (development: Chromium, Firefox, WebKit) and 64 passed, 10 skipped (production, Chromium); `pack-check` passes. Also green before Verify: `npx prettier --check .` and `nx affected -t lint typecheck test test-storybook --base=HEAD`.
+- 2026-10-10 — orchestrator Verify (sidecar gsd-path-verify/task-t007-verify): pass, exit 0; output tail:
+  ```
+  npm warn install-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn install-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn install-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn install-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn install-scripts   ffmpeg-static@5.3.0 (install: node install.js)
+  npm warn install-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn install-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn install-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn install-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn install-scripts
+  npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:1159) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:984) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```

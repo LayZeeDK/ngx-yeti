@@ -1,1 +1,1 @@
-export {};
+export { YetiCenter } from './center';

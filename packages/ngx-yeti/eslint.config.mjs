@@ -12,6 +12,9 @@ export default [
   ...vitestConfig,
   // A byte-faithful copy of Yeti's dist/yeti.d.ts, from tools/yeti/generate-sources.mjs.
   { ignores: ['src/yeti-types.ts'] },
+  // Fixtures that must fail to compile, in no tsconfig; the spec
+  // src/compile-errors.node.spec.ts compiles them.
+  { ignores: ['compile-fixtures/**'] },
   // The inline templates of this spec use `@boundary`, which the template
   // linter's bundled compiler does not parse yet.
   { ignores: ['styles/src/inject-yeti-item-styles.spec.ts/**/*.html'] },

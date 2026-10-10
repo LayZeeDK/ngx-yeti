@@ -471,3 +471,78 @@ for (const { kind, prefix } of routeKinds) {
     });
   });
 }
+
+// The order case (setup.md:342): `stack` and `center` tie inside
+// `yeti.layouts`, so the order of their two links is the claim here.
+for (const { kind, prefix } of routeKinds) {
+  test.describe(`the ${kind} setup-order route`, () => {
+    test('hydrates with 0 skipped components and no NG05xx message', async ({
+      page,
+    }) => {
+      test.skip(
+        isProduction,
+        'Angular logs hydration diagnostics in development mode only',
+      );
+
+      const expectCleanHydration = watchHydration(page);
+
+      await page.goto(`${prefix}setup-order`);
+
+      await expect(
+        page.getByRole('button', { name: 'Show the stack and its center' }),
+      ).toBeVisible();
+      await expectCleanHydration();
+    });
+
+    test('keeps the center centred when the client renders a stack, then a center inside it', async ({
+      page,
+    }) => {
+      await page.goto(`${prefix}setup-order`);
+      await waitForHydration(page);
+
+      expect(await itemLinks(page), 'the server rendered no item').toEqual([]);
+
+      await page
+        .getByRole('button', { name: 'Show the stack and its center' })
+        .click();
+
+      const center = page.locator('#order-center');
+
+      await expect(page.locator('#order-stack')).toHaveCSS('display', 'flex');
+      await expect(center).toHaveCSS('box-sizing', 'content-box');
+      expect(await itemLinks(page)).toEqual(['stack', 'center']);
+
+      const { start, end } = await center.evaluate((element) => {
+        const outer = element.parentElement?.getBoundingClientRect();
+        const inner = element.getBoundingClientRect();
+
+        return {
+          start: inner.left - (outer?.left ?? NaN),
+          end: (outer?.right ?? NaN) - inner.right,
+        };
+      });
+
+      expect(start, 'the center is narrower than the stack').toBeGreaterThan(
+        50,
+      );
+      expect(Math.abs(start - end)).toBeLessThanOrEqual(1);
+    });
+
+    test.describe('with JavaScript off', () => {
+      test.use({ javaScriptEnabled: false });
+
+      test('serves the placeholder and server HTML that axe passes', async ({
+        axeViolations,
+        page,
+      }) => {
+        await page.goto(`${prefix}setup-order`);
+
+        await expect(
+          page.getByRole('button', { name: 'Show the stack and its center' }),
+        ).toBeVisible();
+        expect(await itemLinks(page)).toEqual([]);
+        expect(await axeViolations()).toEqual([]);
+      });
+    });
+  });
+}

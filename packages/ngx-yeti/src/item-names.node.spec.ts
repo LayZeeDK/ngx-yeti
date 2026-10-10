@@ -44,7 +44,12 @@ describe('item root directives', () => {
     const items = itemNames();
 
     expect(items.map(({ file }) => file)).toStrictEqual(
-      expect.arrayContaining(['card/src/card.ts', 'lift/src/lift.ts']),
+      expect.arrayContaining([
+        'card/src/card.ts',
+        'lift/src/lift.ts',
+        'stack/src/stack.ts',
+        'center/src/center.ts',
+      ]),
     );
     expect(
       items.filter(

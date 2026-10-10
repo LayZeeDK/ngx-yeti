@@ -6,7 +6,9 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
+import { YetiCenter } from 'ngx-yeti/center';
 import { NgxYetiLift } from 'ngx-yeti/lift';
+import { YetiStack } from 'ngx-yeti/stack';
 
 /**
  * The setup spec's layer-4 cases that need no later item (setup.md:335-341):
@@ -112,14 +114,28 @@ export class SetupFixture {
 })
 export class SetupDeferFixture {}
 
+/**
+ * The setup spec's order case (setup.md:342): a `stack`, then a `center`
+ * inside it, both first rendered by the client, in that order. Their files
+ * tie inside `yeti.layouts`, so the center stays centred only if the loader
+ * puts `center.css` after `stack.css`. The `routerLink` gives the server
+ * HTML a `jsaction` marker, which the e2e `waitForHydration` waits on.
+ */
 @Component({
   selector: 'app-setup-order-fixture',
-  imports: [RouterLink],
-  template: `<h2>setup-order</h2>
-    <p i18n data-fixture-stub>
-      The setup-order route, a stub until its items land.
-    </p>
-    <a routerLink="/replay">Leave for the replay page</a>`,
+  imports: [RouterLink, YetiCenter, YetiStack],
+  template: `<h2>Setup with a stack and a center</h2>
+    <p i18n>The stack renders first and the center inside it second.</p>
+    <a routerLink="/setup">Back to setup</a>
+    @defer (on interaction) {
+      <div id="order-stack" yetiStack>
+        <div id="order-center" yetiCenter max="xs">
+          <p>A centred column in a stack.</p>
+        </div>
+      </div>
+    } @placeholder {
+      <button type="button">Show the stack and its center</button>
+    }`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SetupOrderFixture {}

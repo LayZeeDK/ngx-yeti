@@ -2,7 +2,7 @@
 
 Angular directives for [Yeti](https://github.com/foundation/yeti), version 7 of Foundation (`yeti-css`). You write Yeti's own markup, and the directives add typed inputs, generated ids, keyboard and focus behaviour, and the item's styles.
 
-> **Pre-release.** Nothing is published to npm yet. The setup, the `card` item, and the `lift` item are implemented; the other items follow the [specs](https://github.com/LayZeeDK/ngx-yeti/blob/main/docs/specs/README.md), and the API can change until the first release.
+> **Pre-release.** Nothing is published to npm yet. The setup and the `card`, `center`, `lift`, and `stack` items are implemented; the other items follow the [specs](https://github.com/LayZeeDK/ngx-yeti/blob/main/docs/specs/README.md), and the API can change until the first release.
 
 ## What the package will give you
 
@@ -21,7 +21,9 @@ The package ships none of Yeti's CSS. You bring a build of Yeti at the commit th
 | `ngx-yeti`                   | Types only, such as `YetiComponentName`, generated from Yeti at the pin        |
 | `ngx-yeti/styles`            | `provideYetiStyles`, `injectYetiItemStyles`, and `YetiStylesConfig`            |
 | `ngx-yeti/card`              | `YetiCard`, `YetiCardLink`, and `yetiCardToken`                                |
+| `ngx-yeti/center`            | `YetiCenter`                                                                   |
 | `ngx-yeti/lift`              | `NgxYetiLift`                                                                  |
+| `ngx-yeti/stack`             | `YetiStack`, `YetiStackChild`, and `yetiStackToken`                            |
 | `ngx-yeti/accessibility.css` | The package's accessibility stylesheet, and Yeti's scale in Firefox 145 to 152 |
 
 ## Requirements

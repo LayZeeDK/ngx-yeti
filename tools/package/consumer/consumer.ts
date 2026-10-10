@@ -2,19 +2,22 @@
 // `ngx-yeti` import resolves through the tarball's own `exports`.
 import { type ApplicationConfig, Component, Directive } from '@angular/core';
 import type {
+  YetiAlign,
   YetiComponentName,
+  YetiGap,
   YetiLift,
   YetiRatio,
   YetiVariant,
   YetiWidth,
 } from 'ngx-yeti';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
+import { YetiCenter } from 'ngx-yeti/center';
 import { NgxYetiLift } from 'ngx-yeti/lift';
+import { YetiStack, YetiStackChild } from 'ngx-yeti/stack';
 import { injectYetiItemStyles, provideYetiStyles } from 'ngx-yeti/styles';
 export {} from 'ngx-yeti/box';
 export {} from 'ngx-yeti/breakout';
 export {} from 'ngx-yeti/button';
-export {} from 'ngx-yeti/center';
 export {} from 'ngx-yeti/cluster';
 export {} from 'ngx-yeti/columns';
 export {} from 'ngx-yeti/container';
@@ -29,7 +32,6 @@ export {} from 'ngx-yeti/overlay';
 export {} from 'ngx-yeti/scroller';
 export {} from 'ngx-yeti/sidebar';
 export {} from 'ngx-yeti/spinner';
-export {} from 'ngx-yeti/stack';
 export {} from 'ngx-yeti/table';
 export {} from 'ngx-yeti/timeline';
 export {} from 'ngx-yeti/visually-hidden';
@@ -50,7 +52,15 @@ export class AppBadge {
 
 @Component({
   selector: 'app-root',
-  imports: [YetiCard, YetiCardLink, NgxYetiLift, AppBadge],
+  imports: [
+    YetiCard,
+    YetiCardLink,
+    NgxYetiLift,
+    YetiStack,
+    YetiStackChild,
+    YetiCenter,
+    AppBadge,
+  ],
   template: `
     <article
       yetiCard
@@ -67,6 +77,14 @@ export class AppBadge {
       <span appBadge>{{ card.raised() }} {{ link.stretch() }}</span>
     </article>
     <article yetiCard yetiLift></article>
+    <div yetiStack [gap]="gap" [align]="align" fill #stack="yetiStack">
+      <main yetiCenter [max]="threshold" [gap]="gap" #center="yetiCenter">
+        {{ stack.rule() }} {{ center.intrinsic() }}
+      </main>
+      <p yetiStackChild split [space]="gap" #child="yetiStackChild">
+        {{ child.sticky() }}
+      </p>
+    </div>
   `,
 })
 export class App {
@@ -74,4 +92,6 @@ export class App {
   protected readonly threshold: YetiWidth = 'md';
   protected readonly ratio: YetiRatio = '16/9';
   protected readonly lift: YetiLift = 'scale';
+  protected readonly gap: YetiGap = 'sm-lg';
+  protected readonly align: YetiAlign = 'start';
 }
