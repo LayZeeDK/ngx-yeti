@@ -1,6 +1,6 @@
 import {
-  clientCardPreload,
   expect,
+  expectOnlyClientPreloads,
   isProduction,
   routeKinds,
   test,
@@ -21,6 +21,10 @@ import {
 
 /** The `hydrate on interaction` host, which keeps `jsaction` until it hydrates. */
 const interactionHost = '#interaction-host';
+
+/** The client's style preload of the card file, one of the app's preloads. */
+const cardStylePreload =
+  'head link[rel="preload"][as="style"][href*="components/card/card.css"]';
 
 /** The `hydrate never` and `hydrate on interaction` hosts. */
 const dehydratedHosts = `#never-host, ${interactionHost}`;
@@ -59,10 +63,7 @@ for (const { kind, prefix } of routeKinds) {
       await page.goto(`${prefix}setup`);
       await waitForHydration(page, interactionHost);
 
-      expect(
-        await styleMutations(),
-        'only the client card preload is added after parsing ends',
-      ).toEqual([clientCardPreload]);
+      expectOnlyClientPreloads(await styleMutations());
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
       for (const item of ['card', 'lift']) {
@@ -116,10 +117,7 @@ for (const { kind, prefix } of routeKinds) {
       await nextFrames(page);
 
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
-      expect(
-        await styleMutations(),
-        'no item link is removed or added again on the way, only the client card preload is added',
-      ).toEqual([clientCardPreload]);
+      expectOnlyClientPreloads(await styleMutations());
 
       const host = page.locator(interactionHost);
 
@@ -204,9 +202,15 @@ for (const { kind, prefix } of routeKinds) {
       await removeEveryHost(page, 'Remove the live hosts', dehydratedHosts);
 
       await expect(
-        page.locator('head link[rel="preload"][as="style"]'),
-        'the app preloads the card file only',
-      ).toHaveAttribute('href', /components\/card\/card\.css/);
+        page.locator(cardStylePreload),
+        'the app preloads the card file',
+      ).toHaveCount(1);
+      await expect(
+        page.locator(
+          'head link[rel="preload"][as="style"][href*="utilities/lift/lift.css"]',
+        ),
+        'the app does not preload the lift file',
+      ).toHaveCount(0);
 
       const liftTransition = await recordFrames(
         page,
@@ -378,7 +382,11 @@ for (const { kind, prefix } of routeKinds) {
         document.addEventListener(
           'load',
           ({ target }) => {
-            if (target instanceof HTMLLinkElement && target.rel === 'preload') {
+            if (
+              target instanceof HTMLLinkElement &&
+              target.rel === 'preload' &&
+              target.href.includes('components/card/card.css')
+            ) {
               Reflect.set(window, '__ngxYetiPreloaded', true);
             }
           },
@@ -390,14 +398,9 @@ for (const { kind, prefix } of routeKinds) {
       await page.goto(`${prefix}setup-defer`);
       await waitForHydration(page);
 
-      expect(
-        await styleMutations(),
-        'only the client card preload is added after parsing ends',
-      ).toEqual([clientCardPreload]);
+      expectOnlyClientPreloads(await styleMutations());
       expect(await itemLinks(page), 'the server rendered no card').toEqual([]);
-      await expect(
-        page.locator('head link[rel="preload"][as="style"]'),
-      ).toHaveAttribute('href', /components\/card\/card\.css/);
+      await expect(page.locator(cardStylePreload)).toHaveCount(1);
       // The client's preload has loaded before the interaction. Routing turns
       // the HTTP cache off, so the server's prefetch, whose response would
       // otherwise serve it, cannot stand in for it here.
@@ -442,10 +445,11 @@ for (const { kind, prefix } of routeKinds) {
           page.getByRole('button', { name: 'Show the deferred card' }),
         ).toBeVisible();
         expect(await itemLinks(page)).toEqual([]);
-        await expect(page.locator('head link[rel="prefetch"]')).toHaveAttribute(
-          'href',
-          /components\/card\/card\.css/,
-        );
+        await expect(
+          page.locator(
+            'head link[rel="prefetch"][href*="components/card/card.css"]',
+          ),
+        ).toHaveCount(1);
         await expect(
           page.locator('head link[rel="preload"]'),
           'a server style preload holds the first paint in WebKit (upstream bug O4)',

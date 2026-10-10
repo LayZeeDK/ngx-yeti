@@ -3,9 +3,9 @@ id: T002
 title: Register every M002 Fixture route, grow the preload list, and make preload assertions containment checks
 wave: 1
 deps: []
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T002
+base: 0632a4324daa1a6c0d20aa12732b1c64fb203568
 worktree: null
 task_branch: null
 files:
@@ -115,3 +115,28 @@ Heavy: yes
 ## Log
 
 - 2026-10-10 — created by planner
+- 2026-10-10 — coder (build_T002): Registry holds the 28 new keys of the Interface contract, each mapped to a stub standalone component in its named file (setup-order's `SetupOrderFixture` in setup-fixture.ts). Each stub renders an `h2`, one `i18n` paragraph carrying `data-fixture-stub`, and a `routerLink` to `/replay`. Preload list in app.config.ts: `card` plus the 21 M002 items other than `enter`. `lift` and `enter` stay out, and the comment says why. The A11Y-31 server-prefetch / client-preload split is untouched. support/fixtures.ts: `clientItemPreload(item)` (and `clientCardPreload` built from it), `withoutClientPreloads(mutations)`, `expectOnlyClientPreloads(mutations)`. Each exact `toEqual([clientCardPreload])` in card, lift, and setup specs (5 sites) now asserts containment of the card preload and that only client preloads were added. The fixture-app style-mutation test keeps its exact item-link sequence through `withoutClientPreloads` and checks every listed item's preload with `expect.arrayContaining`. setup.spec's single-locator preload/prefetch assertions now filter by href (card count 1, lift count 0), and its preload `load` probe now matches the card href only. New fixture-app.spec tests: E9 on prerendered and server-rendered `/replay`. With JS off, the server prefetches contain every listed item, none for lift or enter, and there is no server style preload. After bootstrap, the client style preloads contain every listed item, none for lift or enter. Each of the 28 stub routes in both render modes gets `watchHydration` (development) plus axe with JS on, and visible stub plus axe with JS off. Each stub test skips itself once the route no longer renders the `data-fixture-stub` marker, so the item tasks that replace stubs (including the negative controls) do not have to edit this spec. Departures row for enter.md:272 (E15) added below the card/lift row of ngx-yeti-specs SKILL.md. Prettier was run. The `itemLinks` exact arrays on the card route are left to T025.
+- 2026-10-10 — Verify (run in the worktree): `npm ci` ok; `npx playwright install chromium` ok; both `test -f` ok; `nx run-many -t lint typecheck -p yeti-app yeti-app-e2e` passed; `nx e2e yeti-app-e2e` (development, Chromium) 200 passed / 2 skipped; `FIXTURE_CONFIGURATION=production nx e2e yeti-app-e2e` 191 passed / 11 skipped (development-only hydration diagnostics); `node tools/ci-local/run-job.mjs ci e2e --matrix engine=webkit --matrix configuration=development -- npx nx e2e yeti-app-e2e -- --project=webkit` exit 0, 200 passed / 2 skipped. Also: `npx prettier --check .` clean; `nx affected -t lint typecheck test test-storybook --base=HEAD` (uncommitted tree) passed. VERIFY: PASS.
+- 2026-10-10 — orchestrator Verify (isolate gsd-path-task/T002): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```

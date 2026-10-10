@@ -1,6 +1,6 @@
 import {
-  clientCardPreload,
   expect,
+  expectOnlyClientPreloads,
   isProduction,
   routeKinds,
   test,
@@ -54,10 +54,7 @@ for (const { kind, prefix } of routeKinds) {
       await page.goto(`${prefix}lift`);
       await waitForHydration(page);
 
-      expect(
-        await styleMutations(),
-        'only the client card preload is added after parsing ends',
-      ).toEqual([clientCardPreload]);
+      expectOnlyClientPreloads(await styleMutations());
       expect(
         await hostAttributes(),
         'hydration changes no attribute on the hosts',

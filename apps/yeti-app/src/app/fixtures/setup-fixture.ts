@@ -111,3 +111,15 @@ export class SetupFixture {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SetupDeferFixture {}
+
+@Component({
+  selector: 'app-setup-order-fixture',
+  imports: [RouterLink],
+  template: `<h2>setup-order</h2>
+    <p i18n data-fixture-stub>
+      The setup-order route, a stub until its items land.
+    </p>
+    <a routerLink="/replay">Leave for the replay page</a>`,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+})
+export class SetupOrderFixture {}

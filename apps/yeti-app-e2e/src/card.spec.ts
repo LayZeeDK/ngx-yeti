@@ -3,8 +3,8 @@ import { join } from 'node:path';
 import { workspaceRoot } from '@nx/devkit';
 import { type Page } from '@playwright/test';
 import {
-  clientCardPreload,
   expect,
+  expectOnlyClientPreloads,
   isProduction,
   routeKinds,
   test,
@@ -137,10 +137,7 @@ for (const { kind, prefix } of routeKinds) {
       await page.goto(`${prefix}card`);
       await waitForHydration(page);
 
-      expect(
-        await styleMutations(),
-        'only the client card preload is added after parsing ends',
-      ).toEqual([clientCardPreload]);
+      expectOnlyClientPreloads(await styleMutations());
       expect(
         await hostAttributes(),
         'hydration changes no attribute on the card hosts',
