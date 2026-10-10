@@ -85,3 +85,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-11 — plan — build recovery: {"base": "ac09550e747870819d077c7f643dbd7307976cd6", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-11 — plan — plan approved
 - 2026-10-11 — build — build started
+- 2026-10-11 — build — user ruling 2026-10-11: 'Pause after this wave' - stop after wave 2 is landed and reviewed; do not dispatch wave 3 until the user resumes
