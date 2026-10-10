@@ -134,6 +134,125 @@ export async function recordHostAttributes(
   return reader(page, key);
 }
 
+/**
+ * Call before `goto`. The returned function lists one entry
+ * `{element} {attribute}` (the element's id, else its tag name) for each
+ * animation frame in which an element matching `selector` carried one of
+ * `attributes`, so an empty list means no painted frame showed them. A
+ * requestAnimationFrame probe reads the attributes at the start of each
+ * frame's callbacks. Angular may run change detection in a later callback of
+ * the same frame (its zoneless scheduler races a frame against a timeout),
+ * so a MutationObserver applies every change made by those callbacks. A
+ * ResizeObserver armed by the probe's callback records the frame: its
+ * callback runs after every animation frame callback and layout, just before
+ * the paint. An attribute that is written and removed again between two
+ * frames is never painted and is not listed.
+ */
+export async function recordPaintedAttributes(
+  page: Page,
+  selector: string,
+  attributes: readonly string[],
+): Promise<() => Promise<readonly string[]>> {
+  const key = '__ngxYetiPaintedAttributes';
+  const framesKey = `${key}Frames`;
+
+  await page.addInitScript(
+    ([name, frameCount, hostSelector, names]) => {
+      const entries: string[] = [];
+      const entryFor = (element: Element, attribute: string): string =>
+        `${element.id || element.localName} ${attribute}`;
+      let frame: Map<string, boolean> | null = null;
+      let frames = 0;
+
+      const record = (): void => {
+        if (frame === null) {
+          return;
+        }
+
+        for (const [entry, present] of frame) {
+          if (present) {
+            entries.push(entry);
+          }
+        }
+
+        frame = null;
+        frames += 1;
+        Reflect.set(window, frameCount, frames);
+      };
+
+      Reflect.set(window, name, entries);
+      Reflect.set(window, frameCount, frames);
+      const beforePaint = new ResizeObserver(record);
+
+      new MutationObserver((mutations) => {
+        for (const { target, attributeName } of mutations) {
+          if (
+            frame !== null &&
+            target instanceof Element &&
+            attributeName !== null &&
+            target.matches(hostSelector)
+          ) {
+            frame.set(
+              entryFor(target, attributeName),
+              target.hasAttribute(attributeName),
+            );
+          }
+        }
+      }).observe(document, {
+        attributes: true,
+        attributeFilter: [...names],
+        subtree: true,
+      });
+
+      const sample = (): void => {
+        record();
+        frame = new Map();
+
+        for (const element of document.querySelectorAll(hostSelector)) {
+          for (const attribute of names) {
+            frame.set(
+              entryFor(element, attribute),
+              element.hasAttribute(attribute),
+            );
+          }
+        }
+
+        // A new observation reports once, in this frame's resize step.
+        const root = document.documentElement;
+
+        beforePaint.unobserve(root);
+        beforePaint.observe(root);
+        requestAnimationFrame(sample);
+      };
+
+      requestAnimationFrame(sample);
+    },
+    [key, framesKey, selector, attributes] as const,
+  );
+
+  const read = reader(page, key);
+
+  // As in recordFrames: each read waits for one more frame, taken after the
+  // call, because headless WebKit on Linux fires few frames a second.
+  return async () => {
+    const sampled: unknown = await page.evaluate(
+      (name): unknown => Reflect.get(window, name),
+      framesKey,
+    );
+
+    await page.waitForFunction(
+      ([name, count]) => {
+        const frames: unknown = Reflect.get(window, name);
+
+        return typeof frames === 'number' && frames > count;
+      },
+      [framesKey, typeof sampled === 'number' ? sampled : 0] as const,
+    );
+
+    return read();
+  };
+}
+
 let frameProbes = 0;
 
 /**
