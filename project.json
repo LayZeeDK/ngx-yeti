@@ -3,13 +3,14 @@
   "$schema": "node_modules/nx/schemas/project-schema.json",
   "targets": {
     "test": {
-      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright-server/container.test.mjs",
+      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright/playwright-configs.test.mjs tools/playwright-server/container.test.mjs",
       "dependsOn": [],
       "cache": true,
       "inputs": [
         "{workspaceRoot}/tools/playwright/**/*",
         "{workspaceRoot}/{apps,packages}/**/vitest*.config.{ts,mts,cts,js,mjs,cjs}",
         "{workspaceRoot}/{apps,packages}/**/vite.config.{ts,mts,cts,js,mjs,cjs}",
+        "{workspaceRoot}/{apps,packages}/**/playwright.config.{ts,mts,cts,js,mjs,cjs}",
         "{workspaceRoot}/tools/playwright-server/container.mjs",
         "{workspaceRoot}/tools/playwright-server/container.test.mjs"
       ]

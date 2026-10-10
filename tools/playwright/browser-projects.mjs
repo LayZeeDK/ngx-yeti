@@ -26,7 +26,7 @@ function project({ name, engine, options }) {
 }
 
 /** @param {string} url */
-function hostPort(url) {
+export function hostPort(url) {
   const { hostname, port, protocol } = new URL(url);
 
   return `${hostname}:${port || (protocol === 'https:' ? '443' : '80')}`;
