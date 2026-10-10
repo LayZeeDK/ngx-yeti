@@ -232,8 +232,29 @@ export function expectHydrationFrames(
 }
 
 /**
+ * The returned function lists the path under `yeti-css/` of every item file
+ * requested from now on, in request order and without the `?v=` query.
+ */
+export function recordItemRequests(page: Page): () => readonly string[] {
+  const requests: string[] = [];
+
+  page.on('request', (request) => {
+    const path = /\/yeti-css\/([^?]+)/.exec(request.url())?.[1];
+
+    if (path !== undefined) {
+      requests.push(path);
+    }
+  });
+
+  return () => requests;
+}
+
+/**
  * Delays every request matching `url`, Yeti's files by default, by 300 ms.
- * Playwright's routing also turns the HTTP cache off.
+ * Playwright's routing also turns the HTTP cache off, and in Chromium drops
+ * the memory cache when the route is registered. In Chromium and WebKit a
+ * link inserted after that fetches its file again unless the file was
+ * preloaded (measured).
  */
 export async function delayCss(
   page: Page,

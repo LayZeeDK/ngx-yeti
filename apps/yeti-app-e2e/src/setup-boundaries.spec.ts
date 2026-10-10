@@ -1,12 +1,34 @@
+import { type Page } from '@playwright/test';
 import { expect, routeKinds, test } from './support/fixtures';
 import { waitForHydration } from './support/hydration';
 import { clickWhileHeld, holdBackMainBundle } from './support/main-bundle';
-import { delayCss, itemLinks, recordFrames } from './support/style-probe';
+import {
+  delayCss,
+  itemLinks,
+  recordFrames,
+  recordItemRequests,
+} from './support/style-probe';
 
 /**
  * Ticket 37's consumer `@boundary` cases as setup.md:343 keeps them, as
  * regression tests of the setup spec's `@boundary` documentation.
  */
+
+/**
+ * Opens the route, hydrates, and breaks the reset case's card once it is the
+ * page's only card and lift, so both item links have left `<head>`.
+ */
+async function breakTheOnlyCard(page: Page, prefix: string): Promise<void> {
+  await page.goto(`${prefix}setup-boundaries`);
+  await waitForHydration(page);
+
+  await page
+    .getByRole('button', { name: 'Remove the server-error cases' })
+    .click();
+  await page.getByRole('button', { name: 'Break the card' }).click();
+  await expect(page.locator('#reset-card')).toHaveCount(0);
+  await expect.poll(() => itemLinks(page)).toEqual([]);
+}
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} setup-boundaries route`, () => {
@@ -74,25 +96,50 @@ for (const { kind, prefix } of routeKinds) {
       );
     });
 
-    test('records the unstyled frames after $reset() with and without a preload', async ({
+    test('keeps the preloaded card styled after $reset()', async ({
+      browserName,
       page,
     }) => {
+      await breakTheOnlyCard(page, prefix);
+
       const cardPadding = await recordFrames(
         page,
         '#reset-card',
         'padding-top',
+        { start: 'now' },
       );
+      const requests = recordItemRequests(page);
 
-      await page.goto(`${prefix}setup-boundaries`);
-      await waitForHydration(page);
+      await delayCss(page, /\/card\.css\?/);
+      await page.getByRole('button', { name: 'Reset the card' }).click();
 
-      // Leave the reset case's card as the page's only card and lift.
-      await page
-        .getByRole('button', { name: 'Remove the server-error cases' })
-        .click();
-      await page.getByRole('button', { name: 'Break the card' }).click();
-      await expect(page.locator('#reset-card')).toHaveCount(0);
-      await expect.poll(() => itemLinks(page)).toEqual([]);
+      const card = page.locator('#reset-card');
+
+      await expect(card).not.toHaveCSS('padding-top', '0px');
+      await expect(card).not.toHaveCSS('transition-property', 'all');
+      expect(await itemLinks(page)).toEqual(['card', 'lift']);
+
+      const frames = await cardPadding();
+      const unstyled = frames.filter((value) => value === '0px');
+
+      test.info().annotations.push({
+        type: 'frames',
+        description: `card (preloaded): ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
+      });
+      expect(
+        unstyled,
+        'no frame shows the preloaded card without Yeti',
+      ).toEqual([]);
+      // Firefox serves a re-inserted link from memory even with its cache off.
+      expect(requests()).toEqual(
+        browserName === 'firefox' ? [] : ['utilities/lift/lift.css'],
+      );
+    });
+
+    test("records the lift's frames after $reset() without a preload", async ({
+      page,
+    }) => {
+      await breakTheOnlyCard(page, prefix);
 
       const liftTransition = await recordFrames(
         page,
@@ -106,23 +153,16 @@ for (const { kind, prefix } of routeKinds) {
 
       const card = page.locator('#reset-card');
 
-      await expect(card).not.toHaveCSS('padding-top', '0px');
       await expect(card).not.toHaveCSS('transition-property', 'all');
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const card0 = await cardPadding();
-      const lift = await liftTransition();
+      const frames = await liftTransition();
+      const unstyled = frames.filter((value) => value === 'all');
 
-      test.info().annotations.push(
-        {
-          type: 'frames',
-          description: `card (preloaded): ${String(card0.filter((value) => value === '0px').length)} of ${String(card0.length)} frames without Yeti`,
-        },
-        {
-          type: 'frames',
-          description: `lift (not preloaded): ${String(lift.filter((value) => value === 'all').length)} of ${String(lift.length)} frames without Yeti`,
-        },
-      );
+      test.info().annotations.push({
+        type: 'frames',
+        description: `lift (not preloaded): ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
+      });
     });
 
     test.describe('with JavaScript off', () => {
