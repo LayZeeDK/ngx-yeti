@@ -106,3 +106,73 @@ jobs:
       - run: sudo safaridriver --enable
       # The unit job runs the engine-independent node project.
       - run: npx nx test ngx-yeti -- --project=browser
+
+  # Real screen readers through Guidepup on stories of the static Storybook
+  # (apps/screen-reader-e2e). Each runs headed with one worker; the retry
+  # budget is in screen-reader.config.mts (2 retries: a check fails after
+  # three attempts). The phrase report uploads whether the job passes or
+  # fails, so every run records what the reader said.
+  voiceover:
+    # Pinned, never macos-latest: an image update broke VoiceOver's
+    # AppleScript control once (actions/runner-images#11257). VoiceOver reads
+    # WebKit's tree in real Safari, through WebdriverIO and safaridriver.
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: sudo safaridriver --enable
+      - id: guidepup
+        run: echo "version=$(node -p "require('@guidepup/guidepup/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ~/Library/Caches/guidepup/
+          key: guidepup-voiceover-${{ runner.os }}-${{ steps.guidepup.outputs.version }}
+      # Writes the TCC and VoiceOver AppleScript settings the runner needs.
+      - run: npx --no-install guidepup setup --ci
+      - run: npx --no-install guidepup install voiceover
+      - run: npx nx run screen-reader-e2e:voiceover --output-style=static
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screen-reader-voiceover
+          path: |
+            dist/screen-reader-e2e/
+            dist/.playwright/apps/screen-reader-e2e/
+          if-no-files-found: warn
+
+  nvda:
+    # NVDA reads Chromium's and Gecko's trees, in Playwright's Chromium and
+    # Firefox. The nvda target installs NVDA through @guidepup/setup when the
+    # cache lacks it.
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - id: guidepup
+        shell: bash
+        run: echo "version=$(node -p "require('@guidepup/guidepup/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ~\AppData\Local\guidepup
+          key: guidepup-nvda-${{ runner.os }}-${{ steps.guidepup.outputs.version }}
+      - run: npx --no-install guidepup setup --ci
+      - run: npx playwright install chromium firefox
+      - run: npx nx run screen-reader-e2e:nvda --output-style=static
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screen-reader-nvda
+          path: |
+            dist/screen-reader-e2e/
+            dist/.playwright/apps/screen-reader-e2e/
+          if-no-files-found: warn

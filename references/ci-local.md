@@ -1,6 +1,6 @@
 # Run CI and floor jobs locally
 
-Every job in `.github/workflows/ci.yml` and `.github/workflows/floor.yml` runs locally except `ci.yml` `safari`, which needs real Safari on macOS. Run commands from the repository root.
+Every job in `.github/workflows/ci.yml` and `.github/workflows/floor.yml` runs locally except `ci.yml` `safari` and `voiceover`, which need real Safari and VoiceOver on macOS; those two pass in CI on every pull request. Every other job passes both locally and in CI before a push. Run commands from the repository root.
 
 ## Container jobs: run them from the workflow
 
@@ -40,8 +40,17 @@ Without `--matrix`, every combination runs in turn. A job without a `container` 
 | `ci.yml` `package`         | `npm exec nx -- run-many -t build pack-check`                                                                                                                                            |
 | `floor.yml` `firefox-145`  | `FLOOR_FIREFOX=true npm exec nx -- test ngx-yeti -- --project=browser`; WebdriverIO downloads stock Firefox 145 and geckodriver                                                          |
 | `floor.yml` `chromium-141` | `npx --no-install @puppeteer/browsers install chrome@<CHROME_FLOOR_VERSION> --path <dir>` prints `chrome@<version> <path>`; set `FLOOR_CHROMIUM_PATH=<path>` and run the job's two steps |
+| `ci.yml` `nvda`            | `BROWSERS=msedge npm exec nx -- run screen-reader-e2e:nvda` on Windows; see [The NVDA lane](#the-nvda-lane)                                                                              |
 
 `CHROME_FLOOR_VERSION` is in `floor.yml`'s `env`. Add `--skip-nx-cache` to measure real work instead of a cache hit.
+
+## The NVDA lane
+
+The `nvda` target installs a portable NVDA through `npx guidepup install nvda` (idempotent, cached under `%LOCALAPPDATA%\guidepup`), starts it in English, and runs `apps/screen-reader-e2e` against the static Storybook on port 4401, headed, one worker, with 2 retries. It takes the desktop: NVDA speaks, and its keys go to the browser window it raises, so do not type or click while it runs, and do not run it beside `ngx-yeti-e2e`, which needs the same port. Before NVDA sends a key, the lane checks that NVDA reports the story document as the focus, so a window that takes the focus fails the test instead of receiving the keys. Each test writes the phrases it heard to `dist/screen-reader-e2e/nvda/<browser>/`.
+
+Without `BROWSERS` the lane runs Playwright's Chromium and Firefox, as CI does; locally, use `BROWSERS=msedge`, which is native arm64 on Windows on ARM64. The `voiceover` target refuses to start off macOS, and `nvda` off Windows.
+
+Measured on 2026-10-10 on Windows 11 on ARM64 with NVDA 2026.2 (Guidepup asset `0.2.1-2026.2`), Guidepup 0.35.0 and Edge 154.0.4258.62: `card.screen-reader.ts` passes under `BROWSERS=msedge`, and in Playwright 1.63's x64 Chromium 153 and Firefox 155 under emulation. Locally, a second test in one Firefox worker can find the foreground taken by another window between tests; the focus check fails it and the retry, in a fresh worker, passes.
 
 ## Container jobs without Docker
 

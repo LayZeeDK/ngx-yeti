@@ -1,0 +1,37 @@
+{
+  "name": "screen-reader-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/screen-reader-e2e/src",
+  "implicitDependencies": ["ngx-yeti"],
+  "// targets": "nvda and voiceover drive a real screen reader, so no run-many target (test, e2e) runs them",
+  "targets": {
+    "typecheck": {},
+    "nvda": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^yeti-build"],
+      "cache": false,
+      "options": {
+        "commands": [
+          "npx --no-install guidepup install nvda",
+          "npx --no-install playwright test -c apps/screen-reader-e2e/screen-reader.config.mts"
+        ],
+        "parallel": false,
+        "env": {
+          "SCREEN_READER": "nvda"
+        }
+      }
+    },
+    "voiceover": {
+      "executor": "nx:run-commands",
+      "dependsOn": ["^yeti-build"],
+      "cache": false,
+      "options": {
+        "command": "npx --no-install playwright test -c apps/screen-reader-e2e/screen-reader.config.mts",
+        "env": {
+          "SCREEN_READER": "voiceover"
+        }
+      }
+    }
+  }
+}

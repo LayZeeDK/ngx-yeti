@@ -3,9 +3,9 @@ id: T004
 title: Prove Guidepup with NVDA locally and add the voiceover and nvda CI jobs with the card list check
 wave: 1
 deps: []
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T004
+base: 9a42af686801a5fc10f1475f23b9faf610fe128f
 worktree: null
 task_branch: null
 files:
@@ -73,3 +73,35 @@ Heavy: yes
 ## Log
 
 - 2026-10-10 — created by planner
+- 2026-10-10 — coder (build_T004): implemented.
+  - NVDA under Guidepup works on this Windows 11 ARM64 machine (measured): `@guidepup/guidepup` 0.35.0, `@guidepup/setup` 0.29.2 (devDependencies; `@guidepup/playwright` not added), NVDA asset `0.2.1-2026.2` (NVDA 2026.2) installed by `npx guidepup install nvda` into `%LOCALAPPDATA%\guidepup`. Browser channel for the local proof: `msedge` (Edge 154.0.4258.62, native arm64). Also passed once each in Playwright 1.63's x64 Chromium 153 and Firefox 155 under emulation.
+  - Phrases heard on `card--list` (msedge, Verify run): `screen-reader-e 2e-518862816, document, focused, read only` (focus check), `list, with 3 items, heading, level 3, link, Weekend in the hills`, `A day by the lake, link, heading, level 3, Six miles, one summit, and a view worth the early start.`, `The coast path, link, heading, level 3, Six miles, one summit, and a view worth the early start.`, `no next list item`. Asserted substrings, in order: `list, with 3 items`, the three card titles, `no next list item`.
+  - Project `apps/screen-reader-e2e` (targets `lint`, `typecheck`, `nvda`, `voiceover`; no `test`, `test-storybook` or `e2e`; config `screen-reader.config.mts`, so `@nx/playwright/plugin` infers nothing; checked with `nx show project`). `nvda` runs `guidepup install nvda` then Playwright with `SCREEN_READER=nvda` (Chromium and Firefox unless `BROWSERS` is set); `voiceover` runs Playwright with `SCREEN_READER=voiceover`; the config throws on the wrong OS. One worker, headed, `retries: 2` (the stated budget), 5-minute timeout. Each test writes `dist/screen-reader-e2e/<lane>/<project>/<test>-<repeat>-<retry>.json` and attaches the phrases.
+  - Harness decisions, each from a measured failure: NVDA and the browser start once per worker (a second browser launched in the same run lost the keyboard focus to the terminal); NVDA starts in English (`general.language: en`, the machine speaks Danish otherwise); `open` adds a plain `<p>Story start</p>` before `#storybook-root` because NVDA reports "list, with 3 items" only when its caret enters the list from outside, and card--list starts with the list (Control+Home alone announced the list in some runs only); the window is raised by a PowerShell script (minimize, restore, SetForegroundWindow with AttachThreadInput) until Windows reports it as foreground, then `open` refuses to send any key unless NVDA's report-current-focus names a `document` (keys went into the Claude Code terminal before that check existed). The VoiceOver lane opens real Safari through WebdriverIO with `macOSActivate('Safari')`, interacts with the web area, jumps to its left edge (the marker) and walks with VO-Right; its substrings (`list`, `3 items`, titles) are not measured and are first measured on the milestone PR in CI.
+  - Known local limit (measured, recorded in references/ci-local.md): a second test in one Firefox worker finds the foreground taken by another window (VS Code) between tests; the focus check fails it and a retry in a fresh worker passes. With one test per project today, every lane run here is a first test.
+  - `.github/workflows/ci.yml`: `voiceover` (macos-26) and `nvda` (windows-2025) jobs, `timeout-minutes: 20`, Guidepup asset cache keyed on the installed Guidepup version, phrase report and Playwright output uploaded with `if: always()`. Docs: AGENTS.md "Run CI locally", references/ci-local.md (line 3, nvda row in the native table, new "The NVDA lane" section), ngx-yeti-testing SKILL.md (local-and-CI rule after the Engines paragraph, a "Screen readers" section after the Safari paragraph, pull-request integration in Gates). nx.json needed no change.
+  - Follow-up outside declared files: README.md:97 lists the ci.yml jobs and does not name `voiceover` or `nvda`.
+  - Verify (as written, Git Bash): exit 0. `npm ci` ok; `npx playwright install chromium firefox` ok; both `test -f` ok; `nx run-many -t lint typecheck -p screen-reader-e2e` passed; `BROWSERS=msedge nx run screen-reader-e2e:nvda` 1 passed (msedge). Also `npx prettier --check .` clean and `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (working tree) passed for 9 projects. No NVDA, browser or Storybook server left running.
+- 2026-10-10 — orchestrator Verify (sidecar gsd-path-verify/task-t004-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:44980) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:23720) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  ```

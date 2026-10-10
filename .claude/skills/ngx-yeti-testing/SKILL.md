@@ -74,11 +74,24 @@ The other helpers in `apps/yeti-app-e2e/src/support/`:
 
 Locally, every browser layer runs Chromium only: Playwright's browsers are x64 under emulation on the Windows on Arm machine. With `CI` set (GitHub sets it), layers 1, 2, and 4 run Chromium, Firefox, and WebKit. To choose browsers locally, set `BROWSERS` to a comma-separated list, such as `BROWSERS=webkit` or `BROWSERS=chromium,firefox,webkit`; it selects browsers without CI's other effects on the e2e configs. `BROWSERS` wins over `CI`, and a floor variable or `SAFARI` wins over `BROWSERS` in the targets it changes. `tools/playwright/engines.mjs` reads it for every Vitest browser project and every e2e project.
 
+A local Chromium run is not the whole gate. Before a push, every job of `ci.yml` and `floor.yml` passes locally as well as in CI: each container job through `node tools/ci-local/run-job.mjs <workflow> <job>`, and every other job natively by the command `references/ci-local.md` gives. Only the macOS jobs `safari` and `voiceover` are exempt locally; they pass in CI on every pull request (user ruling 2026-10-10: "The floor job (and all other checks) must pass both locally and in CI for every Milestone and every PR in general.").
+
 `BROWSERS` also takes `msedge`, `chrome`, and `moz-firefox`, which run the installed browser, native arm64 on the Windows on Arm machine. They auto-update and are not Playwright's pinned builds, so use them locally only and never as evidence for a CI claim. `references/ci-local.md` lists the names, `FIREFOX_PATH`, and the measured channel runs.
 
 `remote-chromium`, `remote-firefox`, and `remote-webkit` run the pinned revisions in a Playwright server that `node tools/playwright-server/server.mjs` starts in Playwright's Linux image, native arm64; `references/ci-local.md` has the commands, when to prefer them over `msedge`, and the measured runs. A new Vitest or e2e config must declare its servers for them (`references/fast-compile.md`).
 
 The `safari` job of `.github/workflows/ci.yml` sets `SAFARI=true` and runs `nx test ngx-yeti` in the real Safari of the `macos-latest` image, through WebdriverIO and `safaridriver`, headed because `safaridriver` has no headless mode. The Safari version moves with the image. Playwright cannot drive branded Safari, so stories and e2e run in Playwright's WebKit only.
+
+### Screen readers
+
+`apps/screen-reader-e2e` drives real screen readers through Guidepup (`@guidepup/guidepup`, set up with `@guidepup/setup`) on stories of the static Storybook build (port 4401). One file per item, `src/<item>.screen-reader.ts`, runs in both lanes; the shared `test` of `src/support/screen-reader.ts` gives a `lane` that opens a story by id (`open`), moves the reader (`top`, `nextListItem`) and returns the phrases it spoke. Each lane asserts its own recorded substrings, never whole phrases, and writes every phrase it heard to `dist/screen-reader-e2e/<lane>/`, which CI uploads.
+
+| Target                        | Job in `ci.yml`            | Reader and browser                                                                                  |
+| ----------------------------- | -------------------------- | --------------------------------------------------------------------------------------------------- |
+| `screen-reader-e2e:nvda`      | `nvda`, on `windows-2025`  | NVDA in Playwright's Chromium and Firefox; Chromium's and Gecko's accessibility trees               |
+| `screen-reader-e2e:voiceover` | `voiceover`, on `macos-26` | VoiceOver in real Safari through WebdriverIO and `safaridriver`; WebKit's tree, macOS only, CI only |
+
+The project has no `test`, `test-storybook` or `e2e` target, so `npm run check`, the `unit` and `e2e` jobs, `floor.yml` and `nx run-many -t e2e` never start a screen reader; its config is `screen-reader.config.mts`, a name `@nx/playwright/plugin` does not infer a target from. Its `lint` and `typecheck` run in the `static` job. Run the NVDA lane locally on Windows with `BROWSERS=msedge npm exec nx -- run screen-reader-e2e:nvda`: it installs NVDA when missing and takes the desktop while it runs (`references/ci-local.md`, "The NVDA lane"). A flaky screen-reader check is retried within the config's budget (2 retries) and then fixed or escalated to the user, never skipped, deleted or turned into a manual test.
 
 ## The browser floor
 
@@ -102,3 +115,5 @@ Edge 141 is the Chromium 141 engine. No GitHub runner ships Safari 26.2, so Play
 ## Gates
 
 `npm run check` runs lint, typecheck, test, and test-storybook for every project; `.github/workflows/ci.yml` runs that, every build, and every e2e target, then `yeti-app-e2e` again with `FIXTURE_CONFIGURATION=production`, on every pull request and every push to `main` or `release/**`, as parallel jobs: `static`, `package`, `unit`, and an `e2e` matrix of engine by configuration that selects the engine with Playwright's `--project`. When an e2e job grows long, add a `--shard` axis to its matrix, as `firefox-146-e2e` in `floor.yml` has. `test`, `test-storybook`, and `build-fast` never type-check (`references/fast-compile.md` says which targets use Analog `fastCompile`): run `npx nx typecheck ngx-yeti` beside them (`-c spec` for specs only). Targets that read Yeti's build depend on `^yeti-build`, so Yeti builds first.
+
+Milestones integrate through a pull request to `main`. Its `ci.yml` and `floor.yml` jobs, `safari`, `voiceover` and `nvda` included, pass before the user merges it.
