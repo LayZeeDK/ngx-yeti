@@ -13,6 +13,9 @@ import {
 import { YetiCard } from 'ngx-yeti/card';
 import { NgxYetiLift } from 'ngx-yeti/lift';
 
+/** An error the fixture's probes throw on purpose. */
+export class FixtureFault extends Error {}
+
 /**
  * Fixture-only probe: throws in its constructor on the platform its
  * attribute names (`server` or `client`), standing in for a bug in an item
@@ -27,7 +30,9 @@ class ConstructorFault {
       : 'client';
 
     if (inject(new HostAttributeToken('appConstructorFault')) === platform) {
-      throw new Error(`The probe threw in its constructor on the ${platform}`);
+      throw new FixtureFault(
+        `The probe threw in its constructor on the ${platform}`,
+      );
     }
   }
 }
@@ -42,7 +47,7 @@ class UpdateFault {
 
   protected readonly probe = computed(() => {
     if (this.appUpdateFault()) {
-      throw new Error('The probe threw in a host binding');
+      throw new FixtureFault('The probe threw in a host binding');
     }
 
     return null;
