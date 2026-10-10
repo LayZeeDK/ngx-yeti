@@ -3,11 +3,11 @@ id: T001
 title: Generate the 22 M002 secondary entry points before any item task
 wave: 1
 deps: []
-status: pending
-agent: null
-base: null
-worktree: null
-task_branch: null
+status: blocked
+agent: build_T001
+base: 0632a4324daa1a6c0d20aa12732b1c64fb203568
+worktree: C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\task\T001
+task_branch: gsd-path-task/T001
 files:
   - tsconfig.base.json
   - packages/ngx-yeti/tsconfig.lib.json
@@ -120,3 +120,6 @@ Heavy: no
 ## Log
 
 - 2026-10-10 — created by planner
+- 2026-10-10 — coder: ran `nx g @nx/angular:library-secondary-entry-point --library=ngx-yeti --name={item} --skipModule` for all 22 items; restored `packages/ngx-yeti/tsconfig.lib.json` to its base bytes after each run (git diff empty); replaced each generated `export const greeting = 'Hello World!';` with `export {};` and each README with card's shape ("Yeti's `{item}` item. Its exports arrive with the item; ..."). tsconfig.base.json maps all 22 aliases (generator output).
+- 2026-10-10 — coder: Verify FAILED at `nx run ngx-yeti:pack-check`. Passed before it: npm ci, both `test -f`, `run-many -t lint typecheck -p ngx-yeti`, `typecheck ngx-yeti -c src`, `run-many -t build build-fast -p ngx-yeti` (ng-packagr built all 22 empty entry points). Also ran `nx test ngx-yeti -- --project=node` separately: 12 files, 37 tests passed. Exact error: `pack-check failed: consumer.ts imports every entry point` / `ngx-yeti/box, ngx-yeti/breakout, ngx-yeti/button, ngx-yeti/center, ngx-yeti/cluster, ngx-yeti/columns, ngx-yeti/container, ngx-yeti/cover, ngx-yeti/enter, ngx-yeti/frame, ngx-yeti/grid, ngx-yeti/icon, ngx-yeti/layer, ngx-yeti/masonry, ngx-yeti/overlay, ngx-yeti/scroller, ngx-yeti/sidebar, ngx-yeti/spinner, ngx-yeti/stack, ngx-yeti/table, ngx-yeti/timeline, ngx-yeti/visually-hidden`. Cause: tools/package/pack-check.mjs:133-140 requires `tools/package/consumer/consumer.ts` to contain `from '<specifier>';` for every entry point under packages/ngx-yeti. AC3 needs that file changed, but it is not in `files` and the Approach says not to touch it. BLOCKED (plan defect: completion needs an unlisted path, and an Approach constraint contradicts AC3). Possible fix for the plan: add tools/package/consumer/consumer.ts to T001 `files` with one `export {} from 'ngx-yeti/{item}';` (or equivalent) line per entry point, which item tasks later replace with real imports; that is a placeholder-free change but conflicts with the current "do not touch consumer.ts" line.
+- 2026-10-10 — orchestrator: block accepted as a plan defect; no product commit. Rejected isolate diff against base 0632a4324daa1a6c0d20aa12732b1c64fb203568: 68 paths (tsconfig.base.json, the 66 generated entry-point files, this task file), `git diff --binary` sha256 f2922de70477615203f5b95ec2d5cfb5fa13e463a4aa55a3f3da6bd91431825b; every path is task-owned.
