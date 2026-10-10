@@ -234,9 +234,8 @@ for (const { kind, prefix } of routeKinds) {
 
       const lift = await liftTransition();
 
-      // The server's card already used the preload, and routing turns the
-      // HTTP cache off, so the re-inserted card link refetches: recorded, not
-      // asserted. The `setup-defer` route below carries the 0-frame claim.
+      // Recorded, not asserted: the `setup-defer` route below carries the
+      // 0-frame claim.
       test.info().annotations.push(
         {
           type: 'frames',
