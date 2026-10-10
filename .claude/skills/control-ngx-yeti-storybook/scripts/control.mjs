@@ -1,0 +1,656 @@
+#!/usr/bin/env node
+// Launch, health-check, describe and stop the ngx-yeti Storybook for agents.
+// Usage: node .claude/skills/control-ngx-yeti-storybook/scripts/control.mjs
+//   <up|doctor|info|down> [--dev] [--url=<origin>] [--json]
+import { execFileSync, spawn } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import {
+  closeSync,
+  existsSync,
+  mkdirSync,
+  openSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import { connect } from 'node:net';
+import path from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+const NAME = 'control-ngx-yeti-storybook';
+const ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../../..',
+);
+const SCRATCH = path.join(ROOT, 'tmp', NAME);
+const KNOWN_STORY = 'card--stretched-link';
+const READY_TIMEOUT_MS = 600_000;
+const IS_WINDOWS = process.platform === 'win32';
+
+// Ports documented in packages/ngx-yeti/project.json; a worktree derives its
+// own pair from its path so it never drives the main checkout's servers.
+const FLOWS = {
+  dev: { target: 'storybook', mainPort: 4400, offset: 0 },
+  static: { target: 'static-storybook', mainPort: 4401, offset: 1 },
+};
+const DERIVED_BASE = 4420;
+const DERIVED_SLOTS = 100;
+
+const args = process.argv.slice(2);
+const command = args.find((arg) => !arg.startsWith('--'));
+const json = args.includes('--json');
+const flowName = args.includes('--dev') ? 'dev' : 'static';
+const urlArg = args.find((arg) => arg.startsWith('--url='))?.slice(6);
+const flow = FLOWS[flowName];
+
+const isWorktree = existsSync(path.join(ROOT, '.git'))
+  ? statSync(path.join(ROOT, '.git')).isFile()
+  : false;
+
+function derivedPort() {
+  if (!isWorktree) {
+    return flow.mainPort;
+  }
+
+  const hash = createHash('sha1').update(ROOT.toLowerCase()).digest();
+  const slot = hash.readUInt32BE(0) % DERIVED_SLOTS;
+
+  return DERIVED_BASE + slot * 2 + flow.offset;
+}
+
+const port = derivedPort();
+const statePath = path.join(SCRATCH, `state-${flowName}.json`);
+const session = `${NAME}-${flowName}-${String(port)}`;
+
+function finish(code, result) {
+  const payload = { command, flow: flowName, exitCode: code, ...result };
+
+  if (json) {
+    process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
+  } else {
+    const marker = code === 0 ? '[OK]' : '[ERROR]';
+    process.stdout.write(`${marker} ${command}: ${result.message ?? ''}\n`);
+
+    for (const check of result.checks ?? []) {
+      const tag = { pass: '[OK]', fail: '[ERROR]', skipped: '[SKIP]' }[
+        check.status
+      ];
+      process.stdout.write(`  ${tag} ${check.name}: ${check.detail}\n`);
+    }
+
+    for (const [key, value] of Object.entries(result)) {
+      if (!['message', 'checks'].includes(key)) {
+        process.stdout.write(`  ${key}: ${JSON.stringify(value)}\n`);
+      }
+    }
+  }
+
+  process.exit(code);
+}
+
+function readState() {
+  if (!existsSync(statePath)) {
+    return null;
+  }
+
+  return JSON.parse(readFileSync(statePath, 'utf8'));
+}
+
+// One snapshot of every process: pid, parent pid, start time, command line.
+function processTable() {
+  if (IS_WINDOWS) {
+    const script =
+      "Get-CimInstance Win32_Process | ForEach-Object { '{0}|{1}|{2}|{3}' -f $_.ProcessId, $_.ParentProcessId, $(if ($_.CreationDate) { $_.CreationDate.ToUniversalTime().ToString('o') } else { '' }), $_.CommandLine }";
+    const out = execFileSync(
+      'powershell.exe',
+      ['-NoProfile', '-NonInteractive', '-Command', script],
+      { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, windowsHide: true },
+    );
+
+    return out
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .map((line) => {
+        const [pid, ppid, start, ...rest] = line.split('|');
+
+        return {
+          pid: Number(pid),
+          ppid: Number(ppid),
+          start,
+          cmd: rest.join('|'),
+        };
+      });
+  }
+
+  const out = execFileSync('ps', ['-A', '-o', 'pid=,ppid=,lstart=,args='], {
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+
+  return out
+    .split('\n')
+    .filter(Boolean)
+    .map((line) => {
+      const parts = line.trim().split(/\s+/);
+
+      return {
+        pid: Number(parts[0]),
+        ppid: Number(parts[1]),
+        start: parts.slice(2, 7).join(' '),
+        cmd: parts.slice(7).join(' '),
+      };
+    });
+}
+
+function descendants(table, pid) {
+  const tree = new Set([pid]);
+  let grew = true;
+
+  while (grew) {
+    grew = false;
+
+    for (const proc of table) {
+      if (tree.has(proc.ppid) && !tree.has(proc.pid)) {
+        tree.add(proc.pid);
+        grew = true;
+      }
+    }
+  }
+
+  return tree;
+}
+
+function listeningPids(listenPort) {
+  try {
+    if (IS_WINDOWS) {
+      const out = execFileSync(
+        'powershell.exe',
+        [
+          '-NoProfile',
+          '-NonInteractive',
+          '-Command',
+          `Get-NetTCPConnection -State Listen -LocalPort ${String(listenPort)} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess`,
+        ],
+        { encoding: 'utf8', windowsHide: true },
+      );
+
+      return [...new Set(out.split(/\r?\n/).filter(Boolean).map(Number))];
+    }
+
+    const out = execFileSync(
+      'lsof',
+      ['-nP', `-iTCP:${String(listenPort)}`, '-sTCP:LISTEN', '-t'],
+      { encoding: 'utf8' },
+    );
+
+    return [...new Set(out.split('\n').filter(Boolean).map(Number))];
+  } catch {
+    return [];
+  }
+}
+
+function portAnswers(listenPort) {
+  return new Promise((resolve) => {
+    const socket = connect({ host: 'localhost', port: listenPort });
+    socket.setTimeout(1000);
+    socket.once('connect', () => {
+      socket.destroy();
+      resolve(true);
+    });
+    socket.once('timeout', () => {
+      socket.destroy();
+      resolve(false);
+    });
+    socket.once('error', () => resolve(false));
+  });
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function indexHasStory(origin) {
+  try {
+    const response = await fetch(`${origin}/index.json`);
+
+    if (!response.ok) {
+      return false;
+    }
+
+    const index = await response.json();
+
+    return KNOWN_STORY in (index.entries ?? {});
+  } catch {
+    return false;
+  }
+}
+
+// Opens the known story with embed=true (no play function) in the repo's own
+// Playwright Chromium and reports whether it rendered without console errors.
+async function renderCheck(origin) {
+  const { chromium } = await import(
+    pathToFileURL(path.join(ROOT, 'node_modules', 'playwright', 'index.mjs'))
+      .href
+  );
+  const browser = await chromium.launch();
+
+  try {
+    const page = await browser.newPage();
+    const errors = [];
+    page.on('console', (message) => {
+      if (message.type() === 'error' && !message.text().includes('favicon')) {
+        errors.push(message.text());
+      }
+    });
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.goto(
+      `${origin}/iframe.html?id=${KNOWN_STORY}&viewMode=story&embed=true`,
+    );
+    await page.waitForFunction(
+      () =>
+        ['finished', 'errored', 'aborted'].includes(
+          window.__STORYBOOK_PREVIEW__?.currentRender?.phase ?? '',
+        ),
+      undefined,
+      { timeout: 60_000 },
+    );
+    const state = await page.evaluate(() => ({
+      phase: window.__STORYBOOK_PREVIEW__.currentRender.phase,
+      errorDisplay: document.body.classList.contains('sb-show-errordisplay'),
+      rootChildren: document.querySelector('#storybook-root')?.children.length,
+    }));
+
+    return { ...state, consoleErrors: errors };
+  } finally {
+    await browser.close();
+  }
+}
+
+function newestMtime(dir, skip) {
+  let newest = 0;
+
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (skip.includes(entry.name)) {
+      continue;
+    }
+
+    const full = path.join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      newest = Math.max(newest, newestMtime(full, skip));
+    } else {
+      newest = Math.max(newest, statSync(full).mtimeMs);
+    }
+  }
+
+  return newest;
+}
+
+function tail(file, lines = 20) {
+  if (!existsSync(file)) {
+    return [];
+  }
+
+  return readFileSync(file, 'utf8')
+    .replace(/\x1b\[[0-9;]*m/g, '')
+    .split(/\r?\n/)
+    .filter((line) => line.trim() !== '')
+    .slice(-lines);
+}
+
+function refuseMainPort(target) {
+  const mainPorts = Object.values(FLOWS).map((f) => f.mainPort);
+
+  if (isWorktree && target === undefined && mainPorts.includes(port)) {
+    finish(2, {
+      message: `refused: ${String(port)} is the main checkout's Storybook port`,
+    });
+  }
+}
+
+async function up() {
+  refuseMainPort(urlArg);
+  const existing = readState();
+
+  if (existing !== null) {
+    const alive = processTable().some((proc) => proc.pid === existing.pid);
+
+    if (alive) {
+      finish(2, {
+        message: `refused: already up (pid ${String(existing.pid)}, ${existing.url}); run down first`,
+      });
+    }
+
+    rmSync(statePath);
+  }
+
+  if (await portAnswers(port)) {
+    finish(2, {
+      message: `refused: port ${String(port)} is in use`,
+      owner: listeningPids(port),
+    });
+  }
+
+  const runId = `${flowName}-${new Date().toISOString().replace(/[:.]/g, '-')}`;
+  const evidenceDir = path.join(SCRATCH, runId);
+  mkdirSync(evidenceDir, { recursive: true });
+  const logPath = path.join(evidenceDir, 'server.log');
+  const log = openSync(logPath, 'w');
+  const nxBin = path.join(ROOT, 'node_modules', 'nx', 'dist', 'bin', 'nx.js');
+  const argv = [
+    nxBin,
+    'run',
+    `ngx-yeti:${flow.target}`,
+    `--port=${String(port)}`,
+  ];
+  const started = Date.now();
+  const child = spawn(process.execPath, argv, {
+    cwd: ROOT,
+    detached: true,
+    windowsHide: true,
+    stdio: ['ignore', log, log],
+    env: {
+      ...process.env,
+      NX_DAEMON: 'false',
+      NX_TUI: 'false',
+      NX_NO_CLOUD: 'true',
+    },
+  });
+  child.unref();
+  closeSync(log);
+  let exited = null;
+  child.once('exit', (code) => {
+    exited = code;
+  });
+
+  const live = processTable().find((proc) => proc.pid === child.pid);
+  const url = `http://localhost:${String(port)}`;
+  const state = {
+    pid: child.pid,
+    port,
+    url,
+    flow: flowName,
+    target: `ngx-yeti:${flow.target}`,
+    session,
+    startTime: live?.start ?? null,
+    launchCommand: live?.cmd ?? [process.execPath, ...argv].join(' '),
+    startedAt: new Date(started).toISOString(),
+    evidenceDir,
+    log: logPath,
+  };
+  writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`);
+
+  while (Date.now() - started < READY_TIMEOUT_MS) {
+    if (exited !== null) {
+      finish(1, {
+        message: `server exited with code ${String(exited)} before ready`,
+        log: logPath,
+        logTail: tail(logPath),
+      });
+    }
+
+    if (await indexHasStory(url)) {
+      const render = await renderCheck(url);
+
+      if (render.phase === 'finished' && !render.errorDisplay) {
+        finish(0, {
+          message: `ready at ${url}`,
+          ...state,
+          readyMs: Date.now() - started,
+        });
+      }
+
+      finish(1, {
+        message: `${KNOWN_STORY} did not render`,
+        render,
+        ...state,
+      });
+    }
+
+    await sleep(2000);
+  }
+
+  finish(1, {
+    message: `not ready after ${String(READY_TIMEOUT_MS)} ms; run down`,
+    ...state,
+    logTail: tail(logPath),
+  });
+}
+
+async function doctor() {
+  const state = readState();
+  const origin = urlArg ?? state?.url;
+  const checks = [];
+  const add = (name, ok, detail) =>
+    checks.push({ name, status: ok ? 'pass' : 'fail', detail });
+  const skip = (name, detail) =>
+    checks.push({ name, status: 'skipped', detail });
+
+  if (origin === undefined) {
+    finish(2, { message: `no state file at ${statePath} and no --url` });
+  }
+
+  if (urlArg === undefined) {
+    refuseMainPort(undefined);
+    const table = processTable();
+    const live = table.find((proc) => proc.pid === state.pid);
+    add(
+      'process alive',
+      live !== undefined && live.start === state.startTime,
+      live === undefined
+        ? `pid ${String(state.pid)} is not running`
+        : `pid ${String(state.pid)} started ${live.start}`,
+    );
+    const owners = listeningPids(state.port);
+    const tree = descendants(table, state.pid);
+    add(
+      'port owned by run',
+      owners.length > 0 && owners.every((pid) => tree.has(pid)),
+      `port ${String(state.port)} listeners ${JSON.stringify(owners)}`,
+    );
+  } else {
+    skip('process alive', '--url names an instance this run did not start');
+    skip('port owned by run', '--url names an instance this run did not start');
+  }
+
+  const hasStory = await indexHasStory(origin);
+  add('index lists known story', hasStory, `${origin}/index.json`);
+
+  if (hasStory) {
+    const render = await renderCheck(origin);
+    add(
+      'known story renders',
+      render.phase === 'finished' &&
+        !render.errorDisplay &&
+        render.rootChildren > 0,
+      `${KNOWN_STORY} phase=${render.phase} rootChildren=${String(render.rootChildren)}`,
+    );
+    add(
+      'no console errors',
+      render.consoleErrors.length === 0,
+      render.consoleErrors.length === 0
+        ? 'none on first load'
+        : render.consoleErrors.join(' | '),
+    );
+  } else {
+    skip('known story renders', 'index check failed');
+    skip('no console errors', 'index check failed');
+  }
+
+  if (urlArg !== undefined) {
+    skip('build matches checkout', '--url instance');
+  } else if (flowName === 'static') {
+    const built = path.join(
+      ROOT,
+      'packages/ngx-yeti/storybook-static/index.json',
+    );
+    const builtAt = existsSync(built) ? statSync(built).mtimeMs : 0;
+    const sourceAt = newestMtime(path.join(ROOT, 'packages/ngx-yeti'), [
+      'storybook-static',
+      'node_modules',
+    ]);
+    add(
+      'build matches checkout',
+      builtAt >= sourceAt,
+      builtAt >= sourceAt
+        ? 'storybook-static is newer than every source file'
+        : 'a source file changed after the build; run down and up',
+    );
+  } else {
+    const errors = tail(state.log, 500).filter((line) =>
+      /\b(ERROR|Error:)/.test(line),
+    );
+    add(
+      'build matches checkout',
+      errors.length === 0,
+      errors.length === 0 ? 'server log has no errors' : errors.join(' | '),
+    );
+  }
+
+  const healthy = checks.every((check) => check.status !== 'fail');
+  finish(healthy ? 0 : 1, {
+    message: healthy ? `healthy: ${origin}` : `not healthy: ${origin}`,
+    url: origin,
+    checks,
+  });
+}
+
+function info() {
+  const state = readState();
+
+  if (state === null) {
+    finish(2, {
+      message: `no state file at ${statePath}`,
+      port,
+      session,
+      worktree: isWorktree,
+    });
+  }
+
+  finish(0, {
+    message: state.url,
+    worktree: isWorktree,
+    statePath,
+    ...state,
+  });
+}
+
+async function down() {
+  const state = readState();
+
+  if (state === null) {
+    finish(2, { message: `no state file at ${statePath}; nothing to stop` });
+  }
+
+  const table = processTable();
+  const live = table.find((proc) => proc.pid === state.pid);
+
+  if (live === undefined) {
+    rmSync(statePath);
+    finish(0, {
+      message: `pid ${String(state.pid)} is not running; removed the state file`,
+      evidenceDir: state.evidenceDir,
+    });
+  }
+
+  if (live.start !== state.startTime) {
+    finish(2, {
+      message: `refused: pid ${String(state.pid)} start-time mismatch (recorded ${state.startTime}, live ${live.start})`,
+    });
+  }
+
+  if (
+    !live.cmd.includes(state.target) ||
+    !live.cmd.includes(`--port=${String(state.port)}`)
+  ) {
+    finish(2, {
+      message: `refused: pid ${String(state.pid)} command mismatch (live: ${live.cmd})`,
+    });
+  }
+
+  // playwright-cli exits 0 whether or not the session was open, so the
+  // result is read from its output. The session name holds only [a-z0-9-].
+  let sessionClosed = 'playwright-cli not found';
+
+  try {
+    const [file, prefix] = IS_WINDOWS
+      ? ['cmd.exe', ['/d', '/c', 'playwright-cli']]
+      : ['playwright-cli', []];
+    const out = execFileSync(
+      file,
+      [...prefix, `-s=${state.session}`, 'close'],
+      { cwd: ROOT, encoding: 'utf8', stdio: 'pipe', windowsHide: true },
+    );
+    sessionClosed = out.includes('is not open') ? 'was not open' : 'closed';
+  } catch {
+    // playwright-cli is absent; there is no session to close.
+  }
+
+  const tree = [...descendants(table, state.pid)];
+
+  if (IS_WINDOWS) {
+    try {
+      execFileSync('taskkill', ['/PID', String(state.pid), '/T', '/F'], {
+        stdio: 'pipe',
+        windowsHide: true,
+      });
+    } catch {
+      // Members may already be gone; the check below decides.
+    }
+  } else {
+    try {
+      process.kill(-state.pid, 'SIGTERM');
+    } catch {
+      // The group may already be gone; the check below decides.
+    }
+  }
+
+  const deadline = Date.now() + 15_000;
+  let remaining = tree;
+  let portBusy = true;
+
+  while (Date.now() < deadline) {
+    const pids = new Set(processTable().map((proc) => proc.pid));
+    remaining = tree.filter((pid) => pids.has(pid));
+    portBusy = await portAnswers(state.port);
+
+    if (remaining.length === 0 && !portBusy) {
+      break;
+    }
+
+    await sleep(500);
+  }
+
+  if (remaining.length > 0 || portBusy) {
+    finish(1, {
+      message: 'teardown incomplete',
+      remaining,
+      portBusy,
+      statePath,
+    });
+  }
+
+  rmSync(statePath);
+  finish(0, {
+    message: `stopped pid ${String(state.pid)} and ${String(tree.length - 1)} descendants`,
+    stoppedPids: tree,
+    port: state.port,
+    portFree: true,
+    session: state.session,
+    sessionClosed,
+    evidenceDir: state.evidenceDir,
+  });
+}
+
+const commands = { up, doctor, info, down };
+
+if (!(command in commands)) {
+  finish(2, {
+    message:
+      'usage: control.mjs <up|doctor|info|down> [--dev] [--url=<origin>] [--json]',
+  });
+}
+
+await commands[command]();
