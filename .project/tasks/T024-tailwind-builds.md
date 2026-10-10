@@ -57,7 +57,7 @@ An M001 carry-over (setup.md:344; ticket 50 decision 70): the setup route built 
 ## Verify
 
 ```bash
-npm ci && npx playwright install chromium && test -f apps/yeti-app-e2e/src/tailwind.spec.ts && test -f apps/yeti-app/src/styles-tailwind-c1.css && npm exec nx -- run-many -t lint typecheck -p yeti-app yeti-app-e2e && FIXTURE_CONFIGURATION=tailwind-c1 npm exec nx -- e2e yeti-app-e2e && FIXTURE_CONFIGURATION=tailwind-c2 npm exec nx -- e2e yeti-app-e2e && npm exec nx -- e2e yeti-app-e2e -- build-output.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=firefox --matrix configuration=tailwind-c1 && node tools/ci-local/run-job.mjs ci e2e --matrix engine=webkit --matrix configuration=tailwind-c2 && node --test tools/playwright/playwright-configs.test.mjs
+npm ci && npx playwright install chromium && test -f apps/yeti-app-e2e/src/tailwind.spec.ts && test -f apps/yeti-app/src/styles-tailwind-c1.css && npm exec nx -- run-many -t lint typecheck -p yeti-app yeti-app-e2e && FIXTURE_CONFIGURATION=tailwind-c1 npm exec nx -- e2e yeti-app-e2e && FIXTURE_CONFIGURATION=tailwind-c2 npm exec nx -- e2e yeti-app-e2e && npm exec nx -- e2e yeti-app-e2e -- build-output.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=firefox --matrix configuration=tailwind-c1 && node tools/ci-local/run-job.mjs ci e2e --matrix engine=webkit --matrix configuration=tailwind-c2 && node --test tools/playwright/playwright-configs.test.mjs; status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: yes
@@ -65,3 +65,4 @@ Heavy: yes
 ## Log
 
 - 2026-10-10 — created by planner
+- 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.

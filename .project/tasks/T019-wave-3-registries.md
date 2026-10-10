@@ -49,7 +49,7 @@ Wave 3 lands fifteen items in parallel tasks that may not share files, so the pa
 ## Verify
 
 ```bash
-npm ci && test -f tools/package/consumer/consumer.ts && test -f packages/ngx-yeti/src/name-collision.node.spec.ts && npm exec nx -- run-many -t lint typecheck -p ngx-yeti && npm exec nx -- test ngx-yeti -- src/name-collision src/item-names contract.node && npm exec nx -- run ngx-yeti:pack-check
+npm ci && test -f tools/package/consumer/consumer.ts && test -f packages/ngx-yeti/src/name-collision.node.spec.ts && npm exec nx -- run-many -t lint typecheck -p ngx-yeti && npm exec nx -- test ngx-yeti -- src/name-collision src/item-names contract.node && npm exec nx -- run ngx-yeti:pack-check; status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: no
@@ -57,3 +57,4 @@ Heavy: no
 ## Log
 
 - 2026-10-10 — created by planner
+- 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.

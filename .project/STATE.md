@@ -77,3 +77,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-10 — build — build started
 - 2026-10-10 — build — plan defect T001: added tools/package/consumer/consumer.ts to files so AC3 pack-check can pass; T001 back to pending
 - 2026-10-10 — build — plan defect T005: Verify prettier step gains --ignore-unknown (explicit .gitignore has no parser); T005 back to pending
+- 2026-10-10 — build — plan defect T007-T028: each Verify ends with an Nx daemon stop and keeps its exit code, so serial sidecar cleanup no longer races the daemon; T004 landed on a Verify run with NX_DAEMON=false and is re-verified with the daemon on

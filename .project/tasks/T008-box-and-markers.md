@@ -85,7 +85,7 @@ files:
 ## Verify
 
 ```bash
-npm ci && npx playwright install chromium && test -f packages/ngx-yeti/box/src/box.spec.ts && npm exec nx -- run-many -t lint typecheck -p ngx-yeti ngx-yeti-e2e yeti-app yeti-app-e2e && npm exec nx -- test ngx-yeti -- box/src center/src src/name-collision src/item-names && npm exec nx -- test-storybook ngx-yeti -- box/src stack/src center/src && npm exec nx -- e2e yeti-app-e2e -- box.spec.ts center.spec.ts && FIXTURE_CONFIGURATION=production npm exec nx -- e2e yeti-app-e2e -- box.spec.ts center.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=firefox --matrix configuration=development -- npx nx e2e yeti-app-e2e -- --project=firefox box.spec.ts center.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=webkit --matrix configuration=development -- npx nx e2e yeti-app-e2e -- --project=webkit box.spec.ts center.spec.ts && npm exec nx -- run ngx-yeti:pack-check
+npm ci && npx playwright install chromium && test -f packages/ngx-yeti/box/src/box.spec.ts && npm exec nx -- run-many -t lint typecheck -p ngx-yeti ngx-yeti-e2e yeti-app yeti-app-e2e && npm exec nx -- test ngx-yeti -- box/src center/src src/name-collision src/item-names && npm exec nx -- test-storybook ngx-yeti -- box/src stack/src center/src && npm exec nx -- e2e yeti-app-e2e -- box.spec.ts center.spec.ts && FIXTURE_CONFIGURATION=production npm exec nx -- e2e yeti-app-e2e -- box.spec.ts center.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=firefox --matrix configuration=development -- npx nx e2e yeti-app-e2e -- --project=firefox box.spec.ts center.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=webkit --matrix configuration=development -- npx nx e2e yeti-app-e2e -- --project=webkit box.spec.ts center.spec.ts && npm exec nx -- run ngx-yeti:pack-check; status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: yes
@@ -93,3 +93,4 @@ Heavy: yes
 ## Log
 
 - 2026-10-10 — created by planner
+- 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.

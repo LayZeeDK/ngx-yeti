@@ -52,7 +52,7 @@ With button, icon, container, and table landed, all 22 M002 entry points exist. 
 ## Verify
 
 ```bash
-npm ci && test -f packages/ngx-yeti/src/shared-inputs.node.spec.ts && test -f tools/package/consumer/consumer.ts && npm exec nx -- run-many -t lint typecheck -p ngx-yeti && npm exec nx -- test ngx-yeti -- src/shared-inputs src/name-collision src/item-names contract.node && npm exec nx -- typecheck ngx-yeti -c spec && npm exec nx -- run ngx-yeti:pack-check
+npm ci && test -f packages/ngx-yeti/src/shared-inputs.node.spec.ts && test -f tools/package/consumer/consumer.ts && npm exec nx -- run-many -t lint typecheck -p ngx-yeti && npm exec nx -- test ngx-yeti -- src/shared-inputs src/name-collision src/item-names contract.node && npm exec nx -- typecheck ngx-yeti -c spec && npm exec nx -- run ngx-yeti:pack-check; status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: no
@@ -60,3 +60,4 @@ Heavy: no
 ## Log
 
 - 2026-10-10 — created by planner
+- 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.

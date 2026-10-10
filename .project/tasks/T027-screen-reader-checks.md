@@ -57,7 +57,7 @@ SC9 (user, 2026-10-10: "Approve SC9."; automated screen-reader tests are always 
 ## Verify
 
 ```bash
-npm ci && npx playwright install chromium firefox && test -f apps/screen-reader-e2e/src/timeline.screen-reader.ts && test -f apps/screen-reader-e2e/src/spinner.screen-reader.ts && npm exec nx -- run-many -t lint typecheck -p screen-reader-e2e && BROWSERS=msedge npm exec nx -- run screen-reader-e2e:nvda
+npm ci && npx playwright install chromium firefox && test -f apps/screen-reader-e2e/src/timeline.screen-reader.ts && test -f apps/screen-reader-e2e/src/spinner.screen-reader.ts && npm exec nx -- run-many -t lint typecheck -p screen-reader-e2e && BROWSERS=msedge npm exec nx -- run screen-reader-e2e:nvda; status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: yes
@@ -65,3 +65,4 @@ Heavy: yes
 ## Log
 
 - 2026-10-10 — created by planner
+- 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
