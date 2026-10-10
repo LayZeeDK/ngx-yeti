@@ -3,11 +3,11 @@ id: T005
 title: Generate and prove the control-yeti-app skill for the Fixture app
 wave: 1
 deps: []
-status: blocked
-agent: build_T005
-base: 0632a4324daa1a6c0d20aa12732b1c64fb203568
-worktree: C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\task\T005
-task_branch: gsd-path-task/T005
+status: pending
+agent: null
+base: null
+worktree: null
+task_branch: null
 files:
   - .claude/skills/control-yeti-app/SKILL.md
   - .claude/skills/control-yeti-app/scripts/control.mjs
@@ -52,7 +52,7 @@ The user ruled on 2026-10-10 ("Approve recommendations") that two control skills
 ## Verify
 
 ```bash
-npm ci && npx playwright install chromium && test -f .claude/skills/control-yeti-app/SKILL.md && test -f .claude/skills/control-yeti-app/features/item-routes.md && node .claude/skills/control-yeti-app/scripts/control.mjs up --json && node .claude/skills/control-yeti-app/scripts/control.mjs doctor --json && node .claude/skills/control-yeti-app/scripts/control.mjs down --json && npx prettier --check .claude/skills/control-yeti-app .gitignore
+npm ci && npx playwright install chromium && test -f .claude/skills/control-yeti-app/SKILL.md && test -f .claude/skills/control-yeti-app/features/item-routes.md && node .claude/skills/control-yeti-app/scripts/control.mjs up --json && node .claude/skills/control-yeti-app/scripts/control.mjs doctor --json && node .claude/skills/control-yeti-app/scripts/control.mjs down --json && npx prettier --check --ignore-unknown .claude/skills/control-yeti-app .gitignore
 ```
 
 Heavy: yes
@@ -78,3 +78,4 @@ Heavy: yes
 - 2026-10-10 — coder: Verify result: FAILED (exit 2) on its last step only. `npm ci`, `npx playwright install chromium`, both `test -f`, `up --json` (exit 0), `doctor --json` (exit 0, all checks pass), `down --json` (exit 0, port free, no survivors) passed. `npx prettier --check .claude/skills/control-yeti-app .gitignore` exits 2: `[error] No parser could be inferred for file ".gitignore"`. Prettier has no parser for `.gitignore` when the file is named explicitly; the base commit's `.gitignore` fails the same way (exit 2), so no content change inside `files` can make this step pass. `npx prettier --check --ignore-unknown .claude/skills/control-yeti-app .gitignore` exits 0, and `npx prettier --check .` exits 0.
 - 2026-10-10 — coder: BLOCKED — the task's Verify command cannot pass as written: its final step names `.gitignore` explicitly to `prettier --check`, which errors for any `.gitignore` (no inferable parser), and fixing it needs a Verify edit or a `.prettierrc` override outside `files`. Suggested Verify tail: `npx prettier --check --ignore-unknown .claude/skills/control-yeti-app .gitignore` (measured exit 0). All acceptance-criteria work is complete in the worktree.
 - 2026-10-10 — orchestrator: block accepted as a Verify defect; no product commit. Rejected isolate diff against base 0632a4324daa1a6c0d20aa12732b1c64fb203568: 9 paths (the 7 control-yeti-app skill files, .gitignore, this task file), `git diff --binary` sha256 6308d5677d0f5dd10e768af11616a5910e2a97eb606229ed40cf9215d3781600; every path is task-owned. The product part is preserved as a patch for the retry.
+- 2026-10-10 — orchestrator: plan-defect repair (Verify only). The last Verify step `npx prettier --check .claude/skills/control-yeti-app .gitignore` exits 2 for any `.gitignore` (Prettier infers no parser for an explicitly named file; the base commit's `.gitignore` fails the same way), so it gains `--ignore-unknown`, which the coder measured at exit 0. AC4's `npx prettier --check .` is unchanged. Retry: reapply the preserved attempt-1 product patch, then re-run the proof and Verify.
