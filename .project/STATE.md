@@ -75,3 +75,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-10 — plan — planning started
 - 2026-10-10 — plan — plan approved
 - 2026-10-10 — build — build started
+- 2026-10-10 — build — plan defect T001: added tools/package/consumer/consumer.ts to files so AC3 pack-check can pass; T001 back to pending
