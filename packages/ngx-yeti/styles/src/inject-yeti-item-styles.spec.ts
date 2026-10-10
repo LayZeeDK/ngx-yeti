@@ -5,6 +5,7 @@ import {
   Directive,
   EnvironmentInjector,
   type EnvironmentProviders,
+  ErrorHandler,
   type Provider,
   type Type,
   createEnvironmentInjector,
@@ -81,6 +82,15 @@ class ProbeThrowing {
   constructor() {
     failProbe();
     injectYetiItemStyles('card');
+  }
+}
+
+/** The default handler logs a `@boundary`'s error to stderr. */
+class RecordingErrorHandler extends ErrorHandler {
+  readonly viewErrors: Error[] = [];
+
+  override onViewError(error: Error): void {
+    this.viewErrors.push(error);
   }
 }
 
@@ -453,15 +463,19 @@ describe(injectYetiItemStyles, () => {
   });
 
   it('leaks no link and no count from a constructor that throws first', async () => {
-    expect.assertions(3);
+    expect.assertions(4);
 
-    const { create, destroy } = setup();
+    const errorHandler = new RecordingErrorHandler();
+    const { create, destroy } = setup({
+      providers: [{ provide: ErrorHandler, useValue: errorHandler }],
+    });
     const fixture = TestBed.createComponent(BoundaryHost);
     await fixture.whenStable();
     const element: unknown = fixture.nativeElement;
     assert.instanceOf(element, HTMLElement);
 
     expect(element.textContent).toContain('Fallback');
+    expect(errorHandler.viewErrors).toStrictEqual([new Error('Probe failed')]);
     expect(itemNames()).toStrictEqual([]);
 
     const card = await create(ProbeCard);
