@@ -79,3 +79,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-10 — build — plan defect T005: Verify prettier step gains --ignore-unknown (explicit .gitignore has no parser); T005 back to pending
 - 2026-10-10 — build — plan defect T007-T028: each Verify ends with an Nx daemon stop and keeps its exit code, so serial sidecar cleanup no longer races the daemon; T004 landed on a Verify run with NX_DAEMON=false and is re-verified with the daemon on
 - 2026-10-10 — build — T004 re-verified at 7ad619f with the Nx daemon on: Verify exit 0 in a historical sidecar, recorded in the ledger; wave 1 gate host steps rerun with the daemon on, all exit 0
+- 2026-10-11 — build — wave 1/5 done, 1 review cycle: pass (6 tasks); non-blocking warnings recorded in review/wave-1.cycle1.md
