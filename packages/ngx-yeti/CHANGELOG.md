@@ -10,6 +10,7 @@ Built against Yeti `7.0.0-alpha.0` at commit `f52d1e8b93de5bbde322480ba77d5be26c
 
 - `ngx-yeti`: types only, generated from Yeti's `yeti.d.ts` at the pin, such as `YetiComponentName`, `YetiVariant`, `YetiWidth`, `YetiRatio`, and `YetiLift`.
 - `ngx-yeti/styles`: `provideYetiStyles` with its `YetiStylesConfig` type, and `injectYetiItemStyles`, which load each item's Yeti file as a counted link in `<head>` on the server and the client.
+- `ngx-yeti/box`: `YetiBox`, and the any-element markers `YetiBorder`, `NgxYetiPaint`, and `YetiText`, which load no item file.
 - `ngx-yeti/card`: `YetiCard`, `YetiCardLink`, and `yetiCardToken`.
 - `ngx-yeti/center`: `YetiCenter`.
 - `ngx-yeti/lift`: `NgxYetiLift`.

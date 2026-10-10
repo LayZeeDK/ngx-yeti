@@ -10,12 +10,12 @@ import type {
   YetiVariant,
   YetiWidth,
 } from 'ngx-yeti';
+import { NgxYetiPaint, YetiBorder, YetiBox, YetiText } from 'ngx-yeti/box';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
 import { YetiCenter } from 'ngx-yeti/center';
 import { NgxYetiLift } from 'ngx-yeti/lift';
 import { YetiStack, YetiStackChild } from 'ngx-yeti/stack';
 import { injectYetiItemStyles, provideYetiStyles } from 'ngx-yeti/styles';
-export {} from 'ngx-yeti/box';
 export {} from 'ngx-yeti/breakout';
 export {} from 'ngx-yeti/button';
 export {} from 'ngx-yeti/cluster';
@@ -59,6 +59,10 @@ export class AppBadge {
     YetiStack,
     YetiStackChild,
     YetiCenter,
+    YetiBox,
+    YetiBorder,
+    NgxYetiPaint,
+    YetiText,
     AppBadge,
   ],
   template: `
@@ -85,6 +89,9 @@ export class AppBadge {
         {{ child.sticky() }}
       </p>
     </div>
+    <section yetiBox [gap]="gap" surface="raised" yetiBorder #box="yetiBox">
+      <p yetiPaint="primary" yetiText="white">{{ box.surface() }}</p>
+    </section>
   `,
 })
 export class App {

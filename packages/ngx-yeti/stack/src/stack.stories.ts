@@ -6,6 +6,7 @@ import {
   type StoryObj,
 } from '@storybook/angular-vite';
 import type { YetiAlign, YetiGap } from 'ngx-yeti';
+import { YetiBorder, YetiBox } from 'ngx-yeti/box';
 import { expect, waitFor } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import { YetiStack } from './stack';
@@ -133,23 +134,30 @@ async function expectClose(actual: number, expected: number): Promise<void> {
 const meta: Meta<YetiStack> = {
   id: 'stack',
   component: YetiStack,
-  decorators: [moduleMetadata({ imports: [YetiStack, YetiStackChild] })],
+  decorators: [
+    moduleMetadata({
+      imports: [YetiStack, YetiStackChild, YetiBox, YetiBorder],
+    }),
+  ],
 };
 export default meta;
 
 type Story = StoryObj<YetiStack>;
 
-/** Yeti's stack example (stack spec, section 8). */
+/**
+ * Yeti's stack example, a raised bordered box on each child (stack spec,
+ * section 8).
+ */
 export const Default: Story = {
   render: () => ({
     template: `
       <div data-testid="stack" yetiStack gap="lg" fill>
-        <h2>A heading</h2>
-        <p>A paragraph that follows it at the stack's gap.</p>
-        <p>Another paragraph.</p>
-        <h2 yetiStackChild space="3xl">A heading with more room above it</h2>
-        <p>Back at the stack's own gap.</p>
-        <p yetiStackChild split>Pushed to the bottom when the stack has room.</p>
+        <h2 yetiBox surface="raised" yetiBorder>A heading</h2>
+        <p yetiBox surface="raised" yetiBorder>A paragraph that follows it at the stack's gap.</p>
+        <p yetiBox surface="raised" yetiBorder>Another paragraph.</p>
+        <h2 yetiBox surface="raised" yetiBorder yetiStackChild space="3xl">A heading with more room above it</h2>
+        <p yetiBox surface="raised" yetiBorder>Back at the stack's own gap.</p>
+        <p yetiBox surface="raised" yetiBorder yetiStackChild split>Pushed to the bottom when the stack has room.</p>
       </div>`,
   }),
   play: async ({ canvas, canvasElement }) => {
@@ -172,12 +180,21 @@ export const Default: Story = {
       items.filter((item) => item.hasAttribute('data-split')),
     ).toStrictEqual([split]);
     await expect(
+      items.filter(
+        (item) =>
+          !item.classList.contains('box') ||
+          item.getAttribute('data-surface') !== 'raised' ||
+          !item.hasAttribute('data-border'),
+      ),
+    ).toStrictEqual([]);
+    await expect(
       [stack, ...stack.querySelectorAll('*')].filter((element) =>
         element.matches('[role], [tabindex]'),
       ),
     ).toStrictEqual([]);
 
     await stackStyled(stack);
+    await itemStylesLoaded('box');
 
     for (const item of items) {
       const { marginTop, marginRight, marginBottom, marginLeft } =

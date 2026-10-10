@@ -1,12 +1,13 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { YetiBorder, YetiBox } from 'ngx-yeti/box';
 import { YetiCenter } from 'ngx-yeti/center';
 import { YetiStack } from 'ngx-yeti/stack';
 
 /**
  * The center spec's Fixture-app route (center.md:284-291): a center alone,
- * a center with `intrinsic`, and a stack of centers, which one control
- * removes; a center in a `hydrate never` block; and a stack of centers in a
+ * a center with `intrinsic`, a center with `yetiBox`, section 8's bordered
+ * box inside a center, and a stack of centers, which one control removes; a center in a `hydrate never` block; and a stack of centers in a
  * client-only `@defer` (the app preloads `center` and `stack`), which the
  * e2e test renders after either item's link. Until `button` lands, the
  * intrinsic center holds a plain button. The `h2` puts the centers' `h3`
@@ -15,7 +16,7 @@ import { YetiStack } from 'ngx-yeti/stack';
  */
 @Component({
   selector: 'app-center-fixture',
-  imports: [RouterLink, YetiCenter, YetiStack],
+  imports: [RouterLink, YetiCenter, YetiStack, YetiBox, YetiBorder],
   template: `<h2>Trail maps</h2>
     <button type="button" [disabled]="!live()" (click)="live.set(false)">
       Remove the live centers
@@ -28,6 +29,15 @@ import { YetiStack } from 'ngx-yeti/stack';
       <div id="intrinsic-center" yetiCenter intrinsic>
         <h3>Welcome back</h3>
         <button type="button">Sign in</button>
+      </div>
+      <section id="box-center" yetiCenter yetiBox gap="lg">
+        <p>A padded column from one gap.</p>
+      </section>
+      <div id="bordered-center" yetiCenter max="md">
+        <div yetiBox yetiBorder surface="raised">
+          <h3>A readable column</h3>
+          <p>The border sits on the box inside the center.</p>
+        </div>
       </div>
       <div id="live-stack" yetiStack>
         <section yetiCenter max="xs"><p>The first centred section.</p></section>
@@ -55,13 +65,31 @@ export class CenterFixture {
   protected readonly live = signal(true);
 }
 
+/**
+ * A negative control (center.md:288, ledger A11Y-9): Yeti's own example, the
+ * border on the center's element, which the center's usage rule 3 forbids.
+ * The e2e test records its overflow at 320 px and leaves it out of the axe
+ * and hydration checks.
+ */
 @Component({
   selector: 'app-center-anti-pattern-fixture',
-  imports: [RouterLink],
-  template: `<h2>center-anti-pattern</h2>
-    <p i18n data-fixture-stub>
-      The center-anti-pattern route, a stub until its item lands.
+  imports: [RouterLink, YetiCenter, YetiBox, YetiBorder],
+  template: `<h2>What not to write: a border on the center</h2>
+    <p i18n>
+      This page shows markup not to write. The border sits on the center's own
+      element, so at 320 pixels the column is wider than the page.
     </p>
+    <div
+      id="anti-pattern-center"
+      yetiCenter
+      yetiBox
+      yetiBorder
+      max="md"
+      surface="raised"
+    >
+      <h3>A readable column</h3>
+      <p>Never wider than the maximum, never touching the screen edge.</p>
+    </div>
     <a routerLink="/replay">Leave for the replay page</a>`,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

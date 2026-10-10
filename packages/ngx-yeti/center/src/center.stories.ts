@@ -6,6 +6,7 @@ import {
   type StoryObj,
 } from '@storybook/angular-vite';
 import type { YetiGap, YetiWidth } from 'ngx-yeti';
+import { YetiBorder, YetiBox } from 'ngx-yeti/box';
 import { YetiStack } from 'ngx-yeti/stack';
 import { expect, userEvent, waitFor } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
@@ -124,7 +125,9 @@ async function expectCentred(
 const meta: Meta<YetiCenter> = {
   id: 'center',
   component: YetiCenter,
-  decorators: [moduleMetadata({ imports: [YetiCenter, YetiStack] })],
+  decorators: [
+    moduleMetadata({ imports: [YetiCenter, YetiStack, YetiBox, YetiBorder] }),
+  ],
 };
 export default meta;
 
@@ -139,8 +142,10 @@ export const Default: Story = {
     template: `
       <div data-testid="frame">
         <main yetiCenter max="md">
-          <h1>A readable column</h1>
-          <p>Never wider than the maximum, never touching the screen edge.</p>
+          <div data-testid="box" yetiBox yetiBorder surface="raised">
+            <h1>A readable column</h1>
+            <p>Never wider than the maximum, never touching the screen edge.</p>
+          </div>
         </main>
         <div data-testid="probe" style="max-inline-size: var(--yeti-width-md)"></div>
       </div>`,
@@ -156,6 +161,14 @@ export const Default: Story = {
     await expect(center).not.toHaveAttribute('data-intrinsic');
     await expect(center).not.toHaveAttribute('tabindex');
     await expect(center).not.toHaveAttribute('role');
+    await expect(center).not.toHaveAttribute('data-border');
+
+    const box = canvas.getByTestId('box');
+
+    await expect(box).toHaveAttribute('class', 'box');
+    await expect(box).toHaveAttribute('data-ngx-yeti-item-box', '');
+    await expect(box).toHaveAttribute('data-surface', 'raised');
+    await expect(box).toHaveAttribute('data-border', '');
 
     await centerStyled(center);
 
@@ -237,6 +250,82 @@ export const Intrinsic: Story = {
     await expect(
       [...center.children].map((child) => getComputedStyle(child).order),
     ).toStrictEqual(['0', '0']);
+  },
+};
+
+/**
+ * The center and the box on one element (center spec, section 3): one `gap`
+ * binding sets the center's gutter and the box's padding through one
+ * `data-gap`. The probe reads the public token of that gap.
+ */
+export const WithBox: Story = {
+  render: () => ({
+    template: `
+      <section data-testid="center" yetiCenter yetiBox gap="lg">
+        <h2>A padded column</h2>
+        <p>The same gap pads the column on every side.</p>
+      </section>
+      <div data-testid="probe" style="padding: var(--yeti-space-lg)"></div>`,
+  }),
+  play: async ({ canvas }) => {
+    const center = canvas.getByTestId('center');
+
+    await expect([...center.classList].toSorted()).toStrictEqual([
+      'box',
+      'center',
+    ]);
+    await expect(center).toHaveAttribute('data-gap', 'lg');
+    await expect(
+      center.getAttributeNames().filter((name) => name === 'data-gap'),
+    ).toHaveLength(1);
+    await expect(center).toHaveAttribute('data-ngx-yeti-item-center', '');
+    await expect(center).toHaveAttribute('data-ngx-yeti-item-box', '');
+
+    await centerStyled(center);
+    await itemStylesLoaded('box');
+
+    const probe = getComputedStyle(canvas.getByTestId('probe'));
+
+    // The center's gutter on the inline axis and the box's padding on the
+    // block axis both come from the one gap.
+    await waitFor(async () => {
+      const style = getComputedStyle(center);
+
+      await expect(style.paddingInlineStart).toBe(probe.paddingInlineStart);
+      await expect(style.paddingInlineEnd).toBe(probe.paddingInlineStart);
+      await expect(style.paddingBlockStart).toBe(probe.paddingBlockStart);
+      await expect(style.paddingBlockEnd).toBe(probe.paddingBlockStart);
+    });
+  },
+};
+
+/**
+ * Anti-pattern (usage rule 3, ledger A11Y-9), what not to write: Yeti's own
+ * example puts the border on the center's element. The center's width
+ * leaves room for its gutters only, so the border's two widths make the
+ * column wider than its container below the maximum, and a 320 px page
+ * scrolls sideways (the Fixture app records it). Axe does not flag the
+ * overflow, so no rule is off. Write the border on a `yetiBox` inside the
+ * center, as `center--default` does.
+ */
+export const AntiPatternBordered: Story = {
+  render: () => ({
+    template: `
+      <main data-testid="center" yetiCenter yetiBox yetiBorder max="md" surface="raised">
+        <h1>A readable column</h1>
+        <p>Never wider than the maximum, never touching the screen edge.</p>
+      </main>`,
+  }),
+  play: async ({ canvas }) => {
+    const center = canvas.getByTestId('center');
+
+    await expect([...center.classList].toSorted()).toStrictEqual([
+      'box',
+      'center',
+    ]);
+    await expect(center).toHaveAttribute('data-border', '');
+    await expect(center).toHaveAttribute('data-max', 'md');
+    await expect(center).toHaveAttribute('data-surface', 'raised');
   },
 };
 

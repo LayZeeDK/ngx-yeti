@@ -3,9 +3,9 @@ id: T008
 title: Ship box with its three markers and complete the box compositions of stack and center
 wave: 2
 deps: [T001, T002, T007]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T008
+base: 6e7a7b2ac47d3c9f2b81f49cb0f3e30cdca5dfe0
 worktree: null
 task_branch: null
 files:
@@ -94,3 +94,31 @@ Heavy: yes
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — coder: preflight clean (every named path exists or is declared; SC1, SC3, SC4, SC5 exist; the Interface contract lines match T001, T002, and T007). Resumed after the session limit; no earlier product edit existed.
+- 2026-10-11 — coder: measured before writing `box--text`, with the stories' formula (`contrastRatio`, computed colours, page surface of a `color-scheme` wrapper), Chromium, light / dark: primary 5.323 / 7.556, secondary 5.693 / 7.131, success 4.997 / 7.972, warning 5.390 / 7.404, alert 5.749 / 7.046, neutral 5.314 / 7.543, grey-60 6.146 / 5.317, grey-70 8.811 / 7.265, grey-80 12.334 / 9.721, grey-90 16.144 / 12.744, grey-100 19.012 / 16.392 (pass, in `box--text`); white 1.034 / 20.111, black 20.304 / 1.044, grey 4.407 / 4.412, grey-0 1.000 / 1.000, grey-10 1.277 / 1.136, grey-20 1.674 / 1.427, grey-30 2.242 / 1.932, grey-40 3.072 / 2.709, grey-50 4.307 / 3.818 (fail, in `box--anti-pattern-low-contrast`). Band override in `box--text`: `yetiPaint="primary" yetiText="grey-0"` 5.323 / 7.556.
+- 2026-10-11 — coder: implemented `YetiBox`, `YetiBorder`, `NgxYetiPaint`, `YetiText` (usage rules 1 to 7 in `YetiBox`'s JSDoc; each marker carries the rules that concern it, same numbers), index and README; `box.spec.ts` (standard cases, E13 for all three markers, static bare `yetiBorder`, four template refs, consumer class, `yetiBox` beside `yetiCenter` with one `data-gap` and an `expectTypeOf` that both `gap` inputs share one type), `box.ssr.spec.ts` (markers-only fixture writes no link), `box.contract.node.spec.ts`; stories `box--default|gaps|surfaces|border-anywhere|paint|text|composed|anti-pattern-low-contrast` (only `color-contrast` off in the anti-pattern). `stack--default` boxes on every child; `center--default` inner bordered box, `center--with-box`, `center--anti-pattern-bordered` (axe flags nothing, so no rule off); `center.spec.ts` `section yetiCenter yetiBox gap="lg"` host. Fixtures `BoxFixture`, `BoxMarkersFixture`, `CenterAntiPatternFixture` (labelled, visible heading "What not to write"), center route gains `#box-center` and `#bordered-center`; `box.spec.ts` e2e and `center.spec.ts` additions (320 px waits for the box sheet too; anti-pattern route out of axe and hydration checks). Registries: consumer imports all four box exports, name-collision and item-names lists, README table and status, CHANGELOG.
+- 2026-10-11 — coder: recorded cases (annotations, Chromium dev): forced-colours border on `#live-box` `solid 1px rgb(0, 0, 0)`; A11Y-9 anti-pattern `scrollWidth 322` at a 320 px viewport (prerendered and server-rendered), as ledger.md:40 states. Print `print-color-adjust: exact` is asserted (box.md:315 says asserted). Choices: the client-only `@defer` box asserts 0 unpadded frames in development and records them as `a4-frames` in production (Approach); usage rules 3 (no table yet), 6 (Yeti's CSS on classed links), and 7 (forgotten import, Angular's behaviour) have no test: no `table` exists, a classed link in a band would fail the axe gate, and no compile-fixture path is in `files`. Paint band's button focus-ring case waits for `yetiButton` (Approach).
+- 2026-10-11 — coder: Verify run as written, exit 0 (`VERIFY EXIT 0`). lint and typecheck 4 projects pass; `nx test` 8 files, 41 tests; `test-storybook` 3 files, 21 stories; `yeti-app-e2e` box and center: development Chromium 54 passed; production Chromium 48 passed, 6 skipped (hydration diagnostics are development-only); Firefox container 52 passed, 2 skipped; WebKit container 50 passed, 4 skipped (forced colours and print); `pack-check` passes. Also green before Verify: `npx prettier --check .`. One `npm warn cleanup EPERM` during `npm ci` (a leftover nested `@types/node` folder), not a failure.
+- 2026-10-10 — orchestrator Verify (isolate gsd-path-task/T008): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```

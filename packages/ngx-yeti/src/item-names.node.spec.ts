@@ -49,6 +49,7 @@ describe('item root directives', () => {
         'lift/src/lift.ts',
         'stack/src/stack.ts',
         'center/src/center.ts',
+        'box/src/box.ts',
       ]),
     );
     expect(

@@ -67,6 +67,26 @@ async function expectCentred(page: Page, centers: Locator): Promise<void> {
 
 const showClientStack = 'Show the client-only stack of centers';
 
+/**
+ * Waits until the center and box sheets have applied (upstream bug O2), so
+ * the 320 px reads see the documented forms at their real widths.
+ */
+async function documentedFormsStyled(page: Page): Promise<void> {
+  await expect
+    .poll(() => itemSheetsLoaded(page, ['center', 'box']), {
+      message: 'the center and box stylesheets are loaded',
+    })
+    .toBe(true);
+  await expect(page.locator('#live-center')).toHaveCSS(
+    'box-sizing',
+    'content-box',
+  );
+  await expect(page.locator('#box-center')).toHaveAttribute('data-gap', 'lg');
+  await expect(
+    page.locator('#bordered-center > [data-border]'),
+  ).toHaveAttribute('data-ngx-yeti-item-box', '');
+}
+
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} center route`, () => {
     test('hydrates with 0 skipped components and no NG05xx message', async ({
@@ -91,12 +111,11 @@ for (const { kind, prefix } of routeKinds) {
       await page.setViewportSize({ width: 320, height: 640 });
       await page.goto(`${prefix}center`);
       await waitForHydration(page);
-      await expect(page.locator('#live-center')).toHaveCSS(
-        'box-sizing',
-        'content-box',
-      );
+      await documentedFormsStyled(page);
 
-      // A center alone, a center with `intrinsic`, and a stack of centers.
+      // A center alone, a center with `intrinsic`, a center with `yetiBox`,
+      // section 8's bordered box inside a center, and a stack of centers
+      // (ledger A11Y-9).
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
       ).toBe(320);
@@ -290,10 +309,7 @@ for (const { kind, prefix } of routeKinds) {
       }) => {
         await page.setViewportSize({ width: 320, height: 640 });
         await page.goto(`${prefix}center`);
-        await expect(page.locator('#live-center')).toHaveCSS(
-          'box-sizing',
-          'content-box',
-        );
+        await documentedFormsStyled(page);
 
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth),
@@ -307,6 +323,52 @@ for (const { kind, prefix } of routeKinds) {
         await page.goto(`${prefix}center`);
 
         expect(await axeViolations()).toEqual([]);
+      });
+    });
+  });
+}
+
+// A negative control (center.md:288, ledger A11Y-9): Yeti's composition with
+// the border on the center's element. Its overflow is recorded, not
+// asserted, and the route stays out of the axe and no-mismatch checks.
+for (const { kind, prefix } of routeKinds) {
+  test.describe(`the ${kind} center anti-pattern route`, () => {
+    test('is labelled as what not to write', async ({ page }) => {
+      await page.goto(`${prefix}center-anti-pattern`);
+
+      await expect(
+        page.getByRole('heading', {
+          name: 'What not to write: a border on the center',
+        }),
+      ).toBeVisible();
+
+      const center = page.locator('#anti-pattern-center');
+
+      await expect(center).toContainClass('center box');
+      await expect(center).toHaveAttribute('data-border', '');
+    });
+
+    test("records the bordered center's scroll width at a 320 px viewport", async ({
+      browserName,
+      page,
+    }) => {
+      await page.setViewportSize({ width: 320, height: 640 });
+      await page.goto(`${prefix}center-anti-pattern`);
+      await expect
+        .poll(() => itemSheetsLoaded(page, ['center', 'box']))
+        .toBe(true);
+      await expect(page.locator('#anti-pattern-center')).toHaveCSS(
+        'box-sizing',
+        'content-box',
+      );
+
+      const scrollWidth = await page.evaluate(
+        () => document.documentElement.scrollWidth,
+      );
+
+      test.info().annotations.push({
+        type: 'a11y-9-overflow',
+        description: `${browserName}, ${isProduction ? 'production' : 'development'}, ${kind}: scrollWidth ${String(scrollWidth)} at a 320 px viewport`,
       });
     });
   });

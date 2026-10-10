@@ -8,6 +8,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
 import type { YetiGap, YetiWidth } from 'ngx-yeti';
+import { YetiBox } from 'ngx-yeti/box';
 import { YetiCenter } from './center';
 
 @Component({
@@ -19,6 +20,13 @@ import { YetiCenter } from './center';
 class CenterHost {
   readonly center = viewChild.required<YetiCenter>('c');
 }
+
+@Component({
+  selector: 'yeti-center-box-host',
+  imports: [YetiCenter, YetiBox],
+  template: '<section yetiCenter yetiBox gap="lg"></section>',
+})
+class CenterBoxHost {}
 
 async function setupCenter(bindings: Binding[] = []) {
   const fixture = TestBed.createDirective(YetiCenter, {
@@ -156,6 +164,26 @@ describe(YetiCenter, () => {
       expect(main.getAttribute('max')).toBe('md');
       expect(main.getAttribute('data-max')).toBe('md');
       expect(main.getAttribute('data-intrinsic')).toBe('');
+    });
+
+    it('renders one data-gap from one gap binding beside yetiBox', async () => {
+      expect.assertions(3);
+
+      const fixture = TestBed.createComponent(CenterBoxHost);
+      await fixture.whenStable();
+      const element: unknown = fixture.nativeElement;
+      assert.instanceOf(element, HTMLElement);
+      const section = element.querySelector('section');
+      assert.exists(section);
+
+      expect([...section.classList].toSorted()).toStrictEqual([
+        'box',
+        'center',
+      ]);
+      expect(
+        section.getAttributeNames().filter((name) => name === 'data-gap'),
+      ).toHaveLength(1);
+      expect(section.getAttribute('data-gap')).toBe('lg');
     });
   });
 });
