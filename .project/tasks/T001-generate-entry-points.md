@@ -3,9 +3,9 @@ id: T001
 title: Generate the 22 M002 secondary entry points before any item task
 wave: 1
 deps: []
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T001
+base: c289e6cec5ae081ed8fb227cb37f7951f5ca622d
 worktree: null
 task_branch: null
 files:
@@ -125,3 +125,28 @@ Heavy: no
 - 2026-10-10 — coder: Verify FAILED at `nx run ngx-yeti:pack-check`. Passed before it: npm ci, both `test -f`, `run-many -t lint typecheck -p ngx-yeti`, `typecheck ngx-yeti -c src`, `run-many -t build build-fast -p ngx-yeti` (ng-packagr built all 22 empty entry points). Also ran `nx test ngx-yeti -- --project=node` separately: 12 files, 37 tests passed. Exact error: `pack-check failed: consumer.ts imports every entry point` / `ngx-yeti/box, ngx-yeti/breakout, ngx-yeti/button, ngx-yeti/center, ngx-yeti/cluster, ngx-yeti/columns, ngx-yeti/container, ngx-yeti/cover, ngx-yeti/enter, ngx-yeti/frame, ngx-yeti/grid, ngx-yeti/icon, ngx-yeti/layer, ngx-yeti/masonry, ngx-yeti/overlay, ngx-yeti/scroller, ngx-yeti/sidebar, ngx-yeti/spinner, ngx-yeti/stack, ngx-yeti/table, ngx-yeti/timeline, ngx-yeti/visually-hidden`. Cause: tools/package/pack-check.mjs:133-140 requires `tools/package/consumer/consumer.ts` to contain `from '<specifier>';` for every entry point under packages/ngx-yeti. AC3 needs that file changed, but it is not in `files` and the Approach says not to touch it. BLOCKED (plan defect: completion needs an unlisted path, and an Approach constraint contradicts AC3). Possible fix for the plan: add tools/package/consumer/consumer.ts to T001 `files` with one `export {} from 'ngx-yeti/{item}';` (or equivalent) line per entry point, which item tasks later replace with real imports; that is a placeholder-free change but conflicts with the current "do not touch consumer.ts" line.
 - 2026-10-10 — orchestrator: block accepted as a plan defect; no product commit. Rejected isolate diff against base 0632a4324daa1a6c0d20aa12732b1c64fb203568: 68 paths (tsconfig.base.json, the 66 generated entry-point files, this task file), `git diff --binary` sha256 f2922de70477615203f5b95ec2d5cfb5fa13e463a4aa55a3f3da6bd91431825b; every path is task-owned.
 - 2026-10-10 — orchestrator: plan-defect repair (files only). Orchestrator answer: AC3 requires `nx run ngx-yeti:pack-check` to pass, and pack-check (tools/package/pack-check.mjs:133-140) requires `tools/package/consumer/consumer.ts` to contain `from '<specifier>';` for every entry point; the coder role makes acceptance criteria outrank Approach, so AC3 overrides the Approach line "Do not touch `tools/package/consumer/consumer.ts`" for this one need. consumer.ts is added to `files`. Change it only by adding one placeholder-free side-effect line per new entry point, `export {} from 'ngx-yeti/{item}';`, and nothing else in that file; each item's registry task (T007, T008, T019, T026) later replaces its line with a real import. `packages/ngx-yeti/README.md` and `packages/ngx-yeti/CHANGELOG.md` stay untouched — coder.md (Treat ... Acceptance criteria, and Verify as the implementation contract; Approach constrains the how), T001 AC3, tools/package/pack-check.mjs:133-140.
+- 2026-10-10 — coder (redispatch): ran `npm exec nx -- g @nx/angular:library-secondary-entry-point --library=ngx-yeti --name={item} --skipModule --no-interactive` for all 22 items; after each run restored `packages/ngx-yeti/tsconfig.lib.json` to its base bytes (absent from `git status`). tsconfig.base.json holds the 22 generated aliases. Replaced each generated `export const greeting = 'Hello World!';` with `export {};` and each README with card's shape ("Yeti's `{item}` item. Its exports arrive with the item; the setup is in the [package README](../README.md)."). `tools/package/consumer/consumer.ts`: added only 22 lines `export {} from 'ngx-yeti/{item}';` after the `ngx-yeti/styles` import, nothing else changed.
+- 2026-10-10 — coder (redispatch): Verify PASSED. `npm ci` ok; both `test -f` ok; then every nx step rerun with `--skip-nx-cache` and pipefail (first pass hit the shared cache from the first attempt's identical inputs): `run-many -t lint typecheck -p ngx-yeti` ok, `typecheck ngx-yeti -c src` ok, `run-many -t build build-fast -p ngx-yeti` ok, `run ngx-yeti:pack-check` ok (packed ngx-yeti-0.220200.0-yeti.7.0.0-alpha.0.gf52d1e8.tgz), `test ngx-yeti -- --project=node` 12 files / 37 tests passed; exit 0. Also `npx prettier --check .` clean. Not run: AC4's `affected --base=HEAD~1` (needs the task commit).
+- 2026-10-10 — orchestrator Verify (isolate gsd-path-task/T001): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

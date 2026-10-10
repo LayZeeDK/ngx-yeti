@@ -11,6 +11,28 @@ import type {
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
 import { NgxYetiLift } from 'ngx-yeti/lift';
 import { injectYetiItemStyles, provideYetiStyles } from 'ngx-yeti/styles';
+export {} from 'ngx-yeti/box';
+export {} from 'ngx-yeti/breakout';
+export {} from 'ngx-yeti/button';
+export {} from 'ngx-yeti/center';
+export {} from 'ngx-yeti/cluster';
+export {} from 'ngx-yeti/columns';
+export {} from 'ngx-yeti/container';
+export {} from 'ngx-yeti/cover';
+export {} from 'ngx-yeti/enter';
+export {} from 'ngx-yeti/frame';
+export {} from 'ngx-yeti/grid';
+export {} from 'ngx-yeti/icon';
+export {} from 'ngx-yeti/layer';
+export {} from 'ngx-yeti/masonry';
+export {} from 'ngx-yeti/overlay';
+export {} from 'ngx-yeti/scroller';
+export {} from 'ngx-yeti/sidebar';
+export {} from 'ngx-yeti/spinner';
+export {} from 'ngx-yeti/stack';
+export {} from 'ngx-yeti/table';
+export {} from 'ngx-yeti/timeline';
+export {} from 'ngx-yeti/visually-hidden';
 
 const preload: readonly YetiComponentName[] = ['card', 'lift'];
 
