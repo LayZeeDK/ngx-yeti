@@ -1,18 +1,18 @@
 ---
 pipeline: gsd-path/v2
 project: ngx-yeti
-milestone: walking-skeleton
-phase: shipped
+milestone: layouts-and-button
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
 status: done
-branch: gsd-path/M001
+branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
-archive: .project/archive/001-walking-skeleton
-integration_default: direct # direct | pull-request; project setting
-integration: direct # current milestone; may override the default before build
-integration_source: default # default | milestone; preserves override provenance
+archive: null
+integration_default: pull-request
+integration: pull-request
+integration_source: default
 ---
 
 # Project State
@@ -67,3 +67,10 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-04 — ship — final gate passed; shipping approval pending
 - 2026-10-04 — ship — shipping approved by the orchestrator acting as owner under the user's goal: "Complete M001 autonomously in AFK mode."
 - 2026-10-04 — shipped — archive preflight passed; shipment recorded
+- 2026-10-10 — inspect — router bound next milestone gsd-path/M002 at base f35b35f8d2ae07cf82272bee4665ef5e978c71f1; M001 integrated 04c74ac350755ce1bcab4050e2913bdaedcbc059 (ship 0db561f9d9734369c5ae3ad180340f6a9787ef9f, archive .project/archive/001-walking-skeleton, previous branch gsd-path/M001)
+- 2026-10-10 — inspect — inspection artifacts passed
+- 2026-10-10 — define — definition started
+- 2026-10-10 — define — integration default set to pull-request
+- 2026-10-10 — define — milestone intent approved
+- 2026-10-10 — plan — planning started
+- 2026-10-10 — plan — plan approved

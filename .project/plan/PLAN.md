@@ -1,0 +1,211 @@
+# Plan — ngx-yeti M002 layouts-and-button
+
+Project verify: `npm ci && npx playwright install chromium && npx prettier --check . && npm run check && npm exec nx -- run-many -t build pack-check && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci e2e && node tools/ci-local/run-job.mjs floor webkit-26-4 && node tools/ci-local/run-job.mjs floor firefox-146-e2e && FLOOR_FIREFOX=true npm exec nx -- test ngx-yeti -- --project=browser && BROWSERS=msedge npm exec nx -- run screen-reader-e2e:nvda && export FLOOR_CHROMIUM_PATH="$(npx --no-install @puppeteer/browsers install chrome@141.0.7390.54 --path tmp/floor-chrome | awk '{print $2}')" && npm exec nx -- test ngx-yeti -- --project=browser && npm exec nx -- run-many -t e2e -p ngx-yeti-e2e yeti-app-e2e`
+
+This is INTENT SC8's local set: `npm run check`, the `static` and `package` jobs, every container job of `ci.yml` and `floor.yml` through `tools/ci-local/run-job.mjs` (the `e2e` job runs every engine and configuration, the Tailwind ones included once T024 adds them), the native `firefox-145` and `chromium-141` floor jobs, and the `nvda` lane. The macOS-only `safari` and `voiceover` jobs pass in CI on the milestone's pull request (integration `pull-request`).
+
+## Config
+
+- max_review_cycles: 3
+- wave_budget: none
+- review_panel: off
+- finding_skeptics: off
+
+## Wave review gate
+
+Before each wave's review, the orchestrator runs an integrated, uncached check on the wave's combined tip, because parallel tasks that share a route, a registry, or an engine-specific behaviour pass alone and fail together (LESSONS.md): `npm exec nx -- run-many -t lint typecheck test test-storybook --skip-nx-cache`; the e2e projects the wave touched through the ci-local container jobs in Chromium, Firefox, and WebKit (`node tools/ci-local/run-job.mjs ci e2e` with the matching `--matrix engine=` and `--matrix configuration=` values) and `node tools/ci-local/run-job.mjs ci unit`; and the floor jobs that run those tests (`node tools/ci-local/run-job.mjs floor webkit-26-4`, `node tools/ci-local/run-job.mjs floor firefox-146-e2e`, and `firefox-145` and `chromium-141` natively when the wave adds layer-2 tests). Measured reason (orchestrator, 2026-10-10): M001's integration commit 04c74ac landed on main with CI red (run 37180509152): `card--stretched-link` failed in Firefox ("focus has left the card") and the real-Safari job failed lift.spec.ts's hover case, because only Chromium ran locally. Real Safari and VoiceOver stay CI-only (INTENT SC8) and are first measured on the milestone's pull request. Item tasks whose own cases are engine-specific (hover, focus, forced colours, Tab, reduced motion) also run their e2e specs in Firefox and WebKit through `run-job.mjs` in their Verify.
+
+## Wave 1 — risk burn-down
+
+Goal: Prove the plan-invalidating unknowns before any item builds on them. T001 generates all 22 entry points and proves that entry points exporting nothing build, pack, and type-check, so later item tasks never share tsconfig.base.json. T002 registers every M002 Fixture route behind stubs, grows the one preload list to every M002 item but enter (E9), turns the exact-array preload assertions into containment checks, and settles E15 with a Departures row (enter measured without the preload on the Fixture app, with it on the story `enter--inserted-preloaded`). T003 measures in three engines whether a written-back static attribute ever paints (E8, ticket 50 decision 9); a fail switches the nine removed-kind specs to bound-only inputs before any of them is written. T004 proves Guidepup driving NVDA on this Windows 11 ARM64 machine with a native arm64 browser and adds the `voiceover` (macos-26, real Safari) and `nvda` (windows-2025) jobs and their Nx project, with card's list check; an NVDA failure here escalates to the user before T027. T005 and T006 generate the two control skills reviewers use for the Surface contract walkthroughs.
+Review depth: full
+
+## Wave 2 — walking skeleton
+
+Goal: The thinnest slice on real items: stack and center at their entry points with stories and the axe gate, layer-2, layer-3, and contract specs, prerendered and server-rendered Fixture routes with JavaScript on and off, the packed consuming build, README and changelog entries, `setup--item-links` proving Yeti's rank order for the tied pair (E1), the setup spec's order case, and the negative-compile check for center's `max="large"` (T007); then box with its three markers, completing stack's and center's box compositions and center's A11Y-9 story and route (T008).
+Review depth: full
+
+## Wave 3 — layouts, spinner, and scroller
+
+Goal: Every item that needs only the skeleton, in parallel where files allow: breakout and timeline with A11Y-10c and A11Y-10a (T009), grid and masonry with A11Y-23 (T010), enter and visually-hidden with enter's held-bundle and preload cases (T011), cluster with the lift carry-over (T012, after T009 and T011), sidebar with A11Y-22 and the sidebar-with-center order case (T013), cover and columns (T014), layer and overlay with A11Y-10b (T015, after T009), spinner with A11Y-13 and the owner of E7 (T016, after T015), scroller (T017), frame with its upstream-bugs row (T018, after T009 and T013), then the consumer build, name-collision list, README, and changelog for all fifteen (T019).
+Review depth: full
+
+## Wave 4 — button, icon, table, container, and carry-overs
+
+Goal: button and `YetiButtonDisabledLink` with A11Y-1a (SC6), event replay (SC7, E6), and the NG8002 check, delivering the Storybook stories surface (T020); icon with button's icon cases (T021); container (T022); table with its negative control, pinned-head walk, and the table compositions of earlier items (T023, after T021 and T022); the Tailwind C1 and C2 builds (T024, after T022); card's grid, layer, and button carry-overs, delivering the Fixture app routes surface (T025); then the registries for the last four items and the shared-input type check of E14, delivering the package entry points surface (T026).
+Review depth: full
+
+## Wave 5 — screen-reader checks and the milestone gate
+
+Goal: The SC9 checks for timeline, icon, spinner, grid, and cluster on both lanes with their negative controls, and the Departures and accessibility-skill rows that retire the manual tests (T027); then every CI and floor job run locally on the milestone tip, re-timed, with sharding only past about 15 minutes (T028).
+Review depth: full
+
+## Surface contract
+
+### Storybook stories — T020
+
+Criteria: SC1, SC6
+Entry: `npm exec nx -- build-storybook ngx-yeti` then `npm exec nx -- static-storybook ngx-yeti` (http://localhost:4401), or the control-ngx-yeti-storybook skill's `up`; story ids `{item}--{story}` of the 22 items, `setup--item-links`, and the card and lift carry-over stories
+States: empty — an unknown story id shows Storybook's missing-story error and `openStory` throws; loading — Storybook's preparing view until the story renders and its item links load; error — a play-function failure, an axe violation, or any `console.error` marks the story failed in `npm exec nx -- test-storybook ngx-yeti`; success — the story renders styled, its item links are in the head, and its play function and the axe gate pass
+Walkthrough:
+1. Open `setup--item-links`: a `yetiStack` holds a centred `yetiCenter`, the head holds the `stack` and `center` links in Yeti's order, and toggling the last host off removes both links.
+2. Open `button--toggle` and press Space on "Italic": it shows its pressed state and the accessibility tree reports `pressed`.
+3. With `forcedColors: 'active'` emulated in Chromium, the pressed toggle of `button--toggle` and the checked label of `button--toggle-input` show a border their resting siblings lack.
+4. Run `npm exec nx -- test-storybook ngx-yeti`: every story of the 22 items and the carry-overs passes its play function and the axe gate.
+
+### Fixture app routes — T025
+
+Criteria: SC3
+Entry: the control-yeti-app skill's `up`, or `npm exec nx -- run yeti-app:serve-ssr` (PORT 4000), then http://localhost:4000/sub/{item} and /sub/server/{item} for the 22 items, /sub/card, and the negative-control routes /sub/table-without-tbody and /sub/center-anti-pattern
+States: empty — a route without an item has no item link in the head; loading — before hydration, and with JavaScript off, the server HTML is already styled from the item links in the head; error — the labelled negative-control routes show what not to write and log their recorded hydration error or overflow; success — items are styled, the development build logs 0 skipped components and no NG05xx, and axe finds no violation on the six tags
+Walkthrough:
+1. With JavaScript disabled, open /sub/stack and /sub/card: the layouts are styled, and the card grid lays out its cards in columns with button-styled footer links.
+2. With JavaScript disabled, open /sub/scroller and press Tab: the scroller takes focus; press ArrowRight: it scrolls.
+3. With JavaScript on, open /sub/server/sidebar: the console shows the hydration summary with 0 skipped components, and the center inside the sidebar is centred.
+4. Open /sub/table-without-tbody: it is labelled as what not to write and its hydration error is in the console.
+
+### package entry points — T026
+
+Criteria: SC5
+Entry: `npm exec nx -- run ngx-yeti:pack-check` (builds the package, runs `npm pack`, and compiles tools/package/consumer/consumer.ts against the tarball)
+States: empty — a consumer that imports nothing still installs the tarball with no yeti-css dependency or peer; loading — `nx build ngx-yeti` runs first through the target's dependency; error — the check exits non-zero and names the import, type, or file that failed; success — the consumer compiles and the check prints the tarball name
+Walkthrough:
+1. Run `npm exec nx -- run ngx-yeti:pack-check`: the consumer imports one public symbol from each of the 22 new `ngx-yeti/{item}` entry points and builds.
+2. Run `npm exec nx -- test ngx-yeti -- contract.node`: every item's contract check passes over the built manifest.
+
+## Intent coverage
+
+| Criterion | Task | Acceptance |
+|-----------|------|------------|
+| SC1 | T007 | AC1 |
+| SC1 | T008 | AC1 |
+| SC1 | T009 | AC1 |
+| SC1 | T010 | AC1 |
+| SC1 | T011 | AC1 |
+| SC1 | T012 | AC1 |
+| SC1 | T013 | AC1 |
+| SC1 | T014 | AC1 |
+| SC1 | T015 | AC1 |
+| SC1 | T016 | AC1 |
+| SC1 | T016 | AC2 |
+| SC1 | T017 | AC1 |
+| SC1 | T018 | AC1 |
+| SC1 | T020 | AC1 |
+| SC1 | T020 | AC2 |
+| SC1 | T021 | AC1 |
+| SC1 | T022 | AC1 |
+| SC1 | T023 | AC1 |
+| SC1 | T025 | AC1 |
+| SC2 | T007 | AC2 |
+| SC2 | T009 | AC2 |
+| SC2 | T010 | AC2 |
+| SC2 | T011 | AC2 |
+| SC2 | T012 | AC2 |
+| SC2 | T013 | AC2 |
+| SC2 | T014 | AC2 |
+| SC2 | T015 | AC2 |
+| SC2 | T016 | AC3 |
+| SC2 | T017 | AC2 |
+| SC2 | T020 | AC3 |
+| SC2 | T021 | AC2 |
+| SC2 | T022 | AC2 |
+| SC3 | T002 | AC1 |
+| SC3 | T002 | AC2 |
+| SC3 | T003 | AC1 |
+| SC3 | T007 | AC3 |
+| SC3 | T008 | AC2 |
+| SC3 | T009 | AC3 |
+| SC3 | T010 | AC3 |
+| SC3 | T011 | AC3 |
+| SC3 | T011 | AC4 |
+| SC3 | T011 | AC5 |
+| SC3 | T012 | AC3 |
+| SC3 | T013 | AC3 |
+| SC3 | T014 | AC3 |
+| SC3 | T015 | AC3 |
+| SC3 | T016 | AC4 |
+| SC3 | T017 | AC3 |
+| SC3 | T018 | AC2 |
+| SC3 | T020 | AC4 |
+| SC3 | T021 | AC3 |
+| SC3 | T022 | AC3 |
+| SC3 | T023 | AC2 |
+| SC3 | T023 | AC3 |
+| SC3 | T024 | AC1 |
+| SC3 | T025 | AC2 |
+| SC4 | T007 | AC4 |
+| SC4 | T008 | AC3 |
+| SC4 | T009 | AC4 |
+| SC4 | T010 | AC4 |
+| SC4 | T011 | AC6 |
+| SC4 | T012 | AC4 |
+| SC4 | T013 | AC4 |
+| SC4 | T014 | AC4 |
+| SC4 | T015 | AC4 |
+| SC4 | T016 | AC5 |
+| SC4 | T017 | AC4 |
+| SC4 | T018 | AC3 |
+| SC4 | T020 | AC5 |
+| SC4 | T021 | AC4 |
+| SC4 | T022 | AC4 |
+| SC4 | T023 | AC4 |
+| SC4 | T026 | AC2 |
+| SC5 | T007 | AC5 |
+| SC5 | T008 | AC4 |
+| SC5 | T019 | AC1 |
+| SC5 | T026 | AC1 |
+| SC6 | T020 | AC6 |
+| SC7 | T020 | AC7 |
+| SC7 | T020 | AC8 |
+| SC8 | T004 | AC3 |
+| SC8 | T024 | AC2 |
+| SC8 | T028 | AC1 |
+| SC9 | T004 | AC1 |
+| SC9 | T004 | AC2 |
+| SC9 | T027 | AC1 |
+| SC9 | T027 | AC2 |
+| SC9 | T027 | AC3 |
+
+## Held-out checks
+
+| Edge | Task | Test |
+|------|------|------|
+| E2 | T013 | apps/yeti-app-e2e/src/sidebar.spec.ts |
+| E6 | T020 | apps/yeti-app-e2e/src/button.spec.ts |
+| E7 | T016 | apps/ngx-yeti-e2e/src/spinner.spec.ts |
+| E8 | T003 | apps/yeti-app-e2e/src/static-attributes.spec.ts |
+| E9 | T002 | apps/yeti-app-e2e/src/fixture-app.spec.ts |
+| E12 | T013 | apps/ngx-yeti-e2e/src/sidebar.spec.ts |
+| E13 | T008 | packages/ngx-yeti/box/src/box.spec.ts |
+| E14 | T026 | packages/ngx-yeti/src/shared-inputs.node.spec.ts |
+| E15 | T011 | apps/yeti-app-e2e/src/enter.spec.ts |
+| E16 | T027 | apps/screen-reader-e2e/src/timeline.screen-reader.ts |
+
+E7's other conditional follow-ups (A11Y-10a and 10c in T009, A11Y-10b in T015, icon in T021, table in T023, the high-emphasis toggle in T020) are stated in those tasks' acceptance criteria; T016's row names the edge's owner and its spinner case.
+
+## Dependency notes
+
+- Item tasks → T001: each consumes its generated entry point (`ngx-yeti/{item}` alias, `src/index.ts`, `README.md`); no item task runs the generator or edits tsconfig.base.json.
+- Item tasks → T002: each fills the stub fixture component(s) T002 registered (file overlap on the stub files), and relies on its item being in the preload list.
+- Removed-kind tasks (T007, T010, T012, T013, T014, T015, T020, T021, T023) → T003: they follow the static-attribute pattern and `E8 verdict` line in T003's Log and call `recordPaintedAttributes`.
+- T003 → T002: T002 creates the `static-attributes` route key and stub file that T003 fills.
+- T008 → T007: box completes compositions in T007's stack and center story, spec, fixture, and e2e files, and both edit the package registries in wave 2.
+- T012 → T009, T011: cluster's layer-2 and Fixture shared host compose `NgxYetiEnter` (T011), and cluster adds `timeline--in-cluster` to T009's timeline story and e2e files.
+- T015 → T009 and T016 → T015: file overlap only (`packages/ngx-yeti/accessibility.css`, `docs/specs/ledger.md`, `packages/ngx-yeti/src/accessibility.node.spec.ts`), so any rule E7 brings lands serially.
+- T018 → T009, T013: `frame--composed` composes `yetiBreakoutChild` and `yetiSidebar`.
+- T019 → T009 to T018 and T026 → T020 to T025: the package registries (consumer, name-collision and item-names lists, README, changelog, upstream-bugs rows) change once per wave, after the items they list; a reviewer sees each wave's items in one registry commit.
+- T020 → T016, T007: button adds the spinner cases that need a button to T016's spinner files, and adds its NG8002 row to T007's `compileErrorCases`. Button's `yetiCluster` (T012) and `yetiBox` (T008) partners landed in earlier waves.
+- T021 → T020: icon adds `button--icon`, the icon of `button--rtl`, the `yetiIcon yetiButton` test host, and the Fixture shared host to T020's button files.
+- T023 → T021, T022, T017, T012: `table--align` composes `yetiIcon`; table adds `container--table-column` to T022's story file, `scroller--wide-table` to T017's, and `cluster--legend`'s `yetiNumeric` to T012's; T023 also holds the accessibility stylesheet and ledger after T021.
+- T024 → T022: the Tailwind check reads the container route of T022's Interface contract.
+- T025 → T020, T010, T015, T002: card's carry-overs compose `yetiButton`, `yetiGrid`, and `yetiLayer`, and its route assertions depend on T002's preload list.
+- T027 → T004, T009, T010, T012, T016, T021: the checks run on T004's harness against the timeline, grid, cluster, spinner, and icon stories.
+- T028 → T027: both edit `.github/workflows/ci.yml`, and the gate runs on the tip after the last checks land.
+
+## Risks
+
+- Unit and e2e CI time: measured on 2026-10-10 (runs 38057092891 and 38050819430, full run-many, no remote cache) `unit` took 1 to 2 minutes, each `e2e` leg 2 to 3, and `safari` 1, all under the 20-minute caps. No sharding is planned up front; T028 re-times the jobs after the item waves and adds a `--shard` axis only to a job that passes about 15 minutes.
+- VoiceOver is first measured on the milestone's pull request (it needs macOS); a red `voiceover` job then is fixed through a patch wave or escalated, never skipped (N9). NVDA on Windows 11 ARM64 is measured in wave 1 (T004).
+- A failing E8 measurement (T003) changes nine public APIs before they are written; a failing E12 walk (T013) or a failing order tie (T013, T014) stops for the user rather than changing a rule.
+- The grown preload list adds one server prefetch per item to every page; WebKit's preload stall (upstream O4, O7) is checked by T002's WebKit run; upstream O2 (stale computed style, table and button) and A4 (production critical-CSS frames) are handled in each task's Approach.
+- The 22 entry points exist from wave 1 exporting nothing until their item lands; nothing is published in M002, and every item lands before ship.

@@ -1,0 +1,83 @@
+---
+id: T013
+title: Ship sidebar with A11Y-22's Shift+Tab walk and the sidebar-with-center order case
+wave: 3
+deps: [T001, T002, T003]
+status: pending
+agent: null
+base: null
+worktree: null
+task_branch: null
+files:
+  - packages/ngx-yeti/sidebar/README.md
+  - packages/ngx-yeti/sidebar/src/index.ts
+  - packages/ngx-yeti/sidebar/src/sidebar.ts
+  - packages/ngx-yeti/sidebar/src/sidebar-child.ts
+  - packages/ngx-yeti/sidebar/src/sidebar-tokens.ts
+  - packages/ngx-yeti/sidebar/src/sidebar.spec.ts
+  - packages/ngx-yeti/sidebar/src/sidebar.ssr.spec.ts
+  - packages/ngx-yeti/sidebar/src/sidebar.contract.node.spec.ts
+  - packages/ngx-yeti/sidebar/src/sidebar.stories.ts
+  - apps/yeti-app/src/app/fixtures/sidebar-fixture.ts
+  - apps/yeti-app-e2e/src/sidebar.spec.ts
+  - apps/ngx-yeti-e2e/src/sidebar.spec.ts
+---
+
+# T013 — Ship sidebar with A11Y-22's Shift+Tab walk and the sidebar-with-center order case
+
+## Context
+
+`sidebar` (docs/specs/specs/sidebar.md; `YetiSidebar`, `YetiSidebarChild`, `yetiSidebarToken`) owns ledger row A11Y-22 (shared with stack, shell, nav, and table): once the layout has stacked, a stuck sticky child can hide a focused control. Ticket 50 decision 47 chose option A (a usage rule, 4: set `--yeti-scroll-padding` on the root to the sticky child's height) and its failure trigger (INTENT E12). Sidebar also has an order-sensitive pair with center (INTENT E2): `.sidebar > *` sets `margin: 0` at the specificity of `.center`, so a center inside a sidebar stays centred only if `sidebar.css` precedes `center.css`. Read, not measured before (research/yeti-layers-and-import-order.md:98-103), so this is its first measurement.
+
+## Approach
+
+- Records and skills: read the item spec's API, Implementation Decisions, and Testing Decisions sections in full (under `docs/specs/specs/`), the records its header names, and its rows in `docs/specs/ledger.md`. Follow `.claude/skills/ngx-yeti-specs/SKILL.md` (its Departures table wins over the records), `.claude/skills/ngx-yeti-testing/SKILL.md`, `.claude/skills/ngx-yeti-stories/SKILL.md`, `.claude/skills/ngx-yeti-accessibility/SKILL.md`, `.claude/skills/type-safety/SKILL.md`, and `.claude/skills/yeti-pin/SKILL.md`. The card item is the pattern for every file: `packages/ngx-yeti/card/src/card.ts`, `packages/ngx-yeti/card/src/card.spec.ts`, `packages/ngx-yeti/card/src/card.ssr.spec.ts`, `packages/ngx-yeti/card/src/card.contract.node.spec.ts`, `packages/ngx-yeti/card/src/card.stories.ts`, `apps/yeti-app/src/app/fixtures/card-fixture.ts`, `apps/yeti-app-e2e/src/card.spec.ts`, and `apps/ngx-yeti-e2e/src/card.spec.ts`.
+- Entry point: T001 generated it. Fill its index.ts (classes, tokens, and package types; no import array, ADR 0018) and rewrite its README.md as `packages/ngx-yeti/card/README.md` reads. Never run the generator again and never edit tsconfig.base.json. Import another entry point by its package path (`ngx-yeti/box`), never by a relative path.
+- Directive rules (binding records): only the item's root directive sets `data-ngx-yeti-item-{item}` and calls `injectYetiItemStyles('{item}')`, as the last statement of its constructor (ticket 50 decisions 6, 7, and 42); part, child, and any-element marker directives set no presence attribute and acquire no item file (E13). An unset input renders nothing: no directive writes Yeti's default value (ADR 0070:20). No host listener, ResizeObserver, JavaScript size read, breakpoint or viewport input, feature detection, or role beyond Yeti's (N4); the only package-written roles are scroller's static `role="region"` with `tabindex="0"` and `YetiButtonDisabledLink`'s `role="link"` with `aria-disabled`. No `@defer` in package templates, no `ngSkipHydration`, no Shadow DOM (ADR 0011 points 10 and 11), and no `animate.enter` (ADR 0010). An input name another package directive also declares (`gap` on 21 items, `align` on 8, `sticky` on three parts) uses the same exported type, such as `YetiGap` and `YetiAlign` from `ngx-yeti` (E14, building-blocks.md:53). No package CSS for a layout beyond a failing ledger assertion (each spec's Out of Scope).
+- Usage rules: number them in the directive's JSDoc exactly as the spec's API section numbers them (CONTEXT.md:308; `packages/ngx-yeti/card/src/card.ts` line 10 is the pattern). Every rule that states package behaviour gets a test in this task (LESSONS.md).
+- Stories (layer 1): `meta.id` is the item name and the story ids are the spec's; every story passes its play function and the axe gate. Prohibition N1 (judgment): must not reach a green axe gate by switching off rules or hiding content from assistive technology; no story disables an axe rule except a documented anti-pattern exception under the ngx-yeti-stories skill, and no fix adds aria-hidden, role=presentation, inert, or visually-hidden to content a user needs. A CSS `:hover` assertion the spec puts in a play function goes in layer 2 (pattern: `packages/ngx-yeti/lift/src/lift.spec.ts` lines 100 to 128, `userEvent.hover` from `vitest/browser`) or layer 4 (Departures row, ngx-yeti-specs SKILL.md:37). Contrast uses `contrastRatio` and `composite` from `@ngx-yeti/testing`, unrounded, 4.5:1 for text and 3:1 for a non-text part, in the light and the dark scheme (`withColorScheme('dark')`; ticket 50 decision 8), and never a token's text or default (ADR 0006:25): compare with probe elements that read the public token. A size-dependent change resizes the container, not only the viewport (building-blocks.md:96). Every static `img` uses `NgOptimizedImage` (building-blocks.md:35). No story or fixture writes a Yeti class, a Yeti `data-*` attribute, a presence attribute, or a static attribute on an attribute a directive binds (building-blocks.md:347; ADR 0003).
+- Layers 2 and 3: the standard cases of every spec — class and presence attribute; inputs set through `bindings` render their `data-*` attribute and `undefined` removes it after `whenStable()`; one `link[data-ngx-yeti-styles]` for the item while a fixture lives, gone one frame after destroy, and two fixtures share one link until both are destroyed (E3); parts and markers acquire nothing (E13); no listener on the host; a small test host for template references, the consumer's own `class`, static forms, and same-element compositions. `{item}.ssr.spec.ts` renders through `renderServer()` with one `i18n` text and asserts the class, presence attribute, bound attributes, exactly one item link with `data-beasties-skip` and an `href` ending `{kind}/{item}/{item}.css?v=` and the pin, and no package `jsaction`. `{item}.contract.node.spec.ts` calls `checkContract` and pairs each `values` list with an `expectTypeOf` line, which only `nx typecheck` checks.
+- Fixture route (layer 4): replace the T002 stub component(s) the Interface contract names; keep one `i18n` text and a server-rendered `routerLink`, so `waitForHydration` has a marker. Loop `routeKinds` so every case runs on `/sub/{key}` and `/sub/server/{key}`, with JavaScript on and off: `watchHydration` (no `NG05xx`, 0 skipped components, development build); with JavaScript off the item is styled and the `axeViolations` fixture finds nothing on `wcagTags`; a client-only `@defer` holding the item, which is in the preload list, paints 0 unstyled frames in the development run, while the production run records A4-affected frames as annotations (LESSONS.md; Departures row SKILL.md:40); a `hydrate never` host stays styled after `removeEveryHost`; leaving for `/replay` removes the item link and returning re-inserts it; no horizontal overflow at 320 px where the spec says so. Assert item links and preload hrefs by containment (`expect.arrayContaining`), never as an exact array, unless the order itself is the claim (E9, LESSONS.md). Prohibition N3 (judgment): must not keep content out of reach until hydration to avoid an unstyled frame; no item or Fixture route hides content (opacity, visibility, display, or inert) until the client boots; with JavaScript off every item's content is visible and readable.
+- Recorded cases: Prohibition N2 (judgment): must not turn a recorded-only case into a pass or fail assertion, or drop it; every case the spec marks "record" is measured and written down as a Playwright annotation (`test.info().annotations`), not asserted, and a recorded result that crosses its record's threshold triggers the follow-up of E7.
+- Engines and upstream bugs: wait for the item sheet before any geometry or colour read (`expectItemSheetsApplied` in `apps/ngx-yeti-e2e/src/item-styles.ts`, `itemSheetsLoaded` in `apps/yeti-app-e2e/src/support/style-probe.ts`), because of upstream O2's stale computed style after a stylesheet insertion; a layer-2 size read must also hold in stock Firefox 145, which needs the global stylesheet with the A11Y-30 workaround (upstream O3; `packages/ngx-yeti/lift/src/lift.spec.ts` lines 43 to 59 load it); real Safari in the `safari` job reports reduced motion, so no layer-2 test asserts an animation; forced-colours e2e checks run in Chromium and Firefox and skip in WebKit with the Departures reason (SKILL.md:43); Tab-to-link tests skip WebKit outside Linux with `skipUnlessTabReachesLinks` from `apps/ngx-yeti-e2e/src/tab-to-links.ts`; 200 % text zoom sets the root font size to 200 % (`apps/ngx-yeti-e2e/src/card.spec.ts` line 137).
+- Cross-milestone stand-ins: where a case composes an item of a later milestone, build its M002 part with plain HTML in the partner's place (no partner directive, no hand-written Yeti class) and assert every M002 assertion of it; the partner-dependent assertions are not written (INTENT Scope out). Where a case composes an M002 item that lands in a later task, leave it to the task named in Approach.
+- Cross-engine before hand-back: run this task's e2e specs in Firefox and WebKit through `node tools/ci-local/run-job.mjs ci e2e` (the Verify does). M001 landed on main with a Firefox focus failure and a real-Safari hover failure that a Chromium-only run missed.
+- Shared files: do not edit `tools/package/consumer/consumer.ts`, `packages/ngx-yeti/src/name-collision.node.spec.ts`, `packages/ngx-yeti/src/item-names.node.spec.ts`, `packages/ngx-yeti/README.md`, `packages/ngx-yeti/CHANGELOG.md`, `apps/yeti-app/src/app/fixtures/fixtures.ts`, `apps/yeti-app/src/app/app.config.ts`, or `docs/specs/upstream-bugs.md`: the wave's registry task owns them and runs after this task. Write any upstream bug you find as a Log line that starts `UPSTREAM:` with its reproduction, engine, and versions; the registry task turns it into a ledger row (never filed upstream).
+- Sidebar (sidebar.md:274-321): stories `sidebar--default`, `sidebar--end`, `sidebar--inputs` (a static `align` removed, per T003's verdict), `sidebar--sticky`, `sidebar--holding-center` (the order pair), `sidebar--rtl`. Layer 2: the standard cases for both directives; `yetiSidebar yetiBox`; the M007 case `nav yetiNav yetiSidebarChild sticky` (sidebar.md:298) is cross-milestone, so its stand-in is `nav yetiSidebarChild sticky` rendering one `data-sticky=""` (sidebar.md:295). Layer 3: a static `align` absent.
+- Storybook half (sidebar.md:308): the container resized across the switch; at 320 px stacked with no overflow; 200 % text zoom raises the switch. A11Y-22, asserted (SC2): on `sidebar--sticky` at 320 x 640 with usage rule 4 followed (`--yeti-scroll-padding` on the root set to the sticky child's height), Shift+Tab walks back through every link and each focused link is at least partly visible below the stuck `nav`. The same walk with Yeti's default padding is recorded, not asserted (N2). E12 (binding): if the asserted walk shows a focused link fully hidden with usage rule 4 followed, option A fails (ticket 50 decision 47, 50:215): stop the task and write `NEEDS-ORCHESTRATOR:` with the recorded walk, for the user to choose option B or a new decision; do not change the rule or add package CSS.
+- Fixture half (sidebar.md:310-317): the standard cases; a static `align` shows no painted frame (`recordPaintedAttributes`); JavaScript off the sticky `nav` sticks; a shared host `yetiSidebar yetiBox` in `hydrate never` keeps both links. E2: on the sidebar route, a standalone `yetiCenter` renders first and a sidebar holding a `yetiCenter` renders later in a client-only `@defer`; the inner center stays centred (its inline size and position equal those of the same markup with both files loaded at first paint). If it fails, that is new evidence about the loader's rank order, not a test to loosen: write `NEEDS-ORCHESTRATOR:` with the measurement.
+
+## Interface contract
+
+- Entry points (T001): for each item of box, breakout, button, center, cluster, columns, container, cover, enter, frame, grid, icon, layer, masonry, overlay, scroller, sidebar, spinner, stack, table, timeline, and visually-hidden, the generator wrote `packages/ngx-yeti/{item}/ng-package.json`, `packages/ngx-yeti/{item}/README.md`, and `packages/ngx-yeti/{item}/src/index.ts`, and tsconfig.base.json maps `ngx-yeti/{item}` to that index.ts, which exports nothing until the item's task fills it.
+- Fixture key `sidebar` → `SidebarFixture` in `apps/yeti-app/src/app/fixtures/sidebar-fixture.ts`.
+- Static attributes (T003): a removed-kind static attribute (ticket 50 decision 9) is a signal input named as the attribute, rendered on its `data-*` attribute, and removed from the host by the host binding `'[attr.{name}]': 'null'`. T003's Log holds one line `E8 verdict: pass` or `E8 verdict: fail`. On pass, the static form stays as the specs write it; on fail, every removed-kind input becomes bound-only as cluster.md:309 and icon.md:302 state, and the static-form story and test cases are dropped.
+- `apps/yeti-app-e2e/src/support/style-probe.ts` exports `recordPaintedAttributes(page: Page, selector: string, attributes: readonly string[]): Promise<() => Promise<readonly string[]>>`, called before `goto`: an init-script MutationObserver plus a requestAnimationFrame probe; the returned function lists one entry `{element} {attribute}` for each animation frame in which an element matching `selector` carried one of `attributes`, so an empty list means no painted frame showed them.
+
+## Intent coverage
+
+- SC1
+- SC2
+- SC3
+- SC4
+
+## Acceptance criteria
+
+1. Every sidebar story passes its play function and the axe gate, `sidebar--holding-center` included.
+2. E12: `apps/ngx-yeti-e2e/src/sidebar.spec.ts` asserts A11Y-22's Shift+Tab walk on `sidebar--sticky` at 320 x 640 with usage rule 4 followed (each focused link at least partly visible), records the default-padding walk, and passes in Chromium, Firefox, and WebKit; a fully hidden focused link with the rule followed stops the task for the user's ruling (option B or a new decision) instead of a rule change.
+3. E2: `apps/yeti-app-e2e/src/sidebar.spec.ts` shows a center inside a sidebar centred whichever file loads first, because `sidebar.css` precedes `center.css`; the standard Fixture cases, the static `align` frame check, the JavaScript-off sticky `nav`, and the shared host with box pass.
+4. The layer-2, layer-3, and contract specs of sidebar pass, including the `nav yetiSidebarChild sticky` stand-in with one `data-sticky`.
+5. Each directive's JSDoc carries the spec's numbered usage rules, rule 4 included.
+6. `npx prettier --check .` and `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD~1` pass at the task commit.
+
+## Verify
+
+```bash
+npm ci && npx playwright install chromium && test -f apps/ngx-yeti-e2e/src/sidebar.spec.ts && test -f apps/yeti-app-e2e/src/sidebar.spec.ts && npm exec nx -- run-many -t lint typecheck -p ngx-yeti ngx-yeti-e2e yeti-app yeti-app-e2e && npm exec nx -- test ngx-yeti -- sidebar/src && npm exec nx -- test-storybook ngx-yeti -- sidebar/src && npm exec nx -- e2e ngx-yeti-e2e -- sidebar.spec.ts && npm exec nx -- e2e yeti-app-e2e -- sidebar.spec.ts && FIXTURE_CONFIGURATION=production npm exec nx -- e2e yeti-app-e2e -- sidebar.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=firefox --matrix configuration=development -- npx nx e2e ngx-yeti-e2e -- --project=firefox sidebar.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=firefox --matrix configuration=development -- npx nx e2e yeti-app-e2e -- --project=firefox sidebar.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=webkit --matrix configuration=development -- npx nx e2e ngx-yeti-e2e -- --project=webkit sidebar.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=webkit --matrix configuration=development -- npx nx e2e yeti-app-e2e -- --project=webkit sidebar.spec.ts
+```
+
+Heavy: yes
+
+## Log
+
+- 2026-10-10 — created by planner

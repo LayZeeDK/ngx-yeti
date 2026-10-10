@@ -19,7 +19,7 @@ Depends on: []
 Surfaces: Storybook stories, Fixture app routes, package entry points
 Status: shipped
 Archive: .project/archive/001-walking-skeleton
-Integrated: null
+Integrated: 04c74ac350755ce1bcab4050e2913bdaedcbc059
 
 Scope: in
 - The `setup` spec in full. This covers the `ngx-yeti/styles` loader of ADR 0060: reference-counted head links to the consumer's Yeti build at `yeti-css/` relative to base href, inserted in Yeti's rank order, with one presence attribute per item, written on the server and adopted on the client. It also covers `provideYetiStyles()`, the generated `yeti-types.ts`, the layer statement and global stylesheet in `yeti-app` and Storybook, and the ADR 0017 version format with its test.
@@ -61,7 +61,7 @@ Open questions
 Goal: All 17 layouts plus table, visually-hidden, enter, button, and spinner ship at their own entry points with their ledger rows, giving every later item its composition partners.
 Depends on: [M001]
 Surfaces: Storybook stories, Fixture app routes, package entry points
-Status: pending
+Status: active
 Archive: null
 Integrated: null
 
