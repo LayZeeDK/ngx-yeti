@@ -3,9 +3,9 @@ id: T029
 title: Make control-yeti-app's doctor see library edits and its down keep the record of an incomplete teardown
 wave: 2
 deps: [T005]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T029
+base: 6e7a7b2ac47d3c9f2b81f49cb0f3e30cdca5dfe0
 worktree: null
 task_branch: null
 files:
@@ -74,3 +74,29 @@ Heavy: yes
 ## Log
 
 - 2026-10-11 — created by planner (build repair of the wave 1 defects D1 and D2; user ruling "Wave-1 defects: Approve recommendation."). The Verify ends by stopping the Nx daemon and keeps its own exit code, as every pending task's does; run it exactly as written and never set NX_DAEMON.
+- 2026-10-11 — coder (build_T029). D1: `newestSource` in control.mjs now walks a directory itself and skips directories named `node_modules`, `storybook-static` and `dist` at any depth (the Storybook script's `newestMtime` pattern); `build-fresh` scans `apps/yeti-app/src` and all of `packages/ngx-yeti`, still against the launch time; its pass and fail texts name both paths and the skipped names. D2: `down` removes `state.json` only when the port is free and no recorded PID survives; otherwise it exits 1 with `teardown incomplete`, keeps the file with `survivors` (pid, start, commandLine) written into it, and names `survivors`, `portFree` and `stateFile`. A retry with the recorded PID gone stops only recorded survivors whose start time and command line still match, then applies the same rule, so it keeps the file and exits 1 while the port is busy. The mismatch refusal (exit 2, file kept) is unchanged; no `close-all`/`kill-all`. New `scripts/control.test.mjs` (node:test, no dependency): one `up --mode=ssr --configuration=production`; doctor passes; box/src/index.ts mtime moved to now -> doctor exit 1 with `build-fresh` failed (mtime restored); new files in packages/ngx-yeti/node_modules, storybook-static and box/dist -> doctor exit 0 (files removed); start-time mismatch -> down exit 2, file kept; recorded port pointed at a port the test listens on -> down exit 1, file kept, portFree false, stateFile named; retry exit 1, file kept; listener closed -> down exit 0, file gone; last test asserts no state file, launch PID gone, port not listening. SKILL.md (Doctor table, Cleanup section with the test command, Helpers `down` row) and features/build-configurations.md Gotchas updated.
+- 2026-10-11 — coder: fail-first proof. Against the unfixed control.mjs (base), `node --test .claude/skills/control-yeti-app/scripts/control.test.mjs` failed 4 of 8: "fails after an entry-point source changes" (doctor exit 0, expected 1) and "exits 1 and keeps the file while the port is busy" ("first down removed the state file"), plus their two parents; the closing teardown check passed. With the fixes: 8 of 8 pass. (An earlier attempt failed before any test because the worktree's `npm ci` had been interrupted: `Cannot find module 'nx'`; rerunning `npm ci` fixed it.)
+- 2026-10-11 — coder: Verify run as written. First run: test 8/8 pass, Prettier flagged control.test.mjs and SKILL.md -> formatted with `npx prettier --write` on those two files. Second run: `npm ci` ok, `playwright install chromium` ok, node --test 8/8 pass (60.6 s), `prettier --check --ignore-unknown .claude/skills/control-yeti-app` all formatted, daemon stopped; exit 0. Afterwards: no `state.json`, no server left; `npx prettier --check .` passes repo-wide. Not run by the coder: AC6's `nx affected -t lint typecheck test test-storybook --base=HEAD~1` (needs the task commit; the change touches only `.claude/skills/control-yeti-app`).
+- 2026-10-10 — orchestrator Verify (isolate gsd-path-task/T029): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

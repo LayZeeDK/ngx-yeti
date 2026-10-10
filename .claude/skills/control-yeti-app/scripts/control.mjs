@@ -321,18 +321,23 @@ function serverLog(state) {
   return stripVTControlCharacters(readFileSync(state.logFile, 'utf8'));
 }
 
+// Directories whose files change without changing the build.
+const notSource = ['node_modules', 'storybook-static', 'dist'];
+
 function newestSource(dir) {
   let newest = 0;
 
-  for (const entry of readdirSync(dir, {
-    withFileTypes: true,
-    recursive: true,
-  })) {
-    if (entry.isFile()) {
-      newest = Math.max(
-        newest,
-        statSync(join(entry.parentPath, entry.name)).mtimeMs,
-      );
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (notSource.includes(entry.name)) {
+      continue;
+    }
+
+    const full = join(dir, entry.name);
+
+    if (entry.isDirectory()) {
+      newest = Math.max(newest, newestSource(full));
+    } else if (entry.isFile()) {
+      newest = Math.max(newest, statSync(full).mtimeMs);
     }
   }
 
@@ -401,16 +406,16 @@ async function doctor() {
       );
       const sources = Math.max(
         newestSource(join(root, 'apps/yeti-app/src')),
-        newestSource(join(root, 'packages/ngx-yeti/src')),
+        newestSource(join(root, 'packages/ngx-yeti')),
       );
       const fresh = built && sources < Date.parse(state.start);
       check(
         'build-fresh',
         fresh ? 'pass' : 'fail',
         fresh
-          ? `yeti-app:build:${state.configuration} ran at launch and no file in apps/yeti-app/src or packages/ngx-yeti/src changed since`
+          ? `yeti-app:build:${state.configuration} ran at launch and no file in apps/yeti-app/src or packages/ngx-yeti (${notSource.join(', ')} skipped) changed since`
           : built
-            ? 'a source file changed after launch; run down and up'
+            ? `a file in apps/yeti-app/src or packages/ngx-yeti (${notSource.join(', ')} skipped) changed after launch; run down and up`
             : `no yeti-app:build:${state.configuration} run in ${state.logFile}`,
       );
     }
@@ -529,42 +534,53 @@ async function down() {
 
   const table = processTable();
   const live = table.get(state.pid);
+  const same = (entry, recorded) =>
+    entry?.Start === recorded.start &&
+    entry?.CommandLine === recorded.commandLine;
+  let members;
 
-  if (!live) {
-    rmSync(stateFile, { force: true });
-    finish(0, {
-      pid: state.pid,
-      detail: 'recorded pid is no longer running; state file removed',
-      evidenceDir: state.evidenceDir,
-    });
-  }
+  if (live) {
+    if (!same(live, state)) {
+      finish(2, {
+        error: `pid ${state.pid} does not match the recorded start time or command; refusing to stop it`,
+        recorded: { start: state.start, commandLine: state.commandLine },
+        live: { start: live.Start, commandLine: live.CommandLine },
+      });
+    }
 
-  if (live.Start !== state.start || live.CommandLine !== state.commandLine) {
-    finish(2, {
-      error: `pid ${state.pid} does not match the recorded start time or command; refusing to stop it`,
-      recorded: { start: state.start, commandLine: state.commandLine },
-      live: { start: live.Start, commandLine: live.CommandLine },
-    });
-  }
+    // Never close-all: it reaches every playwright-cli session on the machine.
+    for (const session of [state.session, `${state.session}-jsoff`]) {
+      // One string: the session name is [\w-] only, and shell: true resolves
+      // the playwright-cli shim.
+      spawnSync(`playwright-cli -s=${session} close`, {
+        cwd: root,
+        encoding: 'utf8',
+        shell: true,
+        timeout: 30000,
+        windowsHide: true,
+      });
+    }
 
-  // Never close-all: it reaches every playwright-cli session on the machine.
-  for (const session of [state.session, `${state.session}-jsoff`]) {
-    // One string: the session name is [\w-] only, and shell: true resolves
-    // the playwright-cli shim.
-    spawnSync(`playwright-cli -s=${session} close`, {
-      cwd: root,
+    members = tree(table, state.pid).map((pid) => table.get(pid));
+    spawnSync('taskkill', ['/PID', String(state.pid), '/T', '/F'], {
       encoding: 'utf8',
-      shell: true,
-      timeout: 30000,
       windowsHide: true,
     });
+  } else {
+    // A retry after an incomplete teardown: stop only the survivors an
+    // earlier down recorded that are still the same processes.
+    members = (state.survivors ?? [])
+      .filter((recorded) => same(table.get(recorded.pid), recorded))
+      .map((recorded) => table.get(recorded.pid));
+
+    for (const member of members) {
+      spawnSync('taskkill', ['/PID', String(member.ProcessId), '/T', '/F'], {
+        encoding: 'utf8',
+        windowsHide: true,
+      });
+    }
   }
 
-  const members = tree(table, state.pid);
-  spawnSync('taskkill', ['/PID', String(state.pid), '/T', '/F'], {
-    encoding: 'utf8',
-    windowsHide: true,
-  });
   let portFree = false;
   let survivors = members;
 
@@ -572,7 +588,7 @@ async function down() {
     await sleep(500);
     const after = processTable();
     survivors = members.filter(
-      (pid) => after.get(pid)?.Start === table.get(pid).Start,
+      (member) => after.get(member.ProcessId)?.Start === member.Start,
     );
     portFree = listeners(state.port).length === 0;
 
@@ -581,18 +597,42 @@ async function down() {
     }
   }
 
-  rmSync(stateFile, { force: true });
   const result = {
     pid: state.pid,
-    stopped: members,
-    survivors,
+    stopped: members.map((member) => member.ProcessId),
+    survivors: survivors.map((member) => member.ProcessId),
     port: state.port,
     portFree,
     session: state.session,
     evidenceDir: state.evidenceDir,
     evidenceKept: existsSync(state.evidenceDir),
   };
-  finish(portFree && survivors.length === 0 ? 0 : 1, result);
+
+  if (!portFree || survivors.length > 0) {
+    writeFileSync(
+      stateFile,
+      `${JSON.stringify(
+        {
+          ...state,
+          survivors: survivors.map((member) => ({
+            pid: member.ProcessId,
+            start: member.Start,
+            commandLine: member.CommandLine,
+          })),
+        },
+        null,
+        2,
+      )}\n`,
+    );
+    finish(1, {
+      error: `teardown incomplete; state kept at ${stateFile}; run down again`,
+      ...result,
+      stateFile,
+    });
+  }
+
+  rmSync(stateFile, { force: true });
+  finish(0, result);
 }
 
 const commands = { up, doctor, info, down };

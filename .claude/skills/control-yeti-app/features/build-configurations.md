@@ -37,7 +37,9 @@ Preconditions:
 
 - The `ssr` modes run Nx's `build` dependency first and share one output folder, `dist/apps/yeti-app`; switching
   configuration rebuilds it or restores it from the Nx cache. `build-fresh` trusts the Nx build that ran at launch
-  and flags only source files changed after it.
+  and flags only source files changed after it, in `apps/yeti-app/src` and in every entry point of
+  `packages/ngx-yeti` (`packages/ngx-yeti/<item>/src` included); it skips directories named `node_modules`,
+  `storybook-static` and `dist`, whose files change without changing the build.
 - A build started by `up` and the e2e run (`npm exec nx -- e2e yeti-app-e2e`) write the same `dist` folder; do not
   run both at once in one checkout.
 - The Tailwind C1 and C2 Fixture build configurations of the setup spec do not exist yet in
