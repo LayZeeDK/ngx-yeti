@@ -2,7 +2,7 @@
 id: T027
 title: Add the timeline, icon, spinner, grid, and cluster screen-reader checks and retire the manual tests
 wave: 5
-deps: [T004, T009, T010, T012, T016, T021]
+deps: [T004, T009, T010, T012, T016, T021, T031]
 status: pending
 agent: null
 base: null
@@ -41,6 +41,7 @@ SC9 (user, 2026-10-10: "Approve SC9."; automated screen-reader tests are always 
 ## Interface contract
 
 - Screen-reader project (T004): Nx project `screen-reader-e2e` at `apps/screen-reader-e2e` with targets `nvda` and `voiceover` and no `test`, `test-storybook`, or `e2e` target; one test file per item, `apps/screen-reader-e2e/src/{item}.screen-reader.ts`, run by both lanes; the lane drivers `apps/screen-reader-e2e/src/support/nvda.ts` and `apps/screen-reader-e2e/src/support/voiceover.ts` and the shared helpers in `apps/screen-reader-e2e/src/support/screen-reader.ts` open a static Storybook story by id and return the phrases the screen reader spoke; each lane writes the phrases it heard to a JSON report under dist/screen-reader-e2e/ (uploaded as an artifact in CI), and tests assert per-lane substrings.
+- NVDA key guard (T031): in `apps/screen-reader-e2e/src/support/nvda.ts`, every key the NVDA lane sends, in `open`, `top`, `nextListItem`, and any move added later, goes through one guard that first reads the title of the foreground window and throws, sending nothing, unless the title holds the token `open` gave the story window; no lane move calls a Guidepup method that sends a key (such as `nvda.press`, `nvda.perform`, or `nvda.next`) outside that guard.
 
 ## Intent coverage
 
@@ -66,3 +67,4 @@ Heavy: yes
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — planner: build repair (user ruling "Wave-1 defects: Approve recommendation."). `deps` gains T031 and the Interface contract gains T031's NVDA key guard, identical to T031's text: T031 (wave 2) changes apps/screen-reader-e2e/src/support/nvda.ts, which this task extends, and every key this task's new moves send goes through that guard. Acceptance criteria, files, wave, and Verify are unchanged.

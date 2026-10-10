@@ -2,7 +2,7 @@
 id: T025
 title: Land card's grid, layer, and button carry-overs and the card route's grid
 wave: 4
-deps: [T002, T010, T015, T020]
+deps: [T002, T010, T015, T020, T030]
 status: pending
 agent: null
 base: null
@@ -60,3 +60,4 @@ Heavy: yes
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — planner: build repair (user ruling "Wave-1 defects: Approve recommendation."). `deps` gains T030: T030 (wave 2) changes the stub-route tests of apps/yeti-app-e2e/src/fixture-app.spec.ts, the file whose style-mutation test this task edits. Acceptance criteria, files, wave, and Verify are unchanged.

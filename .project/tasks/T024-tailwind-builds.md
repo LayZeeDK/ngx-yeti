@@ -2,7 +2,7 @@
 id: T024
 title: Add the Tailwind C1 and C2 Fixture build configurations with their cases
 wave: 4
-deps: [T022]
+deps: [T022, T031]
 status: pending
 agent: null
 base: null
@@ -66,3 +66,4 @@ Heavy: yes
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — planner: build repair (user ruling "Wave-1 defects: Approve recommendation."). `deps` gains T031: T031 (wave 2) updates the NVDA lane section of references/ci-local.md, a file this task also edits. Acceptance criteria, files, wave, and Verify are unchanged.

@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -81,3 +81,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-10 — build — T004 re-verified at 7ad619f with the Nx daemon on: Verify exit 0 in a historical sidecar, recorded in the ledger; wave 1 gate host steps rerun with the daemon on, all exit 0
 - 2026-10-11 — build — wave 1/5 done, 1 review cycle: pass (6 tasks); non-blocking warnings recorded in review/wave-1.cycle1.md
 - 2026-10-11 — build — user ruling 2026-10-11 on the confirmed wave 1 defects that break no criterion (review/wave-1.cycle1.md warnings): 'Wave-1 defects: Approve recommendation.' The recommendation was a patch wave through plan, fix tasks appended to M002 and placed before wave 3
+- 2026-10-11 — plan — build plan repair requested
+- 2026-10-11 — plan — build recovery: {"base": "ac09550e747870819d077c7f643dbd7307976cd6", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
+- 2026-10-11 — plan — plan approved
