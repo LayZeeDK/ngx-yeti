@@ -3,9 +3,9 @@ id: T030
 title: Make the stub-route tests fail for a missing or broken route instead of skipping
 wave: 2
 deps: [T002]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T030
+base: c81f317c579d5d3f5b9af71c14bd3b1e9eb5e05f
 worktree: null
 task_branch: null
 files:
@@ -65,3 +65,31 @@ Heavy: yes
 ## Log
 
 - 2026-10-11 — created by planner (build repair of the wave 1 defect D3; user ruling "Wave-1 defects: Approve recommendation."). The Verify's `--grep=@stub-route-control` step exits 1 while no test carries the tag (measured on the current file with Playwright's `--list`: "No tests found", exit 1). The Verify ends by stopping the Nx daemon and keeps its own exit code, as every pending task's does; run it exactly as written and never set NX_DAEMON.
+- 2026-10-11 — coder (build_T030). Negative control before the fix (measured): with `'no-such-fixture'` temporarily added to `stubRoutes` on the base file, `nx e2e yeti-app-e2e -- fixture-app.spec.ts --grep="no-such-fixture|breakout stub"` (Chromium, development) gave 4 skipped (both stub tests, both route kinds, for the unregistered key) and 4 passed (breakout); the temporary key was then removed.
+- Implementation, only in `apps/yeti-app-e2e/src/fixture-app.spec.ts`: one helper `expectFixtureRoute(page, response, key)` asserts the document status is 200 (message "the route document has status 200") and that `main > router-outlet + *` has count 1 (message "the route renders its routed component"); when `[data-fixture-stub]` is present it then asserts the level-2 heading has text `key` (message "the stub's h2 shows its key") and returns true, else false. The JavaScript-on stub test calls it right after `page.goto`, before `waitForHydration`, then skips on false with the same reason text; the JavaScript-off test calls it before its skip. `support/hydration.ts` unchanged; no entry names any item's content, so replaced routes pass the check and skip.
+- Negative control, automated: `test.describe('the stub route check', { tag: '@stub-route-control' })`, JavaScript on and off, 10 tests: unregistered key `no-such-fixture` on `/sub/` and `/sub/server/` (rejects with the status message); `breakout` document fulfilled with status 500 via `page.route` (status message); a status-200 hand-written document whose `main` holds only `h1` and `router-outlet` (routed-component message); `breakout` answered with the `button` stub's document (h2 message). Each asserts the rejection's message. Measured: the server answers 404 for `no-such-fixture` on both route kinds, JavaScript on and off (Express falls through when AngularNodeAppEngine.handle returns null). Finding: with JavaScript on, the wrong-key control first resolved instead of rejecting, because the booted client renders the breakout route over the button stub's server DOM; that control now aborts the main bundle, since the stub test runs the check on the server document before hydration (the dev-mode clean-hydration assertion covers the mismatch after it).
+- Verify, run exactly as written: exit 0. `npm ci`, `npx playwright install chromium`, lint and typecheck of yeti-app-e2e passed; `--grep=@stub-route-control`: 10 passed; development (Chromium): 104 passed, 28 skipped; production (Chromium): 104 passed, 28 skipped; ci-local `ci e2e` Firefox development: 104 passed, 28 skipped; ci-local WebKit development: 104 passed, 28 skipped; daemon stopped. The 28 skips are the 7 replaced keys (box, box-markers, center, center-anti-pattern, setup-order, stack, static-attributes) x 2 tests x 2 route kinds; the other 21 stub keys run in full.
+- AC5 at the working tree: `npx prettier --check .` passed; `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD~1` passed (6 projects). No server left on 4310-4312.
+- 2026-10-11 — orchestrator Verify (sidecar gsd-path-verify/task-t030-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn install-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn install-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn install-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn install-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn install-scripts   ffmpeg-static@5.3.0 (install: node install.js)
+  npm warn install-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn install-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn install-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn install-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn install-scripts
+  npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```
