@@ -11,30 +11,34 @@ import type {
   YetiWidth,
 } from 'ngx-yeti';
 import { NgxYetiPaint, YetiBorder, YetiBox, YetiText } from 'ngx-yeti/box';
+import {
+  YetiBreakout,
+  YetiBreakoutChild,
+  YetiBreakoutNote,
+} from 'ngx-yeti/breakout';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
 import { YetiCenter } from 'ngx-yeti/center';
+import { YetiCluster } from 'ngx-yeti/cluster';
+import { NgxYetiColumns, YetiColumnsChild } from 'ngx-yeti/columns';
+import { YetiCover, YetiCoverChild } from 'ngx-yeti/cover';
+import { NgxYetiEnter } from 'ngx-yeti/enter';
+import { YetiFrame } from 'ngx-yeti/frame';
+import { YetiGrid, YetiGridChild } from 'ngx-yeti/grid';
+import { YetiLayer, YetiLayerChild } from 'ngx-yeti/layer';
 import { NgxYetiLift } from 'ngx-yeti/lift';
+import { YetiMasonry } from 'ngx-yeti/masonry';
+import { YetiOverlay, YetiOverlayChild } from 'ngx-yeti/overlay';
+import { type YetiScrollerJustify, YetiScroller } from 'ngx-yeti/scroller';
+import { YetiSidebar, YetiSidebarChild } from 'ngx-yeti/sidebar';
+import { YetiSpinner } from 'ngx-yeti/spinner';
 import { YetiStack, YetiStackChild } from 'ngx-yeti/stack';
 import { injectYetiItemStyles, provideYetiStyles } from 'ngx-yeti/styles';
-export {} from 'ngx-yeti/breakout';
+import { YetiTimeline } from 'ngx-yeti/timeline';
+import { YetiVisuallyHidden } from 'ngx-yeti/visually-hidden';
 export {} from 'ngx-yeti/button';
-export {} from 'ngx-yeti/cluster';
-export {} from 'ngx-yeti/columns';
 export {} from 'ngx-yeti/container';
-export {} from 'ngx-yeti/cover';
-export {} from 'ngx-yeti/enter';
-export {} from 'ngx-yeti/frame';
-export {} from 'ngx-yeti/grid';
 export {} from 'ngx-yeti/icon';
-export {} from 'ngx-yeti/layer';
-export {} from 'ngx-yeti/masonry';
-export {} from 'ngx-yeti/overlay';
-export {} from 'ngx-yeti/scroller';
-export {} from 'ngx-yeti/sidebar';
-export {} from 'ngx-yeti/spinner';
 export {} from 'ngx-yeti/table';
-export {} from 'ngx-yeti/timeline';
-export {} from 'ngx-yeti/visually-hidden';
 
 const preload: readonly YetiComponentName[] = ['card', 'lift'];
 
@@ -63,6 +67,29 @@ export class AppBadge {
     YetiBorder,
     NgxYetiPaint,
     YetiText,
+    YetiBreakout,
+    YetiBreakoutChild,
+    YetiBreakoutNote,
+    YetiCluster,
+    NgxYetiColumns,
+    YetiColumnsChild,
+    YetiCover,
+    YetiCoverChild,
+    NgxYetiEnter,
+    YetiFrame,
+    YetiGrid,
+    YetiGridChild,
+    YetiLayer,
+    YetiLayerChild,
+    YetiMasonry,
+    YetiOverlay,
+    YetiOverlayChild,
+    YetiScroller,
+    YetiSidebar,
+    YetiSidebarChild,
+    YetiSpinner,
+    YetiTimeline,
+    YetiVisuallyHidden,
     AppBadge,
   ],
   template: `
@@ -92,6 +119,47 @@ export class AppBadge {
     <section yetiBox [gap]="gap" surface="raised" yetiBorder #box="yetiBox">
       <p yetiPaint="primary" yetiText="white">{{ box.surface() }}</p>
     </section>
+    <div yetiBreakout>
+      <p yetiBreakoutChild>Wide</p>
+      <aside yetiBreakoutNote>Note</aside>
+    </div>
+    <ul yetiCluster [gap]="gap">
+      <li>One</li>
+    </ul>
+    <div yetiColumns>
+      <p yetiColumnsChild>Column</p>
+    </div>
+    <div yetiCover>
+      <h2 yetiCoverChild>Cover</h2>
+    </div>
+    <p yetiEnter="rise">Arrives</p>
+    <div yetiFrame [ratio]="ratio">
+      <img src="/photo.jpg" alt="A photo" />
+    </div>
+    <ul yetiGrid [gap]="gap">
+      <li yetiGridChild>Cell</li>
+    </ul>
+    <figure yetiLayer>
+      <figcaption yetiLayerChild>Caption</figcaption>
+    </figure>
+    <div yetiMasonry>
+      <p>Brick</p>
+    </div>
+    <div yetiOverlay>
+      <p yetiOverlayChild>Over</p>
+    </div>
+    <ul yetiScroller [justify]="justify" [gap]="gap">
+      <li>Slide</li>
+    </ul>
+    <div yetiSidebar>
+      <nav yetiSidebarChild>Side</nav>
+      <main>Main</main>
+    </div>
+    <span yetiSpinner [variant]="variant"></span>
+    <ol yetiTimeline>
+      <li>Entry</li>
+    </ol>
+    <span yetiVisuallyHidden>Hidden label</span>
   `,
 })
 export class App {
@@ -101,4 +169,5 @@ export class App {
   protected readonly lift: YetiLift = 'scale';
   protected readonly gap: YetiGap = 'sm-lg';
   protected readonly align: YetiAlign = 'start';
+  protected readonly justify: YetiScrollerJustify = 'center';
 }
