@@ -89,3 +89,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-11 — build — repair T032 and T033 Verify: end the final subshell with the Nx daemon stop (Verify-only, exit code kept)
 - 2026-10-11 — build — T033 attempt 1 rejected by finish after the Verify-only checkpoint changed its body; Log copied, retry from d25ff7b
 - 2026-10-11 — build — T033 landed 7ba7c0b; T032 attempt 1 rejected (task body changed after dispatch), Log copied, retry from this checkpoint
+- 2026-10-11 — build — wave 2 done, 2 review cycles (cycle 2 pass); wave 6 done, 1 review cycle (pass)
