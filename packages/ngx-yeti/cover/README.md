@@ -1,3 +1,3 @@
 # ngx-yeti/cover
 
-Yeti's `cover` item. Its exports arrive with the item; the setup is in the [package README](../README.md).
+Yeti's `cover` item: exports `YetiCover`, `YetiCoverChild`, and `yetiCoverToken`. The usage rules are on the directives; the setup is in the [package README](../README.md).

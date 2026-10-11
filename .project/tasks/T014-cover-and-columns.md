@@ -3,9 +3,9 @@ id: T014
 title: Ship cover and columns with the cover-with-center order case
 wave: 3
 deps: [T001, T002, T003]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T014
+base: 375a8c53b93eeef9230bfb0e1b17536247359ef4
 worktree: null
 task_branch: null
 files:
@@ -94,3 +94,29 @@ Heavy: yes
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — coder (build_T014): implemented. `YetiCover` (`gap`, `height` inert, presence attribute, provides `yetiCoverToken`, `injectYetiItemStyles('cover')` last) and `YetiCoverChild` (`center` with `booleanAttribute`, optional `skipSelf` token, no presence attribute or item file); `NgxYetiColumns` (`threshold`, `gap`, `align` removed via `'[attr.align]': 'null'`, `justify`, `columns`, provides `yetiColumnsToken`, `injectYetiItemStyles('columns')` last) and `YetiColumnsChild` (`span` inert, optional `skipSelf` token). JSDoc carries cover.md rules 1-7 and columns.md rules 1-7 on the item directives, the part rules on each child. Index and README filled for both. E8 verdict pass, so the static `align` form ships. Stories `cover--default`, `--settings`, `--grows`, `--holding-center`, `--themed`; `columns--default`, `--capped`, `--span`, `--inputs` (static `align`), `--nested`, `--rtl` (real-key Tab in DOM order). Layer 2: 16 cover cases, 16 columns cases (incl. `yetiCover yetiBox` / `yetiColumns yetiBox` with one `data-gap` and both presence attributes, a part outside any host, the inert static `height`/`span`). Layer 3 SSR 4 + 4, contract 1 + 1. Storybook-half e2e: cover 7 (1280 x 800 and 320 x 640 heights against the viewport and the md probe, midpoint centring, 320 px no overflow, 320 x 256 growth, 200 % zoom growth), columns 2 (container resized across the threshold on `--default` and `--span`). Fixture e2e: cover 8 and columns 9 per route kind (standard cases; cover's shared `yetiCover yetiBox` hydrate-never host keeps both links; the order case: lone center, then a client-only cover holding a center gets the `cover` link before `center` and keeps the inner center's auto margins; columns `align` frame check with 0 painted entries; JS-off positions equal JS-on; 320 px rows with no overflow). Fixture routes replace the T002 stubs and rely on `cover`, `columns`, and `center` already in the preload list (not edited).
+- 2026-10-11 — coder: deviation in the 200 % zoom growth case: run at 640 x 360, not 320 x 640. At 320 px wide with 200 % text zoom the default story's zoomed `h1` overflows by 63 px inline (Chromium), which is beyond WCAG 1.4.10 (equivalent to a 160 CSS px viewport); 640 px at 200 % is the 320 CSS px reflow width. The 320 x 256 case at 100 % runs as written. The centred child's block margins resolve to its share of the free space (`margin-block: auto`), so `cover--default` asserts zero margins on the other children and zero inline margins plus equal block margins on the centred one. No ledger row needed (neither item owns one); no upstream bug found.
+- 2026-10-11 — coder: Verify (exactly as written, under the lock): exit 0. lint + typecheck 4 projects pass; `nx test ngx-yeti -- cover/src columns/src` 6 files, 42 tests passed; `test-storybook` 2 files, 11 stories passed; `e2e ngx-yeti-e2e` Chromium 9 passed; `e2e yeti-app-e2e` Chromium development 34 passed, production 30 passed and 4 skipped (development-only hydration diagnostics); Firefox via run-job: ngx-yeti-e2e 9, yeti-app-e2e 34 passed; WebKit via run-job: ngx-yeti-e2e 9, yeti-app-e2e 34 passed. After Verify, `npx prettier --write apps/ngx-yeti-e2e/src/cover.spec.ts` reflowed one comment (formatting only); lint + typecheck of ngx-yeti-e2e pass again.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T014): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [1A[2K[2m[WebServer] [22m(node:37068) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:985) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:985) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```
