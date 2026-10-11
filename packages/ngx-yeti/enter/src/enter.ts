@@ -42,7 +42,10 @@ import { injectYetiItemStyles } from 'ngx-yeti/styles';
 @Directive({
   selector: '[yetiEnter]',
   host: {
-    class: 'enter',
+    // Bound, not static, so `enter` and `data-once` reach the element in
+    // one update: a static class is written at creation, and a style
+    // resolved before the first update would start the withheld arrival.
+    '[class.enter]': 'true',
     'data-ngx-yeti-item-enter': '',
     '[attr.data-enter]': 'yetiEnter() || null',
     '[attr.data-side]': 'side() ?? null',

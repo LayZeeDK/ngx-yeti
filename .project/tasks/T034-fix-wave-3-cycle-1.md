@@ -3,9 +3,9 @@ id: T034
 title: Fix wave 3 cycle 1 review findings in T009, T010, T011, T012, T013, T014, T015, T016, T017, T018
 wave: 7
 deps: [T009, T010, T011, T012, T013, T014, T015, T016, T017, T018]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T034
+base: 8ace78f9e107a5d3d53d3e0e160fe878248371f8
 worktree: null
 task_branch: null
 files:
@@ -259,3 +259,33 @@ Criterion: Every frame story passes its play function and the axe gate, `frame--
 ## Log
 
 - 2026-10-11 — created by dispatch_driver.py fix-tasks from wave 3 cycle 1
+- 2026-10-11 — build_T034 implementation (base 8ace78f):
+  - frame--media (Firefox): Gecko lays out the `object` at no size until its document loads; frame.stories.ts now polls `expectFills(objectFrame, object)` in `waitFor`. It fills after load, so frame needs no product change. Evidence: `run-job.mjs ci unit -- npx nx test-storybook ngx-yeti --skip-nx-cache -- frame/src overlay/src enter/src` in the ci unit container, Chromium, Firefox and WebKit: 12 files, 90 tests passed (frame--media included).
+  - overlay--settings (Chromium): the 35.66 px is the held child's block padding, 2 x --yeti-space-md, arriving from box's item file after the in-flow baseline was read. Only the height was off; top, left and width matched. overlay.stories.ts now waits for `itemStylesLoaded('box')` and a non-zero computed `padding-top` on the held child before it measures. Evidence: 20 of 20 native Chromium runs of `vitest run --project=storybook overlay/src` passed, 6 of 6 tests each (tmp/t034/overlay-loop.log).
+  - enter--inserted-preloaded (WebKit 26.4): a product defect, not a test race and not an engine limit. A MutationObserver diagnostic over 20 repeats (tmp/t034/wk-repro1.log) failed 5 of 20. In every failure the `deferred-once` host was added with `class="enter"` and no `data-once`, and an `animationstart` fired before `data-once` arrived. The static host class is written when the element is created, but `data-once` only on the first update, so a style resolved in between starts the withheld arrival. enter.ts now binds the class (`'[class.enter]': 'true'`), so both reach the element in one update. SSR markup is unchanged (`class="enter"`). Evidence: `run-job.mjs floor webkit-26-4 -- npx nx e2e ngx-yeti-e2e -- src/enter.spec.ts --repeat-each=20 --retries=0`: 180 passed, 20 skipped (the spec's own engine-limit skips), 0 failed. No upstream-bugs row is needed.
+  - Firefox 146 floor, JavaScript-off axe (cluster.spec.ts:309, enter.spec.ts:459): a harness defect, not N3. A diagnostic in the Firefox snapshot (tmp/t034/ff-repro2.log, ff-repro3.log) showed that under Playwright 1.58.2 neither the real page nor the snapshot matches `prefers-reduced-motion: reduce`, even with `test.use({ reducedMotion: 'reduce' })`. The snapshot is a fresh load, so its arrivals were `running` at currentTime 0, opacity 0, when axe read them. On the real JavaScript-off page they end at opacity 1, which the specs already assert, so no content stays hidden. support/axe.ts now waits for every finite animation in the snapshot to finish before axe runs; infinite ones, such as a spinner, are skipped. Evidence: `run-job.mjs floor firefox-146-e2e --matrix shard=1 -- npx nx e2e yeti-app-e2e -- src/cluster.spec.ts src/enter.spec.ts --retries=0`: 44 passed, 0 failed (before the fix, 4 failed).
+  - Changed: packages/ngx-yeti/frame/src/frame.stories.ts, packages/ngx-yeti/overlay/src/overlay.stories.ts, packages/ngx-yeti/enter/src/enter.ts, apps/yeti-app-e2e/src/support/axe.ts. Prettier is clean on all four. `nx run-many -t lint typecheck -p ngx-yeti ngx-yeti-e2e yeti-app yeti-app-e2e` passed.
+  - Full Verify (tmp/t034/verify.sh, run as written, under the lock; log tmp/t034/verify1.log) did not finish. The npm ci, playwright install, test -f checks, lint and typecheck (4 projects), and `nx test ngx-yeti` (72 files, 547 tests passed) steps all passed. Claude Code then killed the run during `nx test-storybook ngx-yeti --skip-nx-cache` because the machine was critically low on memory. This was not a test failure. The harness says not to restart it while memory may still be short. The Nx daemon was stopped afterwards. The remaining Verify steps have not run: test-storybook, ci unit, both e2e projects, production e2e, floor webkit-26-4 and floor firefox-146-e2e.
+- 2026-10-11 — orchestrator Verify (sidecar gsd-path-verify/task-t034-verify): pass, exit 0; output tail:
+  ```
+  npm warn EBADENGINE Unsupported engine {
+  npm warn EBADENGINE   package: 'ng-packagr@22.2.4',
+  npm warn EBADENGINE   required: { node: '^22.22.3 || ^24.15.0 || >=26.0.0' },
+  npm warn EBADENGINE   current: { node: 'v24.13.0', npm: '11.6.2' }
+  npm warn EBADENGINE }
+  npm warn EBADENGINE Unsupported engine {
+  npm warn EBADENGINE   package: 'npm-package-arg@14.0.0',
+  npm warn EBADENGINE   required: { node: '^22.22.2 || ^24.15.0 || >=26.0.0' },
+  npm warn EBADENGINE   current: { node: 'v24.13.0', npm: '11.6.2' }
+  npm warn EBADENGINE }
+  npm warn EBADENGINE Unsupported engine {
+  npm warn EBADENGINE   package: 'proc-log@7.0.0',
+  npm warn EBADENGINE   required: { node: '^22.22.2 || ^24.15.0 || >=26.0.0' },
+  npm warn EBADENGINE   current: { node: 'v24.13.0', npm: '11.6.2' }
+  npm warn EBADENGINE }
+  npm warn EBADENGINE Unsupported engine {
+  npm warn EBADENGINE   package: 'validate-npm-package-name@8.0.0',
+  npm warn EBADENGINE   required: { node: '^22.22.2 || ^24.15.0 || >=26.0.0' },
+  npm warn EBADENGINE   current: { node: 'v24.13.0', npm: '11.6.2' }
+  npm warn EBADENGINE }
+  ```

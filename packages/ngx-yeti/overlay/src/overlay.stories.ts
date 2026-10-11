@@ -319,6 +319,12 @@ export const Settings: StoryObj<
     }
 
     await overlayStyled(overlay);
+    // The held child's padding comes from box's item file, which can apply
+    // after the overlay's; the in-flow box is measured with it.
+    await itemStylesLoaded('box');
+    await waitFor(async () => {
+      await expect(getComputedStyle(held).paddingTop).not.toBe('0px');
+    });
 
     // `over` off: the held child is back in the flow, below the content.
     state.set(unset);

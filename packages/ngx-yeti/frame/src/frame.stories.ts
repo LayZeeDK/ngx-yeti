@@ -321,7 +321,10 @@ export const Media: Story = {
     await expectFills(pictureFrame, picture.querySelector('img') ?? picture);
     await expectFills(videoFrame, video);
     await expectFills(iframeFrame, iframe);
-    await expectFills(objectFrame, object);
+    // Gecko lays out an `object` at no size until its document loads.
+    await waitFor(async () => {
+      await expectFills(objectFrame, object);
+    });
     await expect(getComputedStyle(iframe).borderTopWidth).toBe('0px');
     await expect(getComputedStyle(iframe).borderLeftWidth).toBe('0px');
 

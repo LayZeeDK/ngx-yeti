@@ -120,6 +120,20 @@ export async function axeViolationsOfSnapshot(
       throw new Error(`The snapshot of ${url.href} was not served`);
     }
 
+    // The snapshot is a fresh load, so its load arrivals play again, and
+    // emulated reduced motion does not reach every Playwright release this
+    // runs under. axe reads the state each finite animation ends in.
+    await snapshot.evaluate(async () => {
+      await Promise.all(
+        document
+          .getAnimations()
+          .filter(({ effect }) =>
+            Number.isFinite(effect?.getComputedTiming().endTime ?? 0),
+          )
+          .map(async ({ finished }) => finished),
+      );
+    });
+
     const violations = await axeViolations(snapshot, true);
 
     if (warnings.length > 0) {
