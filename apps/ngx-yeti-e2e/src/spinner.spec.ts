@@ -4,8 +4,11 @@ import {
   parseColor,
   type SrgbColor,
 } from '@ngx-yeti/testing';
+import {
+  expectItemSheetsApplied,
+  horizontalOverflow,
+} from '@ngx-yeti/testing/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
 
 const stories = [
@@ -17,16 +20,6 @@ const stories = [
   'spinner--decorative',
   'spinner--defer-placeholder',
 ];
-
-/** The first ring of a story, once the spinner's sheet has applied. */
-async function styledRing(page: Page, root: Locator): Promise<Locator> {
-  const ring = root.locator('[yetispinner]').first();
-
-  await expectItemSheetsApplied(page, ['spinner']);
-  await expect(ring).toHaveCSS('animation-name', 'yeti-spin');
-
-  return ring;
-}
 
 /** The ring's computed `rotate` in each of the next `count` animation frames. */
 async function rotateFrames(ring: Locator, count: number): Promise<string[]> {
@@ -180,7 +173,10 @@ test.describe('spinner--default', () => {
   }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     const root = await openStory(page, 'spinner--default');
-    const ring = await styledRing(page, root);
+    const ring = root.locator('[yetispinner]').first();
+
+    await expectItemSheetsApplied(page, ['spinner']);
+    await expect(ring).toHaveCSS('animation-name', 'yeti-spin');
 
     const { duration, iterations } = await ring.evaluate((element) => {
       const style = getComputedStyle(element);
@@ -208,7 +204,10 @@ test.describe('spinner--default', () => {
   }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
     const root = await openStory(page, 'spinner--default');
-    const ring = await styledRing(page, root);
+    const ring = root.locator('[yetispinner]').first();
+
+    await expectItemSheetsApplied(page, ['spinner']);
+    await expect(ring).toHaveCSS('animation-name', 'yeti-spin');
 
     expect(
       await ring.evaluate((element) =>
@@ -242,7 +241,10 @@ test.describe('spinner--default', () => {
     );
 
     const root = await openStory(page, 'spinner--default');
-    const ring = await styledRing(page, root);
+    const ring = root.locator('[yetispinner]').first();
+
+    await expectItemSheetsApplied(page, ['spinner']);
+    await expect(ring).toHaveCSS('animation-name', 'yeti-spin');
 
     await page.emulateMedia({ forcedColors: 'active' });
     await twoPaints(page);
@@ -289,7 +291,12 @@ test.describe('spinner--default in each page scheme', () => {
       await page.emulateMedia({ colorScheme });
       const root = await openStory(page, 'spinner--default');
 
-      await styledRing(page, root);
+      await expectItemSheetsApplied(page, ['spinner']);
+
+      await expect(root.locator('[yetispinner]').first()).toHaveCSS(
+        'animation-name',
+        'yeti-spin',
+      );
 
       for (const ring of await root.locator('[yetispinner]').all()) {
         const line = await paintOf(ring.locator('..'));
@@ -317,7 +324,12 @@ test.describe('spinner--variants', () => {
       await page.emulateMedia({ colorScheme });
       const root = await openStory(page, 'spinner--variants');
 
-      await styledRing(page, root);
+      await expectItemSheetsApplied(page, ['spinner']);
+
+      await expect(root.locator('[yetispinner]').first()).toHaveCSS(
+        'animation-name',
+        'yeti-spin',
+      );
 
       const ratios: string[] = [];
 
@@ -339,7 +351,9 @@ test.describe('spinner--variants', () => {
         );
       }
 
-      // Recorded, not asserted (ticket 50 decision 191).
+      // Recorded, not asserted: the spec asserts 3:1 for the default variant
+      // only and records the bright edge of every other variant (spinner.md,
+      // section 7).
       test.info().annotations.push({
         type: 'bright edge ratios',
         description: ratios.join('; '),
@@ -357,11 +371,7 @@ test.describe('every spinner story', () => {
       await openStory(page, id);
 
       expect(
-        await page.evaluate(() => {
-          const { scrollWidth, clientWidth } = document.documentElement;
-
-          return scrollWidth - clientWidth;
-        }),
+        await horizontalOverflow(page),
         'horizontal overflow in px',
       ).toBeLessThanOrEqual(0);
     });

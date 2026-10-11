@@ -1,3 +1,4 @@
+import { expectItemSheetsApplied } from '@ngx-yeti/testing/playwright';
 import { type Locator, type Page } from '@playwright/test';
 import {
   expect,
@@ -7,15 +8,11 @@ import {
   test,
 } from './support/fixtures';
 import { removeDehydratedHosts } from './support/hosts';
-import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+import { nextFrames, waitForHydration } from './support/hydration';
 import { holdBackMainBundle } from './support/main-bundle';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   itemLinks,
-  itemSheetsLoaded,
   recordHostAttributes,
   recordStyleMutations,
 } from './support/style-probe';
@@ -147,20 +144,13 @@ async function scrollToTop(page: Page): Promise<void> {
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} enter route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}enter`);
-
-      await expect(page.locator('#plain')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'enter',
+      prefix,
+      liveHost: '#plain',
+      leaveLink: 'Leave for the replay page',
+      styled: { property: 'animation-name', value: 'yeti-enter-fade' },
+      arrivals: '#plain',
     });
 
     test("adopts the server's link and changes no host attribute at hydration", async ({
@@ -188,8 +178,8 @@ for (const { kind, prefix } of routeKinds) {
       );
     });
 
-    // Ticket 33 row 16 (enter.md:269): nothing restores or removes a static
-    // data-once before or at hydration.
+    // Nothing restores or removes a static data-once before or at hydration
+    // (enter.md:269).
     test('keeps data-once on a below-the-fold section through hydration, then arrives once when scrolled to', async ({
       page,
     }) => {
@@ -201,11 +191,7 @@ for (const { kind, prefix } of routeKinds) {
       const section = page.locator('#below-once');
 
       await section.waitFor({ state: 'attached' });
-      await expect
-        .poll(() => itemSheetsLoaded(page, ['enter']), {
-          message: 'the enter stylesheet is loaded',
-        })
-        .toBe(true);
+      await expectItemSheetsApplied(page, ['enter']);
       await expect(section).toHaveAttribute('data-once', '');
       await expect(section).toHaveCSS('animation-name', 'none');
       await expect(section).toHaveCSS('opacity', '1');
@@ -232,7 +218,9 @@ for (const { kind, prefix } of routeKinds) {
       ).toBe(1);
     });
 
-    // Ticket 50 decision 21: recorded, not asserted.
+    // Recorded, not asserted: a once element in view at hydration arrives
+    // after it, like for like, and the spec asks only how long after first
+    // paint (enter.md:270).
     test('records how long after first paint a section already in view arrives', async ({
       browserName,
       page,
@@ -394,26 +382,6 @@ for (const { kind, prefix } of routeKinds) {
       ).toContain('enter');
     });
 
-    test('removes the enter link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}enter`);
-      await waitForHydration(page);
-
-      expect(await itemLinks(page)).toContain('enter');
-
-      await page
-        .getByRole('link', { name: 'Leave for the replay page' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-enter]')).toHaveCount(0);
-      await expect.poll(() => itemLinks(page)).not.toContain('enter');
-
-      await page.goBack();
-      await expect(page.locator('#plain')).toBeVisible();
-      await expect.poll(() => itemLinks(page)).toContain('enter');
-    });
-
     test.describe('with JavaScript off', () => {
       test.use({ javaScriptEnabled: false });
 
@@ -422,7 +390,7 @@ for (const { kind, prefix } of routeKinds) {
       }) => {
         await page.goto(`${prefix}enter`);
 
-        await expect.poll(() => itemSheetsLoaded(page, ['enter'])).toBe(true);
+        await expectItemSheetsApplied(page, ['enter']);
 
         const hosts = page.locator('[data-ngx-yeti-item-enter]');
 
@@ -447,24 +415,6 @@ for (const { kind, prefix } of routeKinds) {
           'end',
         );
         expect(await itemLinks(page)).toContain('enter');
-      });
-
-      test.describe('with the arrivals collapsed', () => {
-        // In Firefox axe runs on a fresh copy of the page, where the load
-        // arrivals play again; mid-fade text fails its contrast check. The
-        // arrival ends at the content's own colours (enter.md, 1.4.3), so
-        // axe reads the end state under reduced motion.
-        test.use({ reducedMotion: 'reduce' });
-
-        test('serves server HTML that axe passes', async ({
-          axeViolations,
-          page,
-        }) => {
-          await page.goto(`${prefix}enter`);
-          await expect(page.locator('#plain')).toHaveCSS('opacity', '1');
-
-          expect(await axeViolations()).toEqual([]);
-        });
       });
     });
   });

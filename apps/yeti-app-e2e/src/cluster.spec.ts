@@ -1,70 +1,24 @@
-import { type Locator, type Page } from '@playwright/test';
-import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+  childRects,
+  expectItemSheetsApplied,
+  rect,
+  usedLength,
+  type Box,
+} from '@ngx-yeti/testing/playwright';
+import { type Page } from '@playwright/test';
+import { expect, isProduction, routeKinds, test } from './support/fixtures';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
   recordFrames,
   recordPaintedAttributes,
 } from './support/style-probe';
 
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly right: number;
-  readonly width: number;
-}
-
-/** The boxes of an element's children, in DOM order. */
-async function childRects(parent: Locator): Promise<Box[]> {
-  return parent.evaluate((element) =>
-    [...element.children].map((child) => {
-      const { top, bottom, left, right, width } = child.getBoundingClientRect();
-
-      return { top, bottom, left, right, width };
-    }),
-  );
-}
-
 function rowCount(boxes: readonly Box[]): number {
   return new Set(boxes.map((box) => Math.round(box.top))).size;
-}
-
-/** The used inline length of a public token, read from a probe in the page. */
-async function token(page: Page, name: string): Promise<number> {
-  return page.locator('main').evaluate((main, property) => {
-    const probe = document.createElement('div');
-    probe.style.inlineSize = `var(${property})`;
-    main.append(probe);
-    const { width } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return width;
-  }, name);
-}
-
-/** The cluster links in `<head>`; later items may add others. */
-async function clusterLinks(page: Page): Promise<readonly string[]> {
-  return (await itemLinks(page)).filter((item) => item === 'cluster');
-}
-
-/** Upstream bug O2: read geometry only once the cluster's sheet has applied. */
-async function expectClusterSheetApplied(
-  page: Page,
-  cluster: Locator,
-): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['cluster']), {
-      message: 'the cluster stylesheet is loaded',
-    })
-    .toBe(true);
-  await expect(cluster).toHaveCSS('display', 'flex');
 }
 
 /**
@@ -76,7 +30,8 @@ async function expectClustersLaidOut(page: Page): Promise<number> {
   const tags = page.locator('#tags-cluster');
   const threshold = page.locator('#threshold-cluster');
 
-  await expectClusterSheetApplied(page, tags);
+  await expectItemSheetsApplied(page, ['cluster']);
+  await expect(tags).toHaveCSS('display', 'flex');
 
   const tagBoxes = await childRects(tags);
   const [first, second] = tagBoxes;
@@ -87,13 +42,11 @@ async function expectClustersLaidOut(page: Page): Promise<number> {
 
   expect(rowCount(tagBoxes)).toBe(1);
   expect(second.left - first.right).toBeCloseTo(
-    await token(page, '--yeti-space-xs'),
+    await usedLength(page.locator('main'), 'var(--yeti-space-xs)'),
     0,
   );
   const column = await childRects(threshold);
-  const width = await threshold.evaluate(
-    (element) => element.getBoundingClientRect().width,
-  );
+  const { width } = await rect(threshold);
 
   expect(rowCount(column)).toBe(column.length);
 
@@ -106,20 +59,13 @@ async function expectClustersLaidOut(page: Page): Promise<number> {
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} cluster route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}cluster`);
-
-      await expect(page.locator('#tags-cluster')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'cluster',
+      prefix,
+      liveHost: '#tags-cluster',
+      leaveLink: 'Leave for a page without clusters',
+      styled: { property: 'display', value: 'flex' },
+      arrivals: '#arriving-cluster > li, #never-shared > li',
     });
 
     test('paints no frame with align on the cluster written with a static align', async ({
@@ -185,6 +131,7 @@ for (const { kind, prefix } of routeKinds) {
     // The server hosts keep the cluster link in <head>, so the client-only
     // cluster reuses it.
     test('renders a client-only cluster with 0 unstyled frames while the server hosts hold the cluster link', async ({
+      browserName,
       page,
     }) => {
       const display = await recordFrames(page, '#client-cluster', 'display');
@@ -202,37 +149,10 @@ for (const { kind, prefix } of routeKinds) {
       await expect(cluster).toBeVisible();
       await expect(cluster).toHaveCSS('display', 'flex');
 
-      const frames = await display();
-
-      expect(
-        frames.length,
-        'the client-only cluster was sampled',
-      ).toBeGreaterThan(0);
-      expect(
-        frames.filter((value) => value !== 'flex'),
-        'no frame shows the client-only cluster without Yeti',
-      ).toEqual([]);
-    });
-
-    test('removes the cluster link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}cluster`);
-      await waitForHydration(page);
-
-      expect(await clusterLinks(page)).toEqual(['cluster']);
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without clusters' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-cluster]')).toHaveCount(0);
-      await expect.poll(() => clusterLinks(page)).toEqual([]);
-
-      await page.goBack();
-      await expect(page.locator('#tags-cluster')).toBeVisible();
-      await expect.poll(() => clusterLinks(page)).toEqual(['cluster']);
-      await expectClusterSheetApplied(page, page.locator('#tags-cluster'));
+      expectStyledFrames(await display(), {
+        styled: (value) => value === 'flex',
+        label: `${browserName}, ${kind}, client-only cluster`,
+      });
     });
 
     test('lays out the clusters after hydration', async ({ page }) => {
@@ -251,7 +171,8 @@ for (const { kind, prefix } of routeKinds) {
       await page.setViewportSize({ width: 320, height: 640 });
       await page.goto(`${prefix}cluster`);
       await waitForHydration(page);
-      await expectClusterSheetApplied(page, page.locator('#tags-cluster'));
+      await expectItemSheetsApplied(page, ['cluster']);
+      await expect(page.locator('#tags-cluster')).toHaveCSS('display', 'flex');
 
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
@@ -287,7 +208,7 @@ for (const { kind, prefix } of routeKinds) {
           'data-ngx-yeti-item-enter',
           '',
         );
-        expect(await clusterLinks(page)).toEqual(['cluster']);
+        expect(await itemLinks(page, 'cluster')).toEqual(['cluster']);
       });
 
       test('lays out the clusters', async ({ page }) => {
@@ -297,29 +218,6 @@ for (const { kind, prefix } of routeKinds) {
           await expectClustersLaidOut(page),
           'the links wrap in their narrow frame',
         ).toBeGreaterThan(1);
-      });
-
-      test.describe('with the arrivals collapsed', () => {
-        // The arriving rows fade in, and in Firefox axe runs on a fresh copy
-        // of the page, where they play again; mid-fade text fails its
-        // contrast check. The arrival ends at the content's own colours, so
-        // axe reads the end state under reduced motion.
-        test.use({ reducedMotion: 'reduce' });
-
-        test('serves server HTML that axe passes', async ({
-          axeViolations,
-          page,
-        }) => {
-          await page.goto(`${prefix}cluster`);
-
-          for (const item of await page
-            .locator('#arriving-cluster > li, #never-shared > li')
-            .all()) {
-            await expect(item).toHaveCSS('opacity', '1');
-          }
-
-          expect(await axeViolations()).toEqual([]);
-        });
       });
     });
   });

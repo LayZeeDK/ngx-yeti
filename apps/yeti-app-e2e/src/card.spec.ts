@@ -1,5 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import {
+  childRects,
+  expectItemSheetsApplied,
+  rect,
+} from '@ngx-yeti/testing/playwright';
 import { workspaceRoot } from '@nx/devkit';
 import { type Page } from '@playwright/test';
 import {
@@ -10,16 +15,13 @@ import {
   test,
 } from './support/fixtures';
 import { expectHoverLifts, removeEveryHost } from './support/hosts';
-import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
-  expectHydrationFrames,
+  expectStyledFrames,
+  firstPaintFramesRecordedAs,
   itemLinks,
-  itemSheetsLoaded,
   recordFrames,
   recordHostAttributes,
   recordStyleMutations,
@@ -31,24 +33,16 @@ const yetiPin = readFileSync(
 ).trim();
 const cardHref = `yeti-css/components/card/card.css?v=${yetiPin}`;
 
-/** The boxes of the card and its children. */
+/** The tags of the card's children and the boxes of the card and of each. */
 async function cardGeometry(page: Page): Promise<unknown> {
-  return page.locator('article').evaluate((card) =>
-    [card, ...card.children].map((element) => {
-      const { x, y, width, height } = element.getBoundingClientRect();
+  const card = page.locator('article');
 
-      return { tag: element.localName, x, y, width, height };
-    }),
-  );
-}
-
-/** Upstream bug O2: read geometry only once the card's sheet has applied. */
-async function expectCardSheetApplied(page: Page): Promise<void> {
-  expect(
-    await itemSheetsLoaded(page, ['card']),
-    'the card stylesheet is loaded',
-  ).toBe(true);
-  await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
+  return {
+    tags: await card.evaluate((element) =>
+      [...element.children].map((child) => child.localName),
+    ),
+    boxes: [await rect(card), ...(await childRects(card))],
+  };
 }
 
 /**
@@ -104,22 +98,12 @@ async function recordCardLinkRemoval(
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} card route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}card`);
-
-      await expect(
-        page.getByRole('link', { name: 'Weekend in the hills' }),
-      ).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'card',
+      prefix,
+      liveHost: 'article',
+      leaveLink: 'Leave for a page without cards',
+      styled: { property: 'padding-top', value: /^(?!0px$)/ },
     });
 
     test("adopts the server's card link at hydration", async ({
@@ -157,7 +141,11 @@ for (const { kind, prefix } of routeKinds) {
       await expect(link).toHaveAttribute('data-ngx-yeti-app', /.+/);
       await expect(link).toHaveAttribute('data-beasties-skip', '');
 
-      expectHydrationFrames(await cardPadding(), browserName);
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, card from first paint`,
+        ...firstPaintFramesRecordedAs(browserName),
+      });
     });
 
     test("keeps the hydrate-never host's card and lift links, lift, and border after every live card leaves", async ({
@@ -191,6 +179,7 @@ for (const { kind, prefix } of routeKinds) {
     // reuses it and the preload plays no part; the setup-defer route carries
     // the preload claim (card.md:337).
     test('renders a client-only card with 0 unstyled frames while the server hosts hold the card link', async ({
+      browserName,
       page,
     }) => {
       const cardPadding = await recordFrames(
@@ -213,18 +202,14 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('padding-top', '0px');
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const frames = await cardPadding();
-
-      expect(frames.length, 'the client-only card was sampled').toBeGreaterThan(
-        0,
-      );
-      expect(
-        frames.filter((value) => value === '0px'),
-        'no frame shows the client-only card without Yeti',
-      ).toEqual([]);
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, client-only card`,
+      });
     });
 
     test("records the client-only card's frames after every card host has left", async ({
+      browserName,
       page,
     }) => {
       const cardPadding = await recordFrames(
@@ -247,17 +232,13 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('padding-top', '0px');
       expect(await itemLinks(page)).toEqual(['card']);
 
-      const frames = await cardPadding();
-
-      expect(frames.length, 'the client-only card was sampled').toBeGreaterThan(
-        0,
-      );
       // The server's card link used the preload at load, and routing turns
       // the HTTP cache off, so the re-inserted link refetches: recorded, not
       // asserted. The setup-defer route carries the 0-frame preload claim.
-      test.info().annotations.push({
-        type: 'frames',
-        description: `${String(frames.filter((value) => value === '0px').length)} of ${String(frames.length)} frames without the card file (re-inserted)`,
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, client-only card after every host left`,
+        recordedAs: 'reinserted-frames',
       });
     });
 
@@ -317,7 +298,8 @@ for (const { kind, prefix } of routeKinds) {
 
       await page.goto(`${prefix}card`);
       await waitForHydration(page);
-      await expectCardSheetApplied(page);
+      await expectItemSheetsApplied(page, ['card']);
+      await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
       await expect(
         page
           .locator('img[ngsrc]')
@@ -370,7 +352,11 @@ for (const { kind, prefix } of routeKinds) {
         viewport,
       }) => {
         await page.goto(`${prefix}card`);
-        await expectCardSheetApplied(page);
+        await expectItemSheetsApplied(page, ['card']);
+        await expect(page.locator('article')).not.toHaveCSS(
+          'padding-top',
+          '0px',
+        );
 
         // A test's `use` options are this context's defaults too.
         const context = await browser.newContext({
@@ -381,7 +367,11 @@ for (const { kind, prefix } of routeKinds) {
 
         await javaScriptPage.goto(page.url());
         await waitForHydration(javaScriptPage);
-        await expectCardSheetApplied(javaScriptPage);
+        await expectItemSheetsApplied(javaScriptPage, ['card']);
+        await expect(javaScriptPage.locator('article')).not.toHaveCSS(
+          'padding-top',
+          '0px',
+        );
 
         expect(await cardGeometry(page)).toEqual(
           await cardGeometry(javaScriptPage),
@@ -394,7 +384,11 @@ for (const { kind, prefix } of routeKinds) {
         page,
       }) => {
         await page.goto(`${prefix}card`);
-        await expectCardSheetApplied(page);
+        await expectItemSheetsApplied(page, ['card']);
+        await expect(page.locator('article')).not.toHaveCSS(
+          'padding-top',
+          '0px',
+        );
 
         const href = await page
           .getByRole('link', { name: 'Weekend in the hills' })
@@ -410,15 +404,6 @@ for (const { kind, prefix } of routeKinds) {
         await page.mouse.click(box.x + box.width - 4, box.y + box.height - 4);
 
         await expect(page).toHaveURL(expected);
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}card`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

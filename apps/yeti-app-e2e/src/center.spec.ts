@@ -1,15 +1,13 @@
+import { expectItemSheetsApplied } from '@ngx-yeti/testing/playwright';
 import { type Locator, type Page } from '@playwright/test';
 import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import { removeDehydratedHosts } from './support/hosts';
-import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
   recordFrames,
 } from './support/style-probe';
 
@@ -26,12 +24,7 @@ async function stackAndCenterLinks(page: Page): Promise<readonly string[]> {
  * equal space on both sides (center.md, Testing Decisions).
  */
 async function expectCentred(page: Page, centers: Locator): Promise<void> {
-  // Upstream bug O2: read geometry only once the center's sheet has applied.
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['center']), {
-      message: 'the center stylesheet is loaded',
-    })
-    .toBe(true);
+  await expectItemSheetsApplied(page, ['center']);
   await expect(centers.first()).toHaveCSS('box-sizing', 'content-box');
 
   const probeMax = await page.evaluate(() => {
@@ -76,15 +69,11 @@ async function expectCentred(page: Page, centers: Locator): Promise<void> {
 const showClientStack = 'Show the client-only stack of centers';
 
 /**
- * Waits until the center and box sheets have applied (upstream bug O2), so
- * the 320 px reads see the documented forms at their real widths.
+ * Waits until the center and box sheets have applied, so the 320 px reads
+ * see the documented forms at their real widths.
  */
 async function documentedFormsStyled(page: Page): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['center', 'box']), {
-      message: 'the center and box stylesheets are loaded',
-    })
-    .toBe(true);
+  await expectItemSheetsApplied(page, ['center', 'box']);
   await expect(page.locator('#live-center')).toHaveCSS(
     'box-sizing',
     'content-box',
@@ -97,20 +86,18 @@ async function documentedFormsStyled(page: Page): Promise<void> {
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} center route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}center`);
-
-      await expect(page.locator('#live-center')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'center',
+      prefix,
+      liveHost: '#live-center',
+      leaveLink: 'Leave for a page without centers',
+      styled: { property: 'box-sizing', value: 'content-box' },
+      afterReturn: async (page) => {
+        await expect
+          .poll(() => stackAndCenterLinks(page))
+          .toEqual(['stack', 'center']);
+        await expectCentred(page, page.locator('#live-center'));
+      },
     });
 
     test('has no horizontal overflow at a 320 px viewport', async ({
@@ -156,6 +143,7 @@ for (const { kind, prefix } of routeKinds) {
     // The server hosts keep the center link in <head>, so the client-only
     // centers reuse it.
     test('renders client-only centers with no frame at full width while the server hosts hold the center link', async ({
+      browserName,
       page,
     }) => {
       const gutter = await recordFrames(
@@ -175,16 +163,10 @@ for (const { kind, prefix } of routeKinds) {
       await expect(centers).toHaveCount(2);
       await expectCentred(page, centers);
 
-      const frames = await gutter();
-
-      expect(
-        frames.length,
-        'the client-only center was sampled',
-      ).toBeGreaterThan(0);
-      expect(
-        frames.filter((value) => value === '0px'),
-        'no frame shows the client-only center without its gutters',
-      ).toEqual([]);
+      expectStyledFrames(await gutter(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, client-only centers`,
+      });
     });
 
     // The tie (center.md:290), in both arrival orders.
@@ -237,29 +219,6 @@ for (const { kind, prefix } of routeKinds) {
         .toEqual(['stack', 'center']);
       await expect(page.locator('#client-stack')).toHaveCSS('display', 'flex');
       await expectCentred(page, page.locator('#client-stack > section'));
-    });
-
-    test('removes the center link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}center`);
-      await waitForHydration(page);
-
-      expect(await itemLinks(page)).toContain('center');
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without centers' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-center]')).toHaveCount(0);
-      await expect.poll(() => stackAndCenterLinks(page)).toEqual([]);
-
-      await page.goBack();
-      await expect(page.locator('#live-center')).toBeVisible();
-      await expect
-        .poll(() => stackAndCenterLinks(page))
-        .toEqual(['stack', 'center']);
-      await expectCentred(page, page.locator('#live-center'));
     });
 
     test.describe('with JavaScript off', () => {
@@ -323,15 +282,6 @@ for (const { kind, prefix } of routeKinds) {
           await page.evaluate(() => document.documentElement.scrollWidth),
         ).toBe(320);
       });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}center`);
-
-        expect(await axeViolations()).toEqual([]);
-      });
     });
   });
 }
@@ -362,9 +312,7 @@ for (const { kind, prefix } of routeKinds) {
     }) => {
       await page.setViewportSize({ width: 320, height: 640 });
       await page.goto(`${prefix}center-anti-pattern`);
-      await expect
-        .poll(() => itemSheetsLoaded(page, ['center', 'box']))
-        .toBe(true);
+      await expectItemSheetsApplied(page, ['center', 'box']);
       await expect(page.locator('#anti-pattern-center')).toHaveCSS(
         'box-sizing',
         'content-box',

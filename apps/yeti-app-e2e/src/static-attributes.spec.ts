@@ -8,10 +8,10 @@ import {
 import { recordFrames, recordPaintedAttributes } from './support/style-probe';
 
 /**
- * E8 (ticket 50 decision 9): hydration writes static attributes again before
- * a binding wins (building-blocks.md:347). If a frame ever paints a
- * removed-kind attribute on its host, every removed-kind input becomes
- * bound-only (cluster.md:309, icon.md:302).
+ * Hydration writes static attributes again before a binding wins
+ * (building-blocks.md:347). If a frame ever paints a removed-kind attribute on
+ * its host, every removed-kind input becomes bound-only (cluster.md:309,
+ * icon.md:302).
  */
 const probes = '[appStaticAttributeProbe]';
 const removedAttributes = [

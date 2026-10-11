@@ -1,60 +1,18 @@
+import {
+  expectItemSheetsApplied,
+  horizontalOverflow,
+  rect,
+  usedLength,
+} from '@ngx-yeti/testing/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
 
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly right: number;
-  readonly width: number;
-  readonly height: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, left, right, width, height } =
-      element.getBoundingClientRect();
-
-    return { top, bottom, left, right, width, height };
-  });
-}
-
-/** The used block size of a CSS length, read from a probe in the story. */
-async function blockLength(root: Locator, length: string): Promise<number> {
-  return root.evaluate((element, value) => {
-    const probe = document.createElement('div');
-    probe.style.blockSize = value;
-    element.append(probe);
-    const { height } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return height;
-  }, length);
-}
-
-/** Upstream bug O2: read geometry only once the item sheets have applied. */
-async function expectCoverStyled(
-  page: Page,
-  cover: Locator,
-  items: readonly string[] = ['cover', 'box'],
-): Promise<void> {
-  await expectItemSheetsApplied(page, items);
-  await expect(cover).toHaveCSS('flex-direction', 'column');
-}
-
-/** The page's scroll extent beyond the viewport, in px, on each axis. */
-async function pageOverflow(
-  page: Page,
-): Promise<{ inline: number; block: number }> {
+/** How far the document is taller than the viewport, in px. */
+async function blockOverflow(page: Page): Promise<number> {
   return page.evaluate(() => {
-    const { scrollWidth, clientWidth, scrollHeight, clientHeight } =
-      document.documentElement;
+    const { scrollHeight, clientHeight } = document.documentElement;
 
-    return {
-      inline: scrollWidth - clientWidth,
-      block: scrollHeight - clientHeight,
-    };
+    return scrollHeight - clientHeight;
   });
 }
 
@@ -93,7 +51,8 @@ for (const viewport of [
       const root = await openStory(page, 'cover--default');
       const cover = root.getByTestId('cover');
 
-      await expectCoverStyled(page, cover);
+      await expectItemSheetsApplied(page, ['cover', 'box']);
+      await expect(cover).toHaveCSS('flex-direction', 'column');
 
       expect((await rect(cover)).height).toBeGreaterThanOrEqual(
         (await viewportHeight(page)) - 0.5,
@@ -108,7 +67,11 @@ for (const viewport of [
         args: { height: 'half' },
       });
 
-      await expectCoverStyled(page, half.getByTestId('cover'), ['cover']);
+      await expectItemSheetsApplied(page, ['cover']);
+      await expect(half.getByTestId('cover')).toHaveCSS(
+        'flex-direction',
+        'column',
+      );
       await expect(half.getByTestId('cover')).toHaveAttribute(
         'data-height',
         'half',
@@ -124,7 +87,11 @@ for (const viewport of [
         args: { height: 'full' },
       });
 
-      await expectCoverStyled(page, full.getByTestId('cover'), ['cover']);
+      await expectItemSheetsApplied(page, ['cover']);
+      await expect(full.getByTestId('cover')).toHaveCSS(
+        'flex-direction',
+        'column',
+      );
 
       const fullHeight = (await rect(full.getByTestId('cover'))).height;
       const md = await openStory(page, 'cover--settings', {
@@ -132,12 +99,15 @@ for (const viewport of [
       });
       const mdCover = md.getByTestId('cover');
 
-      await expectCoverStyled(page, mdCover, ['cover']);
+      await expectItemSheetsApplied(page, ['cover']);
+      await expect(mdCover).toHaveCSS('flex-direction', 'column');
 
       const mdHeight = (await rect(mdCover)).height;
 
       expect(
-        Math.abs(mdHeight - (await blockLength(md, 'var(--yeti-height-md)'))),
+        Math.abs(
+          mdHeight - (await usedLength(md, 'var(--yeti-height-md)', 'block')),
+        ),
       ).toBeLessThanOrEqual(1);
       expect(mdHeight).toBeLessThan(fullHeight);
     });
@@ -150,9 +120,13 @@ test.describe('cover--default at 320 px', () => {
   test('has no horizontal overflow', async ({ page }) => {
     const root = await openStory(page, 'cover--default');
 
-    await expectCoverStyled(page, root.getByTestId('cover'));
+    await expectItemSheetsApplied(page, ['cover', 'box']);
+    await expect(root.getByTestId('cover')).toHaveCSS(
+      'flex-direction',
+      'column',
+    );
 
-    expect((await pageOverflow(page)).inline).toBeLessThanOrEqual(0);
+    expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   });
 });
 
@@ -182,7 +156,11 @@ for (const { name, viewport, zoom } of [
     }) => {
       const root = await openStory(page, 'cover--default');
 
-      await expectCoverStyled(page, root.getByTestId('cover'));
+      await expectItemSheetsApplied(page, ['cover', 'box']);
+      await expect(root.getByTestId('cover')).toHaveCSS(
+        'flex-direction',
+        'column',
+      );
 
       if (zoom) {
         // Text zoom: the root font size at 200 %, so every rem doubles.
@@ -193,12 +171,11 @@ for (const { name, viewport, zoom } of [
 
       const cover = await rect(root.getByTestId('cover'));
       const footnote = await rect(root.getByTestId('footnote'));
-      const overflow = await pageOverflow(page);
 
       expect(cover.height).toBeGreaterThan(await viewportHeight(page));
       expect(footnote.bottom).toBeLessThanOrEqual(cover.bottom + 0.5);
-      expect(overflow.block).toBeGreaterThan(0);
-      expect(overflow.inline).toBeLessThanOrEqual(0);
+      expect(await blockOverflow(page)).toBeGreaterThan(0);
+      expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
     });
   });
 }

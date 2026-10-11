@@ -1,35 +1,16 @@
+import { expectItemSheetsApplied } from '@ngx-yeti/testing/playwright';
 import { type Locator, type Page } from '@playwright/test';
-import { expect, isProduction, routeKinds, test } from './support/fixtures';
-import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+import { expect, routeKinds, test } from './support/fixtures';
+import { nextFrames, waitForHydration } from './support/hydration';
 import { holdBackMainBundle } from './support/main-bundle';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
+  productionFramesRecordedAs,
   recordFrames,
 } from './support/style-probe';
-
-/** The scroller links in `<head>`; other items add their own. */
-async function scrollerLinks(page: Page): Promise<readonly string[]> {
-  return (await itemLinks(page)).filter((item) => item === 'scroller');
-}
-
-/** Upstream bug O2: read geometry only once the scroller's sheet has applied. */
-async function expectScrollerSheetApplied(
-  page: Page,
-  scroller: Locator,
-): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['scroller']), {
-      message: 'the scroller stylesheet is loaded',
-    })
-    .toBe(true);
-  await expect(scroller).toHaveCSS('display', 'flex');
-}
 
 async function scrollLeft(scroller: Locator): Promise<number> {
   return scroller.evaluate((element) => element.scrollLeft);
@@ -76,20 +57,12 @@ async function tabAndScroll(page: Page, scroller: Locator): Promise<number> {
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} scroller route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}scroller`);
-
-      await expect(page.locator('#featured-scroller')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'scroller',
+      prefix,
+      liveHost: '#featured-scroller',
+      leaveLink: 'Leave for a page without scrollers',
+      styled: { property: 'display', value: 'flex' },
     });
 
     test('lays out the scroller as one scrolling row after hydration', async ({
@@ -100,7 +73,8 @@ for (const { kind, prefix } of routeKinds) {
 
       const scroller = page.locator('#featured-scroller');
 
-      await expectScrollerSheetApplied(page, scroller);
+      await expectItemSheetsApplied(page, ['scroller']);
+      await expect(scroller).toHaveCSS('display', 'flex');
       await expectOneOverflowingRow(scroller);
       await expect(scroller).toHaveAttribute('role', 'region');
       await expect(scroller).toHaveAttribute('tabindex', '0');
@@ -116,11 +90,7 @@ for (const { kind, prefix } of routeKinds) {
       const scroller = page.locator('#featured-scroller');
 
       await scroller.waitFor({ state: 'attached' });
-      await expect
-        .poll(() => itemSheetsLoaded(page, ['scroller']), {
-          message: 'the scroller stylesheet is loaded',
-        })
-        .toBe(true);
+      await expectItemSheetsApplied(page, ['scroller']);
       await expect(page.locator('[jsaction]').first()).toBeAttached();
 
       const scrolled = await tabAndScroll(page, scroller);
@@ -147,7 +117,7 @@ for (const { kind, prefix } of routeKinds) {
 
       const never = page.locator('#never-scroller');
 
-      expect(await scrollerLinks(page)).toEqual(['scroller']);
+      expect(await itemLinks(page, 'scroller')).toEqual(['scroller']);
       await expect(never).toHaveCSS('display', 'flex');
       await expectOneOverflowingRow(never);
 
@@ -178,53 +148,11 @@ for (const { kind, prefix } of routeKinds) {
       await expect(scroller).toBeVisible();
       await expect(scroller).toHaveCSS('display', 'flex');
 
-      const frames = await display();
-      const unstyled = frames.filter((value) => value !== 'flex');
-
-      expect(
-        frames.length,
-        'the client-only scroller was sampled',
-      ).toBeGreaterThan(0);
-
-      if (isProduction) {
-        test.info().annotations.push({
-          type: 'a4-frames',
-          description: `${browserName}, production, ${kind}: ${String(unstyled.length)} unstyled client-only scroller frames of ${String(frames.length)}`,
-        });
-
-        return;
-      }
-
-      expect(
-        unstyled,
-        'no frame shows the client-only scroller without Yeti',
-      ).toEqual([]);
-    });
-
-    test('removes the scroller link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}scroller`);
-      await waitForHydration(page);
-
-      expect(await scrollerLinks(page)).toEqual(['scroller']);
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without scrollers' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-scroller]')).toHaveCount(
-        0,
-      );
-      await expect.poll(() => scrollerLinks(page)).toEqual([]);
-
-      await page.goBack();
-      await expect(page.locator('#featured-scroller')).toBeVisible();
-      await expect.poll(() => scrollerLinks(page)).toEqual(['scroller']);
-      await expectScrollerSheetApplied(
-        page,
-        page.locator('#featured-scroller'),
-      );
+      expectStyledFrames(await display(), {
+        styled: (value) => value === 'flex',
+        label: `${browserName}, ${kind}, client-only scroller`,
+        ...productionFramesRecordedAs(),
+      });
     });
 
     test('has no horizontal overflow at a 320 px viewport', async ({
@@ -236,7 +164,8 @@ for (const { kind, prefix } of routeKinds) {
 
       const scroller = page.locator('#featured-scroller');
 
-      await expectScrollerSheetApplied(page, scroller);
+      await expectItemSheetsApplied(page, ['scroller']);
+      await expect(scroller).toHaveCSS('display', 'flex');
       await expectOneOverflowingRow(scroller);
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
@@ -266,7 +195,7 @@ for (const { kind, prefix } of routeKinds) {
         );
         await expect(scroller).toHaveAttribute('data-snap', '');
         await expect(scroller).toHaveAttribute('data-width', 'sm');
-        expect(await scrollerLinks(page)).toEqual(['scroller']);
+        expect(await itemLinks(page, 'scroller')).toEqual(['scroller']);
       });
 
       test('focuses the scroller on Tab and scrolls it with ArrowRight, its items on one row', async ({
@@ -276,18 +205,10 @@ for (const { kind, prefix } of routeKinds) {
 
         const scroller = page.locator('#featured-scroller');
 
-        await expectScrollerSheetApplied(page, scroller);
+        await expectItemSheetsApplied(page, ['scroller']);
+        await expect(scroller).toHaveCSS('display', 'flex');
         await expectOneOverflowingRow(scroller);
         expect(await tabAndScroll(page, scroller)).toBeGreaterThan(0);
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}scroller`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

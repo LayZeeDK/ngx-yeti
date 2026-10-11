@@ -1,14 +1,13 @@
-import { type Locator, type Page } from '@playwright/test';
-import { expect, isProduction, routeKinds, test } from './support/fixtures';
-import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+import { expectItemSheetsApplied, rect } from '@ngx-yeti/testing/playwright';
+import { type Locator } from '@playwright/test';
+import { expect, routeKinds, test } from './support/fixtures';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
+  productionFramesRecordedAs,
   recordFrames,
 } from './support/style-probe';
 
@@ -57,16 +56,6 @@ async function layout(list: Locator): Promise<Layout> {
   });
 }
 
-/** Upstream bug O2: read geometry only once the timeline's sheet has applied. */
-async function expectTimelineStyled(page: Page, list: Locator): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['timeline']), {
-      message: 'the timeline stylesheet is loaded',
-    })
-    .toBe(true);
-  await expect(list).toHaveCSS('display', 'flex');
-}
-
 /** Every entry starts at the same edge, under a drawn rail. */
 async function expectSingleSided(list: Locator): Promise<void> {
   const { entries, rail } = await layout(list);
@@ -76,29 +65,16 @@ async function expectSingleSided(list: Locator): Promise<void> {
   expect(new Set(entries.map(({ left }) => left)).size).toBe(1);
 }
 
-/** The timeline links, in document order; later items may add more. */
-async function timelineLinks(page: Page): Promise<readonly string[]> {
-  return (await itemLinks(page)).filter((item) => item === 'timeline');
-}
-
 const lists = ['#alternating', '#single', '#never-timeline'] as const;
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} timeline route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}timeline`);
-
-      await expect(page.locator('#alternating')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'timeline',
+      prefix,
+      liveHost: '#alternating',
+      leaveLink: 'Leave for a page without timelines',
+      styled: { property: 'display', value: 'flex' },
     });
 
     test('alternates the wide example around a centred rail', async ({
@@ -109,11 +85,10 @@ for (const { kind, prefix } of routeKinds) {
 
       const list = page.locator('#alternating');
 
-      await expectTimelineStyled(page, list);
+      await expectItemSheetsApplied(page, ['timeline']);
+      await expect(list).toHaveCSS('display', 'flex');
 
-      const width = await list.evaluate(
-        (element) => element.getBoundingClientRect().width,
-      );
+      const { width } = await rect(list);
       const { entries, rail } = await layout(list);
       const [first, second] = entries;
 
@@ -131,7 +106,8 @@ for (const { kind, prefix } of routeKinds) {
 
       const list = page.locator('#alternating');
 
-      await expectTimelineStyled(page, list);
+      await expectItemSheetsApplied(page, ['timeline']);
+      await expect(list).toHaveCSS('display', 'flex');
       await expectSingleSided(list);
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
@@ -154,10 +130,11 @@ for (const { kind, prefix } of routeKinds) {
 
       await expect(list).toHaveAttribute('data-ngx-yeti-item-timeline', '');
       expect(
-        await timelineLinks(page),
+        await itemLinks(page, 'timeline'),
         'the hydrate never host keeps the timeline link',
       ).toEqual(['timeline']);
-      await expectTimelineStyled(page, list);
+      await expectItemSheetsApplied(page, ['timeline']);
+      await expect(list).toHaveCSS('display', 'flex');
       await expectSingleSided(list);
     });
 
@@ -180,51 +157,15 @@ for (const { kind, prefix } of routeKinds) {
       const list = page.locator('#client-timeline');
 
       await expect(list).toBeVisible();
-      await expectTimelineStyled(page, list);
+      await expectItemSheetsApplied(page, ['timeline']);
+      await expect(list).toHaveCSS('display', 'flex');
       await expectSingleSided(list);
 
-      const frames = await display();
-      const unstyled = frames.filter((value) => value !== 'flex');
-
-      expect(
-        frames.length,
-        'the client-only timeline was sampled',
-      ).toBeGreaterThan(0);
-
-      if (isProduction) {
-        test.info().annotations.push({
-          type: 'a4-frames',
-          description: `${browserName}, production, ${kind}: ${String(unstyled.length)} unstyled frames of ${String(frames.length)}`,
-        });
-      } else {
-        expect(
-          unstyled,
-          'no frame shows the client-only timeline without Yeti',
-        ).toEqual([]);
-      }
-    });
-
-    test('removes the timeline link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}timeline`);
-      await waitForHydration(page);
-
-      expect(await itemLinks(page)).toContain('timeline');
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without timelines' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-timeline]')).toHaveCount(
-        0,
-      );
-      await expect.poll(() => timelineLinks(page)).toEqual([]);
-
-      await page.goBack();
-      await expect(page.locator('#alternating')).toBeVisible();
-      await expect.poll(() => timelineLinks(page)).toEqual(['timeline']);
-      await expectTimelineStyled(page, page.locator('#alternating'));
+      expectStyledFrames(await display(), {
+        styled: (value) => value === 'flex',
+        label: `${browserName}, ${kind}, client-only timeline`,
+        ...productionFramesRecordedAs(),
+      });
     });
 
     test('lands the entries, dots, and rails with JavaScript off where they land with it on', async ({
@@ -233,7 +174,8 @@ for (const { kind, prefix } of routeKinds) {
     }) => {
       await page.goto(`${prefix}timeline`);
       await waitForHydration(page);
-      await expectTimelineStyled(page, page.locator('#alternating'));
+      await expectItemSheetsApplied(page, ['timeline']);
+      await expect(page.locator('#alternating')).toHaveCSS('display', 'flex');
 
       const withScript = await Promise.all(
         lists.map((selector) => layout(page.locator(selector))),
@@ -247,9 +189,10 @@ for (const { kind, prefix } of routeKinds) {
         const scriptless = await context.newPage();
 
         await scriptless.goto(page.url());
-        await expectTimelineStyled(
-          scriptless,
-          scriptless.locator('#alternating'),
+        await expectItemSheetsApplied(scriptless, ['timeline']);
+        await expect(scriptless.locator('#alternating')).toHaveCSS(
+          'display',
+          'flex',
         );
 
         const withoutScript = await Promise.all(
@@ -289,7 +232,7 @@ for (const { kind, prefix } of routeKinds) {
         await expect(page.locator('#single')).not.toHaveAttribute(
           'data-alternate',
         );
-        expect(await timelineLinks(page)).toEqual(['timeline']);
+        expect(await itemLinks(page, 'timeline')).toEqual(['timeline']);
       });
 
       test('has no horizontal overflow at a 320 px viewport and is single-sided there', async ({
@@ -300,20 +243,12 @@ for (const { kind, prefix } of routeKinds) {
 
         const list = page.locator('#alternating');
 
-        await expectTimelineStyled(page, list);
+        await expectItemSheetsApplied(page, ['timeline']);
+        await expect(list).toHaveCSS('display', 'flex');
         await expectSingleSided(list);
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth),
         ).toBe(320);
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}timeline`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

@@ -1,19 +1,20 @@
+import {
+  expectItemSheetsApplied,
+  horizontalOverflow,
+  rect,
+} from '@ngx-yeti/testing/playwright';
 import { type Locator, type Page } from '@playwright/test';
 import {
   expect,
   expectOnlyClientPreloads,
-  isProduction,
   routeKinds,
   test,
 } from './support/fixtures';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
-import {
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
   recordFrames,
   recordHostAttributes,
   recordStyleMutations,
@@ -22,26 +23,12 @@ import {
 /** The largest box Yeti's recipe may leave (visually-hidden.md:275). */
 const largestBox = 1.5;
 
-async function box(
-  locator: Locator,
-): Promise<{ width: number; height: number }> {
-  return locator.evaluate((element) => {
-    const { width, height } = element.getBoundingClientRect();
-
-    return { width, height };
-  });
-}
-
-/** Upstream bug O2: read geometry only once the item sheet has applied. */
+/** Expects the span out of the flow, in a box of at most `largestBox` px. */
 async function expectHidden(page: Page, span: Locator): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['visually-hidden']), {
-      message: 'the visually-hidden stylesheet is loaded',
-    })
-    .toBe(true);
+  await expectItemSheetsApplied(page, ['visually-hidden']);
   await expect(span).toHaveCSS('position', 'absolute');
 
-  const { width, height } = await box(span);
+  const { width, height } = await rect(span);
 
   expect(width).toBeLessThanOrEqual(largestBox);
   expect(height).toBeLessThanOrEqual(largestBox);
@@ -49,20 +36,12 @@ async function expectHidden(page: Page, span: Locator): Promise<void> {
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} visually-hidden route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}visually-hidden`);
-
-      await expect(page.locator('#read-more')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'visually-hidden',
+      prefix,
+      liveHost: '#hidden-words',
+      leaveLink: 'Leave for the replay page',
+      styled: { property: 'position', value: 'absolute' },
     });
 
     test('changes no attribute or style on the spans and adds or removes no item link at hydration', async ({
@@ -112,6 +91,7 @@ for (const { kind, prefix } of routeKinds) {
     });
 
     test('never shows a preloaded client-only span larger than its box', async ({
+      browserName,
       page,
     }) => {
       await page.goto(`${prefix}visually-hidden`);
@@ -130,14 +110,17 @@ for (const { kind, prefix } of routeKinds) {
 
       const span = page.locator('#client-words');
 
+      await expect(span).toBeAttached();
       await expectHidden(page, span);
 
-      for (const frames of [await widths(), await heights()]) {
-        expect(frames.length, 'the span was sampled').toBeGreaterThan(0);
-        expect(
-          frames.filter((value) => !(parseFloat(value) <= largestBox)),
-          'no frame after insertion shows a larger box',
-        ).toEqual([]);
+      for (const [side, frames] of [
+        ['width', await widths()],
+        ['height', await heights()],
+      ] as const) {
+        expectStyledFrames(frames, {
+          styled: (value) => parseFloat(value) <= largestBox,
+          label: `${browserName}, ${kind}, client-only span ${side}`,
+        });
       }
     });
 
@@ -150,35 +133,9 @@ for (const { kind, prefix } of routeKinds) {
       await expectHidden(page, page.locator('#long-words'));
 
       expect(
-        await page.evaluate(() => {
-          const { scrollWidth, clientWidth } = document.documentElement;
-
-          return scrollWidth - clientWidth;
-        }),
+        await horizontalOverflow(page),
         'horizontal overflow in px',
       ).toBeLessThanOrEqual(0);
-    });
-
-    test('removes the link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}visually-hidden`);
-      await waitForHydration(page);
-
-      expect(await itemLinks(page)).toContain('visually-hidden');
-
-      await page
-        .getByRole('link', { name: 'Leave for the replay page' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(
-        page.locator('[data-ngx-yeti-item-visually-hidden]'),
-      ).toHaveCount(0);
-      await expect.poll(() => itemLinks(page)).not.toContain('visually-hidden');
-
-      await page.goBack();
-      await expect(page.locator('#read-more')).toBeVisible();
-      await expect.poll(() => itemLinks(page)).toContain('visually-hidden');
     });
 
     test.describe('with JavaScript off', () => {
@@ -202,15 +159,6 @@ for (const { kind, prefix } of routeKinds) {
         );
         await expectHidden(page, page.locator('#hidden-words'));
         await expectHidden(page, page.locator('#never-words'));
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}visually-hidden`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

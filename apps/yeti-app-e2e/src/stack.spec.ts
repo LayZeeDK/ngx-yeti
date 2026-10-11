@@ -1,48 +1,20 @@
+import {
+  expectItemSheetsApplied,
+  rect,
+  usedLength,
+} from '@ngx-yeti/testing/playwright';
 import { type Locator, type Page } from '@playwright/test';
 import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import { removeDehydratedHosts } from './support/hosts';
-import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
   recordFrames,
   recordPaintedAttributes,
 } from './support/style-probe';
-
-/** The used length of a public token, read from a probe in the page. */
-async function token(page: Page, name: string): Promise<number> {
-  return page.locator('main').evaluate((main, property) => {
-    const probe = document.createElement('div');
-    probe.style.blockSize = `var(${property})`;
-    main.append(probe);
-    const { height } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return height;
-  }, name);
-}
-
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly width: number;
-  readonly height: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, left, width, height } =
-      element.getBoundingClientRect();
-
-    return { top, bottom, left, width, height };
-  });
-}
 
 /** The rule's line above a child: Yeti draws it with `::before`. */
 async function ruleLine(
@@ -57,19 +29,6 @@ async function ruleLine(
       width: parseFloat(style.borderTopWidth),
     };
   });
-}
-
-/** Upstream bug O2: read geometry only once the stack's sheet has applied. */
-async function expectStackSheetApplied(
-  page: Page,
-  stack: Locator,
-): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['stack']), {
-      message: 'the stack stylesheet is loaded',
-    })
-    .toBe(true);
-  await expect(stack).toHaveCSS('display', 'flex');
 }
 
 /** The stack and center links, in document order; later items may add more. */
@@ -93,20 +52,17 @@ async function centerColumn(
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} stack route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}stack`);
-
-      await expect(page.locator('#live-stack')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'stack',
+      prefix,
+      liveHost: '#live-stack',
+      leaveLink: 'Leave for a page without stacks',
+      styled: { property: 'display', value: 'flex' },
+      afterReturn: async (page) => {
+        await expect
+          .poll(() => stackAndCenterLinks(page))
+          .toEqual(['stack', 'center']);
+      },
     });
 
     test('paints no frame with align on the stack written with a static align', async ({
@@ -164,12 +120,16 @@ for (const { kind, prefix } of routeKinds) {
       expect(
         (await rect(stack.locator('p').nth(1))).top -
           (await rect(stack.locator('p').nth(0))).bottom,
-      ).toBeCloseTo(await token(page, '--yeti-space-lg'), 1);
+      ).toBeCloseTo(
+        await usedLength(page.locator('main'), 'var(--yeti-space-lg)', 'block'),
+        1,
+      );
     });
 
     // The server hosts keep the stack link in <head>, so the client-only
     // stack reuses it.
     test('renders a client-only stack with 0 unstyled frames while the server hosts hold the stack link', async ({
+      browserName,
       page,
     }) => {
       const display = await recordFrames(page, '#client-stack', 'display');
@@ -187,16 +147,10 @@ for (const { kind, prefix } of routeKinds) {
       await expect(stack).toBeVisible();
       await expect(stack).toHaveCSS('display', 'flex');
 
-      const frames = await display();
-
-      expect(
-        frames.length,
-        'the client-only stack was sampled',
-      ).toBeGreaterThan(0);
-      expect(
-        frames.filter((value) => value !== 'flex'),
-        'no frame shows the client-only stack without Yeti',
-      ).toEqual([]);
+      expectStyledFrames(await display(), {
+        styled: (value) => value === 'flex',
+        label: `${browserName}, ${kind}, client-only stack`,
+      });
     });
 
     // The tie (stack.md:321): the center link is in place, and the stack's
@@ -206,7 +160,11 @@ for (const { kind, prefix } of routeKinds) {
     }) => {
       await page.goto(`${prefix}stack`);
       await waitForHydration(page);
-      await expectStackSheetApplied(page, page.locator('#reference-stack'));
+      await expectItemSheetsApplied(page, ['stack']);
+      await expect(page.locator('#reference-stack')).toHaveCSS(
+        'display',
+        'flex',
+      );
 
       const reference = await centerColumn(page.locator('#reference-center'));
 
@@ -227,7 +185,8 @@ for (const { kind, prefix } of routeKinds) {
 
       const stack = page.locator('#client-stack');
 
-      await expectStackSheetApplied(page, stack);
+      await expectItemSheetsApplied(page, ['stack']);
+      await expect(stack).toHaveCSS('display', 'flex');
       expect(
         await stackAndCenterLinks(page),
         'the stack link is inserted before the center link',
@@ -237,29 +196,6 @@ for (const { kind, prefix } of routeKinds) {
 
       expect(inner.width).toBeCloseTo(reference.width, 1);
       expect(inner.left).toBeCloseTo(reference.left, 1);
-    });
-
-    test('removes the stack link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}stack`);
-      await waitForHydration(page);
-
-      expect(await itemLinks(page)).toContain('stack');
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without stacks' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-stack]')).toHaveCount(0);
-      await expect.poll(() => stackAndCenterLinks(page)).toEqual([]);
-
-      await page.goBack();
-      await expect(page.locator('#live-stack')).toBeVisible();
-      await expect
-        .poll(() => stackAndCenterLinks(page))
-        .toEqual(['stack', 'center']);
-      await expectStackSheetApplied(page, page.locator('#live-stack'));
     });
 
     test.describe('with JavaScript off', () => {
@@ -303,11 +239,12 @@ for (const { kind, prefix } of routeKinds) {
 
         const stack = page.locator('#live-stack');
 
-        await expectStackSheetApplied(page, stack);
+        await expectItemSheetsApplied(page, ['stack']);
+        await expect(stack).toHaveCSS('display', 'flex');
 
         const [sm, xl, border] = await Promise.all(
           ['--yeti-space-sm', '--yeti-space-xl', '--yeti-border-width'].map(
-            (name) => token(page, name),
+            (name) => usedLength(page.locator('main'), `var(${name})`, 'block'),
           ),
         );
         const [box, first, second, spaced, split] = await Promise.all(
@@ -361,9 +298,14 @@ for (const { kind, prefix } of routeKinds) {
         const stack = page.locator('#live-stack');
         const pinned = page.locator('#pinned');
 
-        await expectStackSheetApplied(page, stack);
+        await expectItemSheetsApplied(page, ['stack']);
+        await expect(stack).toHaveCSS('display', 'flex');
 
-        const offset = await token(page, '--yeti-sticky-offset');
+        const offset = await usedLength(
+          page.locator('main'),
+          'var(--yeti-sticky-offset)',
+          'block',
+        );
         const before = await rect(stack);
 
         expect(
@@ -383,15 +325,6 @@ for (const { kind, prefix } of routeKinds) {
         await expect
           .poll(async () => (await rect(pinned)).top)
           .toBeCloseTo(offset, 0);
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}stack`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

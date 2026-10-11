@@ -1,44 +1,21 @@
-import { type Locator, type Page } from '@playwright/test';
-import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+  childRects,
+  expectItemSheetsApplied,
+  rect,
+  usedLength,
+  type Box,
+} from '@ngx-yeti/testing/playwright';
+import { type Page } from '@playwright/test';
+import { expect, isProduction, routeKinds, test } from './support/fixtures';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
   recordFrames,
   recordPaintedAttributes,
 } from './support/style-probe';
-
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly right: number;
-  readonly width: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, left, right, width } = element.getBoundingClientRect();
-
-    return { top, bottom, left, right, width };
-  });
-}
-
-/** The boxes of an element's children, in DOM order. */
-async function childRects(parent: Locator): Promise<Box[]> {
-  return parent.evaluate((element) =>
-    [...element.children].map((child) => {
-      const { top, bottom, left, right, width } = child.getBoundingClientRect();
-
-      return { top, bottom, left, right, width };
-    }),
-  );
-}
 
 /** How many cells share the first row. */
 function perRow(boxes: readonly Box[]): number {
@@ -46,37 +23,6 @@ function perRow(boxes: readonly Box[]): number {
   const first = Math.min(...tops);
 
   return tops.filter((top) => top === first).length;
-}
-
-/** The used inline length of a public token, read from a probe in the page. */
-async function token(page: Page, name: string): Promise<number> {
-  return page.locator('main').evaluate((main, property) => {
-    const probe = document.createElement('div');
-    probe.style.inlineSize = `var(${property})`;
-    main.append(probe);
-    const { width } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return width;
-  }, name);
-}
-
-/** The grid links in `<head>`; later items may add others. */
-async function gridLinks(page: Page): Promise<readonly string[]> {
-  return (await itemLinks(page)).filter((item) => item === 'grid');
-}
-
-/** Upstream bug O2: read geometry only once the grid's sheet has applied. */
-async function expectGridSheetApplied(
-  page: Page,
-  grid: Locator,
-): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['grid']), {
-      message: 'the grid stylesheet is loaded',
-    })
-    .toBe(true);
-  await expect(grid).toHaveCSS('display', 'grid');
 }
 
 /**
@@ -89,7 +35,8 @@ async function expectGridsLaidOut(page: Page): Promise<number> {
   const folded = page.locator('#folded-grid');
   const tracks = page.locator('#tracks-grid');
 
-  await expectGridSheetApplied(page, fitted);
+  await expectItemSheetsApplied(page, ['grid']);
+  await expect(fitted).toHaveCSS('display', 'grid');
 
   const fittedCells = await childRects(fitted);
   const [one, two] = fittedCells;
@@ -99,16 +46,14 @@ async function expectGridsLaidOut(page: Page): Promise<number> {
   }
 
   const fittedGap = two.left - one.right;
-  const min = await token(page, '--yeti-width-2xs');
+  const min = await usedLength(page.locator('main'), 'var(--yeti-width-2xs)');
   const fittedWidth = (await rect(fitted)).width;
 
   expect(perRow(fittedCells)).toBe(
     Math.min(3, Math.floor((fittedWidth + fittedGap) / (min + fittedGap))),
   );
 
-  const rem = await page.evaluate(() =>
-    parseFloat(getComputedStyle(document.documentElement).fontSize),
-  );
+  const rem = await usedLength(page.locator('main'), '1rem');
   const foldedWidth = (await rect(folded)).width;
   let folds = 1;
 
@@ -126,7 +71,7 @@ async function expectGridsLaidOut(page: Page): Promise<number> {
     32 * rem,
   );
 
-  const gap = await token(page, '--yeti-space-sm');
+  const gap = await usedLength(page.locator('main'), 'var(--yeti-space-sm)');
   const track = (box.width - 11 * gap) / 12;
   const [first, second, steps] = [
     await rect(page.locator('#first-work')),
@@ -146,20 +91,12 @@ async function expectGridsLaidOut(page: Page): Promise<number> {
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} grid route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}grid`);
-
-      await expect(page.locator('#fitted-grid')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'grid',
+      prefix,
+      liveHost: '#fitted-grid',
+      leaveLink: 'Leave for a page without grids',
+      styled: { property: 'display', value: 'grid' },
     });
 
     test('paints no frame with start on the ol cell written with a static start', async ({
@@ -211,7 +148,7 @@ for (const { kind, prefix } of routeKinds) {
 
       await expect(grid).toHaveAttribute('data-ngx-yeti-item-grid', '');
       expect(
-        await gridLinks(page),
+        await itemLinks(page, 'grid'),
         'the hydrate never host keeps the grid link',
       ).toEqual(['grid']);
       await expect(grid).toHaveCSS('display', 'grid');
@@ -221,6 +158,7 @@ for (const { kind, prefix } of routeKinds) {
     // The server hosts keep the grid link in <head>, so the client-only grid
     // reuses it.
     test('renders a client-only grid with 0 unstyled frames while the server hosts hold the grid link', async ({
+      browserName,
       page,
     }) => {
       const display = await recordFrames(page, '#client-grid', 'display');
@@ -238,36 +176,10 @@ for (const { kind, prefix } of routeKinds) {
       await expect(grid).toBeVisible();
       await expect(grid).toHaveCSS('display', 'grid');
 
-      const frames = await display();
-
-      expect(frames.length, 'the client-only grid was sampled').toBeGreaterThan(
-        0,
-      );
-      expect(
-        frames.filter((value) => value !== 'grid'),
-        'no frame shows the client-only grid without Yeti',
-      ).toEqual([]);
-    });
-
-    test('removes the grid link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}grid`);
-      await waitForHydration(page);
-
-      expect(await gridLinks(page)).toEqual(['grid']);
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without grids' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-grid]')).toHaveCount(0);
-      await expect.poll(() => gridLinks(page)).toEqual([]);
-
-      await page.goBack();
-      await expect(page.locator('#fitted-grid')).toBeVisible();
-      await expect.poll(() => gridLinks(page)).toEqual(['grid']);
-      await expectGridSheetApplied(page, page.locator('#fitted-grid'));
+      expectStyledFrames(await display(), {
+        styled: (value) => value === 'grid',
+        label: `${browserName}, ${kind}, client-only grid`,
+      });
     });
 
     test('lays out the fitted, folded, and tracks grids after hydration', async ({
@@ -306,7 +218,7 @@ for (const { kind, prefix } of routeKinds) {
           '2',
         );
         await expect(page.locator('#steps-cell')).not.toHaveAttribute('start');
-        expect(await gridLinks(page)).toEqual(['grid']);
+        expect(await itemLinks(page, 'grid')).toEqual(['grid']);
       });
 
       test('lays out the fitted, folded, and tracks grids', async ({
@@ -315,15 +227,6 @@ for (const { kind, prefix } of routeKinds) {
         await page.goto(`${prefix}grid`);
 
         expect(await expectGridsLaidOut(page)).toBeGreaterThan(1);
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}grid`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

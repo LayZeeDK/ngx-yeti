@@ -1,52 +1,18 @@
 import { composite, contrastRatio } from '@ngx-yeti/testing';
-import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
+import {
+  expectItemSheetsApplied,
+  horizontalOverflow,
+  rect,
+  resize,
+} from '@ngx-yeti/testing/playwright';
+import { expect, test, type Locator } from '@playwright/test';
 import { openStory } from './open-story';
-
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly right: number;
-  readonly width: number;
-  readonly height: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, left, right, width, height } =
-      element.getBoundingClientRect();
-
-    return { top, bottom, left, right, width, height };
-  });
-}
-
-/** Upstream bug O2: read geometry only once the layer's sheet has applied. */
-async function expectLayerStyled(page: Page, layer: Locator): Promise<void> {
-  await expectItemSheetsApplied(page, ['layer']);
-  await expect(layer).toHaveCSS('display', 'grid');
-}
-
-async function setWidth(frame: Locator, width: number): Promise<void> {
-  await frame.evaluate((element, inlineSize) => {
-    element.style.inlineSize = `${String(inlineSize)}px`;
-  }, width);
-}
 
 /** Every child of the layer has zero margins (Yeti's `expectNoChildMargins`). */
 async function childMargins(layer: Locator): Promise<readonly string[]> {
   return layer.evaluate((element) =>
     [...element.children].map((child) => getComputedStyle(child).margin),
   );
-}
-
-/** How far the page's content is wider than the viewport, in px. */
-async function horizontalOverflow(page: Page): Promise<number> {
-  return page.evaluate(() => {
-    const { scrollWidth, clientWidth } = document.documentElement;
-
-    return scrollWidth - clientWidth;
-  });
 }
 
 const widths = [600, 400] as const;
@@ -59,8 +25,9 @@ test.describe('layer--default', () => {
       const root = await openStory(page, 'layer--default');
       const layer = root.getByTestId('layer');
 
-      await setWidth(root.getByTestId('frame'), width);
-      await expectLayerStyled(page, layer);
+      await resize(root.getByTestId('frame'), width);
+      await expectItemSheetsApplied(page, ['layer']);
+      await expect(layer).toHaveCSS('display', 'grid');
 
       const [box, picture, caption] = await Promise.all([
         rect(layer),
@@ -90,7 +57,8 @@ test.describe('layer--default', () => {
       const root = await openStory(page, id);
       const caption = root.getByTestId('caption');
 
-      await expectLayerStyled(page, root.getByTestId('layer'));
+      await expectItemSheetsApplied(page, ['layer']);
+      await expect(root.getByTestId('layer')).toHaveCSS('display', 'grid');
 
       const { color, backgroundColor } = await caption.evaluate((element) => {
         const style = getComputedStyle(element);
@@ -123,9 +91,10 @@ test.describe('layer--settings', () => {
       });
       const layer = root.getByTestId('layer');
 
-      await setWidth(root.getByTestId('frame'), width);
+      await resize(root.getByTestId('frame'), width);
       await expect(layer).toHaveAttribute('data-align', 'end');
-      await expectLayerStyled(page, layer);
+      await expectItemSheetsApplied(page, ['layer']);
+      await expect(layer).toHaveCSS('display', 'grid');
 
       const [box, tall, short] = await Promise.all([
         rect(layer),
@@ -147,9 +116,10 @@ test.describe('layer--settings', () => {
       });
       const layer = root.getByTestId('layer');
 
-      await setWidth(root.getByTestId('frame'), width);
+      await resize(root.getByTestId('frame'), width);
       await expect(layer).toHaveAttribute('data-align', 'baseline');
-      await expectLayerStyled(page, layer);
+      await expectItemSheetsApplied(page, ['layer']);
+      await expect(layer).toHaveCSS('display', 'grid');
 
       const [box, short] = await Promise.all([
         rect(layer),
@@ -168,8 +138,9 @@ test.describe('layer--settings', () => {
       });
       const layer = root.getByTestId('layer');
 
-      await setWidth(root.getByTestId('frame'), width);
-      await expectLayerStyled(page, layer);
+      await resize(root.getByTestId('frame'), width);
+      await expectItemSheetsApplied(page, ['layer']);
+      await expect(layer).toHaveCSS('display', 'grid');
 
       const [box, placed] = await Promise.all([
         rect(layer),
@@ -191,8 +162,9 @@ test.describe('layer--badge', () => {
       const root = await openStory(page, 'layer--badge');
       const layer = root.getByTestId('light');
 
-      await setWidth(root.getByTestId('light-frame'), width);
-      await expectLayerStyled(page, layer);
+      await resize(root.getByTestId('light-frame'), width);
+      await expectItemSheetsApplied(page, ['layer']);
+      await expect(layer).toHaveCSS('display', 'grid');
 
       const [box, badge] = await Promise.all([
         rect(layer),
@@ -213,7 +185,11 @@ test.describe('layer at a 320 px viewport', () => {
       await page.setViewportSize({ width: 320, height: 640 });
       const root = await openStory(page, id);
 
-      await expectLayerStyled(page, root.locator('[yetilayer]').first());
+      await expectItemSheetsApplied(page, ['layer']);
+      await expect(root.locator('[yetilayer]').first()).toHaveCSS(
+        'display',
+        'grid',
+      );
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
     });
   }

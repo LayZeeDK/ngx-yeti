@@ -1,107 +1,60 @@
+import {
+  childRects,
+  expectItemSheetsApplied,
+  horizontalOverflow,
+  rect,
+  resize,
+  usedLength,
+  type Box,
+} from '@ngx-yeti/testing/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
 import { skipUnlessTabReachesLinks } from './tab-to-links';
 
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly right: number;
-  readonly width: number;
-  readonly height: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, left, right, width, height } =
-      element.getBoundingClientRect();
-
-    return { top, bottom, left, right, width, height };
-  });
-}
-
 /**
  * The container width at which the pair switches, twice the sidebar's width
- * plus the gap, read from a probe so no assertion depends on a token's
+ * plus the gap, read with the tokens so no assertion depends on a token's
  * default (sidebar.md, Testing Decisions).
  */
 async function switchWidth(frame: Locator): Promise<number> {
-  return frame.evaluate((element) => {
-    const probe = document.createElement('div');
-    probe.style.inlineSize =
-      'calc(2 * (var(--yeti-width-xs) + var(--yeti-space-lg)))';
-    element.append(probe);
-    const { width } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return width;
-  });
+  return usedLength(
+    frame,
+    'calc(2 * (var(--yeti-width-xs) + var(--yeti-space-lg)))',
+  );
 }
 
 type Arrangement = 'side by side' | 'stacked' | 'neither';
 
 /**
- * Sizes the container to `width` px and reads how the sidebar's two
- * children sit: side by side means equal tops; stacked means the second
- * starts below the first and both are as wide as the sidebar.
+ * Sizes the container to `width` px (`null` keeps it) and reads how the
+ * sidebar's two children sit: side by side means equal tops; stacked means
+ * the second starts below the first and both are as wide as the sidebar.
  */
 async function arrangement(
   frame: Locator,
   width: number | null,
 ): Promise<Arrangement> {
-  return frame.evaluate((element, inlineSize): Arrangement => {
-    if (!(element instanceof HTMLElement)) {
-      throw new Error('The frame is not an HTML element');
-    }
+  if (width !== null) {
+    await resize(frame, width);
+  }
 
-    if (inlineSize !== null) {
-      element.style.inlineSize = `${String(inlineSize)}px`;
-    }
+  const sidebar = frame.locator('[yetisidebar]').first();
+  const box = await rect(sidebar);
+  const [a, b] = await childRects(sidebar);
 
-    const sidebar = element.querySelector('[yetisidebar]');
-    const [first, second] = sidebar === null ? [] : [...sidebar.children];
+  if (a === undefined || b === undefined) {
+    throw new Error('The story has no sidebar with two children');
+  }
 
-    if (sidebar === null || first === undefined || second === undefined) {
-      throw new Error('The story has no sidebar with two children');
-    }
+  if (Math.abs(a.top - b.top) <= 1) {
+    return 'side by side';
+  }
 
-    const [a, b, box] = [first, second, sidebar].map((node) =>
-      node.getBoundingClientRect(),
-    );
-
-    if (a === undefined || b === undefined || box === undefined) {
-      throw new Error('No box');
-    }
-
-    if (Math.abs(a.top - b.top) <= 1) {
-      return 'side by side';
-    }
-
-    return Math.max(a.top, b.top) >= Math.min(a.bottom, b.bottom) - 0.5 &&
-      Math.abs(a.width - box.width) <= 1 &&
-      Math.abs(b.width - box.width) <= 1
-      ? 'stacked'
-      : 'neither';
-  }, width);
-}
-
-/** Upstream bug O2: read geometry only once the item sheets have applied. */
-async function expectSidebarStyled(page: Page, root: Locator): Promise<void> {
-  await expectItemSheetsApplied(page, ['sidebar', 'box']);
-  await expect(root.locator('[yetisidebar]').first()).toHaveCSS(
-    'flex-wrap',
-    'wrap',
-  );
-}
-
-/** How far the page's content is wider than the viewport, in px. */
-async function horizontalOverflow(page: Page): Promise<number> {
-  return page.evaluate(() => {
-    const { scrollWidth, clientWidth } = document.documentElement;
-
-    return scrollWidth - clientWidth;
-  });
+  return Math.max(a.top, b.top) >= Math.min(a.bottom, b.bottom) - 0.5 &&
+    Math.abs(a.width - box.width) <= 1 &&
+    Math.abs(b.width - box.width) <= 1
+    ? 'stacked'
+    : 'neither';
 }
 
 test.describe('sidebar across the switching width', () => {
@@ -113,7 +66,12 @@ test.describe('sidebar across the switching width', () => {
       const root = await openStory(page, id);
       const frame = root.getByTestId('frame');
 
-      await expectSidebarStyled(page, root);
+      await expectItemSheetsApplied(page, ['sidebar', 'box']);
+
+      await expect(root.locator('[yetisidebar]').first()).toHaveCSS(
+        'flex-wrap',
+        'wrap',
+      );
 
       const stop = await switchWidth(frame);
 
@@ -132,7 +90,12 @@ test.describe('sidebar--default', () => {
     const root = await openStory(page, 'sidebar--default');
     const frame = root.getByTestId('frame');
 
-    await expectSidebarStyled(page, root);
+    await expectItemSheetsApplied(page, ['sidebar', 'box']);
+
+    await expect(root.locator('[yetisidebar]').first()).toHaveCSS(
+      'flex-wrap',
+      'wrap',
+    );
 
     // The story's frame scrolls its overflow so it can be resized by hand;
     // reflow is about the page, so let the overflow reach it.
@@ -151,7 +114,12 @@ test.describe('sidebar--default', () => {
     const root = await openStory(page, 'sidebar--default');
     const frame = root.getByTestId('frame');
 
-    await expectSidebarStyled(page, root);
+    await expectItemSheetsApplied(page, ['sidebar', 'box']);
+
+    await expect(root.locator('[yetisidebar]').first()).toHaveCSS(
+      'flex-wrap',
+      'wrap',
+    );
 
     const stop = await switchWidth(frame);
 
@@ -229,7 +197,12 @@ test.describe('sidebar--sticky stacked at 320 x 640', () => {
     const root = await openStory(page, 'sidebar--sticky');
     const nav = root.getByTestId('nav');
 
-    await expectSidebarStyled(page, root);
+    await expectItemSheetsApplied(page, ['sidebar', 'box']);
+
+    await expect(root.locator('[yetisidebar]').first()).toHaveCSS(
+      'flex-wrap',
+      'wrap',
+    );
     expect(await arrangement(root.getByTestId('frame'), null)).toBe('stacked');
     await expect(nav).toHaveAttribute('data-sticky', '');
 
@@ -258,8 +231,8 @@ test.describe('sidebar--sticky stacked at 320 x 640', () => {
     }
   });
 
-  // Recorded, not asserted (ticket 50 decision 47): the evidence for ledger
-  // row A11Y-22 with Yeti's default scroll padding.
+  // Recorded, not asserted: the walk with Yeti's default scroll padding is
+  // the evidence for ledger row A11Y-22, which the spec asks to write down.
   test('records the same walk with the default scroll padding', async ({
     browserName,
     page,
@@ -268,7 +241,12 @@ test.describe('sidebar--sticky stacked at 320 x 640', () => {
 
     const root = await openStory(page, 'sidebar--sticky');
 
-    await expectSidebarStyled(page, root);
+    await expectItemSheetsApplied(page, ['sidebar', 'box']);
+
+    await expect(root.locator('[yetisidebar]').first()).toHaveCSS(
+      'flex-wrap',
+      'wrap',
+    );
 
     const steps = await walkBack(page, root);
     const hidden = steps.filter((step) => !partlyVisible(step, 640));

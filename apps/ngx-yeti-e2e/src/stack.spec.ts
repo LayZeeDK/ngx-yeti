@@ -1,33 +1,14 @@
+import {
+  childRects,
+  expectItemSheetsApplied,
+  horizontalOverflow,
+  rect,
+  usedLength,
+  type Box,
+} from '@ngx-yeti/testing/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
 import { skipUnlessTabReachesLinks } from './tab-to-links';
-
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly width: number;
-  readonly height: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, width, height } = element.getBoundingClientRect();
-
-    return { top, bottom, width, height };
-  });
-}
-
-/** The boxes of an element's children, in DOM order. */
-async function childRects(parent: Locator): Promise<Box[]> {
-  return parent.evaluate((element) =>
-    [...element.children].map((child) => {
-      const { top, bottom, width, height } = child.getBoundingClientRect();
-
-      return { top, bottom, width, height };
-    }),
-  );
-}
 
 /** The box at `index`, which the story's markup is known to hold. */
 function boxAt(boxes: readonly Box[], index: number): Box {
@@ -38,22 +19,6 @@ function boxAt(boxes: readonly Box[], index: number): Box {
   }
 
   return box;
-}
-
-/**
- * The used length of a public token, read from a probe in the story, so no
- * assertion depends on a token's default (stack.md, Testing Decisions).
- */
-async function token(root: Locator, name: string): Promise<number> {
-  return root.evaluate((element, property) => {
-    const probe = document.createElement('div');
-    probe.style.blockSize = `var(${property})`;
-    element.append(probe);
-    const { height } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return height;
-  }, name);
 }
 
 /** The rule's line above each child: Yeti draws it with `::before`. */
@@ -73,21 +38,6 @@ async function ruleLines(
   );
 }
 
-/** Upstream bug O2: read geometry only once the stack's sheet has applied. */
-async function expectStackStyled(page: Page, stack: Locator): Promise<void> {
-  await expectItemSheetsApplied(page, ['stack']);
-  await expect(stack).toHaveCSS('display', 'flex');
-}
-
-/** How far the page's content is wider than the viewport, in px. */
-async function horizontalOverflow(page: Page): Promise<number> {
-  return page.evaluate(() => {
-    const { scrollWidth, clientWidth } = document.documentElement;
-
-    return scrollWidth - clientWidth;
-  });
-}
-
 async function scrollTo(page: Page, top: number): Promise<void> {
   await page.evaluate((y) => {
     window.scrollTo(0, y);
@@ -101,10 +51,11 @@ test.describe('stack--default', () => {
     const root = await openStory(page, 'stack--default');
     const stack = root.getByTestId('stack');
 
-    await expectStackStyled(page, stack);
+    await expectItemSheetsApplied(page, ['stack']);
+    await expect(stack).toHaveCSS('display', 'flex');
 
-    const lg = await token(root, '--yeti-space-lg');
-    const wide = await token(root, '--yeti-space-3xl');
+    const lg = await usedLength(root, 'var(--yeti-space-lg)', 'block');
+    const wide = await usedLength(root, 'var(--yeti-space-3xl)', 'block');
     const boxes = await childRects(stack);
     const gapBefore = (index: number): number =>
       boxAt(boxes, index).top - boxAt(boxes, index - 1).bottom;
@@ -123,7 +74,8 @@ test.describe('stack--default', () => {
     const root = await openStory(page, 'stack--default');
     const stack = root.getByTestId('stack');
 
-    await expectStackStyled(page, stack);
+    await expectItemSheetsApplied(page, ['stack']);
+    await expect(stack).toHaveCSS('display', 'flex');
 
     const box = await rect(stack);
     const boxes = await childRects(stack);
@@ -135,7 +87,7 @@ test.describe('stack--default', () => {
     );
     expect(split.bottom).toBeCloseTo(box.bottom, 1);
     expect(split.top - boxAt(boxes, 4).bottom).toBeGreaterThan(
-      await token(root, '--yeti-space-lg'),
+      await usedLength(root, 'var(--yeti-space-lg)', 'block'),
     );
   });
 
@@ -145,7 +97,8 @@ test.describe('stack--default', () => {
     await page.setViewportSize({ width: 320, height: 640 });
     const root = await openStory(page, 'stack--default');
 
-    await expectStackStyled(page, root.getByTestId('stack'));
+    await expectItemSheetsApplied(page, ['stack']);
+    await expect(root.getByTestId('stack')).toHaveCSS('display', 'flex');
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   });
 });
@@ -156,7 +109,8 @@ test.describe('stack--align', () => {
     const start = root.getByTestId('start');
     const stretch = root.getByTestId('stretch');
 
-    await expectStackStyled(page, start);
+    await expectItemSheetsApplied(page, ['stack']);
+    await expect(start).toHaveCSS('display', 'flex');
 
     expect(boxAt(await childRects(start), 0).width).toBeLessThan(
       (await rect(start)).width,
@@ -175,12 +129,13 @@ test.describe('stack--rule', () => {
     const root = await openStory(page, 'stack--rule');
     const ruled = root.getByTestId('ruled');
 
-    await expectStackStyled(page, ruled);
+    await expectItemSheetsApplied(page, ['stack']);
+    await expect(ruled).toHaveCSS('display', 'flex');
 
     const [sm, xs, border] = [
-      await token(root, '--yeti-space-sm'),
-      await token(root, '--yeti-space-xs'),
-      await token(root, '--yeti-border-width'),
+      await usedLength(root, 'var(--yeti-space-sm)', 'block'),
+      await usedLength(root, 'var(--yeti-space-xs)', 'block'),
+      await usedLength(root, 'var(--yeti-border-width)', 'block'),
     ];
     const boxes = await childRects(ruled);
     const lines = await ruleLines(ruled);
@@ -217,7 +172,8 @@ test.describe('stack--rule', () => {
     await page.setViewportSize({ width: 320, height: 640 });
     const root = await openStory(page, 'stack--rule');
 
-    await expectStackStyled(page, root.getByTestId('ruled'));
+    await expectItemSheetsApplied(page, ['stack']);
+    await expect(root.getByTestId('ruled')).toHaveCSS('display', 'flex');
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   });
 });
@@ -230,9 +186,10 @@ test.describe('stack--sticky', () => {
     const stack = root.getByTestId('stack');
     const pinned = root.getByTestId('pinned');
 
-    await expectStackStyled(page, stack);
+    await expectItemSheetsApplied(page, ['stack']);
+    await expect(stack).toHaveCSS('display', 'flex');
 
-    const offset = await token(root, '--yeti-sticky-offset');
+    const offset = await usedLength(root, 'var(--yeti-sticky-offset)', 'block');
     const before = await rect(stack);
 
     expect((await rect(pinned)).width).toBeCloseTo(before.width, 0);
@@ -263,7 +220,8 @@ test.describe('stack--sticky', () => {
     const pinned = root.getByTestId('pinned');
     const links = root.getByRole('link');
 
-    await expectStackStyled(page, root.getByTestId('stack'));
+    await expectItemSheetsApplied(page, ['stack']);
+    await expect(root.getByTestId('stack')).toHaveCSS('display', 'flex');
     await page.evaluate(
       (height) => {
         document.documentElement.style.setProperty(

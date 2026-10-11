@@ -1,6 +1,9 @@
 import { AxeBuilder } from '@axe-core/playwright';
+import {
+  expectItemSheetsApplied,
+  horizontalOverflow,
+} from '@ngx-yeti/testing/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
 
 const stories = [
@@ -16,20 +19,10 @@ const viewports = [
   { width: 320, height: 640 },
 ] as const;
 
-/** Upstream bug O2: read geometry only once the scroller's sheet has applied. */
-async function expectScrollerStyled(
-  page: Page,
-  scroller: Locator,
-): Promise<void> {
-  await expectItemSheetsApplied(page, ['scroller']);
-  await expect(scroller).toHaveCSS('display', 'flex');
-}
-
 async function scrollLeft(scroller: Locator): Promise<number> {
   return scroller.evaluate((element) => element.scrollLeft);
 }
 
-/** The elements axe's `scrollable-region-focusable` rule reports, as HTML. */
 /** Waits until a smooth scroll comes to rest and returns where it stopped. */
 async function settledScrollLeft(scroller: Locator): Promise<number> {
   let previous = Number.NaN;
@@ -47,6 +40,7 @@ async function settledScrollLeft(scroller: Locator): Promise<number> {
   return previous;
 }
 
+/** The elements axe's `scrollable-region-focusable` rule reports, as HTML. */
 async function scrollableRegionViolations(page: Page): Promise<string[]> {
   const { violations } = await new AxeBuilder({ page })
     .include('#storybook-root')
@@ -70,7 +64,8 @@ test.describe('scroller--keyboard', () => {
       const scroller = root.getByTestId('scroller');
       const button = root.getByRole('button', { name: 'Before the strip' });
 
-      await expectScrollerStyled(page, scroller);
+      await expectItemSheetsApplied(page, ['scroller']);
+      await expect(scroller).toHaveCSS('display', 'flex');
 
       // WebKit does not focus a button on click, so the walk starts from a
       // button focused by script there (scroller.md, layer 4).
@@ -101,7 +96,8 @@ test.describe('scroller--keyboard', () => {
     const root = await openStory(page, 'scroller--keyboard');
     const scroller = root.getByTestId('scroller');
 
-    await expectScrollerStyled(page, scroller);
+    await expectItemSheetsApplied(page, ['scroller']);
+    await expect(scroller).toHaveCSS('display', 'flex');
     expect(
       await scroller.evaluate(
         (element) => element.scrollWidth > element.clientWidth,
@@ -129,7 +125,8 @@ test.describe('scroller--rtl', () => {
     const root = await openStory(page, 'scroller--rtl');
     const scroller = root.getByTestId('scroller');
 
-    await expectScrollerStyled(page, scroller);
+    await expectItemSheetsApplied(page, ['scroller']);
+    await expect(scroller).toHaveCSS('display', 'flex');
 
     await page.keyboard.press('Tab');
     await expect(scroller).toBeFocused();
@@ -149,7 +146,8 @@ test.describe('scroller--settings', () => {
     const scroller = root.getByTestId('scroller');
 
     await expect(scroller).toHaveAttribute('data-justify', 'center');
-    await expectScrollerStyled(page, scroller);
+    await expectItemSheetsApplied(page, ['scroller']);
+    await expect(scroller).toHaveCSS('display', 'flex');
 
     await scroller.evaluate((element) => {
       const third = element.children[2];
@@ -195,20 +193,15 @@ test.describe('at a 320 x 640 viewport', () => {
       const root = await openStory(page, story);
       const scroller = root.getByTestId('scroller');
 
-      await expectScrollerStyled(page, scroller);
+      await expectItemSheetsApplied(page, ['scroller']);
+      await expect(scroller).toHaveCSS('display', 'flex');
 
       expect(
         await scroller.evaluate(
           (element) => element.scrollWidth - element.clientWidth,
         ),
       ).toBeGreaterThan(0);
-      expect(
-        await page.evaluate(() => {
-          const { scrollWidth, clientWidth } = document.documentElement;
-
-          return scrollWidth - clientWidth;
-        }),
-      ).toBeLessThanOrEqual(0);
+      expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
     });
   }
 });

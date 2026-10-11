@@ -1,5 +1,5 @@
+import { expectItemSheetsApplied, rect } from '@ngx-yeti/testing/playwright';
 import { expect, test } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
 import { skipUnlessTabReachesLinks } from './tab-to-links';
 
@@ -21,11 +21,7 @@ test.describe('visually-hidden--read-more', () => {
       await expect(link).toBeVisible();
       await expect(span).toHaveCSS('position', 'absolute');
 
-      const { width, height } = await span.evaluate((element) => {
-        const rect = element.getBoundingClientRect();
-
-        return { width: rect.width, height: rect.height };
-      });
+      const { width, height } = await rect(span);
 
       expect(width).toBeLessThanOrEqual(1.5);
       expect(height).toBeLessThanOrEqual(1.5);

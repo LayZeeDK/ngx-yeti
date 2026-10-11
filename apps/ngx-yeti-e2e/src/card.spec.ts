@@ -1,32 +1,25 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
+import {
+  expectItemSheetsApplied,
+  horizontalOverflow,
+  resize,
+  usedLength,
+} from '@ngx-yeti/testing/playwright';
+import { expect, test, type Locator } from '@playwright/test';
 import { openStory } from './open-story';
 import { skipUnlessTabReachesLinks } from './tab-to-links';
 
 type CardForm = 'row' | 'stacked' | 'neither';
 
-/** Waits for the card's item file, then for the card to lay out with it. */
-async function expectCardStyled(page: Page, card: Locator): Promise<void> {
-  await expectItemSheetsApplied(page, ['card']);
-  await expect(card).toHaveCSS('display', 'flex');
-}
-
 /**
  * The frame width at the `xs` stop: `16rem` of card content plus the card's
- * padding and border, read from a probe styled with the card's tokens, so the
- * width holds for any token value (card.md, Testing Decisions).
+ * padding and border, read with the card's tokens, so the width holds for any
+ * token value (card.md, Testing Decisions).
  */
 async function xsStop(frame: Locator): Promise<number> {
-  return frame.evaluate((element) => {
-    const probe = document.createElement('div');
-    probe.style.cssText =
-      'box-sizing: content-box; inline-size: 16rem; padding-inline: var(--yeti-card-padding); border-inline: var(--yeti-border-width) solid';
-    element.append(probe);
-    const { width } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return width;
-  });
+  return usedLength(
+    frame,
+    'calc(16rem + 2 * var(--yeti-card-padding) + 2 * var(--yeti-border-width))',
+  );
 }
 
 /**
@@ -40,15 +33,11 @@ async function cardForm(
   frame: Locator,
   width: number | null,
 ): Promise<CardForm> {
-  return frame.evaluate((element, inlineSize): CardForm => {
-    if (!(element instanceof HTMLElement)) {
-      throw new Error('The frame is not an HTML element');
-    }
+  if (width !== null) {
+    await resize(frame, width);
+  }
 
-    if (inlineSize !== null) {
-      element.style.inlineSize = `${String(inlineSize)}px`;
-    }
-
+  return frame.evaluate((element): CardForm => {
     const card = element.querySelector('article');
     const media = element.querySelector('article > img');
     const title = element.querySelector('article h3');
@@ -84,7 +73,8 @@ test.describe('card--default', () => {
     const root = await openStory(page, 'card--default');
     const frame = root.getByTestId('frame');
 
-    await expectCardStyled(page, root.getByRole('article'));
+    await expectItemSheetsApplied(page, ['card']);
+    await expect(root.getByRole('article')).toHaveCSS('display', 'flex');
 
     const stop = await xsStop(frame);
 
@@ -100,12 +90,13 @@ test.describe('card--default', () => {
     const root = await openStory(page, 'card--default');
     const frame = root.getByTestId('frame');
 
-    await expectCardStyled(page, root.getByRole('article'));
+    await expectItemSheetsApplied(page, ['card']);
+    await expect(root.getByRole('article')).toHaveCSS('display', 'flex');
 
     // The story's frame starts at a fixed 40rem and scrolls its overflow so it
     // can be resized by hand; reflow is about the card at the page's own
     // width, so drop that width, and let the card's overflow reach the page,
-    // where the check below can see it (review finding G2-02).
+    // where the check below can see it.
     await frame.evaluate((element) => {
       if (element instanceof HTMLElement) {
         element.style.inlineSize = '';
@@ -115,11 +106,7 @@ test.describe('card--default', () => {
 
     expect(await cardForm(frame, null)).toBe('stacked');
     expect(
-      await page.evaluate(() => {
-        const { scrollWidth, clientWidth } = document.documentElement;
-
-        return scrollWidth - clientWidth;
-      }),
+      await horizontalOverflow(page),
       'horizontal overflow in px',
     ).toBeLessThanOrEqual(0);
   });
@@ -128,7 +115,8 @@ test.describe('card--default', () => {
     const root = await openStory(page, 'card--default');
     const frame = root.getByTestId('frame');
 
-    await expectCardStyled(page, root.getByRole('article'));
+    await expectItemSheetsApplied(page, ['card']);
+    await expect(root.getByRole('article')).toHaveCSS('display', 'flex');
 
     const stop = await xsStop(frame);
 
@@ -155,7 +143,8 @@ test.describe('card--stretched-link', () => {
     const button = root.getByRole('button', { name: 'Save' });
     const destination = root.getByText('The hills page');
 
-    await expectCardStyled(page, card);
+    await expectItemSheetsApplied(page, ['card']);
+    await expect(card).toHaveCSS('display', 'flex');
     await button.click();
 
     await expect(
@@ -184,7 +173,8 @@ test.describe('card--stretched-link', () => {
     const root = await openStory(page, 'card--stretched-link');
     const card = root.getByRole('article');
 
-    await expectCardStyled(page, card);
+    await expectItemSheetsApplied(page, ['card']);
+    await expect(card).toHaveCSS('display', 'flex');
     await page.evaluate(() => {
       const after = document.createElement('button');
       after.textContent = 'After the card';
@@ -224,7 +214,8 @@ test.describe('card--inputs', () => {
     });
     const card = root.getByRole('article');
 
-    await expectCardStyled(page, card);
+    await expectItemSheetsApplied(page, ['card']);
+    await expect(card).toHaveCSS('display', 'flex');
     await expect(card).toHaveAttribute('data-raised', '');
     await page.emulateMedia({ forcedColors: 'active' });
 
@@ -233,7 +224,10 @@ test.describe('card--inputs', () => {
 
     await expect(link).toBeFocused();
 
-    // Recorded, not asserted (ticket 50 decision 119).
+    // Recorded, not asserted: forced colours are no WCAG 2.2 AA criterion
+    // and the card draws no state by colour, so the spec asks only whether
+    // the raised card's transparent border shows (card.md, Testing
+    // Decisions).
     const edge = await root.getByRole('article').evaluate((element) => {
       const style = getComputedStyle(element);
 

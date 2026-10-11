@@ -3,9 +3,9 @@ id: T036
 title: Share the layer-4 geometry, sheet-applied, standard-route, and styled-frame helpers across both e2e apps
 wave: 4
 deps: [T035]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T036
+base: 2e703719aa0b3e6f0fd8df20ff64e80021886694
 worktree: null
 task_branch: null
 files:
@@ -126,3 +126,45 @@ Heavy: yes
 ## Log
 
 - 2026-10-11 — created by planner (build repair before wave 4; user ruling "1-3: Approve.", item 1, layer-4 part). The counts in Context are from the wave 3 maintainability review of 2026-10-11, whose file is not in the repository. The Verify ends by stopping the Nx daemon and keeps its own exit code; run it exactly as written and never set NX_DAEMON.
+- 2026-10-12 — coder (build_T036): implementation.
+  - New entry `@ngx-yeti/testing/playwright` (`packages/ngx-yeti-testing/src/playwright.ts`, mapped by hand in tsconfig.base.json next to `/server`). It exports the Interface contract shapes as written: `Box`, `rect`, `childRects`, `usedLength(scope, length, axis = 'inline')`, `horizontalOverflow`, `resize` (throws a TypeError when the element is not an HTMLElement), and `expectItemSheetsApplied` (the Storybook version's strength: one link per item, a sheet with rules, a sheet whose rules throw counts as not loaded; the O2 comment lives only here). No ESLint override was needed: the library's `vitestConfig` applies to `*.spec.ts` only. So eslint.config.mjs and tsconfig.lib.json are unchanged.
+  - Storybook e2e: `item-styles.ts` deleted. Every local Box/rect/childRects/token probe/thresholdWidth/blockLength/switchWidth/xsStop/rem/horizontalOverflow/pageOverflow/resize/setWidth is replaced by the shared helpers. Lengths given in rem (cluster 10rem/90rem, timeline 70rem/30rem) are resized via `usedLength(scope, 'Nrem')`. Card's xsStop and sidebar's switchWidth are now `usedLength` of a `calc()`. The per-item `expect…Styled` wrappers (and spinner's `styledRing`) are inlined as `expectItemSheetsApplied` plus the same `toHaveCSS`, so no spec has a sheet check of its own. Cover keeps a local `blockOverflow`, the vertical half of its old `pageOverflow`. Masonry's `resize` now throws as the columns spec did; card/columns/sidebar arrangement readers resize through `resize`.
+  - Fixture e2e: `standard-cases.ts` exports `describeStandardRouteCases` with the contract's members plus optional `leaveUrl` (default `/\/replay$/`), `afterReturn(page)` (box's probe match, center's stack+center order and centring, stack's stack+center order, frame's 16/9 crop), and `arrivals` (enter `#plain`, cluster's arriving rows: reduced motion plus opacity wait before axe). The leave-and-return test compares the item's own links exactly (`itemLinks(page, item)` → `[item]`) before and after, and checks the sheet and `styled` after returning, for every item. Spinner, visually-hidden, enter, and the containment-only specs now get that strength. The JavaScript-off standard test checks class (`toContainClass`), presence attribute, the item's own link, and axe. It replaces each route's "serves server HTML that axe passes" (retitled, the only title change). `itemLinks(page, item?)` in style-probe.ts replaces the 13 per-item link filters. `itemSheetsLoaded` and `expectHydrationFrames` are gone; every poll and wrapper uses `expectItemSheetsApplied`. setup-serving's `itemSheetsLoaded(page)` with no names became `['card', 'lift']`, the route's two links.
+  - Frames: `expectStyledFrames` in style-probe.ts. The two A4 rules are written once each: `firstPaintFramesRecordedAs(browserName)` (production or Firefox) and `productionFramesRecordedAs()` (production only). Both return `{ recordedAs? }` to spread into the options because the workspace uses `exactOptionalPropertyTypes`. Every unstyled-frame count goes through `expectStyledFrames`. Recorded cases stay recorded under their own types: `reinserted-frames` (card, spinner, setup), `no-preload-frames` (lift, setup, setup-boundaries), `client-held-frames` (overlay held child), `a4-frames` (setup-serving A4 probe), `webkit-pending-sheet-frames` (setup-boundaries reset case, WebKit only). Previously asserted-in-development cases stay asserted. Frame's photo-shift annotation reads `productionFramesRecordedAs()`.
+  - Item route specs with no standard test of their own (exceptions): lift — its fixture has no link that leaves the route, so its hydration and axe tests stay its own (the leave test never existed). Non-item routes keep their own tests by design: box-markers, setup, setup-defer, setup-order, setup-boundaries, setup-serving, static-attributes, and center's anti-pattern (negative control).
+  - Comments: the ids in the Approach list are replaced with their reasons (card 119, sidebar 47, spinner 191, enter "Ticket 33 row 16" and "decision 21", box 30, static-attributes "E8 (ticket 50 decision 9)", setup-boundaries "Ticket 37"). "review finding G2-02/G4-02" removed. Held-out tests E2, E7, E8, E12, E15 are in their PLAN.md files, unchanged.
+  - Docs: testing skill's helper table for the new entry, Layer 4 paragraph, standard route cases paragraph, and support-helper table rows updated; README gets one line.
+  - Needed outside `files` (not edited): `apps/yeti-app-e2e/eslint.config.mjs` still names `expectHydrationFrames` in `playwright/expect-expect` `assertFunctionNames`. That entry is now unused and harmless; lint passes with `--max-warnings=0`.
+  - Ledger rows needed: none (test refactor).
+- 2026-10-12 — coder: Verify run exactly as written from the worktree root through the heavy lock: exit 0. Lint and typecheck of ngx-yeti-testing, ngx-yeti-e2e, yeti-app-e2e: pass. `nx test ngx-yeti-testing`: 6 files, 75 tests passed. `run-job ci e2e`, all six combinations pass:
+  - chromium/dev: analog 1 passed; Storybook 129 passed, 1 skipped; Fixture 511 passed, 90 skipped.
+  - chromium/prod: Fixture 460 passed, 141 skipped.
+  - firefox/dev: 1; 129 passed, 1 skipped; 509 passed, 92 skipped.
+  - firefox/prod: 458 passed, 143 skipped.
+  - webkit/dev: 1; 126 passed, 4 skipped; 507 passed, 94 skipped.
+  - webkit/prod: 456 passed, 145 skipped.
+
+  `floor webkit-26-4` pass: layer 2 409 tests passed; Storybook 118 passed, 12 skipped; Fixture 507 passed, 94 skipped. `floor firefox-146-e2e` pass: shard 1 Storybook 64 passed, 1 skipped, Fixture 211 passed, 90 skipped; shard 2 Storybook 65 passed, Fixture 298 passed, 2 skipped. Earlier local runs: Storybook Chromium 129 passed, 1 skipped; Fixture Chromium dev 511 passed, 90 skipped; prod 460 passed, 141 skipped. `npx prettier --check .` clean.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T036): pass, exit 0; output tail:
+  ```
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/spinner
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/stack
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/table
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/timeline
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/visually-hidden
+  ```

@@ -1,33 +1,14 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
+import {
+  childRects,
+  expectItemSheetsApplied,
+  horizontalOverflow,
+  rect,
+  resize,
+  usedLength,
+  type Box,
+} from '@ngx-yeti/testing/playwright';
+import { expect, test, type Locator } from '@playwright/test';
 import { openStory } from './open-story';
-
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly right: number;
-  readonly width: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, left, right, width } = element.getBoundingClientRect();
-
-    return { top, bottom, left, right, width };
-  });
-}
-
-/** The boxes of an element's children, in DOM order. */
-async function childRects(parent: Locator): Promise<Box[]> {
-  return parent.evaluate((element) =>
-    [...element.children].map((child) => {
-      const { top, bottom, left, right, width } = child.getBoundingClientRect();
-
-      return { top, bottom, left, right, width };
-    }),
-  );
-}
 
 /** The box at `index`, which the story's markup is known to hold. */
 function boxAt(boxes: readonly Box[], index: number): Box {
@@ -48,53 +29,6 @@ async function perRow(grid: Locator): Promise<number> {
   return tops.filter((top) => top === first).length;
 }
 
-/**
- * The used length of a public token, read from a probe in the story, so no
- * expected count depends on a token's default (grid.md, Testing Decisions).
- */
-async function token(root: Locator, name: string): Promise<number> {
-  return root.evaluate((element, property) => {
-    const probe = document.createElement('div');
-    probe.style.inlineSize = `var(${property})`;
-    element.append(probe);
-    const { width } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return width;
-  }, name);
-}
-
-/** The root font size in px, which Yeti's literal `rem` limits scale with. */
-async function rem(page: Page): Promise<number> {
-  return page.evaluate(() =>
-    parseFloat(getComputedStyle(document.documentElement).fontSize),
-  );
-}
-
-/** Resizes the container, not the viewport (building-blocks.md:96). */
-async function resize(element: Locator, width: number): Promise<void> {
-  await element.evaluate((node, value) => {
-    if (node instanceof HTMLElement) {
-      node.style.inlineSize = `${String(value)}px`;
-    }
-  }, width);
-}
-
-/** Upstream bug O2: read geometry only once the grid's sheet has applied. */
-async function expectGridStyled(page: Page, grid: Locator): Promise<void> {
-  await expectItemSheetsApplied(page, ['grid']);
-  await expect(grid).toHaveCSS('display', 'grid');
-}
-
-/** How far the page's content is wider than the viewport, in px. */
-async function horizontalOverflow(page: Page): Promise<number> {
-  return page.evaluate(() => {
-    const { scrollWidth, clientWidth } = document.documentElement;
-
-    return scrollWidth - clientWidth;
-  });
-}
-
 /** Yeti's count: as many columns of `min` as fit, one gap apart. */
 function fitted(width: number, min: number, gap: number): number {
   return Math.floor((width + gap) / (min + gap));
@@ -107,11 +41,12 @@ test.describe('grid--settings', () => {
     const root = await openStory(page, 'grid--settings');
     const grid = root.getByTestId('grid');
 
-    await expectGridStyled(page, grid);
+    await expectItemSheetsApplied(page, ['grid']);
+    await expect(grid).toHaveCSS('display', 'grid');
 
     const [min, gap] = [
-      await token(root, '--yeti-width-xs'),
-      await token(root, '--yeti-space-md'),
+      await usedLength(root, 'var(--yeti-width-xs)'),
+      await usedLength(root, 'var(--yeti-space-md)'),
     ];
     const cells = (await childRects(grid)).length;
 
@@ -130,11 +65,12 @@ test.describe('grid--default', () => {
     const root = await openStory(page, 'grid--default');
     const grid = root.getByTestId('grid');
 
-    await expectGridStyled(page, grid);
+    await expectItemSheetsApplied(page, ['grid']);
+    await expect(grid).toHaveCSS('display', 'grid');
 
     const [min, gap] = [
-      await token(root, '--yeti-width-2xs'),
-      await token(root, '--yeti-space-md'),
+      await usedLength(root, 'var(--yeti-width-2xs)'),
+      await usedLength(root, 'var(--yeti-space-md)'),
     ];
 
     await resize(grid, 1000);
@@ -152,7 +88,8 @@ test.describe('grid--default', () => {
     await page.setViewportSize({ width: 320, height: 640 });
     const root = await openStory(page, 'grid--default');
 
-    await expectGridStyled(page, root.getByTestId('grid'));
+    await expectItemSheetsApplied(page, ['grid']);
+    await expect(root.getByTestId('grid')).toHaveCSS('display', 'grid');
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   });
 });
@@ -166,7 +103,8 @@ test.describe('grid--exact-count', () => {
     const exact = root.getByTestId('exact');
     const loose = root.getByTestId('loose');
 
-    await expectGridStyled(page, exact);
+    await expectItemSheetsApplied(page, ['grid']);
+    await expect(exact).toHaveCSS('display', 'grid');
 
     for (const width of [300, 1000]) {
       await resize(stage, width);
@@ -185,11 +123,12 @@ test.describe('grid--fold', () => {
     const stage = root.getByTestId('stage');
     const grid = root.getByTestId('grid');
 
-    await expectGridStyled(page, grid);
+    await expectItemSheetsApplied(page, ['grid']);
+    await expect(grid).toHaveCSS('display', 'grid');
 
     // Yeti's widths, in its default 16 px rem; the fold's limits scale with
     // the root font size.
-    const scale = (await rem(page)) / 16;
+    const scale = (await usedLength(root, '1rem')) / 16;
 
     for (const [width, count] of [
       [1100, 4],
@@ -209,7 +148,8 @@ test.describe('grid--fold', () => {
     await page.setViewportSize({ width: 320, height: 640 });
     const root = await openStory(page, 'grid--fold');
 
-    await expectGridStyled(page, root.getByTestId('grid'));
+    await expectItemSheetsApplied(page, ['grid']);
+    await expect(root.getByTestId('grid')).toHaveCSS('display', 'grid');
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   });
 });
@@ -222,10 +162,11 @@ test.describe('grid--tracks', () => {
     const stage = root.getByTestId('stage');
     const grid = root.getByTestId('grid');
 
-    await expectGridStyled(page, grid);
+    await expectItemSheetsApplied(page, ['grid']);
+    await expect(grid).toHaveCSS('display', 'grid');
     await resize(stage, 1000);
 
-    const gap = await token(root, '--yeti-space-sm');
+    const gap = await usedLength(root, 'var(--yeti-space-sm)');
     const box = await rect(grid);
     const cells = await childRects(grid);
     const track = (box.width - 11 * gap) / 12;
@@ -261,7 +202,8 @@ test.describe('grid--tracks', () => {
     const stage = root.getByTestId('stage');
     const grid = root.getByTestId('grid');
 
-    await expectGridStyled(page, grid);
+    await expectItemSheetsApplied(page, ['grid']);
+    await expect(grid).toHaveCSS('display', 'grid');
     await resize(stage, 400);
 
     const box = await rect(grid);
@@ -285,7 +227,8 @@ test.describe('grid--tracks', () => {
     await page.setViewportSize({ width: 320, height: 640 });
     const root = await openStory(page, 'grid--tracks');
 
-    await expectGridStyled(page, root.getByTestId('grid'));
+    await expectItemSheetsApplied(page, ['grid']);
+    await expect(root.getByTestId('grid')).toHaveCSS('display', 'grid');
     expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
   });
 });

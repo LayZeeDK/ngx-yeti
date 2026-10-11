@@ -1,44 +1,16 @@
-import { type Locator, type Page } from '@playwright/test';
+import { expectItemSheetsApplied, rect } from '@ngx-yeti/testing/playwright';
+import { type Page } from '@playwright/test';
 import { expect, isProduction, routeKinds, test } from './support/fixtures';
-import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
+  productionFramesRecordedAs,
   recordFrames,
   recordPaintedAttributes,
 } from './support/style-probe';
-
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly width: number;
-  readonly height: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, left, width, height } =
-      element.getBoundingClientRect();
-
-    return { top, bottom, left, width, height };
-  });
-}
-
-/** Upstream bug O2: read geometry only once the layer's sheet has applied. */
-async function expectLayerStyled(page: Page, layer: Locator): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['layer']), {
-      message: 'the layer stylesheet is loaded',
-    })
-    .toBe(true);
-  await expect(layer).toHaveCSS('display', 'grid');
-}
 
 /**
  * The picture and its caption share one box: the picture at the top, the
@@ -47,7 +19,8 @@ async function expectLayerStyled(page: Page, layer: Locator): Promise<void> {
 async function expectCaptioned(page: Page): Promise<void> {
   const layer = page.locator('#live-layer');
 
-  await expectLayerStyled(page, layer);
+  await expectItemSheetsApplied(page, ['layer']);
+  await expect(layer).toHaveCSS('display', 'grid');
 
   const [box, picture, caption] = await Promise.all([
     rect(layer),
@@ -72,7 +45,8 @@ async function expectAlignedEnd(
   tallSelector: string,
   shortSelector: string,
 ): Promise<void> {
-  await expectLayerStyled(page, page.locator(layerSelector));
+  await expectItemSheetsApplied(page, ['layer']);
+  await expect(page.locator(layerSelector)).toHaveCSS('display', 'grid');
 
   const [box, tall, short] = await Promise.all([
     rect(page.locator(layerSelector)),
@@ -85,27 +59,14 @@ async function expectAlignedEnd(
   expect(short.height).toBeLessThan(box.height);
 }
 
-/** The layer links, in document order; later items may add more. */
-async function layerLinks(page: Page): Promise<readonly string[]> {
-  return (await itemLinks(page)).filter((item) => item === 'layer');
-}
-
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} layer route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}layer`);
-
-      await expect(page.locator('#live-layer')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'layer',
+      prefix,
+      liveHost: '#live-layer',
+      leaveLink: 'Leave for a page without layers',
+      styled: { property: 'display', value: 'grid' },
     });
 
     test('stacks the caption over the picture and sits the short child at the bottom', async ({
@@ -163,7 +124,8 @@ for (const { kind, prefix } of routeKinds) {
       await page.setViewportSize({ width: 320, height: 640 });
       await page.goto(`${prefix}layer`);
       await waitForHydration(page);
-      await expectLayerStyled(page, page.locator('#live-layer'));
+      await expectItemSheetsApplied(page, ['layer']);
+      await expect(page.locator('#live-layer')).toHaveCSS('display', 'grid');
 
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
@@ -187,7 +149,7 @@ for (const { kind, prefix } of routeKinds) {
         '',
       );
       expect(
-        await layerLinks(page),
+        await itemLinks(page, 'layer'),
         'the hydrate never host keeps the layer link',
       ).toEqual(['layer']);
       await expectAlignedEnd(
@@ -222,46 +184,11 @@ for (const { kind, prefix } of routeKinds) {
         '#client-short',
       );
 
-      const frames = await display();
-      const unstyled = frames.filter((value) => value !== 'grid');
-
-      expect(
-        frames.length,
-        'the client-only layer was sampled',
-      ).toBeGreaterThan(0);
-
-      if (isProduction) {
-        test.info().annotations.push({
-          type: 'a4-frames',
-          description: `${browserName}, production, ${kind}: ${String(unstyled.length)} unstyled frames of ${String(frames.length)}`,
-        });
-      } else {
-        expect(
-          unstyled,
-          'no frame shows the client-only layer without Yeti',
-        ).toEqual([]);
-      }
-    });
-
-    test('removes the layer link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}layer`);
-      await waitForHydration(page);
-
-      expect(await itemLinks(page)).toContain('layer');
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without layers' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-layer]')).toHaveCount(0);
-      await expect.poll(() => layerLinks(page)).toEqual([]);
-
-      await page.goBack();
-      await expect(page.locator('#live-layer')).toBeVisible();
-      await expect.poll(() => layerLinks(page)).toEqual(['layer']);
-      await expectLayerStyled(page, page.locator('#live-layer'));
+      expectStyledFrames(await display(), {
+        styled: (value) => value === 'grid',
+        label: `${browserName}, ${kind}, client-only layer`,
+        ...productionFramesRecordedAs(),
+      });
     });
 
     test.describe('with JavaScript off', () => {
@@ -291,7 +218,7 @@ for (const { kind, prefix } of routeKinds) {
         await expect(page.locator('#aligned-layer')).not.toHaveAttribute(
           'align',
         );
-        expect(await layerLinks(page)).toEqual(['layer']);
+        expect(await itemLinks(page, 'layer')).toEqual(['layer']);
       });
 
       test('stacks the caption over the picture as with JavaScript on', async ({
@@ -317,20 +244,12 @@ for (const { kind, prefix } of routeKinds) {
       }) => {
         await page.setViewportSize({ width: 320, height: 640 });
         await page.goto(`${prefix}layer`);
-        await expectLayerStyled(page, page.locator('#live-layer'));
+        await expectItemSheetsApplied(page, ['layer']);
+        await expect(page.locator('#live-layer')).toHaveCSS('display', 'grid');
 
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth),
         ).toBe(320);
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}layer`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

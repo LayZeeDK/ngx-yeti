@@ -1,63 +1,22 @@
+import {
+  expectItemSheetsApplied,
+  rect,
+  usedLength,
+  type Box,
+} from '@ngx-yeti/testing/playwright';
 import { type Locator, type Page } from '@playwright/test';
 import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import { removeDehydratedHosts } from './support/hosts';
-import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
+  productionFramesRecordedAs,
   recordFrames,
   recordPaintedAttributes,
 } from './support/style-probe';
-
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly right: number;
-  readonly width: number;
-  readonly height: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, left, right, width, height } =
-      element.getBoundingClientRect();
-
-    return { top, bottom, left, right, width, height };
-  });
-}
-
-/** The used block size of a public token, read from a probe in the page. */
-async function token(page: Page, name: string): Promise<number> {
-  return page.locator('main').evaluate((main, property) => {
-    const probe = document.createElement('div');
-    probe.style.blockSize = `var(${property})`;
-    main.append(probe);
-    const { height } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return height;
-  }, name);
-}
-
-/** Upstream bug O2: read geometry only once the item sheets have applied. */
-async function expectSheetsApplied(
-  page: Page,
-  sidebar: Locator,
-  items: readonly string[] = ['sidebar'],
-): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, items), {
-      message: `the ${items.join(' and ')} stylesheets are loaded`,
-    })
-    .toBe(true);
-  await expect(sidebar).toHaveCSS('flex-wrap', 'wrap');
-}
 
 /** The sidebar and center links, in document order; later items may add more. */
 async function sidebarAndCenterLinks(page: Page): Promise<readonly string[]> {
@@ -91,21 +50,12 @@ async function liveChildren(page: Page): Promise<readonly [Box, Box]> {
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} sidebar route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message, and leaves no align', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}sidebar`);
-
-      await expect(page.locator('#live-sidebar')).toBeVisible();
-      await expectCleanHydration();
-      await expect(page.locator('#live-sidebar')).not.toHaveAttribute('align');
+    describeStandardRouteCases({
+      item: 'sidebar',
+      prefix,
+      liveHost: '#live-sidebar',
+      leaveLink: 'Leave for a page without sidebars',
+      styled: { property: 'flex-wrap', value: 'wrap' },
     });
 
     test('paints no frame with align on the sidebar written with a static align', async ({
@@ -160,7 +110,8 @@ for (const { kind, prefix } of routeKinds) {
       expect(links, 'the hydrate never host keeps the box link').toContain(
         'box',
       );
-      await expectSheetsApplied(page, sidebar, ['sidebar', 'box']);
+      await expectItemSheetsApplied(page, ['sidebar', 'box']);
+      await expect(sidebar).toHaveCSS('flex-wrap', 'wrap');
       await expect(sidebar).toHaveAttribute('data-gap', 'lg');
     });
 
@@ -185,24 +136,11 @@ for (const { kind, prefix } of routeKinds) {
       await expect(sidebar).toBeVisible();
       await expect(sidebar).toHaveCSS('flex-wrap', 'wrap');
 
-      const frames = await wrap();
-      const unstyled = frames.filter((value) => value !== 'wrap');
-
-      expect(
-        frames.length,
-        'the client-only sidebar was sampled',
-      ).toBeGreaterThan(0);
-      test.info().annotations.push({
-        type: isProduction ? 'a4-frames' : 'frames',
-        description: `${browserName}${isProduction ? ', production' : ''}, ${kind}: ${String(unstyled.length)} of ${String(frames.length)} frames without the sidebar file`,
+      expectStyledFrames(await wrap(), {
+        styled: (value) => value === 'wrap',
+        label: `${browserName}, ${kind}, client-only sidebar`,
+        ...productionFramesRecordedAs(),
       });
-
-      if (!isProduction) {
-        expect(
-          unstyled,
-          'no frame shows the client-only sidebar without Yeti',
-        ).toEqual([]);
-      }
     });
 
     // The order with center (sidebar.md:316): the center link is in place,
@@ -213,10 +151,11 @@ for (const { kind, prefix } of routeKinds) {
     }) => {
       await page.goto(`${prefix}sidebar`);
       await waitForHydration(page);
-      await expectSheetsApplied(page, page.locator('#reference-sidebar'), [
-        'sidebar',
-        'center',
-      ]);
+      await expectItemSheetsApplied(page, ['sidebar', 'center']);
+      await expect(page.locator('#reference-sidebar')).toHaveCSS(
+        'flex-wrap',
+        'wrap',
+      );
 
       const reference = await centerColumn(page.locator('#reference-center'));
 
@@ -242,7 +181,8 @@ for (const { kind, prefix } of routeKinds) {
 
       const sidebar = page.locator('#client-sidebar');
 
-      await expectSheetsApplied(page, sidebar, ['sidebar', 'center']);
+      await expectItemSheetsApplied(page, ['sidebar', 'center']);
+      await expect(sidebar).toHaveCSS('flex-wrap', 'wrap');
       expect(
         await sidebarAndCenterLinks(page),
         'the sidebar link is inserted before the center link',
@@ -252,31 +192,6 @@ for (const { kind, prefix } of routeKinds) {
 
       expect(inner.width).toBeCloseTo(reference.width, 1);
       expect(inner.left).toBeCloseTo(reference.left, 1);
-    });
-
-    test('removes the sidebar link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}sidebar`);
-      await waitForHydration(page);
-
-      expect(await itemLinks(page)).toContain('sidebar');
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without sidebars' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-sidebar]')).toHaveCount(0);
-      await expect
-        .poll(async () => (await itemLinks(page)).includes('sidebar'))
-        .toBe(false);
-
-      await page.goBack();
-      await expect(page.locator('#live-sidebar')).toBeVisible();
-      await expect
-        .poll(async () => (await itemLinks(page)).includes('sidebar'))
-        .toBe(true);
-      await expectSheetsApplied(page, page.locator('#live-sidebar'));
     });
 
     test.describe('with JavaScript off', () => {
@@ -314,10 +229,11 @@ for (const { kind, prefix } of routeKinds) {
         page,
       }) => {
         await page.goto(`${prefix}sidebar`);
-        await expectSheetsApplied(page, page.locator('#live-sidebar'), [
-          'sidebar',
-          'box',
-        ]);
+        await expectItemSheetsApplied(page, ['sidebar', 'box']);
+        await expect(page.locator('#live-sidebar')).toHaveCSS(
+          'flex-wrap',
+          'wrap',
+        );
 
         const [nav, article] = await liveChildren(page);
 
@@ -337,10 +253,11 @@ for (const { kind, prefix } of routeKinds) {
 
           await live.goto(`${prefix}sidebar`);
           await waitForHydration(live);
-          await expectSheetsApplied(live, live.locator('#live-sidebar'), [
-            'sidebar',
-            'box',
-          ]);
+          await expectItemSheetsApplied(live, ['sidebar', 'box']);
+          await expect(live.locator('#live-sidebar')).toHaveCSS(
+            'flex-wrap',
+            'wrap',
+          );
 
           const [liveNav, liveArticle] = await liveChildren(live);
 
@@ -370,9 +287,14 @@ for (const { kind, prefix } of routeKinds) {
         const sidebar = page.locator('#live-sidebar');
         const nav = page.locator('#sticky-nav');
 
-        await expectSheetsApplied(page, sidebar, ['sidebar', 'box']);
+        await expectItemSheetsApplied(page, ['sidebar', 'box']);
+        await expect(sidebar).toHaveCSS('flex-wrap', 'wrap');
 
-        const offset = await token(page, '--yeti-sticky-offset');
+        const offset = await usedLength(
+          page.locator('main'),
+          'var(--yeti-sticky-offset)',
+          'block',
+        );
         const before = await rect(sidebar);
 
         await page.evaluate((top) => {
@@ -391,15 +313,6 @@ for (const { kind, prefix } of routeKinds) {
           (await rect(nav)).height,
           'the stuck nav keeps its own height',
         ).toBeLessThan((await rect(sidebar)).height);
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}sidebar`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

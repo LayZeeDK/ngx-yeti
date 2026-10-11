@@ -1,56 +1,12 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
+import {
+  expectItemSheetsApplied,
+  horizontalOverflow,
+  rect,
+  resize,
+  usedLength,
+} from '@ngx-yeti/testing/playwright';
+import { expect, test } from '@playwright/test';
 import { openStory } from './open-story';
-
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly right: number;
-  readonly width: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, left, right, width } = element.getBoundingClientRect();
-
-    return { top, bottom, left, right, width };
-  });
-}
-
-/**
- * The used length of a public token, read from a probe in the story, so no
- * assertion depends on a token's default (breakout.md, Testing Decisions).
- */
-async function token(root: Locator, name: string): Promise<number> {
-  return root.evaluate((element, property) => {
-    const probe = document.createElement('div');
-    probe.style.inlineSize = `var(${property})`;
-    element.append(probe);
-    const { width } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return width;
-  }, name);
-}
-
-/** Upstream bug O2: read geometry only once the breakout's sheet has applied. */
-async function expectBreakoutStyled(
-  page: Page,
-  breakout: Locator,
-): Promise<void> {
-  await expectItemSheetsApplied(page, ['breakout']);
-  await expect(breakout).toHaveCSS('display', 'grid');
-}
-
-/** How far the page's content is wider than the viewport, in px. */
-async function horizontalOverflow(page: Page): Promise<number> {
-  return page.evaluate(() => {
-    const { scrollWidth, clientWidth } = document.documentElement;
-
-    return scrollWidth - clientWidth;
-  });
-}
 
 test.describe('breakout--default', () => {
   // Yeti's own breakout.spec.js cases at 1000 and 400 px, and one between.
@@ -62,13 +18,14 @@ test.describe('breakout--default', () => {
       const frame = root.getByTestId('frame');
       const breakout = root.getByTestId('breakout');
 
-      await frame.evaluate((element, inlineSize) => {
-        element.style.inlineSize = `${String(inlineSize)}px`;
-      }, width);
-      await expectBreakoutStyled(page, breakout);
+      await resize(frame, width);
+      await expectItemSheetsApplied(page, ['breakout']);
+      await expect(breakout).toHaveCSS('display', 'grid');
 
-      const gap = await token(root, '--yeti-space-md');
-      const max = await token(root, '--yeti-width-md');
+      // Tokens are read from a probe, so no assertion depends on a token's
+      // default (breakout.md, Testing Decisions).
+      const gap = await usedLength(root, 'var(--yeti-space-md)');
+      const max = await usedLength(root, 'var(--yeti-width-md)');
       const [box, plain, bleed] = await Promise.all([
         rect(breakout),
         rect(root.getByTestId('plain')),
@@ -93,7 +50,11 @@ test.describe('breakout at a 320 px viewport', () => {
       await page.setViewportSize({ width: 320, height: 640 });
       const root = await openStory(page, id);
 
-      await expectBreakoutStyled(page, root.locator('[yetibreakout]').first());
+      await expectItemSheetsApplied(page, ['breakout']);
+      await expect(root.locator('[yetibreakout]').first()).toHaveCSS(
+        'display',
+        'grid',
+      );
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
     });
   }

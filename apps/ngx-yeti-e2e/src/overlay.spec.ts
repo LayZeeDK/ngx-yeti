@@ -1,25 +1,13 @@
 import { composite, contrastRatio } from '@ngx-yeti/testing';
-import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
+import {
+  expectItemSheetsApplied,
+  horizontalOverflow,
+  rect,
+  usedLength,
+  type Box,
+} from '@ngx-yeti/testing/playwright';
+import { expect, test, type Page } from '@playwright/test';
 import { openStory } from './open-story';
-
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly right: number;
-  readonly width: number;
-  readonly height: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, left, right, width, height } =
-      element.getBoundingClientRect();
-
-    return { top, bottom, left, right, width, height };
-  });
-}
 
 function centre(box: Box): { readonly x: number; readonly y: number } {
   return { x: (box.left + box.right) / 2, y: (box.top + box.bottom) / 2 };
@@ -31,41 +19,6 @@ function expectCentredOn(
 ): void {
   expect(Math.abs(centre(box).x - target.x)).toBeLessThanOrEqual(1);
   expect(Math.abs(centre(box).y - target.y)).toBeLessThanOrEqual(1);
-}
-
-/**
- * The used length of a public token, read from a probe in the story, so no
- * assertion depends on a token's default (overlay.md, Testing Decisions).
- */
-async function token(scope: Locator, name: string): Promise<number> {
-  return scope.evaluate((element, property) => {
-    const probe = document.createElement('div');
-    probe.style.position = 'absolute';
-    probe.style.inlineSize = `var(${property})`;
-    element.append(probe);
-    const { width } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return width;
-  }, name);
-}
-
-/** Upstream bug O2: read geometry only once the overlay's sheet has applied. */
-async function expectOverlayStyled(
-  page: Page,
-  overlay: Locator,
-): Promise<void> {
-  await expectItemSheetsApplied(page, ['overlay']);
-  await expect(overlay).toHaveCSS('position', 'relative');
-}
-
-/** How far the page's content is wider than the viewport, in px. */
-async function horizontalOverflow(page: Page): Promise<number> {
-  return page.evaluate(() => {
-    const { scrollWidth, clientWidth } = document.documentElement;
-
-    return scrollWidth - clientWidth;
-  });
 }
 
 async function viewportCentre(
@@ -94,7 +47,8 @@ for (const viewport of viewports) {
       const root = await openStory(page, 'overlay--default');
       const overlay = root.getByTestId('overlay');
 
-      await expectOverlayStyled(page, overlay);
+      await expectItemSheetsApplied(page, ['overlay']);
+      await expect(overlay).toHaveCSS('position', 'relative');
 
       const [box, held, picture] = await Promise.all([
         rect(overlay),
@@ -116,7 +70,8 @@ for (const viewport of viewports) {
       const held = root.getByTestId('held');
 
       await expect(held).toHaveAttribute('data-fill', '');
-      await expectOverlayStyled(page, overlay);
+      await expectItemSheetsApplied(page, ['overlay']);
+      await expect(overlay).toHaveCSS('position', 'relative');
 
       const [box, filled] = await Promise.all([rect(overlay), rect(held)]);
 
@@ -132,7 +87,11 @@ for (const viewport of viewports) {
       const root = await openStory(page, 'overlay--fixed');
       const held = root.getByTestId('held');
 
-      await expectOverlayStyled(page, root.getByTestId('overlay'));
+      await expectItemSheetsApplied(page, ['overlay']);
+      await expect(root.getByTestId('overlay')).toHaveCSS(
+        'position',
+        'relative',
+      );
       await expect(held).toHaveCSS('position', 'fixed');
 
       expectCentredOn(await rect(held), await viewportCentre(page));
@@ -149,7 +108,8 @@ for (const viewport of viewports) {
       const root = await openStory(page, 'overlay--rtl');
       const overlay = root.getByTestId('overlay');
 
-      await expectOverlayStyled(page, overlay);
+      await expectItemSheetsApplied(page, ['overlay']);
+      await expect(overlay).toHaveCSS('position', 'relative');
 
       const [held, box] = await Promise.all([
         rect(root.getByTestId('overlay-held')),
@@ -174,7 +134,11 @@ test.describe('overlay at a 320 px viewport', () => {
       await page.setViewportSize({ width: 320, height: 640 });
       const root = await openStory(page, id);
 
-      await expectOverlayStyled(page, root.locator('[yetioverlay]').first());
+      await expectItemSheetsApplied(page, ['overlay']);
+      await expect(root.locator('[yetioverlay]').first()).toHaveCSS(
+        'position',
+        'relative',
+      );
       expect(await horizontalOverflow(page)).toBeLessThanOrEqual(0);
     });
   }
@@ -188,13 +152,14 @@ test.describe('overlay--default at 200 % text zoom', () => {
     const overlay = root.getByTestId('overlay');
     const held = root.getByTestId('overlay-held');
 
-    await expectOverlayStyled(page, overlay);
+    await expectItemSheetsApplied(page, ['overlay']);
+    await expect(overlay).toHaveCSS('position', 'relative');
     // Text zoom: the root font size at 200 %, so every rem doubles.
     await page.evaluate(() => {
       document.documentElement.style.fontSize = '200%';
     });
 
-    const gap = await token(overlay, '--yeti-space-md');
+    const gap = await usedLength(overlay, 'var(--yeti-space-md)');
     const [box, child] = await Promise.all([rect(overlay), rect(held)]);
 
     expect(child.left).toBeGreaterThanOrEqual(box.left + gap - 1);
@@ -224,7 +189,8 @@ test.describe('overlay--veil', () => {
     const toggle = root.getByTestId('toggle');
     const input = root.getByTestId('form-input');
 
-    await expectOverlayStyled(page, root.getByTestId('form'));
+    await expectItemSheetsApplied(page, ['overlay']);
+    await expect(root.getByTestId('form')).toHaveCSS('position', 'relative');
     await toggle.click();
     await expect(root.getByTestId('form-veil')).toBeVisible();
     await toggle.focus();
@@ -250,7 +216,8 @@ test.describe('overlay--veil', () => {
   }) => {
     const root = await openStory(page, 'overlay--veil');
 
-    await expectOverlayStyled(page, root.getByTestId('form'));
+    await expectItemSheetsApplied(page, ['overlay']);
+    await expect(root.getByTestId('form')).toHaveCSS('position', 'relative');
     await root.getByTestId('toggle').click();
 
     for (const id of ['form', 'dark']) {
@@ -284,7 +251,8 @@ test.describe('overlay--scrolls', () => {
     const root = await openStory(page, 'overlay--scrolls');
     const held = root.getByTestId('held');
 
-    await expectOverlayStyled(page, root.getByTestId('overlay'));
+    await expectItemSheetsApplied(page, ['overlay']);
+    await expect(root.getByTestId('overlay')).toHaveCSS('position', 'relative');
     await page.keyboard.press('Tab');
     await expect(held).toBeFocused();
     expect(await held.evaluate((element) => element.scrollTop)).toBe(0);

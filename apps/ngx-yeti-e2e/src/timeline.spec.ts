@@ -1,5 +1,9 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
+import {
+  expectItemSheetsApplied,
+  resize,
+  usedLength,
+} from '@ngx-yeti/testing/playwright';
+import { expect, test, type Locator } from '@playwright/test';
 import { openStory } from './open-story';
 import { skipUnlessTabReachesLinks } from './tab-to-links';
 
@@ -31,18 +35,6 @@ async function geometry(list: Locator): Promise<Geometry> {
       }),
     };
   });
-}
-
-/** Upstream bug O2: read geometry only once the timeline's sheet has applied. */
-async function expectTimelineStyled(page: Page, list: Locator): Promise<void> {
-  await expectItemSheetsApplied(page, ['timeline']);
-  await expect(list).toHaveCSS('display', 'flex');
-}
-
-async function resize(frame: Locator, inlineSize: string): Promise<void> {
-  await frame.evaluate((element, size) => {
-    element.style.inlineSize = size;
-  }, inlineSize);
 }
 
 /** Single-sided: every entry starts at the same edge, beside a start rail. */
@@ -110,13 +102,14 @@ test.describe('timeline--narrow', () => {
     const list = root.getByTestId('timeline');
     const viewport = page.viewportSize();
 
-    await expectTimelineStyled(page, list);
+    await expectItemSheetsApplied(page, ['timeline']);
+    await expect(list).toHaveCSS('display', 'flex');
     await expectSingleSided(list);
 
-    await resize(frame, '70rem');
+    await resize(frame, await usedLength(frame, '70rem'));
     await expectAlternating(list);
 
-    await resize(frame, '30rem');
+    await resize(frame, await usedLength(frame, '30rem'));
     await expectSingleSided(list);
 
     expect(page.viewportSize(), 'the viewport never changed').toEqual(viewport);
@@ -134,7 +127,8 @@ test.describe('timeline--links', () => {
     const list = root.getByTestId('timeline');
     const links = list.getByRole('link');
 
-    await expectTimelineStyled(page, list);
+    await expectItemSheetsApplied(page, ['timeline']);
+    await expect(list).toHaveCSS('display', 'flex');
 
     const count = await links.count();
 

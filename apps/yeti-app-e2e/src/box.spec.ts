@@ -1,4 +1,5 @@
-import { type Locator, type Page } from '@playwright/test';
+import { expectItemSheetsApplied } from '@ngx-yeti/testing/playwright';
+import { type Locator } from '@playwright/test';
 import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import { removeDehydratedHosts } from './support/hosts';
 import {
@@ -6,26 +7,14 @@ import {
   waitForHydration,
   watchHydration,
 } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
+  productionFramesRecordedAs,
   recordFrames,
 } from './support/style-probe';
-
-/** The box links in `<head>`; other items may add theirs. */
-async function boxLinks(page: Page): Promise<readonly string[]> {
-  return (await itemLinks(page)).filter((item) => item === 'box');
-}
-
-/** Upstream bug O2: read styles only once the box's sheet has applied. */
-async function boxSheetApplied(page: Page): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['box']), {
-      message: 'the box stylesheet is loaded',
-    })
-    .toBe(true);
-}
 
 /**
  * Expects the element's padding, fill, and border to equal a probe whose
@@ -68,20 +57,19 @@ const paddingFillBorder = [
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} box route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}box`);
-
-      await expect(page.locator('#live-box')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'box',
+      prefix,
+      liveHost: '#live-box',
+      leaveLink: 'Leave for a page without boxes',
+      styled: { property: 'padding-top', value: /^(?!0px$)/ },
+      afterReturn: async (page) => {
+        await expectMatchesProbe(
+          page.locator('#live-box'),
+          raisedBorderedLg,
+          paddingFillBorder,
+        );
+      },
     });
 
     test('has no horizontal overflow at a 320 px viewport with a 3xl box', async ({
@@ -90,7 +78,7 @@ for (const { kind, prefix } of routeKinds) {
       await page.setViewportSize({ width: 320, height: 640 });
       await page.goto(`${prefix}box`);
       await waitForHydration(page);
-      await boxSheetApplied(page);
+      await expectItemSheetsApplied(page, ['box']);
       await expect(page.locator('#wide-box')).toHaveAttribute(
         'data-gap',
         '3xl',
@@ -117,17 +105,17 @@ for (const { kind, prefix } of routeKinds) {
 
       await expect(box).toHaveAttribute('data-ngx-yeti-item-box', '');
       expect(
-        await boxLinks(page),
+        await itemLinks(page, 'box'),
         'the hydrate never host keeps the box link',
       ).toEqual(['box']);
-      await boxSheetApplied(page);
+      await expectItemSheetsApplied(page, ['box']);
       await expectMatchesProbe(box, 'padding: var(--yeti-space-lg)', [
         'padding-top',
         'padding-left',
       ]);
 
       await removeDehydratedHosts(page, '#never-box');
-      await expect.poll(() => boxLinks(page)).toEqual([]);
+      await expect.poll(() => itemLinks(page, 'box')).toEqual([]);
     });
 
     // The server hosts keep the box link in <head>, so the client-only box
@@ -149,58 +137,20 @@ for (const { kind, prefix } of routeKinds) {
       const box = page.locator('#client-box');
 
       await expect(box).toBeVisible();
-      await boxSheetApplied(page);
+      await expectItemSheetsApplied(page, ['box']);
       await expectMatchesProbe(box, 'padding: var(--yeti-space-lg)', [
         'padding-top',
       ]);
 
-      const frames = await padding();
-      const unpadded = frames.filter((value) => value === '0px');
-
-      expect(frames.length, 'the client-only box was sampled').toBeGreaterThan(
-        0,
-      );
-
-      if (isProduction) {
-        test.info().annotations.push({
-          type: 'a4-frames',
-          description: `${browserName}, critical-CSS inlining on (production): ${String(unpadded.length)} of ${String(frames.length)} frames without the box file`,
-        });
-      } else {
-        expect(unpadded, 'no frame shows the client-only box unpadded').toEqual(
-          [],
-        );
-      }
-    });
-
-    test('removes the box link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}box`);
-      await waitForHydration(page);
-
-      expect(await boxLinks(page)).toEqual(['box']);
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without boxes' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-box]')).toHaveCount(0);
-      await expect.poll(() => boxLinks(page)).toEqual([]);
-
-      await page.goBack();
-      await expect(page.locator('#live-box')).toBeVisible();
-      await expect.poll(() => boxLinks(page)).toEqual(['box']);
-      await boxSheetApplied(page);
-      await expectMatchesProbe(
-        page.locator('#live-box'),
-        raisedBorderedLg,
-        paddingFillBorder,
-      );
+      expectStyledFrames(await padding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, client-only box`,
+        ...productionFramesRecordedAs(),
+      });
     });
 
     // Recorded, not asserted: forced colours is not an AA criterion and the
-    // border's survival is behaviour (box.md:314; ticket 50 decision 30).
+    // border's survival is behaviour (box.md:314).
     test('records that a bordered box keeps a visible border under forced colours', async ({
       browserName,
       page,
@@ -213,7 +163,7 @@ for (const { kind, prefix } of routeKinds) {
       await page.emulateMedia({ forcedColors: 'active' });
       await page.goto(`${prefix}box`);
       await waitForHydration(page);
-      await boxSheetApplied(page);
+      await expectItemSheetsApplied(page, ['box']);
       await expect(page.locator('#live-box')).toHaveAttribute(
         'data-border',
         '',
@@ -270,14 +220,14 @@ for (const { kind, prefix } of routeKinds) {
           'data-paint',
           'primary',
         );
-        expect(await boxLinks(page)).toEqual(['box']);
+        expect(await itemLinks(page, 'box')).toEqual(['box']);
       });
 
       test("matches the box's padding, fill, and border and the band's colours to their probes", async ({
         page,
       }) => {
         await page.goto(`${prefix}box`);
-        await boxSheetApplied(page);
+        await expectItemSheetsApplied(page, ['box']);
         await expect(page.locator('#live-box')).toHaveAttribute(
           'data-surface',
           'raised',
@@ -293,15 +243,6 @@ for (const { kind, prefix } of routeKinds) {
           'background-color: var(--yeti-color-primary); color: var(--yeti-on-primary)',
           ['background-color', 'color'],
         );
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}box`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });
@@ -330,7 +271,7 @@ for (const { kind, prefix } of routeKinds) {
       await waitForHydration(page);
       await nextFrames(page);
 
-      expect(await boxLinks(page)).toEqual([]);
+      expect(await itemLinks(page, 'box')).toEqual([]);
       expect(
         await page.evaluate(() =>
           [...document.styleSheets]
@@ -361,7 +302,7 @@ for (const { kind, prefix } of routeKinds) {
           'data-paint',
           'primary',
         );
-        expect(await boxLinks(page)).toEqual([]);
+        expect(await itemLinks(page, 'box')).toEqual([]);
         await expectMatchesProbe(
           figure,
           'border: var(--yeti-border-width) solid var(--yeti-color-border)',

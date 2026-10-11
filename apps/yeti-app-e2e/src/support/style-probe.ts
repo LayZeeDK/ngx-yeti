@@ -323,30 +323,56 @@ export async function recordFrames(
 }
 
 /**
- * The hydration frame rule for a card's `padding-top` frames, sampled from
- * first paint (setup.md:338): the development run expects 0 frames without
- * Yeti in Chromium and WebKit. Firefox's frames are recorded against upstream
- * bug A4 (setup.md:403), and so are every engine's in production, where
- * critical-CSS inlining lets a server-rendered card paint before the global
- * stylesheet applies, in Chromium too (1 of 20 production runs).
+ * Why frames sampled from first paint are recorded instead of asserted
+ * (setup.md:338): upstream bug A4. Critical-CSS inlining lets a
+ * server-rendered host paint before the global stylesheet applies in every
+ * engine in production, and Firefox paints such a frame in development too.
+ * Elsewhere the frames are asserted.
  */
-export function expectHydrationFrames(
-  frames: readonly string[],
-  browserName: string,
-): void {
-  const unstyled = frames.filter((value) => value === '0px');
+export function firstPaintFramesRecordedAs(browserName: string): {
+  readonly recordedAs?: string;
+} {
+  return isProduction || browserName === 'firefox'
+    ? { recordedAs: 'a4-frames' }
+    : {};
+}
 
-  expect(frames.length, 'the card was sampled').toBeGreaterThan(0);
+/**
+ * Why frames of a client-only host are recorded instead of asserted: upstream
+ * bug A4, in production only. A server-rendered host that every engine paints
+ * styled in development follows the same rule.
+ */
+export function productionFramesRecordedAs(): {
+  readonly recordedAs?: string;
+} {
+  return isProduction ? { recordedAs: 'a4-frames' } : {};
+}
+
+/**
+ * Expects at least one sampled frame and pushes one annotation
+ * `{label}: {unstyled} of {sampled} frames unstyled`, typed `recordedAs`, or
+ * `frames` without it. Expects no unstyled frame unless `recordedAs` names
+ * why the frames are recorded, such as `a4-frames` for upstream bug A4.
+ */
+export function expectStyledFrames(
+  frames: readonly string[],
+  options: {
+    readonly styled: (value: string) => boolean;
+    readonly label: string;
+    readonly recordedAs?: string;
+  },
+): void {
+  const { styled, label, recordedAs } = options;
+  const unstyled = frames.filter((value) => !styled(value));
+
+  expect(frames.length, `${label}: frames were sampled`).toBeGreaterThan(0);
   test.info().annotations.push({
-    type: isProduction ? 'a4-frames' : 'frames',
-    description: `${browserName}${isProduction ? ', critical-CSS inlining on (production)' : ''}: ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
+    type: recordedAs ?? 'frames',
+    description: `${label}: ${String(unstyled.length)} of ${String(frames.length)} frames unstyled`,
   });
 
-  if (!isProduction && browserName !== 'firefox') {
-    expect(
-      unstyled,
-      'no frame after first paint shows the card without Yeti',
-    ).toEqual([]);
+  if (recordedAs === undefined) {
+    expect(unstyled, `${label}: no frame is unstyled`).toEqual([]);
   }
 }
 
@@ -386,35 +412,19 @@ export async function delayCss(
 }
 
 /**
- * Whether the item links in `<head>` named in `items`, or all of them, have
- * loaded their stylesheets.
+ * The `data-ngx-yeti-styles` values of the item links in `<head>`, in
+ * document order: every item's, or only `item`'s, so a list a later item
+ * extends can still be compared exactly.
  */
-export async function itemSheetsLoaded(
+export async function itemLinks(
   page: Page,
-  items?: readonly string[],
-): Promise<boolean> {
-  return page
-    .locator('head link[data-ngx-yeti-styles]')
-    .evaluateAll((links, names) => {
-      const itemOf = (link: Element): string =>
-        link.getAttribute('data-ngx-yeti-styles') ?? '';
-      const loaded = links
-        .filter(
-          (link) => link instanceof HTMLLinkElement && link.sheet !== null,
-        )
-        .map(itemOf);
-
-      return (names ?? links.map(itemOf)).every((item) =>
-        loaded.includes(item),
-      );
-    }, items ?? null);
-}
-
-/** The `data-ngx-yeti-styles` values of the item links in `<head>`, in document order. */
-export async function itemLinks(page: Page): Promise<readonly string[]> {
-  return page
+  item?: string,
+): Promise<readonly string[]> {
+  const items = await page
     .locator('head link[data-ngx-yeti-styles]')
     .evaluateAll((links) =>
       links.map((link) => link.getAttribute('data-ngx-yeti-styles') ?? ''),
     );
+
+  return item === undefined ? items : items.filter((name) => name === item);
 }

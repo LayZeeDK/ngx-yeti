@@ -1,47 +1,16 @@
-import { type Locator, type Page } from '@playwright/test';
+import { expectItemSheetsApplied, rect } from '@ngx-yeti/testing/playwright';
+import { type Page } from '@playwright/test';
 import { failsSnapshot } from './support/axe';
 import { expect, isProduction, routeKinds, test } from './support/fixtures';
-import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
+  productionFramesRecordedAs,
   recordFrames,
 } from './support/style-probe';
-
-interface Box {
-  readonly top: number;
-  readonly left: number;
-  readonly width: number;
-  readonly height: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, left, width, height } = element.getBoundingClientRect();
-
-    return { top, left, width, height };
-  });
-}
-
-/** The frame links in `<head>`; later items may add others. */
-async function frameLinks(page: Page): Promise<readonly string[]> {
-  return (await itemLinks(page)).filter((item) => item === 'frame');
-}
-
-/** Upstream bug O2: read geometry only once the frame's sheet has applied. */
-async function expectFrameStyled(page: Page, frame: Locator): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['frame']), {
-      message: 'the frame stylesheet is loaded',
-    })
-    .toBe(true);
-  await expect(frame).toHaveCSS('overflow', 'hidden');
-}
 
 /**
  * The frame's rendered width over height is `width / height` within one
@@ -55,7 +24,8 @@ async function expectCropped(
   const frame = page.locator(selector);
   const media = page.locator(`${selector} > *`);
 
-  await expectFrameStyled(page, frame);
+  await expectItemSheetsApplied(page, ['frame']);
+  await expect(frame).toHaveCSS('overflow', 'hidden');
 
   const [outer, inner] = await Promise.all([rect(frame), rect(media)]);
 
@@ -257,20 +227,15 @@ test('the axe snapshot fails on every warning and error but the srcdoc forced-la
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} frame route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}frame`);
-
-      await expect(page.locator('#photo-frame')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'frame',
+      prefix,
+      liveHost: '#photo-frame',
+      leaveLink: 'Leave for a page without frames',
+      styled: { property: 'overflow', value: 'hidden' },
+      afterReturn: async (page) => {
+        await expectCropped(page, '#photo-frame', [16, 9]);
+      },
     });
 
     test('crops each live frame to its ratio', async ({ page }) => {
@@ -317,8 +282,10 @@ for (const { kind, prefix } of routeKinds) {
       ];
       const tops = [...new Set(geometry.map((entry) => entry.split(' ')[1]))];
 
+      const { recordedAs } = productionFramesRecordedAs();
+
       test.info().annotations.push({
-        type: isProduction ? 'a4-frames' : 'photo-layout-shift',
+        type: recordedAs ?? 'photo-layout-shift',
         description: `${browserName}, ${isProduction ? 'production' : 'development'}, ${kind}: ${String(geometry.length)} frames, frame heights ${heights.join(', ')}, text tops ${tops.join(', ')}, layout-shift entries ${shifts === null ? 'not reported' : `[${shifts.join(', ')}]`}`,
       });
       expect(geometry.length, 'the photo was sampled').toBeGreaterThan(0);
@@ -330,7 +297,7 @@ for (const { kind, prefix } of routeKinds) {
       // In production, critical-CSS inlining can paint the text's margin
       // before Yeti's tokens arrive (upstream bug A4), which moves the text
       // but not the frame.
-      if (!isProduction) {
+      if (recordedAs === undefined) {
         expect(
           tops,
           'the text after the photo keeps its place in every frame',
@@ -396,7 +363,7 @@ for (const { kind, prefix } of routeKinds) {
         '',
       );
       expect(
-        await frameLinks(page),
+        await itemLinks(page, 'frame'),
         'the hydrate never host keeps the frame link',
       ).toEqual(['frame']);
       await expectCropped(page, '#never-frame', [4, 3]);
@@ -422,51 +389,16 @@ for (const { kind, prefix } of routeKinds) {
       await expect(page.locator('#client-frame')).toBeVisible();
       await expectCropped(page, '#client-frame', [1, 1]);
 
-      const ratioFrames = await ratios();
-      const fitFrames = await fits();
-      const uncropped =
-        ratioFrames.filter((value) => value === 'auto').length +
-        fitFrames.filter((value) => value !== 'cover').length;
-
-      expect(
-        ratioFrames.length,
-        'the client-only frame was sampled',
-      ).toBeGreaterThan(0);
-
-      if (isProduction) {
-        test.info().annotations.push({
-          type: 'a4-frames',
-          description: `${browserName}, production, ${kind}: ${String(uncropped)} uncropped samples in ${String(ratioFrames.length)} frames`,
-        });
-      } else {
-        expect(
-          [...ratioFrames, ...fitFrames].filter(
-            (value) => value === 'auto' || value === 'fill',
-          ),
-          'no frame shows the client-only frame uncropped',
-        ).toEqual([]);
-      }
-    });
-
-    test('removes the frame link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}frame`);
-      await waitForHydration(page);
-
-      expect(await frameLinks(page)).toEqual(['frame']);
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without frames' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-frame]')).toHaveCount(0);
-      await expect.poll(() => frameLinks(page)).toEqual([]);
-
-      await page.goBack();
-      await expect(page.locator('#photo-frame')).toBeVisible();
-      await expect.poll(() => frameLinks(page)).toEqual(['frame']);
-      await expectCropped(page, '#photo-frame', [16, 9]);
+      expectStyledFrames(await ratios(), {
+        styled: (value) => value !== 'auto',
+        label: `${browserName}, ${kind}, client-only frame ratio`,
+        ...productionFramesRecordedAs(),
+      });
+      expectStyledFrames(await fits(), {
+        styled: (value) => value !== 'fill',
+        label: `${browserName}, ${kind}, client-only frame image fit`,
+        ...productionFramesRecordedAs(),
+      });
     });
 
     test('has no horizontal overflow from the 21/9 frame at a 320 px viewport', async ({
@@ -524,7 +456,7 @@ for (const { kind, prefix } of routeKinds) {
         await expect(page.locator('#video-src-frame')).not.toHaveAttribute(
           'data-ratio',
         );
-        expect(await frameLinks(page)).toEqual(['frame']);
+        expect(await itemLinks(page, 'frame')).toEqual(['frame']);
       });
 
       test('crops each frame to its ratio as with JavaScript on', async ({
@@ -554,15 +486,6 @@ for (const { kind, prefix } of routeKinds) {
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth),
         ).toBe(320);
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}frame`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

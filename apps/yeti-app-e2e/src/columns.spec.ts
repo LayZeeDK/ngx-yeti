@@ -1,45 +1,20 @@
-import { type Locator, type Page } from '@playwright/test';
-import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+  expectItemSheetsApplied,
+  rect,
+  type Box,
+} from '@ngx-yeti/testing/playwright';
+import { type Page } from '@playwright/test';
+import { expect, isProduction, routeKinds, test } from './support/fixtures';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
+  productionFramesRecordedAs,
   recordFrames,
   recordPaintedAttributes,
 } from './support/style-probe';
-
-interface Box {
-  readonly top: number;
-  readonly left: number;
-  readonly width: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, left, width } = element.getBoundingClientRect();
-
-    return { top, left, width };
-  });
-}
-
-/** Upstream bug O2: read geometry only once the item sheets have applied. */
-async function expectSheetsApplied(
-  page: Page,
-  columns: Locator,
-  items: readonly string[] = ['columns'],
-): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, items), {
-      message: `the ${items.join(' and ')} stylesheets are loaded`,
-    })
-    .toBe(true);
-  await expect(columns).toHaveCSS('flex-wrap', 'wrap');
-}
 
 /** The boxes of the live layout's three columns, at the top of the page. */
 async function liveColumns(page: Page): Promise<readonly Box[]> {
@@ -54,21 +29,12 @@ async function liveColumns(page: Page): Promise<readonly Box[]> {
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} columns route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message, and leaves no align', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}columns`);
-
-      await expect(page.locator('#live-columns')).toBeVisible();
-      await expectCleanHydration();
-      await expect(page.locator('#live-columns')).not.toHaveAttribute('align');
+    describeStandardRouteCases({
+      item: 'columns',
+      prefix,
+      liveHost: '#live-columns',
+      leaveLink: 'Leave for a page without columns',
+      styled: { property: 'flex-wrap', value: 'wrap' },
     });
 
     test('paints no frame with align on the layout written with a static align', async ({
@@ -114,7 +80,8 @@ for (const { kind, prefix } of routeKinds) {
         await itemLinks(page),
         'the hydrate never host keeps the columns link',
       ).toContain('columns');
-      await expectSheetsApplied(page, columns);
+      await expectItemSheetsApplied(page, ['columns']);
+      await expect(columns).toHaveCSS('flex-wrap', 'wrap');
 
       const [first, second] = await Promise.all(
         ['p:nth-child(1)', 'p:nth-child(2)'].map((child) =>
@@ -149,49 +116,11 @@ for (const { kind, prefix } of routeKinds) {
       await expect(columns).toBeVisible();
       await expect(columns).toHaveCSS('flex-wrap', 'wrap');
 
-      const frames = await wrap();
-      const unstyled = frames.filter((value) => value !== 'wrap');
-
-      expect(
-        frames.length,
-        'the client-only layout was sampled',
-      ).toBeGreaterThan(0);
-      test.info().annotations.push({
-        type: isProduction ? 'a4-frames' : 'frames',
-        description: `${browserName}${isProduction ? ', production' : ''}, ${kind}: ${String(unstyled.length)} of ${String(frames.length)} frames without the columns file`,
+      expectStyledFrames(await wrap(), {
+        styled: (value) => value === 'wrap',
+        label: `${browserName}, ${kind}, client-only columns`,
+        ...productionFramesRecordedAs(),
       });
-
-      if (!isProduction) {
-        expect(
-          unstyled,
-          'no frame shows the client-only layout without Yeti',
-        ).toEqual([]);
-      }
-    });
-
-    test('removes the columns link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}columns`);
-      await waitForHydration(page);
-
-      expect(await itemLinks(page)).toContain('columns');
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without columns' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-columns]')).toHaveCount(0);
-      await expect
-        .poll(async () => (await itemLinks(page)).includes('columns'))
-        .toBe(false);
-
-      await page.goBack();
-      await expect(page.locator('#live-columns')).toBeVisible();
-      await expect
-        .poll(async () => (await itemLinks(page)).includes('columns'))
-        .toBe(true);
-      await expectSheetsApplied(page, page.locator('#live-columns'));
     });
 
     test('puts the example in rows with no horizontal overflow at a 320 px viewport', async ({
@@ -203,7 +132,8 @@ for (const { kind, prefix } of routeKinds) {
 
       const columns = page.locator('#live-columns');
 
-      await expectSheetsApplied(page, columns, ['columns', 'box']);
+      await expectItemSheetsApplied(page, ['columns', 'box']);
+      await expect(columns).toHaveCSS('flex-wrap', 'wrap');
 
       const layout = await rect(columns);
       const [plan, build, ship] = await liveColumns(page);
@@ -247,10 +177,11 @@ for (const { kind, prefix } of routeKinds) {
         page,
       }) => {
         await page.goto(`${prefix}columns`);
-        await expectSheetsApplied(page, page.locator('#live-columns'), [
-          'columns',
-          'box',
-        ]);
+        await expectItemSheetsApplied(page, ['columns', 'box']);
+        await expect(page.locator('#live-columns')).toHaveCSS(
+          'flex-wrap',
+          'wrap',
+        );
 
         const off = await liveColumns(page);
 
@@ -270,10 +201,11 @@ for (const { kind, prefix } of routeKinds) {
 
           await live.goto(`${prefix}columns`);
           await waitForHydration(live);
-          await expectSheetsApplied(live, live.locator('#live-columns'), [
-            'columns',
-            'box',
-          ]);
+          await expectItemSheetsApplied(live, ['columns', 'box']);
+          await expect(live.locator('#live-columns')).toHaveCSS(
+            'flex-wrap',
+            'wrap',
+          );
 
           const on = await liveColumns(live);
 
@@ -292,15 +224,6 @@ for (const { kind, prefix } of routeKinds) {
         } finally {
           await context.close();
         }
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}columns`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

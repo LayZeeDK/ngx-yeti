@@ -13,8 +13,10 @@ import {
 } from './support/hydration';
 import {
   delayCss,
-  expectHydrationFrames,
+  expectStyledFrames,
+  firstPaintFramesRecordedAs,
   itemLinks,
+  productionFramesRecordedAs,
   recordFrames,
   recordStyleMutations,
 } from './support/style-probe';
@@ -78,7 +80,11 @@ for (const { kind, prefix } of routeKinds) {
       await expect(shared).toHaveAttribute('data-ngx-yeti-item-card', '');
       await expect(shared).toHaveAttribute('data-ngx-yeti-item-lift', '');
 
-      expectHydrationFrames(await cardPadding(), browserName);
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, shared host from first paint`,
+        ...firstPaintFramesRecordedAs(browserName),
+      });
     });
 
     test("keeps the dehydrated hosts' links after every live host leaves, and after hydrating one", async ({
@@ -162,33 +168,19 @@ for (const { kind, prefix } of routeKinds) {
       await expect(leaving).toHaveCount(0);
       await expect.poll(() => itemLinks(page)).toEqual([]);
 
-      const present = await leavingPadding();
-      const leaveFrames = await leaveWindow();
-
-      expect(present.length, 'the leaving host was sampled').toBeGreaterThan(0);
-      expect(
-        leaveFrames.length,
-        'the leaving host was sampled while it left',
-      ).toBeGreaterThan(0);
-      expect(
-        leaveFrames.filter((value) => value === '0px'),
-        'no frame shows the leaving card without Yeti while it leaves',
-      ).toEqual([]);
-
-      if (isProduction) {
-        test.info().annotations.push({
-          type: 'a4-frames',
-          description: `${browserName}, critical-CSS inlining on (production): ${String(present.filter((value) => value === '0px').length)} of ${String(present.length)} frames without Yeti from first paint`,
-        });
-      } else {
-        expect(
-          present.filter((value) => value === '0px'),
-          'no frame after first paint shows the leaving card without Yeti',
-        ).toEqual([]);
-      }
+      expectStyledFrames(await leaveWindow(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, leaving host while it leaves`,
+      });
+      expectStyledFrames(await leavingPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, leaving host from first paint`,
+        ...productionFramesRecordedAs(),
+      });
     });
 
     test("records the client-only @defer's frames after every host has left", async ({
+      browserName,
       page,
     }) => {
       const cardPadding = await recordFrames(
@@ -230,26 +222,18 @@ for (const { kind, prefix } of routeKinds) {
       );
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const card = await cardPadding();
-
-      expect(card.length, 'the client-only card was sampled').toBeGreaterThan(
-        0,
-      );
-
-      const lift = await liftTransition();
-
       // Recorded, not asserted: the `setup-defer` route below carries the
       // 0-frame claim.
-      test.info().annotations.push(
-        {
-          type: 'frames',
-          description: `${String(card.filter((value) => value === '0px').length)} of ${String(card.length)} frames without the card file (re-inserted)`,
-        },
-        {
-          type: 'frames',
-          description: `${String(lift.filter((value) => value === 'all').length)} of ${String(lift.length)} frames without the lift file (no preload)`,
-        },
-      );
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, client-only card after every host left`,
+        recordedAs: 'reinserted-frames',
+      });
+      expectStyledFrames(await liftTransition(), {
+        styled: (value) => value !== 'all',
+        label: `${browserName}, ${kind}, client-only lift without a lift preload`,
+        recordedAs: 'no-preload-frames',
+      });
     });
 
     test.describe('with JavaScript off', () => {
@@ -368,6 +352,7 @@ for (const { kind, prefix } of routeKinds) {
     });
 
     test('renders the client-only card with 0 unstyled frames through the preload', async ({
+      browserName,
       page,
     }) => {
       const styleMutations = await recordStyleMutations(page);
@@ -422,15 +407,10 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('padding-top', '0px');
       expect(await itemLinks(page)).toEqual(['card']);
 
-      const frames = await cardPadding();
-      const unstyled = frames.filter((value) => value === '0px');
-
-      expect(frames.length, 'the deferred card was sampled').toBeGreaterThan(0);
-
-      expect(
-        unstyled,
-        'no frame shows the preloaded card without Yeti',
-      ).toEqual([]);
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, deferred card through the preload`,
+      });
     });
 
     test.describe('with JavaScript off', () => {

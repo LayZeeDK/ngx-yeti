@@ -1,58 +1,19 @@
-import { type Locator, type Page } from '@playwright/test';
-import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+  expectItemSheetsApplied,
+  rect,
+  usedLength,
+} from '@ngx-yeti/testing/playwright';
+import { type Locator, type Page } from '@playwright/test';
+import { expect, routeKinds, test } from './support/fixtures';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
+  productionFramesRecordedAs,
   recordFrames,
 } from './support/style-probe';
-
-interface Box {
-  readonly top: number;
-  readonly bottom: number;
-  readonly left: number;
-  readonly right: number;
-  readonly width: number;
-}
-
-async function rect(locator: Locator): Promise<Box> {
-  return locator.evaluate((element) => {
-    const { top, bottom, left, right, width } = element.getBoundingClientRect();
-
-    return { top, bottom, left, right, width };
-  });
-}
-
-/** The used length of a public token, read from a probe in the page. */
-async function token(page: Page, name: string): Promise<number> {
-  return page.locator('main').evaluate((main, property) => {
-    const probe = document.createElement('div');
-    probe.style.inlineSize = `var(${property})`;
-    main.append(probe);
-    const { width } = probe.getBoundingClientRect();
-    probe.remove();
-
-    return width;
-  }, name);
-}
-
-/** Upstream bug O2: read geometry only once the breakout's sheet has applied. */
-async function expectBreakoutStyled(
-  page: Page,
-  breakout: Locator,
-): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['breakout']), {
-      message: 'the breakout stylesheet is loaded',
-    })
-    .toBe(true);
-  await expect(breakout).toHaveCSS('display', 'grid');
-}
 
 /**
  * Expects a plain child in the centred column, `min(width - 2 gaps, max)`
@@ -66,15 +27,16 @@ async function expectColumnAndBleed(
   bleed: Locator,
   gapToken = '--yeti-space-md',
 ): Promise<void> {
-  await expectBreakoutStyled(page, breakout);
+  await expectItemSheetsApplied(page, ['breakout']);
+  await expect(breakout).toHaveCSS('display', 'grid');
 
   const [box, column, band] = await Promise.all([
     rect(breakout),
     rect(plain),
     rect(bleed),
   ]);
-  const gap = await token(page, gapToken);
-  const max = await token(page, '--yeti-width-md');
+  const gap = await usedLength(page.locator('main'), `var(${gapToken})`);
+  const max = await usedLength(page.locator('main'), 'var(--yeti-width-md)');
 
   expect(column.width).toBeCloseTo(Math.min(box.width - 2 * gap, max), 0);
   expect(
@@ -83,27 +45,14 @@ async function expectColumnAndBleed(
   expect(band.width).toBeCloseTo(box.width, 0);
 }
 
-/** The breakout links, in document order; later items may add more. */
-async function breakoutLinks(page: Page): Promise<readonly string[]> {
-  return (await itemLinks(page)).filter((item) => item === 'breakout');
-}
-
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} breakout route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}breakout`);
-
-      await expect(page.locator('#live-breakout')).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'breakout',
+      prefix,
+      liveHost: '#live-breakout',
+      leaveLink: 'Leave for a page without breakouts',
+      styled: { property: 'display', value: 'grid' },
     });
 
     test('lays out the column, the bleed, and the note beside its child', async ({
@@ -137,7 +86,8 @@ for (const { kind, prefix } of routeKinds) {
       await page.setViewportSize({ width: 320, height: 640 });
       await page.goto(`${prefix}breakout`);
       await waitForHydration(page);
-      await expectBreakoutStyled(page, page.locator('#live-breakout'));
+      await expectItemSheetsApplied(page, ['breakout']);
+      await expect(page.locator('#live-breakout')).toHaveCSS('display', 'grid');
 
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth),
@@ -160,7 +110,7 @@ for (const { kind, prefix } of routeKinds) {
 
       await expect(breakout).toHaveAttribute('data-ngx-yeti-item-breakout', '');
       expect(
-        await breakoutLinks(page),
+        await itemLinks(page, 'breakout'),
         'the hydrate never host keeps the breakout link',
       ).toEqual(['breakout']);
       await expectColumnAndBleed(
@@ -198,48 +148,11 @@ for (const { kind, prefix } of routeKinds) {
         page.locator('#client-bleed'),
       );
 
-      const frames = await display();
-      const unstyled = frames.filter((value) => value !== 'grid');
-
-      expect(
-        frames.length,
-        'the client-only breakout was sampled',
-      ).toBeGreaterThan(0);
-
-      if (isProduction) {
-        test.info().annotations.push({
-          type: 'a4-frames',
-          description: `${browserName}, production, ${kind}: ${String(unstyled.length)} unstyled frames of ${String(frames.length)}`,
-        });
-      } else {
-        expect(
-          unstyled,
-          'no frame shows the client-only breakout without Yeti',
-        ).toEqual([]);
-      }
-    });
-
-    test('removes the breakout link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}breakout`);
-      await waitForHydration(page);
-
-      expect(await itemLinks(page)).toContain('breakout');
-
-      await page
-        .getByRole('link', { name: 'Leave for a page without breakouts' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-breakout]')).toHaveCount(
-        0,
-      );
-      await expect.poll(() => breakoutLinks(page)).toEqual([]);
-
-      await page.goBack();
-      await expect(page.locator('#live-breakout')).toBeVisible();
-      await expect.poll(() => breakoutLinks(page)).toEqual(['breakout']);
-      await expectBreakoutStyled(page, page.locator('#live-breakout'));
+      expectStyledFrames(await display(), {
+        styled: (value) => value === 'grid',
+        label: `${browserName}, ${kind}, client-only breakout`,
+        ...productionFramesRecordedAs(),
+      });
     });
 
     test.describe('with JavaScript off', () => {
@@ -265,7 +178,7 @@ for (const { kind, prefix } of routeKinds) {
           'data-gap',
           'lg',
         );
-        expect(await breakoutLinks(page)).toEqual(['breakout']);
+        expect(await itemLinks(page, 'breakout')).toEqual(['breakout']);
       });
 
       test('lays out the column, the bleed, and the note as with JavaScript on', async ({
@@ -294,20 +207,15 @@ for (const { kind, prefix } of routeKinds) {
       }) => {
         await page.setViewportSize({ width: 320, height: 640 });
         await page.goto(`${prefix}breakout`);
-        await expectBreakoutStyled(page, page.locator('#live-breakout'));
+        await expectItemSheetsApplied(page, ['breakout']);
+        await expect(page.locator('#live-breakout')).toHaveCSS(
+          'display',
+          'grid',
+        );
 
         expect(
           await page.evaluate(() => document.documentElement.scrollWidth),
         ).toBe(320);
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}breakout`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

@@ -1,25 +1,22 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { expectItemSheetsApplied } from '@ngx-yeti/testing/playwright';
 import { workspaceRoot } from '@nx/devkit';
-import { type Locator, type Page } from '@playwright/test';
+import { type Locator } from '@playwright/test';
 import {
   expect,
   expectOnlyClientPreloads,
-  isProduction,
   routeKinds,
   test,
 } from './support/fixtures';
 import { removeDehydratedHosts } from './support/hosts';
-import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+import { nextFrames, waitForHydration } from './support/hydration';
 import { holdBackMainBundle } from './support/main-bundle';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
   recordFrames,
   recordHostAttributes,
   recordStyleMutations,
@@ -32,17 +29,6 @@ const yetiPin = readFileSync(
 const spinnerHref = `yeti-css/components/spinner/spinner.css?v=${yetiPin}`;
 
 const liveSpinners = '#loading-spinner, #search-spinner, #placeholder-spinner';
-
-/** Upstream bug O2: read styles only once the spinner's sheet has applied. */
-async function expectSpinnerStyled(page: Page, ring: Locator): Promise<void> {
-  await expect
-    .poll(() => itemSheetsLoaded(page, ['spinner']), {
-      message: 'the spinner stylesheet is loaded',
-    })
-    .toBe(true);
-  await expect(ring).toHaveCSS('display', 'inline-block');
-  await expect(ring).toHaveCSS('animation-name', 'yeti-spin');
-}
 
 /** The ring's box, rounded to whole px, with its turn paused at the start. */
 async function ringSize(ring: Locator): Promise<string> {
@@ -86,22 +72,12 @@ async function turnReading(
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} spinner route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}spinner`);
-
-      await expect(
-        page.getByRole('status', { name: 'Loading', exact: true }),
-      ).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'spinner',
+      prefix,
+      liveHost: '#loading-spinner',
+      leaveLink: 'Leave for the replay page',
+      styled: { property: 'display', value: 'inline-block' },
     });
 
     test("changes no spinner attribute at hydration and adopts the server's spinner link", async ({
@@ -150,7 +126,9 @@ for (const { kind, prefix } of routeKinds) {
       const ring = page.locator('#loading-spinner');
 
       await ring.waitFor({ state: 'attached' });
-      await expectSpinnerStyled(page, ring);
+      await expectItemSheetsApplied(page, ['spinner']);
+      await expect(ring).toHaveCSS('display', 'inline-block');
+      await expect(ring).toHaveCSS('animation-name', 'yeti-spin');
       await expect
         .poll(async () => (await turnReading(ring)).currentTime, {
           message: 'the server-rendered ring turns before hydration',
@@ -183,7 +161,9 @@ for (const { kind, prefix } of routeKinds) {
 
       const never = page.locator('#never-spinner');
 
-      await expectSpinnerStyled(page, never);
+      await expectItemSheetsApplied(page, ['spinner']);
+      await expect(never).toHaveCSS('display', 'inline-block');
+      await expect(never).toHaveCSS('animation-name', 'yeti-spin');
       const size = await ringSize(never);
 
       await page
@@ -197,13 +177,16 @@ for (const { kind, prefix } of routeKinds) {
         await itemLinks(page),
         'the hydrate never host keeps the link',
       ).toContain('spinner');
-      await expectSpinnerStyled(page, never);
+      await expectItemSheetsApplied(page, ['spinner']);
+      await expect(never).toHaveCSS('display', 'inline-block');
+      await expect(never).toHaveCSS('animation-name', 'yeti-spin');
       expect(await ringSize(never)).toBe(size);
     });
 
     // The server hosts keep the spinner link in <head>, so the client-only
     // spinner reuses it.
     test('renders a client-only spinner with 0 unstyled frames while the server hosts hold the spinner link', async ({
+      browserName,
       page,
     }) => {
       const display = await recordFrames(page, '#client-spinner', 'display');
@@ -218,22 +201,19 @@ for (const { kind, prefix } of routeKinds) {
 
       const ring = page.locator('#client-spinner');
 
-      await expectSpinnerStyled(page, ring);
+      await expectItemSheetsApplied(page, ['spinner']);
+      await expect(ring).toHaveCSS('display', 'inline-block');
+      await expect(ring).toHaveCSS('animation-name', 'yeti-spin');
       expect(await itemLinks(page)).toContain('spinner');
 
-      const frames = await display();
-
-      expect(
-        frames.length,
-        'the client-only spinner was sampled',
-      ).toBeGreaterThan(0);
-      expect(
-        frames.filter((value) => value !== 'inline-block'),
-        'no frame shows the client-only spinner without Yeti',
-      ).toEqual([]);
+      expectStyledFrames(await display(), {
+        styled: (value) => value === 'inline-block',
+        label: `${browserName}, ${kind}, client-only spinner`,
+      });
     });
 
     test("records the client-only spinner's frames after every spinner host has left", async ({
+      browserName,
       page,
     }) => {
       const display = await recordFrames(page, '#client-spinner', 'display');
@@ -252,40 +232,23 @@ for (const { kind, prefix } of routeKinds) {
         .getByRole('button', { name: 'Show the client-only spinner' })
         .click();
 
-      await expectSpinnerStyled(page, page.locator('#client-spinner'));
+      await expectItemSheetsApplied(page, ['spinner']);
+      await expect(page.locator('#client-spinner')).toHaveCSS(
+        'display',
+        'inline-block',
+      );
+      await expect(page.locator('#client-spinner')).toHaveCSS(
+        'animation-name',
+        'yeti-spin',
+      );
 
-      const frames = await display();
-
-      expect(
-        frames.length,
-        'the client-only spinner was sampled',
-      ).toBeGreaterThan(0);
       // Routing turns the HTTP cache off, so the re-inserted link refetches:
       // recorded, not asserted, as on the card route.
-      test.info().annotations.push({
-        type: 'frames',
-        description: `${String(frames.filter((value) => value !== 'inline-block').length)} of ${String(frames.length)} frames without the spinner file (re-inserted)`,
+      expectStyledFrames(await display(), {
+        styled: (value) => value === 'inline-block',
+        label: `${browserName}, ${kind}, client-only spinner after every host left`,
+        recordedAs: 'reinserted-frames',
       });
-    });
-
-    test('removes the spinner link on leaving the route and re-inserts it on returning', async ({
-      page,
-    }) => {
-      await page.goto(`${prefix}spinner`);
-      await waitForHydration(page);
-
-      expect(await itemLinks(page)).toContain('spinner');
-
-      await page
-        .getByRole('link', { name: 'Leave for the replay page' })
-        .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-spinner]')).toHaveCount(0);
-      await expect.poll(() => itemLinks(page)).not.toContain('spinner');
-
-      await page.goBack();
-      await expect(page.locator('#loading-spinner')).toBeVisible();
-      await expect.poll(() => itemLinks(page)).toContain('spinner');
     });
 
     test('passes axe with JavaScript on', async ({ axeViolations, page }) => {
@@ -313,21 +276,14 @@ for (const { kind, prefix } of routeKinds) {
         await expect(ring).not.toHaveAttribute('data-variant');
         await expect(ring).not.toHaveAttribute('data-size');
         await expect(page.getByText('Loading the latest posts')).toBeVisible();
-        await expectSpinnerStyled(page, ring);
+        await expectItemSheetsApplied(page, ['spinner']);
+        await expect(ring).toHaveCSS('display', 'inline-block');
+        await expect(ring).toHaveCSS('animation-name', 'yeti-spin');
         expect(await turning(ring)).toBe(true);
         await expect(
           page.getByRole('status', { name: 'Loading comments' }),
         ).toBeVisible();
         expect(await itemLinks(page)).toContain('spinner');
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}spinner`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });
