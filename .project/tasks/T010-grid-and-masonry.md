@@ -3,9 +3,9 @@ id: T010
 title: Ship grid and masonry with A11Y-23's order story
 wave: 3
 deps: [T001, T002, T003]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T010
+base: 4978c46b77a3e3e632542bd8279a71f56d04c86c
 worktree: null
 task_branch: null
 files:
@@ -92,3 +92,28 @@ Heavy: yes
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — coder: implemented `YetiGrid` (seven inputs, `yetiGridToken` provider, `injectYetiItemStyles('grid')` last), `YetiGridChild` (`start`/`span`, `'[attr.start]': 'null'`, optional `skipSelf` token), and `YetiMasonry` (three inputs, no providers); usage rules numbered as grid.md 1-11 and masonry.md 1-8 in the JSDoc, with grid's Tailwind `.grid` note. E8 verdict pass, so the static `start` form ships. Stories grid--default/settings/exact-count/fold/tracks/rows and masonry--default/fit/capped/exact/order/inputs/rtl; layer 2, SSR, and contract specs for both; Fixture routes `/grid` (fitted, folded, tracks grid with a static-`start` `ol` cell, hydrate never, client-only defer) and `/masonry` (photo wall, eight-block wall, hydrate never, client-only defer) with their e2e specs; Storybook e2e for Yeti's grid counts, 320 px overflow on default/fold/tracks, masonry fit/order with container resize, a per-engine `masonry-native-path` annotation, and real-key Tab order. Stories use `trail.svg` (1600x900) for every photo, so the five masonry--default images share one aspect ratio. Fixture block heights live in component styles (template inline styles are linted out). No ledger row needed (A11Y-23 exists, the package adds nothing); no upstream bug found.
+- 2026-10-11 — coder: Verify passed (exit 0, run under the heavy lock): lint and typecheck on 4 projects clean; `nx test` 6 files, 38 tests passed; `test-storybook` 2 files, 13 stories passed; ngx-yeti-e2e Chromium 12 passed; yeti-app-e2e Chromium development 34 passed, production 30 passed and 4 skipped (development-only hydration diagnostics); run-job Firefox ngx-yeti-e2e 12 passed and yeti-app-e2e 34 passed; run-job WebKit ngx-yeti-e2e 12 passed and yeti-app-e2e 34 passed. The three local Chromium e2e results were Nx cache replays of identical runs made just before, under the same inputs. Nx daemon stopped at the end.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T010): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:985) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:988) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```

@@ -1,1 +1,1 @@
-export {};
+export { YetiMasonry } from './masonry';
