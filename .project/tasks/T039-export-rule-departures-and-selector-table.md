@@ -3,9 +3,9 @@ id: T039
 title: Record the entry-point export rule and the audited departures, and bound the accessibility stylesheet's Yeti selectors by ledger row
 wave: 4
 deps: [T035]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T039
+base: 2e703719aa0b3e6f0fd8df20ff64e80021886694
 worktree: null
 task_branch: null
 files:
@@ -78,3 +78,33 @@ Heavy: no
 ## Log
 
 - 2026-10-11 — created by planner (build repair before wave 4; user rulings "1-3: Approve." item 3, the entry-point export ruling, and "7: Audit docs/specs/ to inform your decision."). The audit's findings in Context are from two read-only audits of 2026-10-11, whose files are not in the repository. The Verify ends by stopping the Nx daemon and keeps its own exit code; run it exactly as written and never set NX_DAEMON.
+- 2026-10-12 — coder (build_T039): implemented.
+  - Specs skill: the export rule under "Where code goes" (the user's ruling quoted and dated, plus when an exception applies); Departures rows for setup.md:329, sidebar.md:272/:286/:316, cover.md:282/:286 with hero.md:332, enter.md:86 with ADR 0003 point 1 and building-blocks 1.1, and scroller.md:153/:403 with ticket 50 decision 60 and table.md:142; the setup.md:210 row corrected. The stale one-time bullet and its heading are gone, and its facts that stay true now sit under "Where code goes". The frontmatter description no longer mentions one-time tasks. The accessibility skill's pointer now leads to "Where code goes" and names `sanctionedSelectors`.
+  - published-output.node.spec.ts: `withoutPackageLayer` is replaced by `sanctionedSelectors` (A11Y-32: `.spinner`, `.button[aria-busy='true']::after`). Selectors are compared as lightningcss-parsed JSON, and the check tracks whether it is inside `@layer ngx-yeti` with generic `Rule`/`RuleExit` visitors. Measured: lightningcss 1.33 never calls a keyed `RuleExit: { 'layer-block' }`, and returning a modified StyleSheet from a visitor throws "failed to deserialize ... Specifier" on accessibility.css. New self-tests show the check reporting a `.card` rule pasted inside the layer, a sanctioned selector outside it, an entry with no matching selector, and a key that is not a ledger row. One more test checks that every real key is a ledger row id.
+  - project.json `test` inputs: DEVIATION FROM APPROACH, please review. `{workspaceRoot}/docs/specs/ledger.md` as a file input is a no-op because `.nxignore` lists `/docs/specs`. Measured: `nx show target inputs ngx-yeti:test --check docs/specs/ledger.md` reported "not inputs". I used a `runtime` input instead: a node one-liner that prints the ledger's sha256. Measured: two runs gave 3/3 cache hits; after a ledger edit (A11Y-32 renamed) `ngx-yeti:test` ran again and failed with "accessibility.css: A11Y-32 is not a row of the ledger"; the ledger was then restored with `git checkout`.
+  - name-collision.node.spec.ts: a new test asserts that the built `types/ngx-yeti.d.ts` exports exactly Yeti's names (sorted equality). Fail run: with `export type NgxYetiProbe = 'probe';` appended to packages/ngx-yeti/src/index.ts, the test failed (`+ "NgxYetiProbe"`, 1 failed | 2 passed). The file was reverted with `git checkout`.
+  - No docs/specs file or product source changed; the git status shows only the declared files and this task file.
+  - Verify (run exactly as written, from the worktree root): exit 0. lint and typecheck passed for ngx-yeti; test: 3 files, 18 tests passed. The first Verify run exited 1 (TS2305: lightningcss exports `Rule`, not `CssRule`); that is fixed. Prettier --check on the changed files passes.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T039): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

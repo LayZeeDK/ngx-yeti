@@ -50,6 +50,16 @@ describe('adr 0080 name collisions', () => {
     expect(yetiExportedNames()).toHaveLength(46);
   });
 
+  it('exports exactly the names Yeti exports from the primary entry point', () => {
+    const primaryNames = exportedNames(
+      readFileSync(join(builtTypes, 'ngx-yeti.d.ts'), 'utf8'),
+    );
+
+    expect(primaryNames.toSorted()).toStrictEqual(
+      yetiExportedNames().toSorted(),
+    );
+  });
+
   it('keeps every export of the package apart from them', () => {
     const packageNames = packageExportedNames();
     const yeti = new Set(yetiExportedNames());
