@@ -3,9 +3,9 @@ id: T015
 title: Ship layer and overlay with A11Y-10b's scrim contrast
 wave: 3
 deps: [T001, T002, T003, T009]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T015
+base: df9bfbc3c9087eb8aa862a91e682eed39ecc6b6b
 worktree: null
 task_branch: null
 files:
@@ -98,3 +98,31 @@ Heavy: yes
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — coder: implemented `YetiLayer` (`align` of the removed kind with `'[attr.align]': 'null'`, `yetiLayerToken` provider, `injectYetiItemStyles('layer')` last), `YetiLayerChild` (`alignSelf: YetiAlign`, `justifySelf: YetiSelf`, optional `skipSelf` token), `YetiOverlay` (`gap: YetiGap`, boolean `fixed`, `yetiOverlayToken`, `injectYetiItemStyles('overlay')` last), and `YetiOverlayChild` (boolean `over` and `fill`, no `[attr.fill]` binding: the inert kind). JSDoc carries layer.md usage rules 1-7 and overlay.md rules 1-13. E8 verdict pass, so the static `align` form ships. Stories layer--default/dark-scheme/badge/settings and overlay--default/settings/veil/fixed/scrolls/rtl; layer 2, SSR, and contract specs for both; Fixture routes `/layer` (captioned picture, static `align="end"` layer, hydrate never, client-only defer) and `/overlay` (stamp, fixed notice, hydrate never, client-only defer) with e2e specs; Storybook e2e for Yeti's layer.spec.js and overlay.spec.js cases at 600/400 px containers and 1280x800/320x640, 320 px overflow, 200 % text zoom, the veil's real-key Tab case, and the scroll region's Tab and ArrowDown.
+- A11Y-10b (E7): passes, so no rule in accessibility.css, no ledger change, accessibility.node.spec.ts unchanged. Ratios recorded in Chromium (e2e annotations `a11y-10b-ratio`, `veil-scrim-ratio`): caption over the scrim 13.450 on black, 19.108 on white on layer--default and on layer--dark-scheme; overlay--veil "Saving..." on the scrim 13.450 on black, 19.108 on white in its light and dark copies. Observation, not traced: the dark-scheme numbers equal the light ones although the play function sees `color-scheme: dark` on the layer, so the dark wrapper may not be switching Yeti's computed palette here; worth a look at `withColorScheme` before relying on any dark-scheme contrast assertion.
+- Placement notes: the scroll region's arrow-key scrolling (overlay.md:293, layer 1) is asserted in layer 4 (`apps/ngx-yeti-e2e/src/overlay.spec.ts`), because Storybook's `userEvent` dispatches synthetic keys that never scroll; the story asserts focus by Tab. Same reason as the `:hover` Departures row; a Departures row in `.claude/skills/ngx-yeti-specs/SKILL.md` is needed (not in this task's files). The veil's message is centred by the consumer's own grid (inline `display: grid; place-items: center`), not `yetiCover`, because cover (T014) is not in this task's base. Yeti's prose measure (`figcaption { max-inline-size: var(--yeti-measure) }`) caps the caption below the box width at a 600 px container, so layer--default asserts the caption width as `min(box, --yeti-measure probe)`. The Fixture client-only overlay test asserts the box's `position` per frame (static class plus sheet) and only records the held child's frames (`client-held-frames`): its `data-over` is a binding and the rAF probe can sample before Angular's change detection in the same frame (one such `static` sample measured in Chromium development).
+- No ledger row needed (A11Y-10b holds; overlay owns none); no upstream bug found.
+- Verify (under the lock, exit 0): lint+typecheck 4 projects pass; `nx test` 8 files / 47 tests pass; test-storybook 2 files / 10 stories pass; ngx-yeti-e2e Chromium 32 passed; yeti-app-e2e development 42 passed; production 38 passed, 4 skipped (development-only hydration diagnostics); ci-local Firefox ngx-yeti-e2e 32 passed, yeti-app-e2e 42 passed; ci-local WebKit ngx-yeti-e2e 32 passed, yeti-app-e2e 42 passed; Nx daemon stopped.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T015): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:987) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:985) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```
