@@ -3,9 +3,9 @@ id: T032
 title: Fix wave 2 cycle 1 review findings in T007, T008
 wave: 6
 deps: [T007, T008]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T032
+base: 958acdff276cad929a0bcc8b481fe314bf8c43a2
 worktree: null
 task_branch: null
 files:
@@ -114,3 +114,27 @@ Criterion: `/sub/stack`, `/sub/server/stack`, `/sub/center`, and `/sub/server/ce
 - 2026-10-11 — coder: fixed `expectCentred` in apps/yeti-app-e2e/src/center.spec.ts. It now reads the probe value first, then waits with `await expect(center).toHaveCSS('max-inline-size', probeMax)` on every center (auto-retrying, on the computed value), then makes the one-shot geometry read. The assertion is not loosened: each center must still reach exactly the probe value, and the start and end checks are unchanged. Probe test removed.
 - 2026-10-11 — coder: `node tools/ci-local/run-job.mjs ci e2e --matrix engine=chromium --matrix configuration=production -- npx nx e2e yeti-app-e2e -- --project=chromium center.spec.ts --repeat-each=20 --retries=0` gave 480 passed, 0 failed, and 40 skipped (the development-only hydration test). The target test passed 20 of 20 for each route kind. Task Verify (both blocks, run as written through the shared lock): exit 0, covering lint, typecheck, unit, test-storybook, Chromium development and production e2e, the Firefox and WebKit run-job e2e, and pack-check. The extra full six-combination `ci e2e` run was stopped by the host for low memory partway through the chromium-development combination (1 and 24 passed before the stop, none failed). It was not restarted, so the full job is unproven.
 - 2026-10-11 — orchestrator: attempt 1 rejected without a product fault. The Verify-only repair checkpoint d25ff7b changed the task body after dispatch, so the isolate (base 46b0ecb) cannot land (T033 measured the same refusal in `finish`: "task file body is not append-only"). Rejected diff: apps/yeti-app-e2e/src/center.spec.ts plus this task file's Log; product patch sha256 916f821ff674d054eef02305ed08bd46341d1e951ae65f483a615078e1e99750, kept for the retry. Retry from the next clean HEAD.
+- 2026-10-11 — coder attempt 2 (serial, base 958acdf): applied the attempt-1 patch (sha256 916f821f...) with `git apply` and cut the `expectCentred` comment down to the mechanism, removing the measurement note. Task Verify, run as written under the heavy lock, exited 0. It covered lint and typecheck for 4 projects, unit tests (192, then 41 passed), test-storybook (15, then 21), Chromium development and production `yeti-app-e2e` and `ngx-yeti-e2e`, the Firefox and WebKit run-job e2e, and pack-check, with no failure.
+- 2026-10-11 — orchestrator Verify (sidecar gsd-path-verify/task-t032-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```

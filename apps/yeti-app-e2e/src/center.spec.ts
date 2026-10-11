@@ -34,30 +34,38 @@ async function expectCentred(page: Page, centers: Locator): Promise<void> {
     .toBe(true);
   await expect(centers.first()).toHaveCSS('box-sizing', 'content-box');
 
-  const columns = await centers.evaluateAll((elements) => {
+  const probeMax = await page.evaluate(() => {
     const probe = document.createElement('div');
     probe.style.maxInlineSize = 'var(--yeti-width-xs)';
     document.body.append(probe);
-    const probeMax = getComputedStyle(probe).maxInlineSize;
+    const value = getComputedStyle(probe).maxInlineSize;
     probe.remove();
 
-    return elements.map((element) => {
+    return value;
+  });
+
+  // A client `@defer` block enters the DOM with the static `class="center"`
+  // and gets its bound `data-max` in Angular's next tick, so Yeti's unset
+  // maximum (`xl`) applies until then.
+  for (const center of await centers.all()) {
+    await expect(center).toHaveCSS('max-inline-size', probeMax);
+  }
+
+  const columns = await centers.evaluateAll((elements) =>
+    elements.map((element) => {
       const outer = element.parentElement?.getBoundingClientRect();
       const inner = element.getBoundingClientRect();
 
       return {
-        max: getComputedStyle(element).maxInlineSize,
-        probeMax,
         start: inner.left - (outer?.left ?? NaN),
         end: (outer?.right ?? NaN) - inner.right,
       };
-    });
-  });
+    }),
+  );
 
   expect(columns.length, 'the centers are rendered').toBeGreaterThan(0);
 
-  for (const { max, probeMax, start, end } of columns) {
-    expect(max).toBe(probeMax);
+  for (const { start, end } of columns) {
     expect(start, 'the column is narrower than its container').toBeGreaterThan(
       50,
     );
