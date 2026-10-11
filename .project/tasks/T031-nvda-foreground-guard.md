@@ -3,9 +3,9 @@ id: T031
 title: Check the foreground window before every NVDA key and prove the guard refuses a wrong window
 wave: 2
 deps: [T004]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T031
+base: 3c65638f70b81f54fecec7b45f9004f3acc76354
 worktree: null
 task_branch: null
 files:
@@ -75,3 +75,34 @@ Heavy: yes
 ## Log
 
 - 2026-10-11 — created by planner (build repair of the wave 1 defect D4; user ruling "Wave-1 defects: Approve recommendation."). Run alone: real NVDA takes the desktop and port 4401. The Verify's `--list` step proves the `nvda` lane collects the guard test before the lane runs it (measured on the current tree: Playwright's `--list` exits 1 with "No tests found" for a file the lane does not match and 0 for card.screen-reader.ts). The Verify ends by stopping the Nx daemon and keeps its own exit code, as every pending task's does; run it exactly as written and never set NX_DAEMON.
+- 2026-10-11 — coder (build_T031): implemented.
+  - `src/support/nvda.ts`: every key (`open`'s focus report, `top`'s Control+Home and `nvda.next()`, `nextListItem`'s list-item key) goes through the module-private `sendKey(token, send)`. It reads the foreground title with a read-only PowerShell script (`foregroundTitle()`: GetForegroundWindow + GetWindowText, no raise), and when the title lacks the token from the last `open` it throws `NVDA lane: no key sent; the foreground window is "<title>", not the story window <token>.` without sending. `rg "nvda\.(press|perform|next|previous|type|act)"` finds the four calls, all inside `key(...)`. Only `open` raises the window (`activate`, which now returns its token and takes an optional name prefix). `acceptsFocusReport(phrases, token)` accepts a report only when it holds the token or `startMarkerText`, with whitespace stripped from both sides. `activate`, `foregroundTitle` and `acceptsFocusReport` are exported for the test. `Lane`, `Driver`, `voiceover.ts`, `screen-reader.ts` and `card.screen-reader.ts` are unchanged.
+  - `screen-reader.config.mts`: `testMatch` adds `**/*.nvda.ts` for the `nvda` lane only. `src/focus-guard.nvda.ts` has two tests: (1) open `card--list`, launch a decoy browser of the same type (headed, closed in `finally`) holding a focused text field that records keydowns, raise it with `activate(decoy, 'decoy')`, assert `foregroundTitle()` contains the decoy token, then soft-assert that `top()` and `nextListItem()` reject with that title and that the decoy recorded no keydown; (2) recorded phrases: T004's `screen-reader-e 2e-518862816, document, focused, read only` and `Story start` are accepted, and `Untitled - Notepad, document, focused` is refused. `references/ci-local.md` NVDA lane section updated; its measured notes are kept.
+  - Red proof on the unguarded driver (guard disabled and the old `includes('document')` check, `BROWSERS=msedge`, `--retries=0`): test 1 failed because `top()` resolved to `["list, with 3 items, heading, level 3, link, Weekend in the hills"]` and `nextListItem()` resolved to `["A day by the lake, link, heading, level 3, ..."]`. The decoy recorded no keydown even then, and NVDA spoke the story's content although Windows reported the decoy as foreground. Test 2 failed because the old check refused the `Story start` report. With the guard, both pass.
+  - Phrases heard on the accepted focus report (Edge 154): `screen-reader-e 2e-<n>, document, focused, read only`. On a fresh worker's first test it was once `screen-reader-e 2e-554141534, document, http: slash slash localhost:4401 slash iframe dot html id equals card--list and view Mode equals story and embed equals true, focused, read only`, which is accepted by the token. Decoy keydown with the guard: none recorded (held).
+  - Verify, exactly as written: exit 0. `npm ci` and `playwright install chromium` ok; lint and typecheck for screen-reader-e2e passed; `--list focus-guard.nvda.ts` exited 0; `nvda` lane: 2 passed, 1 flaky. card--list failed its first attempt and passed on retry #1. The guard let every key through on that attempt (foreground correct), but NVDA answered the three list-item keys with `Not supported in this document`. The retry heard the full list. This is inside the unchanged budget of 2 retries. A second `BROWSERS=msedge` lane run: 3 passed, no retry.
+  - Without `BROWSERS` (Playwright Chromium 153 + Firefox 155, x64 under emulation): exit 1. Chromium passed all 3. In Firefox, card--list and the guard test failed all 3 attempts. Windows reported the Firefox window as foreground, so the guard sent the focus-report key, but NVDA reported `Terminal 1, ... edit, focused` (a VS Code terminal on this desktop), and `open` refused it. No further key was sent. This happens only when the Firefox worker follows the Chromium worker. On the base driver (7ad619f's nvda.ts restored temporarily, card only, `--retries=0`) the same sequence fails the same way, and Firefox alone passes on both the base and the T031 driver. So it predates T031 and is not caused by it; T004 recorded this run passing on 2026-10-10. Not fixed here (outside T031's criteria); it is a candidate for the orchestrator to route.
+  - AC7 check: `npx prettier --check .` passed; `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (working tree; affected: @ngx-yeti/source, screen-reader-e2e) passed. Cleanup: no NVDA, Playwright browser or Storybook I started is left running; port 4401 is free; the Nx daemon is stopped.
+- 2026-10-11 — orchestrator Verify (sidecar gsd-path-verify/task-t031-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m(node:20156) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:17108) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  ```

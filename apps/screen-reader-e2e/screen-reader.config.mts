@@ -41,7 +41,12 @@ const projects =
 
 export default defineConfig({
   testDir: './src',
-  testMatch: '**/*.screen-reader.ts',
+  // Both lanes run *.screen-reader.ts; *.nvda.ts tests the NVDA driver
+  // itself, so only the nvda lane loads it.
+  testMatch:
+    lane === 'nvda'
+      ? ['**/*.screen-reader.ts', '**/*.nvda.ts']
+      : '**/*.screen-reader.ts',
   outputDir: `${workspaceRoot}/dist/.playwright/apps/screen-reader-e2e/test-output`,
   // One screen reader per machine: one worker, one test at a time.
   workers: 1,
