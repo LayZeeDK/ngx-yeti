@@ -91,3 +91,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-11 — build — T033 landed 7ba7c0b; T032 attempt 1 rejected (task body changed after dispatch), Log copied, retry from this checkpoint
 - 2026-10-11 — build — wave 2 done, 2 review cycles (cycle 2 pass); wave 6 done, 1 review cycle (pass)
 - 2026-10-11 — build — plan defect repaired: T016 files gains packages/ngx-yeti/src/published-output.node.spec.ts (E7 rule on Yeti state hooks vs the no-Yeti-rule check; INTENT E7 and button.md A11Y-1a outrank setup.md layer 3); T016 attempt 1 Log copied, retry next
+- 2026-10-11 — build — T018 NEEDS-ORCHESTRATOR answered from frame.md:278 plus measurement: axe.ts joins T018 files to drop one Firefox srcdoc warning (documented plan defect); attempt 1 Log copied, retry next
