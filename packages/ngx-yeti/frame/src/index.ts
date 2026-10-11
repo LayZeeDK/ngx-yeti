@@ -1,1 +1,1 @@
-export {};
+export { YetiFrame } from './frame';

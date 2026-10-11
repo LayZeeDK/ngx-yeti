@@ -3,9 +3,9 @@ id: T018
 title: Ship frame with its zero layout shift and the iframe reload ledger row
 wave: 3
 deps: [T001, T002, T009, T013]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T018
+base: 638be817c7a0c5b737be6d81d150fb52600178e8
 worktree: null
 task_branch: null
 files:
@@ -85,3 +85,27 @@ Heavy: yes
 - 2026-10-11 — coder: Verify (full command, under the lock) exit 1. Passed: npm ci, playwright install, lint and typecheck for 4 projects, `test ngx-yeti -- frame/src` 14/14, `test-storybook ngx-yeti -- frame/src` 8/8, Chromium dev e2e 26/26, Chromium production e2e 24 passed and 2 skipped (dev-only hydration diagnostics). Failed: the Firefox run-job, 25 passed and 1 failed: "serves server HTML that axe passes" (server-rendered, JavaScript off, 3/3 attempts) with `The snapshot logged warnings: [JavaScript Warning: "Layout was forced before the page was fully loaded. If stylesheets are not yet loaded this may cause a flash of unstyled content." {file: "about:srcdoc" line: 0}]`. The WebKit run-job did not run in Verify; run alone just before, it passed 26/26.
 - NEEDS-ORCHESTRATOR: the Firefox JavaScript-off axe check fails on a warning that `apps/yeti-app-e2e/src/support/axe.ts` (`axeViolationsOfSnapshot`, not in this task's files) turns into an error; may this task add that path to drop Firefox's "Layout was forced before the page was fully loaded" warning in the snapshot, or should another task own the fix? — readings: (a) add `apps/yeti-app-e2e/src/support/axe.ts` to T018's files and skip that warning text in the snapshot's console listener (measured with a temporary edit, then reverted: 12/12 passed with `--repeat-each=6 --retries=0`, axe found no violation); (b) a separate task owns the helper change and T018 waits for it. Measured without a fix: 6 of 12 failed (both route kinds); waiting for every snapshot frame's `load` after `goto` still failed 3 of 12, so the warning comes during the snapshot's own load, with no page script, not from axe. A complete srcdoc document (head, meta charset) did not help (8 of 12 failed). The snapshot needs the `srcdoc` iframe because frame.md:278 counts its loads on this route.
 - 2026-10-11 — Orchestrator answer: yes. Add `apps/yeti-app-e2e/src/support/axe.ts` to T018's files and drop only Firefox's "Layout was forced before the page was fully loaded" warning from an `about:srcdoc` source in the snapshot console listener; every other snapshot warning or error still fails. Grounds: frame.md:278 requires the srcdoc iframe on the route and counts its loads; the warning is an engine diagnostic, not an accessibility or hydration fault; measured by the coder, 12/12 with the filter vs 6/12 failures without, axe finding no violation; no other task declares axe.ts. Recorded as a documented plan defect (files). Attempt 1 rejected for that reason only; product patch (11 paths) sha256 c8f8741e5cb217d7e3fd6f08b15d602da93e5783080c94fa288370dc32ef15fd kept for the retry.
+- 2026-10-11 — coder (attempt 2, serial round in the primary at 638be81): applied T018-attempt1.patch with `git apply` (sha256 c8f8741e..., `--check` clean). `apps/yeti-app-e2e/src/support/axe.ts`: new exported `failsSnapshot(type, text)`; the snapshot console listener now fails on every `warning` and every `error` except a `warning` whose whole text matches Firefox's "Layout was forced before the page was fully loaded." with `{file: "about:srcdoc" line: N}`. Note: errors did not fail the snapshot before; they do now. Every Firefox axe test of yeti-app-e2e ran against the stricter helper (`-g "axe|srcdoc forced-layout"`, dev, run-job, no retries): 82 passed, 88 skipped (stub routes and JavaScript-on cases), 0 failed. Check: a no-page test in `apps/yeti-app-e2e/src/frame.spec.ts` asserts that the srcdoc warning passes and that these still fail: the same warning from the page's own URL, an error with the same text, another srcdoc warning (media decode), and a CSP error; a `log` passes. Added the scroller.md:278/:282 Departures row (arrow-key scrolling of `scroller--keyboard` and `scroller--rtl` in Playwright with real keys, `apps/ngx-yeti-e2e/src/scroller.spec.ts`). Verify (full command, under the lock) exit 0: lint and typecheck for 4 projects; `test ngx-yeti -- frame/src` 14/14; `test-storybook ngx-yeti -- frame/src` 8/8; Chromium dev e2e 27/27; Chromium production 25 passed and 2 skipped (dev-only hydration diagnostics); Firefox run-job 27/27; WebKit run-job 27/27.
+- 2026-10-11 — orchestrator Verify (sidecar gsd-path-verify/task-t018-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```

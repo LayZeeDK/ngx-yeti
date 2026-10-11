@@ -41,6 +41,26 @@ export async function axeViolations(
 }
 
 /**
+ * Firefox logs this while an `iframe` with `srcdoc` loads inside the
+ * snapshot, which runs no script of its own, so it says nothing about the
+ * page (measured on the frame route).
+ */
+const srcdocForcedLayout =
+  /^\[JavaScript Warning: "Layout was forced before the page was fully loaded\.[^"]*" \{file: "about:srcdoc" line: \d+\}\]$/;
+
+/**
+ * Whether a console message of the snapshot fails it: every warning and
+ * error does, except Firefox's forced-layout warning from an `about:srcdoc`
+ * document.
+ */
+export function failsSnapshot(type: string, text: string): boolean {
+  return (
+    (type === 'warning' || type === 'error') &&
+    !(type === 'warning' && srcdocForcedLayout.test(text))
+  );
+}
+
+/**
  * `axeViolations` for a JavaScript-disabled page in Firefox. Firefox runs no
  * microtask on such a page, so axe cannot settle there (measured). The
  * page's DOM is served instead as a snapshot, with every script removed, its
@@ -90,7 +110,7 @@ export async function axeViolationsOfSnapshot(
     const warnings: string[] = [];
 
     snapshot.on('console', (message) => {
-      if (message.type() === 'warning') {
+      if (failsSnapshot(message.type(), message.text())) {
         warnings.push(message.text());
       }
     });
@@ -103,7 +123,9 @@ export async function axeViolationsOfSnapshot(
     const violations = await axeViolations(snapshot, true);
 
     if (warnings.length > 0) {
-      throw new Error(`The snapshot logged warnings: ${warnings.join('; ')}`);
+      throw new Error(
+        `The snapshot logged warnings or errors: ${warnings.join('; ')}`,
+      );
     }
 
     return violations;
