@@ -319,19 +319,10 @@ test.describe('the stub route check', { tag: '@stub-route-control' }, () => {
       test("rejects a stub route that shows another key's h2", async ({
         page,
       }) => {
-        // The check reads the server document before hydration; once booted,
-        // the client renders the breakout route over the button stub.
-        await page.route(mainBundle, async (route) => {
-          await route.abort();
-        });
         await page.route('**/sub/breakout', async (route) => {
           await route.fulfill({
-            response: await route.fetch({
-              url: route
-                .request()
-                .url()
-                .replace(/breakout$/, 'button'),
-            }),
+            contentType: 'text/html',
+            body: '<!doctype html><html lang="en"><head><title>Stub</title></head><body><app-root><main><h1>Welcome</h1><router-outlet></router-outlet><section data-fixture-stub><h2>button</h2></section></main></app-root></body></html>',
           });
         });
 

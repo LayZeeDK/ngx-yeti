@@ -3,9 +3,9 @@ id: T033
 title: Fix wave 2 cycle 1 review findings in T030
 wave: 6
 deps: [T030]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T033
+base: 7dc237d9053268726cd9c37d88a75605e5abfcea
 worktree: null
 task_branch: null
 files:
@@ -84,3 +84,27 @@ Criterion: No item task has to edit the file: the landed stack, center, and stat
   [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
   ```
 - 2026-10-11 — orchestrator: attempt 1 rejected without a product fault. The Verify-only repair checkpoint d25ff7b changed the task body after dispatch, so `finish` refused the isolate (recover: "retained task body does not extend the current task"; after syncing the line: "task file body is not append-only"). Rejected diff: apps/yeti-app-e2e/src/fixture-app.spec.ts plus this task file's Log; product patch sha256 827214c3f7f2179e5f36b4150e14db58580fd41862361f2fd45b850edd216085, kept for the retry. Retry from d25ff7b.
+- 2026-10-11 — coder attempt 2: applied the attempt-1 patch (sha256 827214c3…, `git apply` only) at base 7dc237d; re-reviewed against t030_ac3: the wrong-key control serves a synthetic stub document and keeps `stubHeadingMessage`. Verify as written (current two-tail form), under heavy-lock: exit 0. lint + typecheck yeti-app-e2e passed. `@stub-route-control`: 10 passed. fixture-app.spec.ts development (Chromium): 104 passed, 28 skipped. Production (Chromium): 104 passed, 28 skipped. ci-local Firefox development: 104 passed, 28 skipped. ci-local WebKit development: 104 passed, 28 skipped. The three Chromium runs show the same durations as attempt 1 (27.8s, 38.9s, 29.3s), so Nx probably replayed them from cache for the same inputs (inferred, not checked).
+- 2026-10-11 — orchestrator Verify (sidecar gsd-path-verify/task-t033-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn install-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn install-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn install-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn install-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn install-scripts   ffmpeg-static@5.3.0 (install: node install.js)
+  npm warn install-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn install-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn install-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn install-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn install-scripts
+  npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```
