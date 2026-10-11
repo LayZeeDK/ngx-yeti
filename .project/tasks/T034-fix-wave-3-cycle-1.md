@@ -221,7 +221,7 @@ The source task contracts are unchanged; read them and .project/intent/INTENT.md
 set -e
 (
 npm ci && npx playwright install chromium firefox webkit && test -f packages/ngx-yeti/overlay/src/overlay.stories.ts && test -f packages/ngx-yeti/frame/src/frame.stories.ts && test -f apps/ngx-yeti-e2e/src/enter.spec.ts && test -f apps/yeti-app-e2e/src/cluster.spec.ts && test -f apps/yeti-app-e2e/src/enter.spec.ts && npm exec nx -- run-many -t lint typecheck -p ngx-yeti ngx-yeti-e2e yeti-app yeti-app-e2e && npm exec nx -- test ngx-yeti && npm exec nx -- test-storybook ngx-yeti --skip-nx-cache && node tools/ci-local/run-job.mjs ci unit && npm exec nx -- e2e ngx-yeti-e2e && npm exec nx -- e2e yeti-app-e2e && FIXTURE_CONFIGURATION=production npm exec nx -- e2e yeti-app-e2e && node tools/ci-local/run-job.mjs floor webkit-26-4 && node tools/ci-local/run-job.mjs floor firefox-146-e2e; status=$?; npx --no-install nx daemon --stop; exit $status
-)
+); status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: yes
