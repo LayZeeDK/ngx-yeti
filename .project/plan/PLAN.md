@@ -73,6 +73,16 @@ Walkthrough:
 1. Run `npm exec nx -- run ngx-yeti:pack-check`: the consumer imports one public symbol from each of the 22 new `ngx-yeti/{item}` entry points and builds.
 2. Run `npm exec nx -- test ngx-yeti -- contract.node`: every item's contract check passes over the built manifest.
 
+## Wave 6 — fix wave 2 cycle 1 review findings
+
+Goal: Repair the blocking findings of the wave 2 cycle 1 review without changing source task contracts.
+Review depth: full
+
+| Task | Title | Deps | Files |
+|------|-------|------|-------|
+| T032 | Fix wave 2 cycle 1 review findings in T007, T008 | T007, T008 | apps/ngx-yeti-e2e/src/stack.spec.ts, apps/yeti-app-e2e/src/box.spec.ts, apps/yeti-app-e2e/src/center.spec.ts, apps/yeti-app-e2e/src/setup.spec.ts, apps/yeti-app-e2e/src/stack.spec.ts, apps/yeti-app/src/app/fixtures/box-fixture.ts, apps/yeti-app/src/app/fixtures/center-fixture.ts, apps/yeti-app/src/app/fixtures/setup-fixture.ts, apps/yeti-app/src/app/fixtures/stack-fixture.ts, packages/ngx-yeti/CHANGELOG.md, packages/ngx-yeti/README.md, packages/ngx-yeti/box/README.md, packages/ngx-yeti/box/src/box-border.ts, packages/ngx-yeti/box/src/box-paint.ts, packages/ngx-yeti/box/src/box-text.ts, packages/ngx-yeti/box/src/box.contract.node.spec.ts, packages/ngx-yeti/box/src/box.spec.ts, packages/ngx-yeti/box/src/box.ssr.spec.ts, packages/ngx-yeti/box/src/box.stories.ts, packages/ngx-yeti/box/src/box.ts, packages/ngx-yeti/box/src/index.ts, packages/ngx-yeti/center/README.md, packages/ngx-yeti/center/src/center.contract.node.spec.ts, packages/ngx-yeti/center/src/center.spec.ts, packages/ngx-yeti/center/src/center.ssr.spec.ts, packages/ngx-yeti/center/src/center.stories.ts, packages/ngx-yeti/center/src/center.ts, packages/ngx-yeti/center/src/index.ts, packages/ngx-yeti/compile-fixtures/center-max-large.ts, packages/ngx-yeti/eslint.config.mjs, packages/ngx-yeti/src/compile-errors.node.spec.ts, packages/ngx-yeti/src/item-names.node.spec.ts, packages/ngx-yeti/src/name-collision.node.spec.ts, packages/ngx-yeti/stack/README.md, packages/ngx-yeti/stack/src/index.ts, packages/ngx-yeti/stack/src/stack-child.ts, packages/ngx-yeti/stack/src/stack-tokens.ts, packages/ngx-yeti/stack/src/stack.contract.node.spec.ts, packages/ngx-yeti/stack/src/stack.spec.ts, packages/ngx-yeti/stack/src/stack.ssr.spec.ts, packages/ngx-yeti/stack/src/stack.stories.ts, packages/ngx-yeti/stack/src/stack.ts, packages/ngx-yeti/styles/src/setup.stories.ts, packages/ngx-yeti/tsconfig.spec.json, tools/package/consumer/consumer.ts |
+| T033 | Fix wave 2 cycle 1 review findings in T030 | T030 | apps/yeti-app-e2e/src/fixture-app.spec.ts |
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |
