@@ -58,3 +58,29 @@ Criterion: No item task has to edit the file: the landed stack, center, and stat
 ## Log
 
 - 2026-10-11 — created by dispatch_driver.py fix-tasks from wave 2 cycle 1
+- 2026-10-11 — coder: the wrong-key control ("rejects a stub route that shows another key's h2") now fulfils `**/sub/breakout` with a synthetic status-200 document whose `main` holds `router-outlet` followed by `<section data-fixture-stub><h2>button</h2></section>`, as the empty-document control does; it no longer fetches the live `button` route or aborts the main bundle (the synthetic document has no script). It still asserts `stubHeadingMessage`. Only apps/yeti-app-e2e/src/fixture-app.spec.ts changed; the `mainBundle` import stays (still used at line 111). Prettier check passes on the file.
+- 2026-10-11 — Verify (run under the orchestrator's heavy-lock, second attempt; the first attempt failed in `npm ci` with EPERM rmdir and an esbuild install 0xC0000142 after an aborted earlier `npm ci` in this worktree, before any check ran): exit 0. lint + typecheck yeti-app-e2e passed. `@stub-route-control`: 10 passed. fixture-app.spec.ts development (Chromium): 104 passed, 28 skipped. Production (Chromium): 104 passed, 28 skipped. ci-local Firefox development: 104 passed, 28 skipped. ci-local WebKit development: 104 passed, 28 skipped.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T033): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```
+- 2026-10-11 — orchestrator: attempt 1 rejected without a product fault. The Verify-only repair checkpoint d25ff7b changed the task body after dispatch, so `finish` refused the isolate (recover: "retained task body does not extend the current task"; after syncing the line: "task file body is not append-only"). Rejected diff: apps/yeti-app-e2e/src/fixture-app.spec.ts plus this task file's Log; product patch sha256 827214c3f7f2179e5f36b4150e14db58580fd41862361f2fd45b850edd216085, kept for the retry. Retry from d25ff7b.
