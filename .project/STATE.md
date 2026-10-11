@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -96,3 +96,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-11 — build — T034 landed e387da9. User ruling 2026-10-11, verbatim: "Pause before the next wave to use a fresh session." This session finishes wave 3 (gate, cycle 2 review, wave 7 review), then stops before wave 4
 - 2026-10-11 — build — wave 3 done, 2 review cycles (cycle 2 pass); wave 7 done, 1 review cycle (pass). Paused before wave 4 by user ruling; a plan patch the user approved (shared test helpers, setup-boundaries WebKit flake, published-output allowlist, absolute Chrome 141 path, NVDA focus fix, enter once fix with tripwire, entry-point export rule) comes first in the next session
 - 2026-10-11 — build — user rulings 2026-10-11 approve a plan repair before wave 4: '1-3: Approve.' (shared test helpers; setup-boundaries WebKit flake; published-output allowlist), '5: Approve.' (absolute Chrome 141 path in the project Verify), 'Approve other item 6 sub-items.' (NVDA Firefox-after-Chromium focus), plus the enter once package fix with a tripwire and the entry-point export rule; plan owns the task inventory, so build blocks with every task done or pending
+- 2026-10-11 — plan — build plan repair requested
+- 2026-10-11 — plan — build recovery: {"base": "a69a1393dbd6809258b18a0b4be46a7114f4cd4e", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
+- 2026-10-11 — plan — plan approved

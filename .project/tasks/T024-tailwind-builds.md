@@ -2,7 +2,7 @@
 id: T024
 title: Add the Tailwind C1 and C2 Fixture build configurations with their cases
 wave: 4
-deps: [T022, T031]
+deps: [T022, T031, T036, T041]
 status: pending
 agent: null
 base: null
@@ -34,6 +34,7 @@ An M001 carry-over (setup.md:344; ticket 50 decision 70): the setup route built 
 - Configurations: add `tailwind-c1` and `tailwind-c2` to the `yeti-app` `build` target (and the `serve-ssr` configurations the e2e web server runs) in `apps/yeti-app/project.json`, each replacing `apps/yeti-app/src/styles.css` with its own global stylesheet that follows setup.md section 4's form exactly; keep the development and production configurations unchanged. Add Tailwind as a devDependency (the version setup.md names, else the current 4.x release at least two weeks old) and the PostCSS config Angular's builder reads, scoped so the default builds are unaffected.
 - `apps/yeti-app-e2e/playwright.config.mts`: `FIXTURE_CONFIGURATION=tailwind-c1` and `tailwind-c2` start the server for that configuration on its own port and run only `apps/yeti-app-e2e/src/tailwind.spec.ts`; the development and production runs skip that spec. Update `tools/playwright/playwright-configs.test.mjs` if it pins the config's shape. `FIXTURE_CONFIGURATION` is already an Nx cache input (nx.json `e2e` named input).
 - `apps/yeti-app-e2e/src/tailwind.spec.ts`: on `/sub/setup` (and `/sub/server/setup`), a utility class beats Yeti's rule, Yeti beats preflight, and the A11Y-30 rule beats Yeti's `--_yeti-t` (read through a computed size that depends on it); on `/sub/container` at a 1100 px viewport, the container host is wider than 1024 px (T022's Interface contract), proving `@source not inline('container');` keeps Tailwind's `.container` out.
+- Shared helpers (T036): the Tailwind spec reads sizes through `rect` and waits for item sheets through `expectItemSheetsApplied` from `@ngx-yeti/testing/playwright` (Interface contract), and declares no copy of either.
 - CI: `.github/workflows/ci.yml`'s `e2e` matrix gains the two configurations (with three engines, or the subset the record asks; state why in a comment), and `node tools/ci-local/run-job.mjs ci e2e --matrix configuration=tailwind-c1` runs them locally (SC8; the run-job script refuses keys it does not run, so keep the job's shape). Docs, in this task: `.claude/skills/ngx-yeti-testing/SKILL.md` (Fixture app: the `FIXTURE_CONFIGURATION` values) and `references/ci-local.md` (the new matrix values and their local command).
 - Prohibition N3 (judgment): must not keep content out of reach until hydration to avoid an unstyled frame; no item or Fixture route hides content (opacity, visibility, display, or inert) until the client boots; with JavaScript off every item's content is visible and readable.
 - Skills: `.claude/skills/ngx-yeti-testing/SKILL.md`, `.claude/skills/ngx-yeti-specs/SKILL.md`, `.claude/skills/type-safety/SKILL.md`; read `references/ci-local.md` before editing the workflow.
@@ -41,6 +42,7 @@ An M001 carry-over (setup.md:344; ticket 50 decision 70): the setup route built 
 ## Interface contract
 
 - Container route (T022): `/sub/container` renders at least one host carrying `data-ngx-yeti-item-container` whose content box is wider than 1024 px at a 1100 px viewport in the default build.
+- Playwright helpers (T036): the entry `@ngx-yeti/testing/playwright` (`packages/ngx-yeti-testing/src/playwright.ts`, mapped in tsconfig.base.json) is for the two e2e apps and exports `interface Box { readonly top: number; readonly right: number; readonly bottom: number; readonly left: number; readonly width: number; readonly height: number }`; `rect(locator: Locator): Promise<Box>`; `childRects(parent: Locator): Promise<Box[]>`, the boxes of the element's children in DOM order; `usedLength(scope: Locator, length: string, axis?: 'inline' | 'block'): Promise<number>`, the used px size of a CSS length such as `var(--yeti-width-md)`, read from a probe appended to `scope`, on the inline axis unless `axis` says otherwise; `horizontalOverflow(page: Page): Promise<number>`, how far the document is wider than the viewport; `resize(element: Locator, width: number): Promise<void>`, which sets the element's inline size in px and throws when it is not an HTMLElement; and `expectItemSheetsApplied(page: Page, items: readonly string[]): Promise<void>`, which expects one item link per named item in the head and waits until each has a stylesheet with at least one rule. No e2e spec declares a copy of these, and no other helper checks that an item sheet has loaded.
 
 ## Intent coverage
 
@@ -67,3 +69,4 @@ Heavy: yes
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
 - 2026-10-11 — planner: build repair (user ruling "Wave-1 defects: Approve recommendation."). `deps` gains T031: T031 (wave 2) updates the NVDA lane section of references/ci-local.md, a file this task also edits. Acceptance criteria, files, wave, and Verify are unchanged.
+- 2026-10-11 — planner: build repair before wave 4 (user rulings of 2026-10-11, quoted in T035 to T041). `deps` gains T036 (the Playwright helpers the Tailwind spec consumes; T036 and T038 also edit the testing skill this task edits, reached through T022) and T041 (it updates the NVDA lane section of references/ci-local.md first). The Interface contract gains the Playwright shapes. Acceptance criteria, files, wave, and Verify are unchanged.

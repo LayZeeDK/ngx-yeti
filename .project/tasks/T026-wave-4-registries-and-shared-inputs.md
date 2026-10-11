@@ -2,7 +2,7 @@
 id: T026
 title: Add the wave-4 items to the registries and prove one exported type per shared input name
 wave: 4
-deps: [T020, T021, T022, T023, T024, T025]
+deps: [T020, T021, T022, T023, T024, T025, T039]
 status: pending
 agent: null
 base: null
@@ -28,6 +28,7 @@ With button, icon, container, and table landed, all 22 M002 entry points exist. 
 
 - `tools/package/consumer/consumer.ts`: import and use one public symbol from each of `ngx-yeti/button`, `ngx-yeti/icon`, `ngx-yeti/container`, and `ngx-yeti/table`; the file then covers all 22 M002 entry points beside card, lift, and styles. Keep the existing `threshold="medium"` and other probes.
 - `packages/ngx-yeti/src/name-collision.node.spec.ts` and `packages/ngx-yeti/src/item-names.node.spec.ts`: add the four items' exports and root directive files to the positive lists.
+- The primary entry point stays Yeti's own types: keep the test T039 added to `packages/ngx-yeti/src/name-collision.node.spec.ts` (Interface contract), and list `YetiTableAlign` under `ngx-yeti/table` in the positive list, the README row, and the changelog line.
 - `packages/ngx-yeti/src/shared-inputs.node.spec.ts` (E14): for every package directive declaring `gap`, `align`, or `sticky`, assert with `expectTypeOf` that the input's value type equals the one exported type (`YetiGap`, `YetiAlign`, and the `sticky` boolean form, from `ngx-yeti`) plus `undefined`; `nx typecheck -c spec` checks these lines. Also render, in a server application through public API, one element carrying two directives that share `gap` with one binding, and assert one `data-gap` with the bound value. If a directive breaks the rule, stop and write `NEEDS-ORCHESTRATOR:` naming it; do not edit item sources here.
 - `packages/ngx-yeti/README.md`: the four Entry points rows and a status line saying the layouts, table, button, spinner, enter, and visually-hidden are implemented. `packages/ngx-yeti/CHANGELOG.md`: the four entry points; the header already names the Yeti commit.
 - `docs/specs/upstream-bugs.md`: a row for every `UPSTREAM:` Log line of T020 to T025; file nothing upstream.
@@ -35,7 +36,7 @@ With button, icon, container, and table landed, all 22 M002 entry points exist. 
 
 ## Interface contract
 
-- None
+- Item-named exports (T039; user ruling 2026-10-11): an export named after an item, such as `YetiScrollerJustify` or `YetiTableAlign`, is declared in and exported from that item's secondary entry point only. `packages/ngx-yeti/src/name-collision.node.spec.ts` asserts that the names the built primary entry point exports are exactly the names Yeti's typings export at the pin, so a package-declared name there fails it.
 
 ## Intent coverage
 
@@ -61,3 +62,4 @@ Heavy: no
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — planner: build repair before wave 4 (user rulings of 2026-10-11, quoted in T035 to T041). `deps` gains T039, which adds the primary-entry test to packages/ngx-yeti/src/name-collision.node.spec.ts, a file this task edits. The Interface contract carries the item-named export rule, and Approach keeps that test and lists `YetiTableAlign` under ngx-yeti/table. Acceptance criteria, files, wave, and Verify are unchanged.
