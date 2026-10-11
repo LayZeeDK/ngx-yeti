@@ -88,3 +88,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-11 — build — user ruling 2026-10-11: 'Pause after this wave' - stop after wave 2 is landed and reviewed; do not dispatch wave 3 until the user resumes
 - 2026-10-11 — build — repair T032 and T033 Verify: end the final subshell with the Nx daemon stop (Verify-only, exit code kept)
 - 2026-10-11 — build — T033 attempt 1 rejected by finish after the Verify-only checkpoint changed its body; Log copied, retry from d25ff7b
+- 2026-10-11 — build — T033 landed 7ba7c0b; T032 attempt 1 rejected (task body changed after dispatch), Log copied, retry from this checkpoint
