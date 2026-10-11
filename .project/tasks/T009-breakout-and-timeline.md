@@ -3,9 +3,9 @@ id: T009
 title: Ship breakout and timeline with the A11Y-10c and A11Y-10a contrast assertions
 wave: 3
 deps: [T001, T002]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T009
+base: 4978c46b77a3e3e632542bd8279a71f56d04c86c
 worktree: null
 task_branch: null
 files:
@@ -96,3 +96,30 @@ Heavy: yes
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
 - 2026-10-10 — orchestrator: UPSTREAM: GSD Path 1.5.0 (not an item bug; the wave's registry task writes the row, nothing is filed). For a serial task, `dispatch_driver.py finish` runs Verify in a verify sidecar and then `isolation.py clean_verify` (`git restore --source=HEAD --staged --worktree -- .`, then `git clean -fdx -- .`, isolation.py:1494-1495) with no step that stops processes the Verify left in that workspace. An Nx 23.2.1 daemon left by Verify reacts to the restore by recomputing the project graph and writes `.nx/workspace-data/*` and `node_modules/.vite-temp` while `git clean` deletes them, so `finish` blocks with "warning: failed to remove .nx/workspace-data/d: Directory not empty" and "warning: failed to remove node_modules/: Directory not empty" and the Verify result is lost. Reproduction (Windows 11 ARM64, 2026-10-10): `isolate-verify` a sidecar, reverse-apply a diff that changes package.json and package-lock.json in its working tree, `npm ci`, run any `nx` command, call `isolation.clean_verify`: fails 2 of 2; with `npx nx daemon --stop` first it passes; with no diff it passes even with the daemon alive. In-repo mitigation: every task Verify from T007 on ends with `npx --no-install nx daemon --stop` and keeps its exit code.
+- 2026-10-11 — coder: implemented. `ngx-yeti/breakout`: `YetiBreakout` (`[yetiBreakout]`, `max: YetiWidth`, `gap: YetiGap`, provides `yetiBreakoutToken`, acquires `breakout` last in its constructor), `YetiBreakoutChild` (`bleed` with `booleanAttribute`), `YetiBreakoutNote` (static `data-note`, no input); parts inject the token optional + skipSelf and acquire nothing. `ngx-yeti/timeline`: `YetiTimeline` (`ol[yetiTimeline]`, `gap: YetiGap`, `alternate` with `booleanAttribute`, no token, no role). Usage rules numbered in JSDoc as breakout.md section 4 (1-6) and timeline.md section 4 (1-10). Layer 2/3/contract specs, the spec's story ids (breakout: default, dark-scheme, settings, note, heading-rhythm; timeline: default, single, narrow, dark-scheme, inputs, links, rtl), both Fixture routes (stubs replaced) and both e2e halves written.
+- 2026-10-11 — coder: E7 / A11Y-10a and A11Y-10c measured, all pass, so nothing added to `accessibility.css`, `ledger.md`, or `accessibility.node.spec.ts`. Exact-formula ratios, Chromium, Storybook: breakout light h1 19.0122, p 19.0122, note (aside, muted small) 7.1771; dark h1 16.3924, p 16.3924, note 7.5431. Timeline light time/h3/p 19.0122 (alternate and single); dark time/h3/p 16.3924. Firefox and WebKit ratios not measured locally (CI runs the stories in three engines).
+- 2026-10-11 — coder: decisions for review. (1) `checkContract` cannot map `data-note`, a marker with no input (kind P): it sets each marker through an input binding (NG0315). The breakout contract spec runs `checkContract` with `data-note` filtered from the manifest's markers and covers it in a second test (manifest still lists exactly `data-bleed` and `data-note`, `data-note` is boolean, and `YetiBreakoutNote` server-renders `data-note=""`). Extending `packages/ngx-yeti-testing/src/lib/contract.ts` for input-less markers is outside this task's files. (2) Frame lands in a later task, so the bleeding child in stories and the Fixture route is a plain `div` stand-in (with the Storybook `trail.svg` through `NgOptimizedImage` in the stories). (3) The client-only `@defer` case follows the landed stack/center pattern (server hosts hold the link); 0 unstyled frames asserted in development, recorded as `a4-frames` annotations in production. (4) Stories run in a 414 px Vitest viewport, so wide cases use a fixed-width frame wrapper and resize it (building-blocks 1.7); the 320 px Storybook reflow check uses `breakout--settings` and `breakout--heading-rhythm`, which have no fixed frame. (5) The timeline-in-cluster measurement (timeline.md:316) is left to T012 and the VoiceOver/NVDA claim (timeline.md:326) to T027, as the Context says.
+- 2026-10-11 — coder: Verify (as written, under the heavy lock) exit 0: lint+typecheck 4 projects OK; `nx test` 8 files / 45 tests passed; test-storybook 2 files / 12 tests passed; ngx-yeti-e2e Chromium 7 passed; yeti-app-e2e development Chromium 40 passed; production Chromium 36 passed, 4 skipped (development-only hydration diagnostics); ci e2e containers: ngx-yeti-e2e Firefox 7 passed, yeti-app-e2e Firefox 40 passed, ngx-yeti-e2e WebKit 7 passed (Linux WebKit, Tab tests ran), yeti-app-e2e WebKit 40 passed. `npx prettier --check` on every changed file passes.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T009): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:987) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:985) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```

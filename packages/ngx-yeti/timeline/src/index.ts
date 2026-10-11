@@ -1,1 +1,1 @@
-export {};
+export { YetiTimeline } from './timeline';
