@@ -3,9 +3,9 @@ id: T035
 title: Record WebKit's pending-sheet frames in the setup-boundaries reset case and add upstream row O17
 wave: 4
 deps: []
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T035
+base: e1ac081bc47057025c5db3098001e57755ea7c02
 worktree: null
 task_branch: null
 files:
@@ -71,3 +71,27 @@ Heavy: yes
 ## Log
 
 - 2026-10-11 — created by planner (build repair before wave 4; user ruling "1-3: Approve.", item 2). The evidence in Context is from a spike of 2026-10-11 in a sidecar at c92e1b4; its files are not in the repository. The Verify ends by stopping the Nx daemon and keeps its own exit code; run it exactly as written and never set NX_DAEMON.
+- 2026-10-11 — coder: `setup-boundaries.spec.ts` reset case now pushes its card-frame annotation as `webkit-pending-sheet-frames` in WebKit (`frames` elsewhere) and asserts 0 unstyled frames only outside WebKit; the styled end state, item links `card`/`lift`, and the `requests()` check stay in every engine; one comment names the cause and O17. `docs/specs/upstream-bugs.md`: row O17 added to Other upstreams (seven columns; id was unused) with the measured counts, the failing-frame state, and the StyleScope.cpp cause; nothing filed. `.claude/skills/ngx-yeti-specs/SKILL.md`: the setup.md:284/:343 Departures row now states the Chromium/Firefox assertion, WebKit's recorded `webkit-pending-sheet-frames`, the request check in every engine, and O17 in place of "cause is unknown"; Prettier reformatted the table. `npx prettier --check .` passed. Verify run exactly as written through the heavy lock: exit 0 — lint and typecheck yeti-app-e2e passed; ci e2e WebKit production 40 passed; ci e2e WebKit development 40 passed; floor webkit-26-4 40 passed (120 of 120, `--retries=0`); ci e2e Chromium development setup-boundaries.spec.ts 12 passed; Firefox development 12 passed.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T035): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

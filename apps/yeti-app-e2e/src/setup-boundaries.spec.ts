@@ -122,14 +122,22 @@ for (const { kind, prefix } of routeKinds) {
       const frames = await cardPadding();
       const unstyled = frames.filter((value) => value === '0px');
 
+      const isWebKit = browserName === 'webkit';
+
       test.info().annotations.push({
-        type: 'frames',
+        type: isWebKit ? 'webkit-pending-sheet-frames' : 'frames',
         description: `card (preloaded): ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
       });
-      expect(
-        unstyled,
-        'no frame shows the preloaded card without Yeti',
-      ).toEqual([]);
+
+      // WebKit applies no newly loaded sheet while another is pending, so the
+      // preloaded card waits for lift.css (upstream-bugs.md O17).
+      if (!isWebKit) {
+        expect(
+          unstyled,
+          'no frame shows the preloaded card without Yeti',
+        ).toEqual([]);
+      }
+
       // Firefox serves a re-inserted link from memory even with its cache off.
       expect(requests()).toEqual(
         browserName === 'firefox' ? [] : ['utilities/lift/lift.css'],
