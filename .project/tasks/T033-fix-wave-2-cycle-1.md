@@ -44,7 +44,7 @@ The source task contracts are unchanged; read them and .project/intent/INTENT.md
 set -e
 (
 npm ci && npx playwright install chromium && test -f apps/yeti-app-e2e/src/fixture-app.spec.ts && npm exec nx -- run-many -t lint typecheck -p yeti-app-e2e && npm exec nx -- e2e yeti-app-e2e -- fixture-app.spec.ts --grep=@stub-route-control && npm exec nx -- e2e yeti-app-e2e -- fixture-app.spec.ts && FIXTURE_CONFIGURATION=production npm exec nx -- e2e yeti-app-e2e -- fixture-app.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=firefox --matrix configuration=development -- npx nx e2e yeti-app-e2e -- --project=firefox fixture-app.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=webkit --matrix configuration=development -- npx nx e2e yeti-app-e2e -- --project=webkit fixture-app.spec.ts; status=$?; npx --no-install nx daemon --stop; exit $status
-)
+); status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: yes

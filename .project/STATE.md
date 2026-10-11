@@ -86,3 +86,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-11 — plan — plan approved
 - 2026-10-11 — build — build started
 - 2026-10-11 — build — user ruling 2026-10-11: 'Pause after this wave' - stop after wave 2 is landed and reviewed; do not dispatch wave 3 until the user resumes
+- 2026-10-11 — build — repair T032 and T033 Verify: end the final subshell with the Nx daemon stop (Verify-only, exit code kept)

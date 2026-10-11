@@ -92,7 +92,7 @@ npm ci && npx playwright install chromium && test -f packages/ngx-yeti/stack/src
 )
 (
 npm ci && npx playwright install chromium && test -f packages/ngx-yeti/box/src/box.spec.ts && npm exec nx -- run-many -t lint typecheck -p ngx-yeti ngx-yeti-e2e yeti-app yeti-app-e2e && npm exec nx -- test ngx-yeti -- box/src center/src src/name-collision src/item-names && npm exec nx -- test-storybook ngx-yeti -- box/src stack/src center/src && npm exec nx -- e2e yeti-app-e2e -- box.spec.ts center.spec.ts && FIXTURE_CONFIGURATION=production npm exec nx -- e2e yeti-app-e2e -- box.spec.ts center.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=firefox --matrix configuration=development -- npx nx e2e yeti-app-e2e -- --project=firefox box.spec.ts center.spec.ts && node tools/ci-local/run-job.mjs ci e2e --matrix engine=webkit --matrix configuration=development -- npx nx e2e yeti-app-e2e -- --project=webkit box.spec.ts center.spec.ts && npm exec nx -- run ngx-yeti:pack-check; status=$?; npx --no-install nx daemon --stop; exit $status
-)
+); status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: yes
