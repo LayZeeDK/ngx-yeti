@@ -1,1 +1,1 @@
-export {};
+export { YetiSpinner } from './spinner';

@@ -1,6 +1,18 @@
 /* Each accessibility rule arrives with the item spec whose ledger row it
    closes. The one other rule is the Firefox scale workaround below. */
 @layer ngx-yeti {
+  /* A11Y-32: forced colours paint every edge of the spinner's ring, and of a
+     busy button's ring, in one colour, so the bright edge is lost and the
+     turning ring looks still. The ring takes the canvas colour and the
+     bright edge the text colour, after Material's CanvasText arc. */
+  @media (forced-colors: active) {
+    .spinner,
+    .button[aria-busy='true']::after {
+      border-color: Canvas;
+      border-block-start-color: CanvasText;
+    }
+  }
+
   /* Firefox 145 to 152 reject atan2() with a relative length, so Yeti's
      --_yeti-t, tan(atan2(100vw - ..., ...)), is invalid there and every Yeti
      size with it (measured 2026-10-04; 153 accepts it). A registered <length>

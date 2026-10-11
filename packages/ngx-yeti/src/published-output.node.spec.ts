@@ -62,6 +62,38 @@ function yetiRulesInStylesheet(css: string): readonly string[] {
   return found;
 }
 
+/**
+ * The stylesheet without its `@layer ngx-yeti` blocks. Those rules select
+ * Yeti's state hooks for the ledger rows that need them (INTENT E7,
+ * button.md A11Y-1a), and `accessibility.node.spec.ts` checks them.
+ */
+function withoutPackageLayer(css: string): string {
+  return transform({
+    filename: 'accessibility.css',
+    code: Buffer.from(css),
+    visitor: {
+      Rule: {
+        'layer-block'(rule) {
+          return rule.value.name?.join('.') === 'ngx-yeti' ? [] : undefined;
+        },
+      },
+    },
+  }).code.toString();
+}
+
+/**
+ * Yeti rules in one shipped stylesheet. Only `accessibility.css` at the
+ * package root may select Yeti's classes, and only inside `@layer ngx-yeti`.
+ */
+function yetiRulesInShippedStylesheet(
+  file: string,
+  css: string,
+): readonly string[] {
+  return yetiRulesInStylesheet(
+    file === 'accessibility.css' ? withoutPackageLayer(css) : css,
+  );
+}
+
 function shippedFiles(extension: string) {
   // Copied into this realm: an array from node:fs fails toStrictEqual([]).
   return Array.from(
@@ -94,9 +126,30 @@ describe('the published output', () => {
     expect(stylesheets.map(({ file }) => file)).toContain('accessibility.css');
     expect(
       stylesheets.flatMap(({ file, code }) =>
-        yetiRulesInStylesheet(code).map((rule) => `${file}: ${rule}`),
+        yetiRulesInShippedStylesheet(file, code).map(
+          (rule) => `${file}: ${rule}`,
+        ),
       ),
     ).toStrictEqual([]);
+  });
+
+  it("accepts a Yeti class only inside the accessibility stylesheet's @layer ngx-yeti", () => {
+    const packageRule =
+      '@layer ngx-yeti { @media (forced-colors: active) { .spinner { border-color: Canvas; } } }';
+    const outside = '.spinner { border-color: Canvas; }';
+
+    expect(
+      yetiRulesInShippedStylesheet('accessibility.css', packageRule),
+    ).toStrictEqual([]);
+    expect(
+      yetiRulesInShippedStylesheet(
+        'accessibility.css',
+        `${packageRule} ${outside} @layer yeti { b { color: red; } }`,
+      ),
+    ).toStrictEqual(['.spinner', '@layer yeti']);
+    expect(
+      yetiRulesInShippedStylesheet('other.css', packageRule),
+    ).toStrictEqual(['.spinner']);
   });
 
   it('reports a Yeti layer and a Yeti class rule in a bundle and a stylesheet', () => {

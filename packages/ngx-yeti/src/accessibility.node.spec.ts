@@ -66,6 +66,61 @@ function inspect(css: string): Findings {
   return { outsideLayer, privateReads, privateWrites, classSelectors };
 }
 
+// CSS Color 4 system colours, the only colours a forced-colours rule may
+// set, so the user's palette stays theirs.
+const systemColours = new Set([
+  'AccentColor',
+  'AccentColorText',
+  'ActiveText',
+  'ButtonBorder',
+  'ButtonFace',
+  'ButtonText',
+  'Canvas',
+  'CanvasText',
+  'Field',
+  'FieldText',
+  'GrayText',
+  'Highlight',
+  'HighlightText',
+  'LinkText',
+  'Mark',
+  'MarkText',
+  'SelectedItem',
+  'SelectedItemText',
+  'VisitedText',
+]);
+
+/**
+ * Each declaration inside an `@media (forced-colors: active)` block whose
+ * value is not one system colour keyword, as `property: value`.
+ */
+function nonSystemColours(css: string): string[] {
+  const findings: string[] = [];
+  const opening = /@media\s*\(\s*forced-colors\s*:\s*active\s*\)\s*\{/g;
+
+  for (const match of css.matchAll(opening)) {
+    let depth = 1;
+    let end = match.index + match[0].length;
+
+    while (depth > 0 && end < css.length) {
+      depth += css[end] === '{' ? 1 : css[end] === '}' ? -1 : 0;
+      end += 1;
+    }
+
+    const block = css.slice(match.index + match[0].length, end - 1);
+
+    for (const [, property, value] of block.matchAll(
+      /([\w-]+)\s*:\s*([^;{}]+?)\s*(?:;|\})/g,
+    )) {
+      if (!systemColours.has(value ?? '')) {
+        findings.push(`${property ?? ''}: ${value ?? ''}`);
+      }
+    }
+  }
+
+  return findings;
+}
+
 describe('ngx-yeti/accessibility.css', () => {
   // The Firefox scale workaround writes --_yeti-t and nothing else of Yeti's
   // (the departures table of the ngx-yeti-specs skill, user ruling 2026-10-04).
@@ -76,6 +131,25 @@ describe('ngx-yeti/accessibility.css', () => {
       privateWrites: ['--_yeti-t'],
       classSelectors: [],
     });
+  });
+
+  it('sets only system colour keywords in its forced-colours rules', () => {
+    const css = readPackageFile('accessibility.css');
+
+    expect(css).toMatch(/@media \(forced-colors: active\)/);
+    expect(nonSystemColours(css)).toStrictEqual([]);
+  });
+
+  it('reports a forced-colours declaration that is not a system colour', () => {
+    expect(
+      nonSystemColours(`
+        @media (forced-colors: active) {
+          .a { border-color: Canvas; color: red; }
+          .b { outline-color: var(--x) }
+        }
+        .c { color: blue; }
+      `),
+    ).toStrictEqual(['color: red', 'outline-color: var(--x)']);
   });
 
   it('reports a rule outside the layer, a private token, and a package class', () => {

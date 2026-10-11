@@ -3,9 +3,9 @@ id: T016
 title: Ship spinner with A11Y-13 and its forced-colours measurement
 wave: 3
 deps: [T001, T002, T015]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T016
+base: f00197b11cb9e9afd4c1276d9d84b3851c28dcb4
 worktree: null
 task_branch: null
 files:
@@ -93,3 +93,27 @@ Heavy: yes
 - 2026-10-11 — coder: BLOCKED (plan defect, verification fails outside allowed paths). `npm exec nx -- test ngx-yeti` (full): 470 passed, 1 failed — `packages/ngx-yeti/src/published-output.node.spec.ts` "holds no Yeti rule in any shipped stylesheet" rejects any Yeti class selector in `accessibility.css`, so the E7 rule on `.spinner`/`.button` (required verbatim by this task's Approach and ticket 50 decision 193; INTENT Constraints already rule that A11Y-1a's `.button` selector outranks the architecture guide) fails AC7. Fix needs that unlisted file: let the stylesheet check skip `accessibility.css` rules inside `@media (forced-colors: active)` (or an allowlist of ledger-named selectors) while keeping the `@layer yeti` check; the same edit unblocks A11Y-1a in T020. Evading the check with `[class~='spinner']` would loosen the gate, so it was not done. Every other check is green.
 - 2026-10-11 — coder: evidence (each run individually, under the lock): lint+typecheck ngx-yeti ngx-yeti-e2e yeti-app yeti-app-e2e pass; `nx test ngx-yeti -- spinner/src src/accessibility` 5 files 22 tests pass; `test-storybook -- spinner/src` 7/7; `e2e ngx-yeti-e2e spinner.spec.ts` Chromium 14/14; `e2e yeti-app-e2e spinner.spec.ts` development 20/20, production 18 passed 2 skipped (dev-only hydration diagnostics); ci-local Firefox ngx-yeti-e2e 14/14, yeti-app-e2e 20/20; ci-local WebKit ngx-yeti-e2e 13 passed 1 skipped (forced colours), yeti-app-e2e 20/20; `npx prettier --check .` clean. The full Verify chain was not run as one command because AC7's affected test fails outside the allowed paths.
 - 2026-10-11 — orchestrator: attempt 1 blocked on a documented plan defect, not a product fault. E7 fired (measured lost bright edge under forced colours), and its required accessibility.css rule on Yeti's `.spinner` / `.button[aria-busy="true"]::after` hooks fails `packages/ngx-yeti/src/published-output.node.spec.ts` ("holds no Yeti rule in any shipped stylesheet"), a file outside `files`. Sources: setup.md layer 3 says shipped CSS holds no Yeti selector, while setup.md's accessibility-stylesheet line, button.md A11Y-1a (`.button[aria-pressed="true"]`), and INTENT E7 require Yeti state-hook selectors in that stylesheet; INTENT outranks. Repair (orchestrator, AFK, documented plan defect): add the spec file to `files` so the check keeps rejecting `@layer yeti` blocks and Yeti rules everywhere except state-hook selectors inside the accessibility stylesheet's `@layer ngx-yeti`. Rejected diff: 13 product paths; patch sha256 57b1e7bb07514240ccb18f5f110a622c859dfc423beca13f5715a682647b9a3c kept for the retry.
+- 2026-10-11 — coder attempt 2 (base f00197b): applied the attempt-1 patch (sha256 57b1e7bb...) with `git apply`; ledger.md stays LF and passes prettier. `published-output.node.spec.ts`: shipped stylesheets are scanned as before, except that `accessibility.css` at the package root is scanned with its `@layer ngx-yeti` blocks removed first (lightningcss visitor), so Yeti class selectors are accepted only there; `@layer yeti` and Yeti rules stay rejected everywhere else and in the FESM bundles. New negative control: a Yeti class rule outside `@layer ngx-yeti` in accessibility.css, an `@layer yeti` block there, and the same `@layer ngx-yeti` rule in any other stylesheet are all reported. Full `npm exec nx -- test ngx-yeti`: 66 files, 514 tests passed. Verify exactly as written, under the lock: exit 0 — lint+typecheck 4 projects pass; test spinner/src src/accessibility 5 files 22 tests; test-storybook 7/7; ngx-yeti-e2e Chromium 14/14; yeti-app-e2e development 20/20, production 18 passed 2 skipped (development-only hydration diagnostics); ci-local Firefox ngx-yeti-e2e 14/14, yeti-app-e2e 20/20; ci-local WebKit ngx-yeti-e2e 13 passed 1 skipped (forced colours), yeti-app-e2e 20/20; daemon stopped. `npx prettier --check .` clean.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T016): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:984) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:984) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```
