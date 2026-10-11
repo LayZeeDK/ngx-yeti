@@ -1,1 +1,1 @@
-export {};
+export { YetiVisuallyHidden } from './visually-hidden';

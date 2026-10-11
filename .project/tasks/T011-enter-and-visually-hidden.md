@@ -3,9 +3,9 @@ id: T011
 title: Ship enter and visually-hidden with enter's held-bundle and preload cases
 wave: 3
 deps: [T001, T002]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T011
+base: 4978c46b77a3e3e632542bd8279a71f56d04c86c
 worktree: null
 task_branch: null
 files:
@@ -94,3 +94,32 @@ Heavy: yes
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — coder: implemented. `NgxYetiEnter` (`[yetiEnter]`, `exportAs: 'yetiEnter'`): static class `enter` and presence attribute; `yetiEnter` (`YetiEnter | ''`, `''` renders nothing), `side` (`YetiSide`), boolean `stagger`/`view`/`once`; `data-once` bound from a `computed` of `once` and a private `#arrived` signal; one `IntersectionObserver` per instance in `afterNextRender` (`rootMargin: '0px 0px 10% 0px'`), disconnected on arrival and on destroy; `once` false at the first client render latches `#arrived` (decision 20); `injectYetiItemStyles('enter')` last in the constructor; no listener, no `animate.enter`, six usage rules in the JSDoc. `YetiVisuallyHidden` (`[yetiVisuallyHidden]`): static class and presence attribute, no inputs, eight numbered usage rules. Layer 2/3/contract specs, stories (`enter--default`, `--arrivals`, `--stagger`, `--view`, `--once`, `--once-stagger`, `--inserted`, `--inserted-preloaded` via `applicationConfig({ providers: [provideYetiStyles({ preload: ['enter'] })] })`; `visually-hidden--read-more`, `--icon-button`, `--carousel-dots`, `--compared-with-hidden`, `--aria-label-wins`), both Fixture routes, and four e2e specs. No ledger row for either item (enter.md:174, visually-hidden.md:238). The usage-rule test for enter (roles, attributes, reading and focus order unchanged by the arrival; focus lands at once) is in `enter.spec.ts`; no-listener tests for both.
+- 2026-10-11 — coder: the non-staggered `once` hosts in stories and the Fixture route use the default fade (bare `yetiEnter once`); the staggered `once` list keeps `rise`. Reason: the UPSTREAM line below — with a non-default arrival on a non-staggered host, Yeti's CSS does not withhold the animation.
+- UPSTREAM: Yeti `f52d1e8` `src/utilities/enter/enter.css`: `.enter[data-once] { animation: none }` has specificity (0,2,0), but `.enter[data-enter="rise"]:not([data-stagger])` (and the `fall`, `slide`, `scale`, `slide` + `data-side`, and `:dir(rtl)` rules) set `animation-name` at (0,3,0) or more, so a non-staggered `<p class="enter" data-enter="rise" data-once>` plays its rise on load while `data-once` is present. This contradicts the file's own comment and `docs.md:29` ("gives it `animation: none` while the attribute is there"). The default fade (`.enter:not([data-stagger])`, a tie at (0,2,0), won by order) and staggered hosts (`.enter[data-once][data-stagger] > *`, a tie at (0,3,0)) are withheld correctly. Reproduced: `nx test-storybook ngx-yeti` in Playwright's Chromium (Storybook 10.6, Vitest 4.1, 2026-10-11): `enter--once` written with `yetiEnter="rise" once` had `data-once=""` (still present 500 ms later, host 1368 px down a 900 px viewport) and computed `animation-name: yeti-enter-rise` throughout a `waitFor`; read in the CSS. Not filed upstream; the registry task owns the ledger row. A package rule would be package CSS beyond the spec (enter.md: no ledger row, like-for-like), so none was added.
+- 2026-10-11 — coder: recorded (not asserted) measurements, Chromium local production run: `enter` in-view `once` arrival 160.7 ms (prerendered) and 322.0 ms (server-rendered) after first contentful paint (decision 21); insertions without the preload, first `animationstart` after the re-inserted `enter` link's load: `@if` 18.3 / 25.4 ms, client-only `@defer` 30.7 / 29.9 ms, route change 40.1 / 80.1 ms (prerendered / server-rendered). The with-preload insertions on `enter--inserted-preloaded` are recorded as `enter-insertion` annotations in `apps/ngx-yeti-e2e/src/enter.spec.ts`.
+- 2026-10-11 — coder: test notes. Storybook stories share one document, so `enter`'s meta `beforeEach` scrolls to the top before each render. Testing Library's name computation drops the space before a hidden span's words ("Read moreabout the trail map"), so the visually-hidden stories compare names without whitespace; the e2e specs assert the exact names in three engines. In Firefox the JavaScript-off axe check runs on a JavaScript-on copy of the page where the load arrivals replay, and mid-fade text failed `color-contrast` (`#plain`, `#slide`); the enter axe test runs under `reducedMotion: 'reduce'` so axe reads the end state.
+- 2026-10-11 — coder: Verify (as written, under the heavy lock) passed, exit 0: lint and typecheck for 4 projects; `nx test` 9 files, 42 tests; `test-storybook` 3 files, 21 tests; ngx-yeti-e2e Chromium 11 passed, 1 skipped (`view()` unsupported branch); yeti-app-e2e Chromium development 66 passed, production 60 passed and 6 skipped (development-only hydration diagnostics); Firefox (ci-local container) ngx-yeti-e2e 11 passed and 1 skipped (`view()` supported branch), yeti-app-e2e 66 passed; WebKit (ci-local container) ngx-yeti-e2e 11 passed and 1 skipped, yeti-app-e2e 66 passed. The yeti-app-e2e filter `enter.spec.ts` also matches `center.spec.ts`, so its counts include center's tests. A first Verify run failed only on the Firefox enter JavaScript-off axe test (fixed as above). `npx prettier --check .` passes.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T011): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:985) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:984) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```

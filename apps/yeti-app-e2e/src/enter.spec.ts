@@ -1,0 +1,471 @@
+import { type Locator, type Page } from '@playwright/test';
+import {
+  expect,
+  expectOnlyClientPreloads,
+  isProduction,
+  routeKinds,
+  test,
+} from './support/fixtures';
+import { removeDehydratedHosts } from './support/hosts';
+import {
+  nextFrames,
+  waitForHydration,
+  watchHydration,
+} from './support/hydration';
+import { holdBackMainBundle } from './support/main-bundle';
+import {
+  itemLinks,
+  itemSheetsLoaded,
+  recordHostAttributes,
+  recordStyleMutations,
+} from './support/style-probe';
+
+interface Arrivals {
+  /** Each `animationstart`, by the id of the element it started on. */
+  readonly starts: readonly { readonly id: string; readonly time: number }[];
+  /** When each `enter` item link added to the document finished loading. */
+  readonly linkLoads: readonly number[];
+  /** The first contentful paint, or null where the engine reports none. */
+  readonly firstPaint: number | null;
+}
+
+function isArrivals(value: unknown): value is Arrivals {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'starts' in value &&
+    Array.isArray(value.starts) &&
+    'linkLoads' in value &&
+    Array.isArray(value.linkLoads) &&
+    'firstPaint' in value
+  );
+}
+
+/**
+ * Call before `goto`. The returned function reads every `animationstart`,
+ * every load of an `enter` item link, and the first contentful paint, all on
+ * the page's `performance.now()` clock.
+ */
+async function recordArrivals(page: Page): Promise<() => Promise<Arrivals>> {
+  await page.addInitScript(() => {
+    const starts: { id: string; time: number }[] = [];
+    const linkLoads: number[] = [];
+
+    Reflect.set(window, '__ngxYetiEnter', { starts, linkLoads });
+    document.addEventListener(
+      'animationstart',
+      (event) => {
+        if (event.target instanceof Element) {
+          starts.push({ id: event.target.id, time: event.timeStamp });
+        }
+      },
+      true,
+    );
+    new MutationObserver((mutations) => {
+      for (const { addedNodes } of mutations) {
+        for (const node of addedNodes) {
+          if (
+            node instanceof HTMLLinkElement &&
+            node.dataset['ngxYetiStyles'] === 'enter'
+          ) {
+            node.addEventListener('load', () => {
+              linkLoads.push(performance.now());
+            });
+          }
+        }
+      }
+    }).observe(document, { childList: true, subtree: true });
+  });
+
+  return async () => {
+    const value: unknown = await page.evaluate(() => {
+      const record: unknown = Reflect.get(window, '__ngxYetiEnter');
+      const [paint] = performance.getEntriesByName('first-contentful-paint');
+
+      return typeof record === 'object' && record !== null
+        ? { ...record, firstPaint: paint?.startTime ?? null }
+        : null;
+    });
+
+    if (!isArrivals(value)) {
+      throw new Error('The arrival probe recorded nothing');
+    }
+
+    return value;
+  };
+}
+
+function startsOn(arrivals: Arrivals, id: string): number {
+  return arrivals.starts.filter((start) => start.id === id).length;
+}
+
+/**
+ * Records, as an annotation, when the first `animationstart` on `id` fired
+ * against when the last `enter` item link loaded (enter.md:272).
+ */
+function recordInsertion(
+  arrivals: Arrivals,
+  id: string,
+  label: string,
+  browserName: string,
+): void {
+  const start = arrivals.starts.find((entry) => entry.id === id)?.time;
+  const load = arrivals.linkLoads.at(-1);
+
+  test.info().annotations.push({
+    type: 'enter-insertion',
+    description: `${browserName}, ${isProduction ? 'production' : 'development'}, ${label}, without the enter preload: first animationstart at ${start === undefined ? 'none' : `${start.toFixed(1)} ms`}, enter link loaded at ${load === undefined ? 'no load recorded' : `${load.toFixed(1)} ms`}${start !== undefined && load !== undefined ? ` (${(start - load).toFixed(1)} ms after the load)` : ''}`,
+  });
+}
+
+/** Removes every host on the route and waits for the enter link to leave. */
+async function removeEveryEnterHost(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Remove the live arrivals' }).click();
+  await removeDehydratedHosts(page, '#never-once, #viewport-once');
+  await expect(page.locator('[data-ngx-yeti-item-enter]')).toHaveCount(0);
+  await expect.poll(() => itemLinks(page)).not.toContain('enter');
+}
+
+/** Expects a `once` host to have arrived: no `data-once`, one start, opaque. */
+async function expectArrived(
+  host: Locator,
+  arrivals: () => Promise<Arrivals>,
+  id: string,
+): Promise<void> {
+  await expect(host).not.toHaveAttribute('data-once');
+  await expect.poll(async () => startsOn(await arrivals(), id)).toBe(1);
+  await expect(host).toHaveCSS('opacity', '1');
+  await expect(host).toHaveCSS('animation-name', 'yeti-enter-fade');
+}
+
+async function scrollToTop(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    window.scrollTo(0, 0);
+  });
+  await nextFrames(page);
+}
+
+for (const { kind, prefix } of routeKinds) {
+  test.describe(`the ${kind} enter route`, () => {
+    test('hydrates with 0 skipped components and no NG05xx message', async ({
+      page,
+    }) => {
+      test.skip(
+        isProduction,
+        'Angular logs hydration diagnostics in development mode only',
+      );
+
+      const expectCleanHydration = watchHydration(page);
+
+      await page.goto(`${prefix}enter`);
+
+      await expect(page.locator('#plain')).toBeVisible();
+      await expectCleanHydration();
+    });
+
+    test("adopts the server's link and changes no host attribute at hydration", async ({
+      page,
+    }) => {
+      const styleMutations = await recordStyleMutations(page);
+      // The in-view section arrives right after hydration, by design.
+      const hostAttributes = await recordHostAttributes(
+        page,
+        '[yetienter]:not(#in-view-once)',
+      );
+
+      await page.goto(`${prefix}enter`);
+      await waitForHydration(page);
+
+      expectOnlyClientPreloads(await styleMutations());
+      expect(
+        await hostAttributes(),
+        'hydration changes no attribute on the hosts',
+      ).toEqual([]);
+      expect(await itemLinks(page)).toContain('enter');
+      await expect(page.locator('#below-once')).toHaveAttribute(
+        'data-once',
+        '',
+      );
+    });
+
+    // Ticket 33 row 16 (enter.md:269): nothing restores or removes a static
+    // data-once before or at hydration.
+    test('keeps data-once on a below-the-fold section through hydration, then arrives once when scrolled to', async ({
+      page,
+    }) => {
+      const arrivals = await recordArrivals(page);
+      const release = await holdBackMainBundle(page);
+
+      await page.goto(`${prefix}enter`, { waitUntil: 'commit' });
+
+      const section = page.locator('#below-once');
+
+      await section.waitFor({ state: 'attached' });
+      await expect
+        .poll(() => itemSheetsLoaded(page, ['enter']), {
+          message: 'the enter stylesheet is loaded',
+        })
+        .toBe(true);
+      await expect(section).toHaveAttribute('data-once', '');
+      await expect(section).toHaveCSS('animation-name', 'none');
+      await expect(section).toHaveCSS('opacity', '1');
+
+      release();
+      await waitForHydration(page);
+      await nextFrames(page);
+
+      await expect(section).toHaveAttribute('data-once', '');
+      expect(startsOn(await arrivals(), 'below-once')).toBe(0);
+
+      await section.scrollIntoViewIfNeeded();
+
+      await expectArrived(section, arrivals, 'below-once');
+
+      await scrollToTop(page);
+      await section.scrollIntoViewIfNeeded();
+      await nextFrames(page);
+
+      await expect(section).not.toHaveAttribute('data-once');
+      expect(
+        startsOn(await arrivals(), 'below-once'),
+        'scrolling away and back replays nothing',
+      ).toBe(1);
+    });
+
+    // Ticket 50 decision 21: recorded, not asserted.
+    test('records how long after first paint a section already in view arrives', async ({
+      browserName,
+      page,
+    }) => {
+      const arrivals = await recordArrivals(page);
+
+      await page.goto(`${prefix}enter`);
+      await waitForHydration(page);
+
+      const section = page.locator('#in-view-once');
+
+      await expect(section).not.toHaveAttribute('data-once');
+      await expect
+        .poll(async () => startsOn(await arrivals(), 'in-view-once'))
+        .toBe(1);
+
+      const { firstPaint, starts } = await arrivals();
+      const start = starts.find((entry) => entry.id === 'in-view-once')?.time;
+
+      test.info().annotations.push({
+        type: 'in-view-arrival',
+        description: `${browserName}, ${isProduction ? 'production' : 'development'}, ${kind}: arrival ${start === undefined || firstPaint === null ? 'not measured (no first contentful paint entry)' : `${(start - firstPaint).toFixed(1)} ms after first contentful paint`}`,
+      });
+    });
+
+    test('arrives a once section an @if inserts, without the enter preload', async ({
+      browserName,
+      page,
+    }) => {
+      const arrivals = await recordArrivals(page);
+
+      await page.goto(`${prefix}enter`);
+      await waitForHydration(page);
+      await removeEveryEnterHost(page);
+
+      await page
+        .getByRole('button', { name: 'Show the inserted section' })
+        .click();
+      await expect(page.locator('#if-once')).toBeVisible();
+
+      await expectArrived(page.locator('#if-once'), arrivals, 'if-once');
+      recordInsertion(await arrivals(), 'if-once', `${kind}, @if`, browserName);
+    });
+
+    test('arrives a once section a client-only @defer inserts, without the enter preload', async ({
+      browserName,
+      page,
+    }) => {
+      const arrivals = await recordArrivals(page);
+
+      await page.goto(`${prefix}enter`);
+      await waitForHydration(page);
+      await removeEveryEnterHost(page);
+
+      await page
+        .getByRole('button', { name: 'Show the deferred section' })
+        .click();
+      await expect(page.locator('#deferred-once')).toBeVisible();
+
+      await expectArrived(
+        page.locator('#deferred-once'),
+        arrivals,
+        'deferred-once',
+      );
+      recordInsertion(
+        await arrivals(),
+        'deferred-once',
+        `${kind}, client-only @defer`,
+        browserName,
+      );
+    });
+
+    test('arrives a once section a route change inserts, without the enter preload', async ({
+      browserName,
+      page,
+    }) => {
+      const arrivals = await recordArrivals(page);
+
+      await page.goto(`${prefix}enter`);
+      await waitForHydration(page);
+      await page
+        .getByRole('link', { name: 'Leave for the replay page' })
+        .click();
+      await expect(page).toHaveURL(/\/replay$/);
+      await expect.poll(() => itemLinks(page)).not.toContain('enter');
+
+      const before = startsOn(await arrivals(), 'in-view-once');
+
+      await page.goBack();
+
+      const section = page.locator('#in-view-once');
+
+      await expect(section).toBeVisible();
+      await expect(section).not.toHaveAttribute('data-once');
+      await expect
+        .poll(async () => startsOn(await arrivals(), 'in-view-once'))
+        .toBe(before + 1);
+      await expect(section).toHaveCSS('opacity', '1');
+
+      const recorded = await arrivals();
+
+      recordInsertion(
+        {
+          ...recorded,
+          starts: recorded.starts
+            .filter((entry) => entry.id === 'in-view-once')
+            .slice(before),
+        },
+        'in-view-once',
+        `${kind}, route change`,
+        browserName,
+      );
+    });
+
+    test('keeps a hydrate-on-viewport section still until it is scrolled to, then arrives', async ({
+      page,
+    }) => {
+      const arrivals = await recordArrivals(page);
+
+      await page.goto(`${prefix}enter`);
+      await waitForHydration(page);
+
+      const section = page.locator('#viewport-once');
+
+      await expect(section).toHaveAttribute('data-once', '');
+      await expect(section).toHaveCSS('animation-name', 'none');
+      await expect(section).toHaveCSS('opacity', '1');
+
+      await section.scrollIntoViewIfNeeded();
+
+      await expectArrived(section, arrivals, 'viewport-once');
+    });
+
+    test('keeps the hydrate-never section still and visible, and its link, after the live hosts leave', async ({
+      page,
+    }) => {
+      await page.goto(`${prefix}enter`);
+      await waitForHydration(page);
+
+      await page
+        .getByRole('button', { name: 'Remove the live arrivals' })
+        .click();
+      await removeDehydratedHosts(page, '#viewport-once');
+      await expect(page.locator('#plain, #below-once')).toHaveCount(0);
+      await nextFrames(page);
+
+      const section = page.locator('#never-once');
+
+      await section.scrollIntoViewIfNeeded();
+      await nextFrames(page);
+
+      await expect(section).toHaveAttribute('data-once', '');
+      await expect(section).toHaveCSS('animation-name', 'none');
+      await expect(section).toHaveCSS('opacity', '1');
+      await expect(section).toBeVisible();
+      expect(
+        await itemLinks(page),
+        'the hydrate never host keeps the enter link',
+      ).toContain('enter');
+    });
+
+    test('removes the enter link on leaving the route and re-inserts it on returning', async ({
+      page,
+    }) => {
+      await page.goto(`${prefix}enter`);
+      await waitForHydration(page);
+
+      expect(await itemLinks(page)).toContain('enter');
+
+      await page
+        .getByRole('link', { name: 'Leave for the replay page' })
+        .click();
+      await expect(page).toHaveURL(/\/replay$/);
+      await expect(page.locator('[data-ngx-yeti-item-enter]')).toHaveCount(0);
+      await expect.poll(() => itemLinks(page)).not.toContain('enter');
+
+      await page.goBack();
+      await expect(page.locator('#plain')).toBeVisible();
+      await expect.poll(() => itemLinks(page)).toContain('enter');
+    });
+
+    test.describe('with JavaScript off', () => {
+      test.use({ javaScriptEnabled: false });
+
+      test('serves every enter element opaque, and each once element still', async ({
+        page,
+      }) => {
+        await page.goto(`${prefix}enter`);
+
+        await expect.poll(() => itemSheetsLoaded(page, ['enter'])).toBe(true);
+
+        const hosts = page.locator('[data-ngx-yeti-item-enter]');
+
+        await expect(hosts).toHaveCount(6);
+
+        for (const host of await hosts.all()) {
+          await expect(host).toHaveClass('enter');
+          await expect(host).toHaveCSS('opacity', '1');
+        }
+
+        const once = page.locator('[data-ngx-yeti-item-enter][data-once]');
+
+        await expect(once).toHaveCount(4);
+
+        for (const host of await once.all()) {
+          await expect(host).toHaveCSS('animation-name', 'none');
+        }
+
+        await expect(page.locator('#plain')).not.toHaveAttribute('data-enter');
+        await expect(page.locator('#slide')).toHaveAttribute(
+          'data-side',
+          'end',
+        );
+        expect(await itemLinks(page)).toContain('enter');
+      });
+
+      test.describe('with the arrivals collapsed', () => {
+        // In Firefox axe runs on a fresh copy of the page, where the load
+        // arrivals play again; mid-fade text fails its contrast check. The
+        // arrival ends at the content's own colours (enter.md, 1.4.3), so
+        // axe reads the end state under reduced motion.
+        test.use({ reducedMotion: 'reduce' });
+
+        test('serves server HTML that axe passes', async ({
+          axeViolations,
+          page,
+        }) => {
+          await page.goto(`${prefix}enter`);
+          await expect(page.locator('#plain')).toHaveCSS('opacity', '1');
+
+          expect(await axeViolations()).toEqual([]);
+        });
+      });
+    });
+  });
+}
