@@ -3,9 +3,9 @@ id: T012
 title: Ship cluster with its enter shared host, the lift carry-over, and timeline's cluster measurement
 wave: 3
 deps: [T001, T002, T003, T009, T011]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T012
+base: 15eaa62d2e12e10de813cecfe8094c7d780290da
 worktree: null
 task_branch: null
 files:
@@ -83,3 +83,30 @@ Heavy: yes
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — coder: implemented `YetiCluster` (`gap`, `align` of the removed kind with `'[attr.align]': 'null'`, `justify`, `threshold`; `YetiGap`/`YetiAlign`/`YetiJustify`/`YetiWidth`; `exportAs: 'yetiCluster'`; `injectYetiItemStyles('cluster')` last), usage rules 1-6 in the JSDoc as cluster.md numbers them; index.ts and README filled. E8 verdict pass, so the static `align` form ships. Stories cluster--default (eight raised `yetiBox yetiBorder` links in a `nav` named "Site", stage resized 90rem/12rem for one row and wrap, sm gap on both axes, `container-type: normal`), --tags, --justify (with `dir="rtl"`), --align (static form, no `align` attribute, text stays start-aligned), --legend (plain `dd` text; T023 adds `yetiNumeric`), --threshold (10rem/90rem stage, `container-type: inline-size`), --threshold-in-row; `lift--default`'s three cards now sit in `yetiCluster gap="md"` as Yeti's example has them; `timeline--in-cluster` added (Yeti's alternate example as a cluster item). Layer 2 (incl. the `yetiCluster yetiEnter="rise" stagger` host with both presence attributes, the static `align="end"` removed, shared link until both fixtures die), layer 3 SSR and contract. Fixture `/cluster`: tags, wrapping links in a 12rem frame, static `align="baseline"`, a thresholded cluster in a 10rem frame, a live `yetiCluster yetiEnter` row; `hydrate never` cluster and shared cluster+enter host; client-only `@defer` cluster (preloaded). Its JS-off axe test runs under `reducedMotion: 'reduce'` as the enter route's does, because Firefox's snapshot axe replays the stagger fade (mid-fade contrast failed on `#arriving-cluster > li` without it). No ledger row (cluster owns none); no upstream bug found.
+- 2026-10-11 — coder measurements (annotations, not asserted): static-align painted frames 0 in every run — Chromium development 0/11 prerendered, 0/11 server; Chromium production 0/5, 0/12; Firefox development 0/12, 0/11 (WebKit ran in Verify, annotation not captured). timeline--in-cluster (usage rule 8, ticket 50 decision 66): collapsed in all three engines — Chromium, Firefox, and WebKit each measured timeline width 0.0 px, inline padding 0.0 px, widest entry 24.0 px; the collapse the rule predicts holds, so no follow-up.
+- 2026-10-11 — coder Verify: exit 0. lint+typecheck 4 projects OK; `nx test ngx-yeti -- cluster/src` 3 files, 15 tests passed; `test-storybook -- cluster/src lift/src timeline/src` 3 files, 19 tests passed; ngx-yeti-e2e Chromium 6 passed; yeti-app-e2e Chromium development 20 passed, production 18 passed + 2 skipped (development-only hydration diagnostics); Firefox ngx-yeti-e2e 6 passed, yeti-app-e2e 20 passed; WebKit ngx-yeti-e2e 6 passed, yeti-app-e2e 20 passed. `npx prettier --check .` clean.
+- 2026-10-11 — coder incident: a first `npm ci` started in the primary checkout by mistake (the Bash cwd reset to the primary) and was stopped within a minute, leaving the primary's `node_modules` partly removed; restored with `npm ci --prefix D:/projects/github/LayZeeDK/ngx-yeti` (exit 0); the primary's `git status` stayed clean. No tracked file changed.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T012): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:987) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:985) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```

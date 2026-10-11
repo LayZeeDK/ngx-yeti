@@ -12,6 +12,7 @@ import {
   type StoryObj,
 } from '@storybook/angular-vite';
 import type { YetiGap } from 'ngx-yeti';
+import { YetiCluster } from 'ngx-yeti/cluster';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import { withColorScheme } from '../../.storybook/decorators';
@@ -544,5 +545,30 @@ export const Rtl: Story = {
       await userEvent.tab();
       await expect(link).toHaveFocus();
     }
+  },
+};
+
+/**
+ * Yeti's example with `alternate` as an item of a cluster, a flex row that
+ * sizes its items by their content (usage rule 8). Whether the timeline
+ * collapses there is measured per engine in layer 4, not asserted.
+ */
+export const InCluster: Story = {
+  decorators: [moduleMetadata({ imports: [YetiTimeline, YetiCluster] })],
+  render: () => ({
+    template: `
+      <div data-testid="cluster" yetiCluster>
+        <ol data-testid="timeline" yetiTimeline alternate role="list">${exampleEntries}</ol>
+      </div>`,
+  }),
+  play: async ({ canvas, canvasElement }) => {
+    const cluster = byTestId(canvasElement, 'cluster');
+    const list = byTestId(canvasElement, 'timeline');
+
+    await expect(cluster).toHaveClass('cluster');
+    await expect(list.parentElement).toBe(cluster);
+    await expect(list).toHaveAttribute('class', 'timeline');
+    await expect(canvas.getByRole('list')).toBe(list);
+    await expect(within(list).getAllByRole('listitem')).toHaveLength(3);
   },
 };

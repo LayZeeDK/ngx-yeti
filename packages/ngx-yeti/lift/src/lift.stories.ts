@@ -7,6 +7,7 @@ import {
 } from '@storybook/angular-vite';
 import type { YetiLift } from 'ngx-yeti';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
+import { YetiCluster } from 'ngx-yeti/cluster';
 import { expect, getRoles, userEvent, waitFor, within } from 'storybook/test';
 import { NgxYetiLift } from './lift';
 
@@ -60,7 +61,9 @@ const meta: Meta<NgxYetiLift> = {
   id: 'lift',
   component: NgxYetiLift,
   decorators: [
-    moduleMetadata({ imports: [NgxYetiLift, YetiCard, YetiCardLink] }),
+    moduleMetadata({
+      imports: [NgxYetiLift, YetiCard, YetiCardLink, YetiCluster],
+    }),
   ],
   render: () => ({
     template: `<div data-testid="cards">${liftedCards}</div>`,
@@ -71,15 +74,16 @@ export default meta;
 type Story = StoryObj<NgxYetiLift>;
 
 /**
- * The pointer cases (the rise, the shadow, and the scale on hover) are in
- * `lift.spec.ts`: Storybook's `userEvent.hover` does not set CSS `:hover`.
+ * Yeti's example: the three cards in a cluster. The pointer cases (the rise,
+ * the shadow, and the scale on hover) are in `lift.spec.ts`: Storybook's
+ * `userEvent.hover` does not set CSS `:hover`.
  */
 export const Default: Story = {
   // The reference is the same markup rendered without `yetiLift`, hidden except
   // while the trees are compared, so an attribute the lift adds shows.
   render: () => ({
     template: `
-      <div data-testid="cards">${liftedCards}</div>
+      <div data-testid="cards" yetiCluster gap="md">${liftedCards}</div>
       <div data-testid="reference" hidden>${liftedCards.replaceAll(/ yetiLift(?:="scale")?/g, '')}</div>`,
   }),
   play: async ({ canvas }) => {
@@ -91,8 +95,12 @@ export const Default: Story = {
     ].map((name) => cardOf(canvas.getByRole('link', { name })));
 
     await expect(canvas.getAllByRole('article')).toHaveLength(3);
+    await expect(cards).toHaveClass('cluster');
+    await expect(cards).toHaveAttribute('data-gap', 'md');
+    await expect(cards).toHaveAttribute('data-ngx-yeti-item-cluster', '');
 
     for (const card of [first, second, third]) {
+      await expect(card?.parentElement).toBe(cards);
       await expect(card).toHaveClass('card', 'lift');
       await expect(card).toHaveAttribute('data-ngx-yeti-item-lift', '');
     }

@@ -157,3 +157,43 @@ test.describe('timeline--links', () => {
     }
   });
 });
+
+// Usage rule 8: a timeline is an inline-size container, so as an item of a
+// flex row that sizes its items by their content it may collapse to its
+// padding. Recorded per engine, not asserted.
+test.describe('timeline--in-cluster', () => {
+  test('records whether the timeline collapses as an item of a cluster', async ({
+    browserName,
+    page,
+  }) => {
+    const root = await openStory(page, 'timeline--in-cluster');
+    const list = root.getByTestId('timeline');
+
+    await expectItemSheetsApplied(page, ['cluster', 'timeline']);
+    await expect(list).toHaveCSS('display', 'flex');
+    await expect(root.getByTestId('cluster')).toHaveCSS('display', 'flex');
+
+    const measured = await list.evaluate((element) => {
+      const style = getComputedStyle(element);
+
+      return {
+        width: element.getBoundingClientRect().width,
+        padding:
+          parseFloat(style.paddingInlineStart) +
+          parseFloat(style.paddingInlineEnd),
+        widestEntry: Math.max(
+          0,
+          ...[...element.children].map(
+            (entry) => entry.getBoundingClientRect().width,
+          ),
+        ),
+      };
+    });
+    const collapsed = measured.width - measured.padding <= 1;
+
+    test.info().annotations.push({
+      type: 'timeline-in-cluster',
+      description: `${browserName}: timeline width ${measured.width.toFixed(1)} px, inline padding ${measured.padding.toFixed(1)} px, widest entry ${measured.widestEntry.toFixed(1)} px; ${collapsed ? 'collapsed to its padding' : 'did not collapse'}`,
+    });
+  });
+});
