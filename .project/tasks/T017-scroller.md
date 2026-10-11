@@ -3,9 +3,9 @@ id: T017
 title: Ship scroller with its keyboard cases and focus surviving hydration
 wave: 3
 deps: [T001, T002]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T017
+base: 176dceea4a18d7fef6f81bcf7f6ca49c73a6aea7
 worktree: null
 task_branch: null
 files:
@@ -78,3 +78,30 @@ Heavy: yes
 
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
+- 2026-10-11 — coder: implemented `YetiScroller` (`[yetiScroller]`, exportAs `yetiScroller`). Its host carries the static `class="scroller"`, `role="region"`, `tabindex="0"`, and `data-ngx-yeti-item-scroller`, plus `data-gap`, `data-width`, `data-snap` (`''` or null), and `data-justify` from `gap: YetiGap`, `width: YetiWidth`, `snap` (booleanAttribute), and `justify: YetiScrollerJustify` (`Extract<YetiJustify, 'start' | 'center' | 'end'>`). The constructor's last statement is `injectYetiItemStyles('scroller')`. No listener, no name input. The JSDoc carries usage rules 1 to 9. The entry point exports `YetiScroller` and `type YetiScrollerJustify`, and the README is rewritten. Layer 2 (12 tests): defaults; bound inputs set, updated, and removed; one link while the fixture lives and a link shared by two fixtures; no host listener; and, through a test host, the template ref, bare `snap`, static `width="sm"` kept beside `data-width`, the consumer's class, aria-label, and aria-labelledby, `yetiBox gap="lg"` giving one `data-gap` and both presence attributes, a consumer `tabindex="-1"` winning (usage rule 3), and `@for` items as direct children (rule 6). Layer 3: an SSR spec (5 tests: host attributes including the inert `width`, no unset attributes, one item link with `data-beasties-skip` and the pin href, scroller before box in Yeti order, no jsaction) and a contract spec (gap, width, and justify values with `expectTypeOf`; boolean snap; no events). Stories: `scroller--default`, `--keyboard` (Tab from a script-focused button, `:focus-visible`, outline not none, ring at least 3:1 against the surface in the light and the dark scheme, then Tab to a button after the strip), `--settings` (controls, `scroll-snap-type`, `scroll-snap-align` start, center, and end, none without snap), `--media`, and `--rtl`. Story frames use `max-inline-size`, so 320 px has no page overflow. Storybook e2e: real Tab, ArrowRight, and ArrowLeft at 1280 x 800 and 320 x 640 (WebKit focuses the start button by script); rtl ArrowLeft gives a negative scrollLeft; snap centring of the third item after 400 ms within 1 px; 320 px page without overflow for all 5 stories while each scroller overflows; the axe `scrollable-region-focusable`-only control passes, then gives 1 violation on the scroller after `tabindex` is removed. Fixture route: section 8 first on the page (`@for` articles), a remove control, `hydrate never` and client-only `@defer` scrollers. Its e2e (10 cases per route kind): clean hydration (dev), one overflowing row, focus and scrollLeft made with `holdBackMainBundle` before hydration unchanged after it, hydrate-never stays one row, focusable, and scrollable with its link after the live scroller leaves, client-only scroller with 0 unstyled frames (dev; production records `a4-frames` annotations), link removed on leaving and re-inserted on return, no overflow at 320 px, and, with JavaScript off, attributes and link, Tab focuses and ArrowRight scrolls, and axe clean.
+- 2026-10-11 — coder: fixes during Verify. Firefox: Tab from the last stop leaves the document while `activeElement` stays on the scroller, so the keyboard story got an "After the strip" button, and layers 1 and 4 assert focus lands on it. WebKit: the ArrowRight scroll is animated, so the e2e now waits for scrollLeft to settle before ArrowLeft. Without that wait it was flaky: read 4, then 36.
+- 2026-10-11 — coder: needs for other owners (none blocking). (a) Departures row for `.claude/skills/ngx-yeti-specs/SKILL.md` (not in my files): scroller.md:278 and :282 put ArrowRight, ArrowLeft, and rtl ArrowLeft in play functions, but Storybook's `userEvent` dispatches untrusted key events, which never scroll. Those assertions are in layer 4 with real keys (`apps/ngx-yeti-e2e/src/scroller.spec.ts`), the same reason as the `:hover` row. (b) `YetiScrollerJustify` should also be re-exported from the primary entry point (scroller.md:153, ticket 50 decision 60). `packages/ngx-yeti/src/index.ts` is not in my files, so it is exported from `ngx-yeti/scroller` only. (c) `scroller--wide-table` and the Fixture route's wide-table markup (scroller.md:280, :310) are left to T023 (table). (d) Usage rule 9 (forgotten import, NG8002/NG8003) has no test here: it is Angular compile behaviour and needs the compile-fixture check, which is outside my files. No ledger row (the item owns none). No upstream bug found.
+- 2026-10-11 — coder: Verify PASSED, run exactly as written under the heavy lock. npm ci ok; lint and typecheck ok for ngx-yeti, ngx-yeti-e2e, yeti-app, yeti-app-e2e; `nx test` 3 files, 19 tests passed; test-storybook 5 passed; ngx-yeti-e2e Chromium 10 passed; yeti-app-e2e dev Chromium 20 passed; production Chromium 18 passed and 2 skipped (dev-only hydration diagnostics); run-job Firefox: ngx-yeti-e2e 10 passed, yeti-app-e2e 20 passed; run-job WebKit: ngx-yeti-e2e 10 passed, yeti-app-e2e 20 passed; exit 0, daemon stopped. `npx prettier --check .` clean.
+- 2026-10-11 — orchestrator Verify (isolate gsd-path-task/T017): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:984) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [2m[WebServer] [22m(node:985) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```
