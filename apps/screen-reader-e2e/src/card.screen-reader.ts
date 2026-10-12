@@ -3,8 +3,8 @@ import { expect, test, type LaneName } from './support/screen-reader';
 const titles = ['Weekend in the hills', 'A day by the lake', 'The coast path'];
 
 /**
- * What each reader says on card--list, as substrings in spoken order
- * (INTENT E16: wording varies by reader and version). `steps` is how many
+ * What each reader says on card--list, as substrings in spoken order,
+ * since the wording varies by reader and version. `steps` is how many
  * times the test moves the reader on through the list after it arrives.
  */
 const lanes = {
@@ -17,8 +17,7 @@ const lanes = {
     heard: ['list, with 3 items', ...titles, 'no next list item'],
   },
   // VoiceOver in real Safari, walked item by item with VO-Right, which may
-  // stop on each card's heading and paragraph. Not yet measured: the first
-  // CI run records the phrases, and these substrings follow them.
+  // stop on each card's heading and paragraph.
   voiceover: {
     steps: 8,
     heard: ['list', '3 items', ...titles],

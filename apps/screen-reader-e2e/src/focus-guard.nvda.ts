@@ -36,9 +36,18 @@ test('the lane sends no key while another window has the foreground', async ({
   }
 });
 
+test('one worker opens two stories in turn, each with its document focused', async ({
+  lane,
+}) => {
+  await lane.open('card--default');
+  expect(await lane.top()).not.toEqual([]);
+
+  await lane.open('card--list');
+  expect((await lane.top()).join('\n')).toContain('list, with 3 items');
+});
+
 test('the lane accepts only a focus report of its own story', () => {
-  // NVDA 2026.2's focus report for the card--list story window, recorded by
-  // T004 on 2026-10-10: NVDA speaks the title token with a space inside it.
+  // NVDA speaks the title token with a space inside it.
   const token = 'screen-reader-e2e-518862816';
 
   expect(
@@ -50,5 +59,13 @@ test('the lane accepts only a focus report of its own story', () => {
   expect(acceptsFocusReport([startMarkerText], token)).toBe(true);
   expect(
     acceptsFocusReport(['Untitled - Notepad, document, focused'], token),
+  ).toBe(false);
+  // NVDA on the story window's frame in Firefox: the token is there, but
+  // browse-mode keys say nothing from the frame.
+  expect(
+    acceptsFocusReport(
+      ['screen-reader-e 2e-518862816 — Nightly, frame, read only'],
+      token,
+    ),
   ).toBe(false);
 });

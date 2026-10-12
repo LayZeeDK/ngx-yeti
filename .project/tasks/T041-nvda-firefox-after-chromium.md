@@ -3,9 +3,9 @@ id: T041
 title: Make the NVDA lane pass in Firefox after Chromium and with several tests in one worker
 wave: 4
 deps: [T031, T038, T043, T049]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T041
+base: d5085278b3cb41f82ac0fc7dc92c3ce84ce843ba
 worktree: null
 task_branch: null
 files:
@@ -93,3 +93,37 @@ Heavy: yes
 - 2026-10-12 — planner (build repair #2): deps now [T031, T043]. The only reason is file overlap: T042 and T043 also edit `references/ci-local.md` (the unit-job lines and the container-job sections), and same-wave tasks that share a file must be ordered. T041 edits only the NVDA lane section. It goes after T043 rather than before so that the faster local runs are not held behind the locked desktop. Everything else in this contract is unchanged.
 - 2026-10-12 — planner (build repair #3, review round 1): the orchestrator's triage routes items 9 and 7 (the two screen-reader comment sites) to this task. `files` gains AGENTS.md, `.claude/skills/ngx-yeti-testing/SKILL.md`, and `apps/screen-reader-e2e/src/card.screen-reader.ts`; Context quotes the findings; Approach gains two bullets and the card bullet now allows its comment edits; criterion 8 is new; the Verify gains two comment checks and a Prettier check of the three docs before the lane runs. `deps` gains T038 for file overlap only: T036 and T038 (both done, wave 4, T038 after T036) edited the testing skill, and same-wave tasks that share a file must be ordered. The lane fix, its criteria 1 to 7, and wave are unchanged. T024 and the new T048 edit the testing skill after this task.
 - 2026-10-12 — planner (build repair #3, the user's ruling to rename the package stylesheet, T049): deps gains T049 for file overlap (.claude/skills/ngx-yeti-testing/SKILL.md). Nothing else changes.
+- 2026-10-12 — coder (build_T041, retry, primary checkout at d508527 plus attempt 1's patch applied with `git apply`): ready. Every NVDA run went through the heavy lock; after each, no NVDA, Playwright Firefox or story window of mine was running and port 4401 was free (a Playwright Chromium from 2026-10-11 23:25 and a floor Chrome from 2026-10-10, not started by this run, were left alone). Evidence: scratchpad T041-run15..23.log, T041-diag-run15..20.jsonl, T041-verify.log.
+  - Run 15 (13:42 local, Firefox alone, card): invalid, the Windows session was locked ("Standardlåseskærm til Windows" kept the foreground). Waited for the unlock (15:41) before any further run.
+  - Control, run 16 (Firefox alone, card, no retries, attempt-1 driver without F6): failed. Foreground "screen-reader-e2e-<n> - Nightly" on every report; NVDA's first report was the VS Code terminal ("Terminal 1, ... edit, focused"), then after each hop "screen-reader-e 2e-<n> — Nightly, frame, read only", 10 reports in 60 s, never the document. (document.hasFocus() is true in Playwright's Firefox whatever has focus, per the source findings above, so it is not evidence.)
+  - Option (a), run 17 (F6 only on a frame report): F6 moved NVDA, which then reported "Search with Google or enter address, combo box, focused, ... http: slash slash localhost:4401 slash iframe ..." (the address bar). Run 18 (F6 up to 3 times in a row): further F6 presses kept the address bar; in Firefox F6 focuses the address bar, it does not cycle back into the page. Both failed.
+  - Root cause, Firefox (measured with the source reading above): Juggler's docShell.overrideHasFocus keeps every loaded content document focused in Gecko, so neither the OS window activation nor the hop fires a document focus event; NVDA stays on the top-level frame. A real browser-side focus change does reach NVDA (run 17: the address bar). focusmanager.testmode=false did not change it (run 13).
+  - Fix: on a refused report that names the story window by its token (the frame), `open` presses F6 (address bar) and then Enter, both through the key guard, which reloads the story from the address bar and moves the browser's focus into the document; it then waits for the load event and the rendered story (conditions, no sleep), re-adds the start marker, re-titles the window and asks again, at most 2 such reloads per open within the 60 s deadline. Any other refused report raises with the hop (the Chromium fix from attempt 1). Run 19 (Firefox alone, card): passed, first report was already the document (NVDA followed the launch, as in run 7). Run 20 (no BROWSERS, all tests, no retries): 8 passed; Firefox's first open went Terminal 1 -> hop -> frame -> F6, Enter -> "screen-reader-e 2e-963528506, document, focused, read only"; every later open in both workers got the document on the first report, foreground the story window each time.
+  - After the fix, the lane's phrases in run 23 (Firefox card--list, attempt 0): "Terminal 1, ...", "<token> — Nightly, frame, read only", "Navigation, tool bar. Search with Google or enter address, combo box, ...", "Storybook, document, busy. blank. card--list", "screen-reader-e 2e-952673331, document, focused, read only", then the list checks.
+  - Removed all temporary code: DEBUG logging, T041_DIAG writes, the raise-script TRACE, T041_FF, the firefoxUserPrefs testmode entry, and both T041_F6 experiments. `quiet()` stays deleted. Lane and Driver unchanged, retries still 2, only `open` raises (activate also serves the guard test's decoy, as before), every key goes through `sendKey`.
+  - New test in focus-guard.nvda.ts: one worker opens card--default then card--list; after each open `top` speaks, and the second walk holds "list, with 3 items". Comments: focus-guard.nvda.ts keeps only "NVDA speaks the title token with a space inside it" (and the frame case without a date); card.screen-reader.ts drops "INTENT E16" and the "Not yet measured" sentence. AGENTS.md, ci-local.md's job table and NVDA section, and the testing skill give the no-BROWSERS run as the local run of the `nvda` job, with BROWSERS=msedge as a faster native run that is not evidence for it. ci-local.md's NVDA section states the cause, what `open` does, and the measured runs in place of the old local limit.
+  - Three lane runs in a row via `npm exec nx -- run screen-reader-e2e:nvda` (runs 21, 22, 23): each 8 passed, every test on attempt 1 (no retry, no flaky) in Chromium 153 and Firefox 155.
+  - Verify, run exactly as written through the heavy lock: exit 0. npm ci added 1932 packages; prettier check clean; lint and typecheck of screen-reader-e2e pass; lane with no BROWSERS 8 passed (4 Chromium, 4 Firefox, all first attempt); BROWSERS=msedge 4 passed, first attempt; Nx daemon stopped.
+- 2026-10-12 — orchestrator Verify (sidecar gsd-path-verify/task-t041-verify): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m(node:2796) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:4152) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:7916) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m(node:36708) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:11044) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  ```

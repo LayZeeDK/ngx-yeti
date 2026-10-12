@@ -77,24 +77,57 @@ function nvdaLane(): Lane {
       log.length = 0;
       token = undefined;
 
-      const arrival = await move(async () => {
-        await page.goto(storyUrl(storyId));
+      const load = async (): Promise<void> => {
         await page.waitForFunction(storyRendered);
         await page.evaluate(addStartMarker, startMarkerText);
-        token = await activate(page);
-        await quiet();
+      };
+      const arrival = await move(async () => {
+        await page.goto(storyUrl(storyId));
+        await load();
       });
-      const focus = await move(async () =>
-        key(async () => nvda.perform(nvda.keyboardCommands.reportCurrentFocus)),
-      );
+      const deadline = Date.now() + 60_000;
+      let reloads = 0;
 
-      if (!acceptsFocusReport(focus, token)) {
-        throw new Error(
-          `The story document does not have the keyboard focus; NVDA reports ${JSON.stringify(focus)}.`,
+      token = await activate(page);
+
+      // Asks NVDA for its focus until it reports the story document.
+      for (;;) {
+        const focus = await move(async () =>
+          key(async () =>
+            nvda.perform(nvda.keyboardCommands.reportCurrentFocus),
+          ),
         );
-      }
 
-      return [...arrival, ...focus];
+        if (acceptsFocusReport(focus, token)) {
+          return [...arrival, ...focus];
+        }
+
+        if (Date.now() > deadline) {
+          throw new Error(
+            `The story document does not have the keyboard focus; NVDA reports ${JSON.stringify(focus)}.`,
+          );
+        }
+
+        if (reloads < 2 && namesWindow(focus, token)) {
+          // NVDA is on the story window but not in its document, such as
+          // its frame in Playwright's Firefox, which keeps every loaded
+          // document focused, so raising the window fires no document focus
+          // event. F6 moves the browser's focus to the address bar, and Enter
+          // reloads the story from it into the document.
+          reloads++;
+          await move(async () => key(async () => nvda.press('F6')));
+          const loaded = page.waitForEvent('load');
+
+          await move(async () => key(async () => nvda.press('Enter')));
+          await loaded;
+          await move(load);
+          token = await activate(page);
+        } else {
+          // NVDA missed the foreground change to the story window: hop the
+          // foreground away and back.
+          token = await activate(page, 'screen-reader-e2e', true);
+        }
+      }
     },
     // Browse mode: Control+Home to the start marker, then down a line into
     // the story.
@@ -136,24 +169,42 @@ async function sendKey(
 
 /**
  * Whether NVDA's focus report is about this story's document: it holds the
- * window title token or the start marker. NVDA puts spaces inside the token
+ * start marker, or it is a document and holds the window title token. NVDA
+ * puts spaces inside the token
  * (`screen-reader-e 2e-518862816, document, focused, read only`), so spaces
  * are ignored on both sides. Another application's document, which NVDA
- * also reports as "document", is refused.
+ * also reports as "document", is refused, and so is the story window's frame
+ * (`screen-reader-e 2e-947894595 — Nightly, frame, read only`), where
+ * browse-mode keys say nothing.
  */
 export function acceptsFocusReport(
   phrases: readonly string[],
   token: string | undefined,
 ): boolean {
-  const compact = (text: string): string => text.replace(/\s+/g, '');
-  const needles = [
-    startMarkerText,
-    ...(token === undefined ? [] : [token]),
-  ].map(compact);
+  return phrases
+    .flatMap((phrase) => phrase.split('. '))
+    .some(
+      (phrase) =>
+        compact(phrase).includes(compact(startMarkerText)) ||
+        (token !== undefined &&
+          compact(phrase).includes(compact(token)) &&
+          phrase.split(', ').includes('document')),
+    );
+}
 
-  return phrases.some((phrase) =>
-    needles.some((needle) => compact(phrase).includes(needle)),
+/** Whether NVDA's focus report names the story window by its title token. */
+function namesWindow(
+  phrases: readonly string[],
+  token: string | undefined,
+): boolean {
+  return (
+    token !== undefined &&
+    phrases.some((phrase) => compact(phrase).includes(compact(token)))
   );
+}
+
+function compact(text: string): string {
+  return text.replace(/\s+/g, '');
 }
 
 /**
@@ -162,11 +213,14 @@ export function acceptsFocusReport(
  * tab: Windows keeps the foreground on the window that has it, such as a
  * terminal, and NVDA's keys would go there. The token makes sure no other
  * window matches, and the script repeats until Windows reports that window
- * as the foreground one.
+ * as the foreground one. With `hop`, the script first moves the foreground
+ * to a window of its own and back, a fresh foreground change for NVDA, which
+ * can miss the one that brought the window up.
  */
 export async function activate(
   page: Page,
   name = 'screen-reader-e2e',
+  hop = false,
 ): Promise<string> {
   const token = `${name}-${String(randomInt(1e9))}`;
   const deadline = Date.now() + 20_000;
@@ -176,8 +230,8 @@ export async function activate(
   }, token);
   await page.bringToFront();
 
-  for (;;) {
-    const title = await foreground(token);
+  for (let first = true; ; first = false) {
+    const title = await foreground(token, hop && first);
 
     if (title.includes(token)) {
       return token;
@@ -190,30 +244,6 @@ export async function activate(
     }
 
     await delay(500);
-  }
-}
-
-/**
- * Waits until NVDA has said nothing new for a second, so the next key acts
- * on a settled document.
- */
-async function quiet(): Promise<void> {
-  const deadline = Date.now() + 15_000;
-  let last = -1;
-
-  for (;;) {
-    const count = (await nvda.spokenPhraseLog()).length;
-
-    if (count === last) {
-      return;
-    }
-
-    if (Date.now() > deadline) {
-      throw new Error('NVDA kept speaking for 15 s.');
-    }
-
-    last = count;
-    await delay(1_000);
   }
 }
 
@@ -242,17 +272,35 @@ function Get-ForegroundTitle {
 const foregroundScript = `${user32}
 $pattern = '*' + $env:SCREEN_READER_E2E_WINDOW + '*'
 $window = Get-Process | Where-Object { $_.MainWindowTitle -like $pattern } | Select-Object -First 1
-if ($window -and -not ((Get-ForegroundTitle) -like $pattern)) {
-  $hWnd = $window.MainWindowHandle
+Add-Type -AssemblyName System.Windows.Forms
+function Set-Foreground($hWnd, [switch]$Restore) {
   $from = [ScreenReaderE2e.Window]::GetCurrentThreadId()
   $to = [ScreenReaderE2e.Window]::GetWindowThreadProcessId([ScreenReaderE2e.Window]::GetForegroundWindow(), [IntPtr]::Zero)
   [void][ScreenReaderE2e.Window]::AttachThreadInput($from, $to, $true)
-  [void][ScreenReaderE2e.Window]::ShowWindow($hWnd, 6)
-  [void][ScreenReaderE2e.Window]::ShowWindow($hWnd, 9)
-  [void][ScreenReaderE2e.Window]::BringWindowToTop($hWnd)
+  if ($Restore) {
+    [void][ScreenReaderE2e.Window]::ShowWindow($hWnd, 6)
+    [void][ScreenReaderE2e.Window]::ShowWindow($hWnd, 9)
+    [void][ScreenReaderE2e.Window]::BringWindowToTop($hWnd)
+  }
   [void][ScreenReaderE2e.Window]::SetForegroundWindow($hWnd)
   [void][ScreenReaderE2e.Window]::AttachThreadInput($from, $to, $false)
-  Start-Sleep -Milliseconds 200
+  for ($i = 0; $i -lt 20 -and [ScreenReaderE2e.Window]::GetForegroundWindow() -ne $hWnd; $i++) {
+    [System.Windows.Forms.Application]::DoEvents()
+    Start-Sleep -Milliseconds 100
+  }
+}
+if ($window) {
+  $hWnd = $window.MainWindowHandle
+  if (-not ((Get-ForegroundTitle) -like $pattern)) {
+    Set-Foreground $hWnd -Restore
+  }
+  if ($env:SCREEN_READER_E2E_HOP -eq '1' -and ((Get-ForegroundTitle) -like $pattern)) {
+    $form = New-Object System.Windows.Forms.Form -Property @{ Text = 'screen-reader-e2e raise'; ShowInTaskbar = $false; Width = 240; Height = 80 }
+    $form.Show()
+    Set-Foreground $form.Handle
+    Set-Foreground $hWnd
+    $form.Close()
+  }
 }
 Get-ForegroundTitle`;
 
@@ -273,10 +321,11 @@ const powershell = async (
  * Raises the window whose title holds `token` and returns the title of the
  * window that then has the foreground.
  */
-async function foreground(token: string): Promise<string> {
+async function foreground(token: string, hop: boolean): Promise<string> {
   return powershell(foregroundScript, {
     ...process.env,
     SCREEN_READER_E2E_WINDOW: token,
+    SCREEN_READER_E2E_HOP: hop ? '1' : '0',
   });
 }
 
