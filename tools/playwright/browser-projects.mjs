@@ -25,6 +25,32 @@ function project({ name, engine, options }) {
   };
 }
 
+/**
+ * The Playwright worker count of a local container run, spread after the
+ * preset. Only tools/ci-local/run-job.mjs sets E2E_LOCAL_WORKERS, so CI keeps
+ * the preset's count, and a command-line `--workers` still wins.
+ *
+ * @param {NodeJS.ProcessEnv} env
+ * @returns {{ workers?: number }}
+ */
+export function localWorkers(env = process.env) {
+  const value = env['E2E_LOCAL_WORKERS'];
+
+  if (!value) {
+    return {};
+  }
+
+  const workers = Number(value);
+
+  if (!Number.isInteger(workers) || workers < 1) {
+    throw new Error(
+      `E2E_LOCAL_WORKERS must be a whole number from 1, not ${value}`,
+    );
+  }
+
+  return { workers };
+}
+
 /** @param {string} url */
 export function hostPort(url) {
   const { hostname, port, protocol } = new URL(url);

@@ -2,18 +2,39 @@
 /** See references/ci-local.md. */
 import { execFileSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import {
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createInterface } from 'node:readline';
 import { load } from 'js-yaml';
 
 const root = join(import.meta.dirname, '../..');
 const usage =
-  'usage: node tools/ci-local/run-job.mjs <workflow> <job> [--matrix key=value]... [--dry-run] [-- <command>...]';
+  'usage: node tools/ci-local/run-job.mjs <workflow> <job> [--matrix key=value]... [--legs <n>] [--e2e-workers <n>] [--dry-run] [-- <command>...]';
+/** Matrix legs at once, capped by their peak memory in the Docker VM. */
+const defaultLegs = 2;
+/** Playwright workers per e2e leg; 0 leaves the configs' CI count. */
+const defaultE2eWorkers = 3;
 
 function fail(message) {
   console.error(`run-job: ${message}`);
   process.exit(2);
+}
+
+function count(option, text, min) {
+  const value = Number(text);
+
+  if (!Number.isInteger(value) || value < min) {
+    fail(`${option} takes a whole number from ${String(min)}`);
+  }
+
+  return value;
 }
 
 function parseArgs(argv) {
@@ -23,12 +44,20 @@ function parseArgs(argv) {
   const [workflow, job, ...rest] = own;
   const matrix = {};
   let dryRun = false;
+  let legs = defaultLegs;
+  let e2eWorkers = defaultE2eWorkers;
 
   for (let index = 0; index < rest.length; index += 1) {
     const argument = rest[index];
 
     if (argument === '--dry-run') {
       dryRun = true;
+    } else if (argument === '--legs') {
+      index += 1;
+      legs = count(argument, rest[index], 1);
+    } else if (argument === '--e2e-workers') {
+      index += 1;
+      e2eWorkers = count(argument, rest[index], 0);
     } else if (argument === '--matrix') {
       index += 1;
       const pair = rest[index] ?? '';
@@ -53,6 +82,8 @@ function parseArgs(argv) {
     job,
     matrix,
     dryRun,
+    legs,
+    e2eWorkers,
     command,
   };
 }
@@ -131,7 +162,7 @@ function evaluate(expression, matrix) {
   return value;
 }
 
-function resolve(text, matrix) {
+export function resolve(text, matrix) {
   return String(text).replace(/\$\{\{\s*(.*?)\s*\}\}/g, (_, expression) =>
     String(evaluate(expression, matrix)),
   );
@@ -269,8 +300,15 @@ function combinations(matrix, filter) {
 
 const isSetup = (run) => /^npm (ci|install)\b/.test(run.trim());
 
-function quote(argument) {
+export function quote(argument) {
   return `'${String(argument).replaceAll("'", "'\\''")}'`;
+}
+
+/** The leg's check steps: the job's, or the command after `--` as literal words. */
+export function legChecks(checks, combo, command) {
+  return command.length > 0
+    ? [command.map(quote).join(' ')]
+    : checks.map((run) => resolve(run, combo));
 }
 
 /** Each folder gets its own volume, so installs survive the `--rm` container. */
@@ -311,7 +349,7 @@ function setupKey(job, setup, files) {
   return hash.digest('hex');
 }
 
-function containerScript({ setup, checks, key, folders, nodeVersion }) {
+export function containerScript({ setup, checks, key, folders, nodeVersion }) {
   const step = (run) => `bash -e -c ${quote(run)}`;
   const keyFiles = folders.map((folder) => `${folder}/.run-job-key`);
   const current = keyFiles
@@ -324,6 +362,10 @@ function containerScript({ setup, checks, key, folders, nodeVersion }) {
     // that need a root-owned HOME set `HOME: /root` themselves.
     'mkdir -p /github/home && chown 1001:1001 /github/home',
     'tar -xf - -C /src',
+    // run-job.mjs keeps stdin open while it runs, so the leg stops when it
+    // dies, even when no Ctrl+C handler runs.
+    'exec 3<&0 < /dev/null',
+    '{ cat <&3 > /dev/null; kill -KILL $$; } &',
     'cd /src',
     'echo "run-job: node $(node --version)"',
     ...(nodeVersion === null
@@ -345,16 +387,42 @@ function containerScript({ setup, checks, key, folders, nodeVersion }) {
   ].join('\n');
 }
 
-function runContainer(args, files) {
+/** Containers this run started, removed on an interrupt. */
+const running = new Set();
+
+function stop(code) {
+  if (running.size > 0) {
+    try {
+      execFileSync('docker', ['rm', '-f', ...running], { stdio: 'ignore' });
+    } catch {
+      // Already gone.
+    }
+  }
+
+  process.exit(code);
+}
+
+/** Prints each line with its leg's label and keeps the leg's own copy in `log`. */
+function relay(stream, label, log, sink) {
+  createInterface({ input: stream, crlfDelay: Infinity }).on('line', (line) => {
+    log.write(`${line}\n`);
+    sink.write(`[${label}] ${line}\n`);
+  });
+}
+
+function runContainer({ args, name, label, log }, files) {
   return new Promise((done) => {
     const tar = spawn('tar', ['-cf', '-', '--null', '-T', '-'], {
       cwd: root,
-      stdio: ['pipe', 'pipe', 'inherit'],
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
     const docker = spawn('docker', args, {
-      stdio: ['pipe', 'inherit', 'inherit'],
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
+    const output = createWriteStream(log);
     let tarStatus = null;
+
+    running.add(name);
 
     for (const stream of [tar, docker, tar.stdin, docker.stdin]) {
       stream.on('error', (error) => {
@@ -364,12 +432,18 @@ function runContainer(args, files) {
       });
     }
 
+    relay(tar.stderr, label, output, process.stderr);
+    relay(docker.stdout, label, output, process.stdout);
+    relay(docker.stderr, label, output, process.stderr);
     tar.on('close', (code) => {
       tarStatus = code;
     });
     docker.on('close', (code) => {
+      running.delete(name);
+      output.end();
+
       if (tarStatus !== null && tarStatus !== 0) {
-        console.error(`run-job: tar exited with ${tarStatus}`);
+        console.error(`run-job: [${label}] tar exited with ${tarStatus}`);
         done(1);
 
         return;
@@ -377,9 +451,15 @@ function runContainer(args, files) {
 
       done(code ?? 1);
     });
-    tar.stdout.pipe(docker.stdin);
+    tar.stdout.pipe(docker.stdin, { end: false });
     tar.stdin.end(files.join('\0'));
   });
+}
+
+function seconds(ms) {
+  const total = Math.round(ms / 1000);
+
+  return `${String(Math.floor(total / 60))} m ${String(total % 60)} s`;
 }
 
 async function run({
@@ -387,6 +467,8 @@ async function run({
   job: jobName,
   matrix: filter,
   dryRun,
+  legs: cap,
+  e2eWorkers,
   command,
 }) {
   const job = loadJob(workflow, jobName);
@@ -402,22 +484,27 @@ async function run({
   );
   const checkout = createHash('sha256').update(root).digest('hex').slice(0, 8);
   const volume = `ngx-yeti-run-job-${checkout}-${workflow}-${jobName}`;
-  const results = [];
+  const legs = Math.min(cap, combos.length);
 
-  for (const combo of combos) {
+  /** Slot 0 keeps the job's volumes; each other concurrent slot has its own, so legs never share a writable node_modules. */
+  function leg(combo, slot) {
     const setup = job.setup.map((run) => resolve(run, combo));
-    const checks =
-      command.length > 0
-        ? [command.map(quote).join(' ')]
-        : job.checks.map((run) => resolve(run, combo));
+    const checks = legChecks(job.checks, combo, command);
     const key = setupKey(job, setup, files);
     const label = [workflow, jobName, ...Object.values(combo)].join('-');
     const out = join(tmpdir(), 'ngx-yeti-run-job', label);
+    const name =
+      `ngx-yeti-run-job-${checkout}-${label}-${String(process.pid)}`.replace(
+        /[^\w.-]/g,
+        '-',
+      );
+    const slotVolume = slot === 0 ? volume : `${volume}-leg${String(slot + 1)}`;
     const env = {
       CI: 'true',
       HOME: '/github/home',
       HOST_UID: String(process.getuid?.() ?? ''),
       npm_config_cache: '/npm-cache',
+      ...(e2eWorkers > 0 ? { E2E_LOCAL_WORKERS: String(e2eWorkers) } : {}),
       ...job.env,
     };
     const args = [
@@ -425,17 +512,19 @@ async function run({
       '--rm',
       '-i',
       '--init',
+      '--name',
+      name,
       ...folders.flatMap((folder) => [
         '-v',
-        `${volume}-${folder.replaceAll('/', '-')}:/src/${folder}`,
+        `${slotVolume}-${folder.replaceAll('/', '-')}:/src/${folder}`,
       ]),
       '-v',
       'ngx-yeti-run-job-npm-cache:/npm-cache',
       '-v',
       `${out}:/out`,
-      ...Object.entries(env).flatMap(([name, value]) => [
+      ...Object.entries(env).flatMap(([variable, value]) => [
         '-e',
-        `${name}=${resolve(value, combo)}`,
+        `${variable}=${resolve(value, combo)}`,
       ]),
       job.image,
       'bash',
@@ -449,25 +538,60 @@ async function run({
       }),
     ];
 
-    console.log(`\n=== ${label} (${job.image})`);
-
-    if (dryRun) {
-      console.log(['docker', ...args].map(quote).join(' '));
-      continue;
-    }
-
-    rmSync(out, { recursive: true, force: true });
-    mkdirSync(out, { recursive: true });
-    results.push({ label, out, status: await runContainer(args, files) });
+    return { args, name, label, out, log: join(out, 'run-job.log') };
   }
 
-  for (const { label, out, status } of results) {
+  if (dryRun) {
+    combos.forEach((combo, index) => {
+      const { args, label } = leg(combo, index % legs);
+
+      console.log(`\n=== ${label} (${job.image})`);
+      console.log(['docker', ...args].map(quote).join(' '));
+    });
+
+    return;
+  }
+
+  process.on('SIGINT', () => stop(130));
+  process.on('SIGTERM', () => stop(143));
+
+  const queue = combos.map((combo, index) => ({ combo, index }));
+  const results = [];
+
+  console.log(
+    `run-job: ${String(combos.length)} legs of ${workflow} ${jobName}, ${String(legs)} at a time (${job.image})`,
+  );
+  await Promise.all(
+    Array.from({ length: legs }, async (_, slot) => {
+      for (let next = queue.shift(); next; next = queue.shift()) {
+        const current = leg(next.combo, slot);
+        const start = Date.now();
+
+        rmSync(current.out, { recursive: true, force: true });
+        mkdirSync(current.out, { recursive: true });
+        console.log(`=== start ${current.label}`);
+
+        const status = await runContainer(current, files);
+
+        results[next.index] = { ...current, status, ms: Date.now() - start };
+        console.log(
+          `=== ${status === 0 ? 'pass' : 'FAIL'} ${current.label} in ${seconds(Date.now() - start)}`,
+        );
+      }
+    }),
+  );
+
+  console.log('');
+
+  for (const { label, out, log, status, ms } of results) {
     console.log(
-      `${status === 0 ? 'pass' : `FAIL (${status})`}  ${label}  reports: ${out}`,
+      `${status === 0 ? 'pass' : `FAIL (${String(status)})`}  ${label}  ${seconds(ms)}  reports: ${out}  log: ${log}`,
     );
   }
 
   process.exitCode = results.some(({ status }) => status !== 0) ? 1 : 0;
 }
 
-await run(parseArgs(process.argv.slice(2)));
+if (import.meta.main) {
+  await run(parseArgs(process.argv.slice(2)));
+}

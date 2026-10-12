@@ -7,7 +7,7 @@ Every job in `.github/workflows/ci.yml` and `.github/workflows/floor.yml` runs l
 `ci.yml` `unit` and `e2e` and `floor.yml` `webkit-26-4` and `firefox-146-e2e` run in a Playwright image. Run them with:
 
 ```sh
-node tools/ci-local/run-job.mjs <workflow> <job> [--matrix key=value]... [--dry-run] [-- <command>...]
+node tools/ci-local/run-job.mjs <workflow> <job> [--matrix key=value]... [--legs <n>] [--e2e-workers <n>] [--dry-run] [-- <command>...]
 ```
 
 The script reads the job's `container` image, `env`, matrix and `run` steps from the workflow file. It refuses any workflow key, step, action input or expression it does not run, so a workflow change either reaches the local run or stops it with a message. For each matrix combination it:
@@ -18,7 +18,17 @@ The script reads the job's `container` image, `env`, matrix and `run` steps from
 - sets `CI=true` and `HOME=/github/home` as GitHub does, before the job's own `env`;
 - fails if the image's Node major differs from `actions/setup-node`'s `node-version`;
 - runs each step as `bash -e -c '<run>'`, as GitHub's default shell does, or the one command after `--` instead of the steps after setup;
-- copies `dist/.playwright` (reports and traces) to the folder it prints, under the system temp folder.
+- copies `dist/.playwright` (reports and traces) to the folder it prints, under the system temp folder, and writes the leg's output to `run-job.log` there.
+
+### How a local run differs from CI
+
+A local run differs from CI in three ways only, and each has a switch that makes it run as CI does:
+
+- **Concurrent legs.** GitHub runs a job's matrix legs on separate runners at once. The script runs up to `--legs` of them at once, 2 by default, and starts the next as one ends. `--legs 1` runs them one after another. The cap is set by memory, not cores: all containers share the WSL VM, capped at 12 GB on this machine, and two `e2e` legs peaked at 8.4 GiB, two `firefox-146-e2e` shards at 10.2 GiB (below). Each concurrent slot mounts its own `node_modules` volumes, because a leg writes `node_modules/.vite`, `node_modules/.cache` and the setup key file: slot 1 keeps the job's volumes, `ngx-yeti-run-job-<checkout>-<workflow>-<job>-*`, and slot 2 uses `...-<job>-leg2-*`. Each slot runs its own setup the first time and skips it while its key matches. Every leg runs to its end when another fails, each output line carries the leg's label, and the closing summary lists each leg's result, wall time, reports folder and log. The run exits 1 when any leg fails.
+- **Playwright workers.** CI runs each e2e leg with the preset's one worker. Locally the script sets `E2E_LOCAL_WORKERS`, 3 by default, which the three e2e configs read through `localWorkers()` in `tools/playwright/browser-projects.mjs`. `--e2e-workers 0` leaves it unset, so a leg runs with one worker as on CI. A command-line `--workers`, such as `firefox-146-e2e`'s `--workers=2`, still wins, so the floor job runs as on CI.
+- **No build cache.** Each container still starts with an empty Nx cache, as on CI. A shared build-only cache was measured and dropped (below).
+
+Ctrl+C stops the run and removes its containers. A leg also stops when `run-job.mjs` dies without running its handler, because the container ends when its input closes.
 
 Examples:
 
@@ -30,7 +40,7 @@ node tools/ci-local/run-job.mjs ci unit -- npx nx test ngx-yeti -- --project=bro
 node tools/ci-local/run-job.mjs ci e2e --dry-run
 ```
 
-Without `--matrix`, every combination runs in turn. A job without a `container` is refused; run it natively, below. Run one job at a time per checkout: two runs of the same job share its volumes. The script needs Docker and a `tar` that reads a NUL-separated list (Git Bash's or Windows').
+Without `--matrix`, every combination runs, up to `--legs` at a time. A job without a `container` is refused; run it natively, below. Run one job at a time per checkout: two runs of the same job share its volumes. The script needs Docker and a `tar` that reads a NUL-separated list (Git Bash's or Windows').
 
 ## Jobs without a container: run them natively
 
@@ -128,6 +138,26 @@ Measured on 2026-10-05 on Windows 11 on ARM64 with Docker Desktop (linux/arm64),
 | `ci.yml` `package`                      | native                                       | 26 s     | build and pack-check pass                                                              |
 
 The development e2e runs also pass `yeti-analog-e2e` (1) and `ngx-yeti-e2e` (16 in Chromium and Firefox, 12 passed and 4 skipped in WebKit, 14 and 2 since `fe50220`).
+
+### Concurrent legs and local workers
+
+Measured on 2026-10-12 on Windows 11 on ARM64 with Docker Desktop (linux/arm64, the WSL VM at 12 GB and 8 CPUs), at `6ef6055`. Cold runs start with new `node_modules` volumes and a warm npm cache volume; warm runs reuse the volumes and skip setup. Peak memory is the summed `docker stats` usage of the run's containers, sampled every 3 s. Every run passed with the counts of the first row.
+
+| Job                                     | Settings                             | Cold      | Warm                                           | Peak     |
+| --------------------------------------- | ------------------------------------ | --------- | ---------------------------------------------- | -------- |
+| `ci.yml` `e2e`, 6 legs                  | serial, 1 worker (before)            | 46 m 15 s | about 45 m 14 s (cold less the first `npm ci`) | 5.3 GiB  |
+| `ci.yml` `e2e`, 6 legs                  | `--legs 2 --e2e-workers 0`           | 27 m 58 s | 26 m 24 s                                      | 7.9 GiB  |
+| `ci.yml` `e2e`, 6 legs                  | `--legs 2 --e2e-workers 2`           |           | 17 m 52 s                                      | 8.2 GiB  |
+| `ci.yml` `e2e`, 6 legs                  | `--legs 2 --e2e-workers 3` (default) |           | 16 m 29 s                                      | 8.4 GiB  |
+| `floor.yml` `firefox-146-e2e`, 2 shards | serial (before)                      | 8 m 0 s   | about 7 m 24 s (derived as above)              | 5.9 GiB  |
+| `floor.yml` `firefox-146-e2e`, 2 shards | `--legs 2` (default)                 | 4 m 25 s  | 3 m 54 s                                       | 10.2 GiB |
+
+Counts in every `e2e` run: `yeti-analog-e2e` 1; `ngx-yeti-e2e` 129 passed and 1 skipped in Chromium and Firefox, 126 and 4 in WebKit; `yeti-app-e2e` development 521/90, 519/92 and 517/94, production 470/141, 468/143 and 466/145 (passed/skipped in Chromium, Firefox and WebKit), with no retry. `firefox-146-e2e`: shard 1 64, then 217 passed; shard 2 65, then 302 passed.
+
+- A third concurrent leg was not tried: one leg peaks at up to 5.9 GiB, so three would pass the 12 GB VM beside another project's containers. The host also ran short of memory once during two concurrent `firefox-146-e2e` shards, while other processes ran; lower `--legs` when the host is short of memory.
+- Three workers gained 8 % over two at 0.14 GiB more; Firefox legs gained nothing past two.
+- Flake check at the defaults (`--legs 2`, 3 workers): `setup-boundaries`, `static-attributes`, `lift`, `enter` and `spinner` specs of `yeti-app-e2e` and `ngx-yeti-e2e` in Chromium, Firefox and WebKit with `--repeat-each=5 --retries=0`, the development and production legs at once: 425 passed and 25 skipped twice (`ngx-yeti-e2e`), 1740 passed and 1590 passed with 150 skipped (`yeti-app-e2e`), no failure, peak 7.2 GiB.
+- The build-only Nx cache was dropped. The builds it could restore take 4 s (`yeti-css:yeti-build`), 12 s (`ngx-yeti:build-storybook`), 7 s (`yeti-app:build:development`) and 8 s (`yeti-app:build:production`) in a container, Nx start included: at most 23 s per development leg and 12 s per production leg, under 1 minute of the 16 m 29 s run, before the cost of restoring. The `e2e` targets are cacheable, so a shared cache would also need a guard that no `e2e`, `test` or `test-storybook` result replays.
 
 ### Remote engine runs
 

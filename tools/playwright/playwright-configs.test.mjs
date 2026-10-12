@@ -18,34 +18,34 @@ const configs = globSync(
 const printConfig =
   'process.stdout.write(JSON.stringify((await import(process.argv[1])).default))';
 
+/**
+ * The config at `path`, loaded with only `env`, so no FLOOR_*,
+ * FIXTURE_CONFIGURATION or E2E_LOCAL_WORKERS in the caller's shell changes it.
+ * On Windows, libuv adds the system variables Node needs.
+ *
+ * @param {string} path
+ * @param {Record<string, string>} env
+ */
+function load(path, env) {
+  return JSON.parse(
+    execFileSync(
+      process.execPath,
+      ['--input-type=module', '--eval', printConfig, new URL(path, root).href],
+      { encoding: 'utf8', timeout: 30_000, env },
+    ),
+  );
+}
+
 test('finds the Playwright configs', () => {
   assert.notEqual(configs.length, 0);
 });
 
 for (const path of configs) {
   test(`${path} exposes its web servers to every remote project`, () => {
-    const config = JSON.parse(
-      execFileSync(
-        process.execPath,
-        [
-          '--input-type=module',
-          '--eval',
-          printConfig,
-          new URL(path, root).href,
-        ],
-        {
-          encoding: 'utf8',
-          timeout: 30_000,
-          // Hermetic, so no FLOOR_* or FIXTURE_CONFIGURATION in the caller's
-          // shell changes the projects or web servers. On Windows, libuv
-          // adds the system variables Node needs.
-          env: {
-            BROWSERS: 'remote-chromium',
-            PLAYWRIGHT_SERVER: 'ws://127.0.0.1:1/dummy',
-          },
-        },
-      ),
-    );
+    const config = load(path, {
+      BROWSERS: 'remote-chromium',
+      PLAYWRIGHT_SERVER: 'ws://127.0.0.1:1/dummy',
+    });
     const urls = [config.webServer ?? []]
       .flat()
       .map(({ url }) => url)
@@ -62,5 +62,12 @@ for (const path of configs) {
         assert.ok(exposed.includes(hostPort(url)), `${name}: ${url}`);
       }
     }
+  });
+}
+
+for (const path of configs) {
+  test(`${path} keeps CI's one worker unless run-job.mjs sets E2E_LOCAL_WORKERS`, () => {
+    assert.equal(load(path, { CI: 'true' }).workers, 1);
+    assert.equal(load(path, { CI: 'true', E2E_LOCAL_WORKERS: '3' }).workers, 3);
   });
 }
