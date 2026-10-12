@@ -5,7 +5,7 @@ milestone: layouts-and-button
 phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: active
+status: blocked
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -109,3 +109,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-12 — build — build started
 - 2026-10-12 — build — plan repair 2 (T042 ci unit fix, T043 faster local runs) approved by the orchestrator acting as owner under the user's instructions of 2026-10-12: 'Starting now, cap to 2 parallel agents and run in AFK mode overnight' and 'Approve both changes: Faster and narrower'
 - 2026-10-12 — build — paused for the user: Claude Code reaped the background finish of T042 for low memory (the WSL VM grew to 14.7 GB during its container runs, host free 1.9 GB), the second reap tonight; T042 is ready in its isolate (coder Verify 5/5 unit runs), nothing landed; finish T042 waits for the user's word
+- 2026-10-12 — build — review round 1 (tmp lars-review r1, 2 majors, ~35 minors) and the security review need fix tasks, and plan owns the task inventory; T042 (ready, landing reaped for low memory and not restarted without the user's word) saved as a patch with its Log, isolate retired, back to pending
