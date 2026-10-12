@@ -3,9 +3,9 @@ id: T049
 title: Rename the package stylesheet accessibility.css to ngx-yeti-globals.css and update every reference
 wave: 4
 deps: [T040]
-status: done
-agent: build_T049
-base: 93ddcb27cd6954aa578dadc89e26b07f89392602
+status: pending
+agent: null
+base: null
 worktree: null
 task_branch: null
 files:
@@ -131,3 +131,4 @@ Heavy: yes
   npm warn allow-scripts
   npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
   ```
+- 2026-10-12 — orchestrator: the attested landing could not proceed (the git guard hook refuses any product commit outside isolation.py land during build, the user's commit included). User ruling 2026-10-12: "Approve recommended option if it doesn't impact the active subagent". T049 returns to pending and lands through finish with diff.renames=false set in the repository config for the landing only.

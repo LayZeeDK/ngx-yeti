@@ -115,3 +115,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-12 — plan — plan approved
 - 2026-10-12 — build — build started
 - 2026-10-12 — build — T049 attested landing by user ruling 2026-10-12 'Blocked item 1: Approve recommendations': GSD Path's land refuses file moves (isolation.py commit_allowed_changes diffs with rename detection), so T049's verified diff is committed directly and attested; Log copied, isolate retired
+- 2026-10-12 — build — T049 back to pending: the git guard refuses product commits outside land (user's commit too); user ruling 2026-10-12 'Approve recommended option if it doesn't impact the active subagent': land T049 through finish with diff.renames=false for the landing only
