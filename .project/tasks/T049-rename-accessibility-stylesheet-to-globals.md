@@ -3,9 +3,9 @@ id: T049
 title: Rename the package stylesheet accessibility.css to ngx-yeti-globals.css and update every reference
 wave: 4
 deps: [T040]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T049
+base: 93ddcb27cd6954aa578dadc89e26b07f89392602
 worktree: null
 task_branch: null
 files:
@@ -84,3 +84,50 @@ Heavy: yes
 ## Log
 
 - 2026-10-12 — created by planner (build repair #3; the user's two rename rulings quoted in Context). At 85ff4eb `packages/ngx-yeti/ngx-yeti-globals.css` does not exist, so the Verify fails if this task is skipped. deps T040 is file overlap with the last done wave-4 task that edited the stylesheet, the specs, the ledgers, the README, the CHANGELOG, and the ngx-yeti-specs skill; T035, T036, T038, and T039 are reached through it. Every pending wave-4 task that shares a file with this one now depends on it (T020, T021, T023, T024, T026, T041, T044, T046, T048), and the pending tasks that named `accessibility.css` (T020, T021, T023, T024, T044) now name `ngx-yeti-globals.css`. The Verify ends by stopping the Nx daemon and keeps its own exit code; run it exactly as written and never set NX_DAEMON.
+- 2026-10-12 — coder: `git mv` of `packages/ngx-yeti/accessibility.css` to `ngx-yeti-globals.css`. Only the header comment changed; the rules and the `@layer ngx-yeti` block are byte-identical. The exports key, the ng-package asset, the pack-check specifier and message, both consumer imports, the three specs, the enter tripwire message, the spinner e2e comment, and its two annotation types all name the new file. `rg` found no other user of those annotation types. In `published-output.node.spec.ts` the helper is now `yetiRulesInGlobalStylesheet` and the test titles say "global stylesheet"; every test asserts what it asserted before. The README table row, setup step C, usage rule 4, and the CHANGELOG entry call it the package's global stylesheet. Ledger rows A11Y-30 and A11Y-33 and upstream-bugs row Y14 name the new path; no user quote changed. The four skills name the new file. One Departures row was added to ngx-yeti-specs for ticket 50 decision 68, ADR 0060 point 8, and setup.md's wording; it quotes both rulings verbatim. Left as written, because they are outside `files` and name no file: `packages/ngx-yeti/styles/src/provide-yeti-styles.ts:42` and `apps/yeti-app-e2e/src/enter.spec.ts:466` still say "accessibility stylesheet". Verify, run exactly as written through the heavy lock: exit 0. Prettier: all matched files pass. lint, typecheck, and build passed for 3 projects plus 1 dependency task. pack-check passed. `nx test ngx-yeti -- src/published-output src/accessibility enter/src`: 9 of 9 files and 62 of 62 tests passed. `npx prettier --check .` also passed on the whole tree.
+- 2026-10-12 — orchestrator Verify (isolate gsd-path-task/T049): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```
+- 2026-10-12 — orchestrator Verify (isolate gsd-path-task/T049): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

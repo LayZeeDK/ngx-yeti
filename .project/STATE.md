@@ -114,3 +114,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-12 — plan — build recovery: {"base": "85ff4ebedffc9df9cdf5075dcbdc86633cfd786d", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-12 — plan — plan approved
 - 2026-10-12 — build — build started
+- 2026-10-12 — build — T049 attested landing by user ruling 2026-10-12 'Blocked item 1: Approve recommendations': GSD Path's land refuses file moves (isolation.py commit_allowed_changes diffs with rename detection), so T049's verified diff is committed directly and attested; Log copied, isolate retired
