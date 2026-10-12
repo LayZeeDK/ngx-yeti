@@ -76,7 +76,7 @@ async function forcedEdges(
 
 /**
  * The control: deletes the forced-colours rules that name `.spinner` from
- * every stylesheet, as if `ngx-yeti/accessibility.css` were left out, and
+ * every stylesheet, as if `ngx-yeti/ngx-yeti-globals.css` were left out, and
  * returns how many it deleted. Runs in the page.
  */
 function removeForcedSpinnerRules(): number {
@@ -252,7 +252,7 @@ test.describe('spinner--default', () => {
     const withRule = await forcedEdges(ring);
 
     test.info().annotations.push({
-      type: 'forced-colors edges with accessibility.css',
+      type: 'forced-colors edges with ngx-yeti-globals.css',
       description: `block-start ${withRule.blockStart}; inline-end ${withRule.inlineEnd}; block-end ${withRule.blockEnd}`,
     });
     await test.info().attach('forced-colors spinner', {
@@ -272,7 +272,7 @@ test.describe('spinner--default', () => {
     const withoutRule = await forcedEdges(ring);
 
     test.info().annotations.push({
-      type: 'forced-colors edges without accessibility.css',
+      type: 'forced-colors edges without ngx-yeti-globals.css',
       description: `block-start ${withoutRule.blockStart}; inline-end ${withoutRule.inlineEnd}; block-end ${withoutRule.blockEnd}`,
     });
 

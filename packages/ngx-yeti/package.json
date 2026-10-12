@@ -6,7 +6,7 @@
     "@angular/core": "^22.2.0"
   },
   "exports": {
-    "./accessibility.css": "./accessibility.css"
+    "./ngx-yeti-globals.css": "./ngx-yeti-globals.css"
   },
   "sideEffects": [
     "*.css"

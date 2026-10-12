@@ -1,6 +1,7 @@
-/* Each accessibility rule arrives with the item spec whose ledger row it
-   closes. The two other rules are the enter once fix and the Firefox scale
-   workaround below. */
+/* The package's global stylesheet: its own rules, all in @layer ngx-yeti.
+   It holds the accessibility rules that close ledger rows, each arriving
+   with the item spec whose row it closes, and the workarounds for upstream
+   bugs: the enter once fix and the Firefox scale workaround below. */
 @layer ngx-yeti {
   /* A11Y-32: forced colours paint every edge of the spinner's ring, and of a
      busy button's ring, in one colour, so the bright edge is lost and the

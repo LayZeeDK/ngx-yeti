@@ -242,7 +242,7 @@ const brokenForms: Readonly<Record<string, string>> = {
 
 const brokenFormsMessage = [
   "Yeti has fixed its once bug, upstream-bugs.md row Y14; the forms received are the ones Yeti's enter file still fails to withhold.",
-  'If none is still broken: remove the rule on .enter[data-once] from packages/ngx-yeti/accessibility.css and its fix test in this file; remove this test and its control;',
+  'If none is still broken: remove the rule on .enter[data-once] from packages/ngx-yeti/ngx-yeti-globals.css and its fix test in this file; remove this test and its control;',
   'set "What the package adds" of ledger.md row A11Y-33 to "none" and name the pin that fixed it; record that pin in row Y14;',
   'and remove the Departures row for enter.md from .claude/skills/ngx-yeti-specs/SKILL.md and the A11Y-33 entry of sanctionedSelectors in packages/ngx-yeti/src/published-output.node.spec.ts.',
   'If some forms are still broken: keep the fix, and take the fixed forms out of brokenForms and out of row Y14.',
@@ -581,7 +581,7 @@ describe(NgxYetiEnter, () => {
 
   // Real Safari reports reduced motion, where the arrival lasts 0.01 ms, so
   // no duration or play state is asserted.
-  describe('with the accessibility stylesheet (ledger row A11Y-33)', () => {
+  describe('with the global stylesheet (ledger row A11Y-33)', () => {
     it.for(arrivals)(
       'withholds $form below the viewport, then arrives once when scrolled to',
       async (arrival) => {

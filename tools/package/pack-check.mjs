@@ -116,14 +116,14 @@ const entryPoints = [
     )
     .map(({ name }) => `ngx-yeti/${name}`),
 ];
-const specifiers = [...entryPoints, 'ngx-yeti/accessibility.css'];
+const specifiers = [...entryPoints, 'ngx-yeti/ngx-yeti-globals.css'];
 const packedExports = Object.keys(manifest.exports)
   .filter((key) => key !== './package.json')
   .map((key) => path.posix.join('ngx-yeti', key));
 check(
   JSON.stringify(packedExports.toSorted()) ===
     JSON.stringify(specifiers.toSorted()),
-  'the packed exports map lists every entry point and accessibility.css',
+  'the packed exports map lists every entry point and ngx-yeti-globals.css',
   packedExports.join(', '),
 );
 const consumerSource = readFileSync(

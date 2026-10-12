@@ -10,7 +10,7 @@ const workspaceRoot = path.join(import.meta.dirname, '../../..');
 const builtPackage = path.join(workspaceRoot, 'dist/packages/ngx-yeti');
 
 /**
- * Every selector of `accessibility.css` that names a Yeti class, one string
+ * Every selector of `ngx-yeti-globals.css` that names a Yeti class, one string
  * per comma-separated selector, under the id of the ledger row its rule
  * closes. A rule on a Yeti class changes its entry in the same commit.
  */
@@ -136,11 +136,11 @@ function parsedSelectors(selectors: string): readonly string[] {
 }
 
 /**
- * Yeti rules in the accessibility stylesheet: a Yeti class selector outside
+ * Yeti rules in the global stylesheet: a Yeti class selector outside
  * `@layer ngx-yeti` or missing from `table`, a table entry that matches no
  * selector, and a table key that is not a row id of the ledger.
  */
-function yetiRulesInAccessibilityStylesheet(
+function yetiRulesInGlobalStylesheet(
   css: string,
   table: Readonly<Record<string, readonly string[]>>,
   rowIds: ReadonlySet<string>,
@@ -177,7 +177,7 @@ function yetiRulesInAccessibilityStylesheet(
 }
 
 /**
- * Yeti rules in one shipped stylesheet. Only `accessibility.css` at the
+ * Yeti rules in one shipped stylesheet. Only `ngx-yeti-globals.css` at the
  * package root may select Yeti's classes, inside `@layer ngx-yeti` and as
  * listed in `sanctionedSelectors`.
  */
@@ -185,12 +185,8 @@ function yetiRulesInShippedStylesheet(
   file: string,
   css: string,
 ): readonly string[] {
-  return file === 'accessibility.css'
-    ? yetiRulesInAccessibilityStylesheet(
-        css,
-        sanctionedSelectors,
-        ledgerRowIds(),
-      )
+  return file === 'ngx-yeti-globals.css'
+    ? yetiRulesInGlobalStylesheet(css, sanctionedSelectors, ledgerRowIds())
     : yetiRulesInStylesheet(css);
 }
 
@@ -223,7 +219,9 @@ describe('the published output', () => {
   it('holds no Yeti rule in any shipped stylesheet', () => {
     const stylesheets = shippedFiles('.css');
 
-    expect(stylesheets.map(({ file }) => file)).toContain('accessibility.css');
+    expect(stylesheets.map(({ file }) => file)).toContain(
+      'ngx-yeti-globals.css',
+    );
     expect(
       stylesheets.flatMap(({ file, code }) =>
         yetiRulesInShippedStylesheet(file, code).map(
@@ -233,7 +231,7 @@ describe('the published output', () => {
     ).toStrictEqual([]);
   });
 
-  it('lists only selectors of the accessibility stylesheet under ledger row ids', () => {
+  it('lists only selectors of the global stylesheet under ledger row ids', () => {
     const rowIds = ledgerRowIds();
 
     expect(
@@ -242,7 +240,7 @@ describe('the published output', () => {
     expect(rowIds).not.toContain('A11Y-999');
   });
 
-  describe('the accessibility stylesheet check', () => {
+  describe('the global stylesheet check', () => {
     const table = {
       'A11Y-32': ['.spinner', ".button[aria-busy='true']::after"],
     };
@@ -252,13 +250,13 @@ describe('the published output', () => {
 
     it('accepts the sanctioned selectors inside @layer ngx-yeti', () => {
       expect(
-        yetiRulesInAccessibilityStylesheet(packageRule, table, rowIds),
+        yetiRulesInGlobalStylesheet(packageRule, table, rowIds),
       ).toStrictEqual([]);
     });
 
     it('reports a Yeti rule pasted inside @layer ngx-yeti', () => {
       expect(
-        yetiRulesInAccessibilityStylesheet(
+        yetiRulesInGlobalStylesheet(
           `${packageRule} @layer ngx-yeti { .card[data-raised] { color: red; } .spinner:hover { color: red; } }`,
           table,
           rowIds,
@@ -268,7 +266,7 @@ describe('the published output', () => {
 
     it('reports a sanctioned selector outside @layer ngx-yeti, and a Yeti layer', () => {
       expect(
-        yetiRulesInAccessibilityStylesheet(
+        yetiRulesInGlobalStylesheet(
           `${packageRule} .spinner { border-color: Canvas; } @layer yeti { b { color: red; } }`,
           table,
           rowIds,
@@ -278,7 +276,7 @@ describe('the published output', () => {
 
     it('reports a table entry that matches no selector', () => {
       expect(
-        yetiRulesInAccessibilityStylesheet(
+        yetiRulesInGlobalStylesheet(
           '@layer ngx-yeti { @media (forced-colors: active) { .spinner { border-color: Canvas; } } }',
           table,
           rowIds,
@@ -290,7 +288,7 @@ describe('the published output', () => {
 
     it('reports a table key that is not a row of the ledger', () => {
       expect(
-        yetiRulesInAccessibilityStylesheet(
+        yetiRulesInGlobalStylesheet(
           packageRule,
           { 'A11Y-999': table['A11Y-32'] },
           rowIds,
@@ -298,7 +296,7 @@ describe('the published output', () => {
       ).toStrictEqual(['A11Y-999 is not a row of the ledger']);
     });
 
-    it('applies only to the accessibility stylesheet', () => {
+    it('applies only to the global stylesheet', () => {
       expect(
         yetiRulesInShippedStylesheet('other.css', packageRule),
       ).toStrictEqual(['.spinner', '.button']);

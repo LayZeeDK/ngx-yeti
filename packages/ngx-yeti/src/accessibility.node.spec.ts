@@ -23,7 +23,7 @@ function inspect(css: string): Findings {
   const isPrivateToken = (name: string): boolean => name.startsWith('--_yeti-');
 
   transform({
-    filename: 'accessibility.css',
+    filename: 'ngx-yeti-globals.css',
     code: Buffer.from(css),
     visitor: {
       StyleSheet(stylesheet) {
@@ -121,11 +121,11 @@ function nonSystemColours(css: string): string[] {
   return findings;
 }
 
-describe('ngx-yeti/accessibility.css', () => {
+describe('ngx-yeti/ngx-yeti-globals.css', () => {
   // The Firefox scale workaround writes --_yeti-t and nothing else of Yeti's
   // (the departures table of the ngx-yeti-specs skill, user ruling 2026-10-04).
   it('keeps every rule inside @layer ngx-yeti, reads no --_yeti-* token, writes only --_yeti-t, and names no package class', () => {
-    expect(inspect(readPackageFile('accessibility.css'))).toStrictEqual({
+    expect(inspect(readPackageFile('ngx-yeti-globals.css'))).toStrictEqual({
       outsideLayer: [],
       privateReads: [],
       privateWrites: ['--_yeti-t'],
@@ -134,7 +134,7 @@ describe('ngx-yeti/accessibility.css', () => {
   });
 
   it('sets only system colour keywords in its forced-colours rules', () => {
-    const css = readPackageFile('accessibility.css');
+    const css = readPackageFile('ngx-yeti-globals.css');
 
     expect(css).toMatch(/@media \(forced-colors: active\)/);
     expect(nonSystemColours(css)).toStrictEqual([]);
@@ -175,11 +175,11 @@ describe('ngx-yeti/accessibility.css', () => {
 
     expect(ngPackage).toHaveProperty(
       'assets',
-      expect.arrayContaining(['accessibility.css']),
+      expect.arrayContaining(['ngx-yeti-globals.css']),
     );
     expect(packageJson).toHaveProperty(
-      ['exports', './accessibility.css'],
-      './accessibility.css',
+      ['exports', './ngx-yeti-globals.css'],
+      './ngx-yeti-globals.css',
     );
   });
 });
