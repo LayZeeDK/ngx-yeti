@@ -121,3 +121,25 @@ Heavy: yes
   [2m-[22m ngx-yeti:test
   ```
 - 2026-10-12 — planner (build repair #2): deps now [T042]. The root-cause spike of 2026-10-12 measured that the unit job overloads its own runner when `test` and `test-storybook` run together with Vitest's default pages per engine. This attempt's failures (Firefox session connects, lift hover, yeti-rank, columns) are those signatures. T042 lands the job's fix (`VITEST_MAX_WORKERS: 2`, `--parallel=1`) first. The Verify now runs the job as the workflow states it, `node tools/ci-local/run-job.mjs ci unit`, twice, instead of a replacement command. The old replacement command left out `--parallel=1`. The job still runs uncached: its containers start with an empty Nx cache, and T043's build cache, if it lands, never replays `test` or `test-storybook`. Approach, Interface contract, acceptance criteria, and files are unchanged.
+- 2026-10-12 — coder (retry at base f052cc1), implementation: applied attempt 1's patch (25 files, two new) with `git apply`; every hunk applied cleanly on the newer base, so no hand resolution was needed. Re-checked against the contract: all 21 stories files import `itemStyled`; no stories file declares `trackedState`, `expectClose`, a children helper, a length probe, a per-item styled wait, or an attribute lookup (the only `itemStylesLoaded` left is `enter`'s `expectArrivesOnce`, and the only local manifest lookup is `layer`'s `markerValues`, both deviations (1) and (2) recorded above). `npx prettier --check .` clean; `nx run-many -t lint typecheck -p ngx-yeti ngx-yeti-testing` exit 0; `nx test ngx-yeti-testing` 7 files, 83 tests passed (story-helpers spec included).
+- 2026-10-12 — coder, Verify run exactly as written, once, through the heavy lock (acquired after 0 s): exit 0. Steps: lint/typecheck pass; `nx test ngx-yeti-testing` 7 files, 83 tests; `nx test-storybook ngx-yeti --skip-nx-cache` (Chromium) 21 files, 128 tests; `run-job.mjs ci unit` run 1: test-storybook 63 files, 384 tests (three engines), test 118 files, 1411 tests, plus 11 files/97 tests and two 1-file projects, all passed; run 2: identical counts, all passed. No browser-session connect or layer-2 timeout in either run.
+- 2026-10-12 — orchestrator Verify (isolate gsd-path-task/T037): fail, exit 3; output tail:
+  ```
+  npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+  npm warn deprecated whatwg-encoding@2.0.0: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+  npm warn deprecated @yuku-codegen/binding-win32-arm64@0.10.2: yuku-codegen is pure JavaScript since 0.14
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  
+  
+  #
+  # Fatal process out of memory: Worklist::Segment::Create
+  #
+  ----- Native stack trace -----
+  
+  
+  [7m[1m[31m NX [39m[22m[27m  [31mCould not find Nx modules at "C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\task\T037".[39m
+  
+  Have you run [1m[37mnpm/yarn install[39m[22m?
+  ```
