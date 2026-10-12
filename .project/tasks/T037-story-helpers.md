@@ -2,7 +2,7 @@
 id: T037
 title: Share the story helpers, wait for applied item styles with a longer poll, and migrate every story
 wave: 4
-deps: []
+deps: [T042]
 status: pending
 agent: null
 base: null
@@ -83,7 +83,7 @@ Stories that fail under load (measured 2026-10-11, the wave 3 cycle 2 gate at 7e
 ## Verify
 
 ```bash
-npm ci && npx playwright install chromium && test -f packages/ngx-yeti-testing/src/lib/story-helpers.ts && ! rg -q -F "function trackedState(" packages/ngx-yeti && ! rg -q -F "function expectClose(" packages/ngx-yeti && npm exec nx -- run-many -t lint typecheck -p ngx-yeti ngx-yeti-testing && npm exec nx -- test ngx-yeti-testing && npm exec nx -- test-storybook ngx-yeti --skip-nx-cache && node tools/ci-local/run-job.mjs ci unit -- npx nx run-many --output-style=static -t test test-storybook --skip-nx-cache && node tools/ci-local/run-job.mjs ci unit -- npx nx run-many --output-style=static -t test test-storybook --skip-nx-cache; status=$?; npx --no-install nx daemon --stop; exit $status
+npm ci && npx playwright install chromium && test -f packages/ngx-yeti-testing/src/lib/story-helpers.ts && ! rg -q -F "function trackedState(" packages/ngx-yeti && ! rg -q -F "function expectClose(" packages/ngx-yeti && npm exec nx -- run-many -t lint typecheck -p ngx-yeti ngx-yeti-testing && npm exec nx -- test ngx-yeti-testing && npm exec nx -- test-storybook ngx-yeti --skip-nx-cache && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci unit; status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: yes
@@ -120,3 +120,4 @@ Heavy: yes
   [2m-[22m ngx-yeti:test-storybook
   [2m-[22m ngx-yeti:test
   ```
+- 2026-10-12 — planner (build repair #2): deps now [T042]. The root-cause spike of 2026-10-12 measured that the unit job overloads its own runner when `test` and `test-storybook` run together with Vitest's default pages per engine. This attempt's failures (Firefox session connects, lift hover, yeti-rank, columns) are those signatures. T042 lands the job's fix (`VITEST_MAX_WORKERS: 2`, `--parallel=1`) first. The Verify now runs the job as the workflow states it, `node tools/ci-local/run-job.mjs ci unit`, twice, instead of a replacement command. The old replacement command left out `--parallel=1`. The job still runs uncached: its containers start with an empty Nx cache, and T043's build cache, if it lands, never replays `test` or `test-storybook`. Approach, Interface contract, acceptance criteria, and files are unchanged.

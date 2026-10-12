@@ -2,7 +2,7 @@
 id: T041
 title: Make the NVDA lane pass in Firefox after Chromium and with several tests in one worker
 wave: 4
-deps: [T031]
+deps: [T031, T043]
 status: pending
 agent: null
 base: null
@@ -82,3 +82,4 @@ Heavy: yes
   - Temporary code still in nvda.ts, to be removed before ready: NVDA DEBUG logging, the T041_DIAG diagnostics file writes, the raise-script TRACE to stderr, the T041_FF executablePath override, the focusmanager.testmode firefoxUserPrefs entry, and the T041_F6 experiment. The T041_F6 experiment: on a refused report that names our own window, press F6 through the guard and report again, at most 3 presses, then hop.
   - Planned run order once the desktop is unlocked: run 14 again (patched cfg, as the test-mode check); then option (a) F6, Firefox alone first; then Chromium then Firefox; then the cleanup above, references/ci-local.md, three lane runs, BROWSERS=msedge, and the full Verify. Option (b), a real rendered page before the story navigation, follows if (a) fails.
   - State at pause: `npm exec nx -- run-many -t lint typecheck -p screen-reader-e2e` passes and `npx prettier --check apps/screen-reader-e2e` is clean. references/ci-local.md and project.json are unchanged. Verify not run.
+- 2026-10-12 — planner (build repair #2): deps now [T031, T043]. The only reason is file overlap: T042 and T043 also edit `references/ci-local.md` (the unit-job lines and the container-job sections), and same-wave tasks that share a file must be ordered. T041 edits only the NVDA lane section. It goes after T043 rather than before so that the faster local runs are not held behind the locked desktop. Everything else in this contract is unchanged.
