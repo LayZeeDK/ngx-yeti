@@ -108,3 +108,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-12 — plan — plan approved
 - 2026-10-12 — build — build started
 - 2026-10-12 — build — plan repair 2 (T042 ci unit fix, T043 faster local runs) approved by the orchestrator acting as owner under the user's instructions of 2026-10-12: 'Starting now, cap to 2 parallel agents and run in AFK mode overnight' and 'Approve both changes: Faster and narrower'
+- 2026-10-12 — build — paused for the user: Claude Code reaped the background finish of T042 for low memory (the WSL VM grew to 14.7 GB during its container runs, host free 1.9 GB), the second reap tonight; T042 is ready in its isolate (coder Verify 5/5 unit runs), nothing landed; finish T042 waits for the user's word
