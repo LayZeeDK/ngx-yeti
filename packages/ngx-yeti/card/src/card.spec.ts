@@ -11,6 +11,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { RouterLink, provideRouter } from '@angular/router';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiRatio, YetiVariant, YetiWidth } from 'ngx-yeti';
 import { YetiCard } from './card';
 import { YetiCardLink } from './card-link';
@@ -34,24 +35,10 @@ class CardHost {
 }
 
 async function setupCard(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(YetiCard, {
+  return createDirectiveHost(YetiCard, {
     tagName: 'article',
     bindings,
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element, fixture };
 }
 
 /** A card with every input bound to a signal the test can change. */
@@ -76,16 +63,11 @@ async function setupBoundCard(bound: {
 
 async function setupCardLink({ stretch }: { stretch?: boolean } = {}) {
   const stretchSignal = signal(stretch ?? false);
-  const fixture = TestBed.createDirective(YetiCardLink, {
+  const { element, fixture } = await createDirectiveHost(YetiCardLink, {
     tagName: 'a',
     bindings:
       stretch === undefined ? [] : [inputBinding('stretch', stretchSignal)],
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
 
   return { element, fixture, stretchSignal };
 }
@@ -116,9 +98,7 @@ async function expectNoHostListener(
   const addEventListener = vi.spyOn(EventTarget.prototype, 'addEventListener');
 
   try {
-    const fixture = TestBed.createDirective(type, { tagName });
-    await fixture.whenStable();
-    const element: unknown = fixture.nativeElement;
+    const { element } = await createDirectiveHost(type, { tagName });
 
     expect(addEventListener.mock.contexts).not.toContain(element);
   } finally {

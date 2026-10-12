@@ -2,46 +2,15 @@ import { Component } from '@angular/core';
 import {
   attributeValue,
   checkContract,
+  gaps,
   openingTags,
   renderServer,
+  widths,
 } from '@ngx-yeti/testing/server';
 import manifest from 'yeti-css/manifest';
 import { YetiBreakout } from './breakout';
 import { YetiBreakoutChild } from './breakout-child';
 import { YetiBreakoutNote } from './breakout-note';
-
-const widths = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl'] as const;
-const gaps = [
-  'none',
-  'xs',
-  'sm',
-  'md',
-  'lg',
-  'xl',
-  '2xl',
-  '3xl',
-  'xs-sm',
-  'xs-md',
-  'xs-lg',
-  'xs-xl',
-  'xs-2xl',
-  'xs-3xl',
-  'sm-md',
-  'sm-lg',
-  'sm-xl',
-  'sm-2xl',
-  'sm-3xl',
-  'md-lg',
-  'md-xl',
-  'md-2xl',
-  'md-3xl',
-  'lg-xl',
-  'lg-2xl',
-  'lg-3xl',
-  'xl-2xl',
-  'xl-3xl',
-  '2xl-3xl',
-] as const;
 
 // Compile-time half: each list holds exactly the values its input accepts,
 // so the runtime half below compares the inputs, not copies of their types.
@@ -63,8 +32,8 @@ const component = manifest.components.breakout;
 class NoteFixture {}
 
 describe('breakout contract', () => {
-  // `data-note` is a part with no input (ticket 26 row 11, kind P), which
-  // `checkContract` cannot set; the next test covers it.
+  // `data-note` is a part with no input, which `checkContract` cannot set;
+  // the next test covers it.
   it('maps the manifest component to YetiBreakout and YetiBreakoutChild', async () => {
     expect.assertions(1);
 

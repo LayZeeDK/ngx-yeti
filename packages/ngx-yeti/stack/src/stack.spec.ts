@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiAlign, YetiGap } from 'ngx-yeti';
 import { YetiStack } from './stack';
 import { YetiStackChild } from './stack-child';
@@ -36,38 +37,17 @@ class StackHost {
 }
 
 async function setupStack(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(YetiStack, {
+  return createDirectiveHost(YetiStack, {
     tagName: 'div',
     bindings,
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element, fixture };
 }
 
 async function setupStackChild(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(YetiStackChild, {
+  return createDirectiveHost(YetiStackChild, {
     tagName: 'p',
     bindings,
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  return { element, fixture };
 }
 
 async function setupHost() {
@@ -96,9 +76,7 @@ async function expectNoHostListener(
   const addEventListener = vi.spyOn(EventTarget.prototype, 'addEventListener');
 
   try {
-    const fixture = TestBed.createDirective(type, { tagName });
-    await fixture.whenStable();
-    const element: unknown = fixture.nativeElement;
+    const { element } = await createDirectiveHost(type, { tagName });
 
     expect(addEventListener.mock.contexts).not.toContain(element);
   } finally {

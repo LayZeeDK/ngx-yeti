@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiGap } from 'ngx-yeti';
 import { YetiTimeline } from './timeline';
 
@@ -27,24 +28,10 @@ class TimelineHost {
 }
 
 async function setupTimeline(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(YetiTimeline, {
+  return createDirectiveHost(YetiTimeline, {
     tagName: 'ol',
     bindings,
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element, fixture };
 }
 
 async function setupHost() {

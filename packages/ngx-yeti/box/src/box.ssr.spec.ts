@@ -1,8 +1,10 @@
 import { Component, signal } from '@angular/core';
 import {
-  allOpeningTags,
   attributeValue,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -96,15 +98,13 @@ describe(YetiBox, () => {
   it('writes one box item link into the head', async () => {
     expect.assertions(4);
 
-    const [box, ...rest] = itemLinkTags(await render());
-    assert.exists(box);
+    const html = await render();
+    const link = itemLinkOf(html, 'box');
 
-    expect(rest).toStrictEqual([]);
-    expect(attributeValue(box, 'data-ngx-yeti-styles')).toBe('box');
-    expect(attributeValue(box, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(box, 'href')).toMatch(
-      /^yeti-css\/layouts\/box\/box\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(itemLinkTags(html)).toHaveLength(1);
+    expect(link.count).toBe(1);
+    expect(link.beastiesSkip).toBe(true);
+    expect(link.href).toMatch(itemHref('layouts', 'box'));
   });
 
   it('writes no item link for markers without a box', async () => {
@@ -119,10 +119,6 @@ describe(YetiBox, () => {
   it('puts no jsaction on any element', async () => {
     expect.assertions(1);
 
-    expect(
-      allOpeningTags(await render(), '[a-z][\\w-]*').filter(
-        (tag) => attributeValue(tag, 'jsaction') !== null,
-      ),
-    ).toStrictEqual([]);
+    expect(jsactionTags(await render())).toStrictEqual([]);
   });
 });

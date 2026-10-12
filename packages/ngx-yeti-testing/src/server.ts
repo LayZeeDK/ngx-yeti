@@ -10,6 +10,9 @@ export {
   attributeValue,
   head,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
 } from './lib/html';
 export {
@@ -17,3 +20,4 @@ export {
   renderServer,
   type RenderServerOptions,
 } from './lib/render-server';
+export { gaps, widths, widthsOrNone } from './lib/vocabularies';

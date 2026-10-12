@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiGap, YetiWidth } from 'ngx-yeti';
 import { YetiBox } from 'ngx-yeti/box';
 import { YetiScroller, type YetiScrollerJustify } from './scroller';
@@ -23,24 +24,10 @@ class ScrollerHost {
 }
 
 async function setupScroller(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(YetiScroller, {
+  return createDirectiveHost(YetiScroller, {
     tagName: 'div',
     bindings,
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element, fixture };
 }
 
 async function setupHost() {

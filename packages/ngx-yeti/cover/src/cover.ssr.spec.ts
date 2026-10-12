@@ -1,8 +1,9 @@
 import { Component, signal } from '@angular/core';
 import {
-  allOpeningTags,
   attributeValue,
-  headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -57,26 +58,16 @@ describe(YetiCover, () => {
   it('writes one cover item link into the head', async () => {
     expect.assertions(3);
 
-    const covers = headLinks(await render()).filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') === 'cover',
-    );
-    const [cover] = covers;
-    assert.exists(cover);
+    const cover = itemLinkOf(await render(), 'cover');
 
-    expect(covers).toHaveLength(1);
-    expect(attributeValue(cover, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(cover, 'href')).toMatch(
-      /^yeti-css\/layouts\/cover\/cover\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(cover.count).toBe(1);
+    expect(cover.beastiesSkip).toBe(true);
+    expect(cover.href).toMatch(itemHref('layouts', 'cover'));
   });
 
   it('puts no jsaction on any element', async () => {
     expect.assertions(1);
 
-    expect(
-      allOpeningTags(await render(), '[a-z][\\w-]*').filter(
-        (tag) => attributeValue(tag, 'jsaction') !== null,
-      ),
-    ).toStrictEqual([]);
+    expect(jsactionTags(await render())).toStrictEqual([]);
   });
 });

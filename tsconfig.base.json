@@ -21,6 +21,9 @@
       "@ngx-yeti/testing/playwright": [
         "./packages/ngx-yeti-testing/src/playwright.ts"
       ],
+      "@ngx-yeti/testing/test-bed": [
+        "./packages/ngx-yeti-testing/src/test-bed.ts"
+      ],
       "ngx-yeti/styles": ["./packages/ngx-yeti/styles/src/index.ts"],
       "ngx-yeti/card": ["./packages/ngx-yeti/card/src/index.ts"],
       "ngx-yeti/lift": ["./packages/ngx-yeti/lift/src/index.ts"],

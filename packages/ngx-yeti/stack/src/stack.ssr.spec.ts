@@ -1,8 +1,10 @@
 import { Component, signal } from '@angular/core';
 import {
-  allOpeningTags,
   attributeValue,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -72,27 +74,22 @@ describe(YetiStack, () => {
   it('writes one stack item link into the head', async () => {
     expect.assertions(4);
 
-    const links = headLinks(await render()).filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
-    );
-    const [stack, ...rest] = links;
-    assert.exists(stack);
+    const html = await render();
+    const link = itemLinkOf(html, 'stack');
 
-    expect(rest).toStrictEqual([]);
-    expect(attributeValue(stack, 'data-ngx-yeti-styles')).toBe('stack');
-    expect(attributeValue(stack, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(stack, 'href')).toMatch(
-      /^yeti-css\/layouts\/stack\/stack\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(
+      headLinks(html).filter(
+        (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
+      ),
+    ).toHaveLength(1);
+    expect(link.count).toBe(1);
+    expect(link.beastiesSkip).toBe(true);
+    expect(link.href).toMatch(itemHref('layouts', 'stack'));
   });
 
   it('puts no jsaction on any element', async () => {
     expect.assertions(1);
 
-    expect(
-      allOpeningTags(await render(), '[a-z][\\w-]*').filter(
-        (tag) => attributeValue(tag, 'jsaction') !== null,
-      ),
-    ).toStrictEqual([]);
+    expect(jsactionTags(await render())).toStrictEqual([]);
   });
 });

@@ -3,9 +3,9 @@ id: T038
 title: Share the directive host, the server-render readers, and Yeti's gap and width lists, and migrate the layer-2 and layer-3 specs
 wave: 4
 deps: [T036]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T038
+base: 45fc056579b3e0bf53cd4291c5b309738aab4793
 worktree: null
 task_branch: null
 files:
@@ -138,3 +138,29 @@ Heavy: yes
 ## Log
 
 - 2026-10-11 — created by planner (build repair before wave 4; user ruling "1-3: Approve.", item 1, layers 2 and 3). The counts in Context are from the wave 3 maintainability review of 2026-10-11, whose file is not in the repository. The Verify ends by stopping the Nx daemon and keeps its own exit code; run it exactly as written and never set NX_DAEMON.
+- 2026-10-12 — coder (build_T038): implementation. New entry `@ngx-yeti/testing/test-bed` (`packages/ngx-yeti-testing/src/test-bed.ts`, alias in tsconfig.base.json, not exported from the browser entry) exports `createDirectiveHost(type, options?)` resolving `{ fixture, element, destroy }` (exported interface `DirectiveHost<T>`; `fixture` is the `DirectiveFixture<T>` `createDirective` returned; throws a TypeError when the host is not an HTMLElement). `src/lib/html.ts` gains `itemLinkOf`, `itemHref` (anchored, kind and item escaped), and `jsactionTags`, with cases in `html.spec.ts`; `src/lib/vocabularies.ts` holds `gaps`, `widths`, `widthsOrNone`, exported from `server.ts`. All 20 layer-2 item specs create their directive hosts through `createDirectiveHost` (each keeps its own setup function; the no-listener helpers too); no `TestBed.createDirective` is left in any item spec. All 20 server-render specs assert the item link through `itemLinkOf`/`itemHref` and jsaction through `jsactionTags`. 13 contract specs plus card's take the shared lists (each local copy was checked equal to the shared list before deletion by script); every `expectTypeOf` line kept. Breakout's contract comment lost "ticket 26 row 11, kind P". Testing skill (server paragraph, Layer 2, Layer 3) and README updated. Strength notes: where the old item-link test asserted the head held only one item link of any item, the new test keeps that with a `headLinks(...).filter(...)` length 1 beside `itemLinkOf(...).count` 1 (assertion counts unchanged); scroller's styles-name check was implied by its own filter and is dropped (4 to 3); `data-beasties-skip` is now asserted present (boolean) rather than equal to ''; lift's "no jsaction on the hosts" (2 article tags) became "no jsaction on any element" over the whole page (stronger); card's jsaction test asserts `jsactionTags` equals exactly the two links (implies the card has none and the plain link has one) plus the equal-value check (3 to 2 assertions); overlay checks jsaction through `jsactionTags` and inert/aria-hidden as before (1 to 2). Test names unchanged except lift's. E13's held-out marker test stays in box.spec.ts (describe.each(markers)).
+- 2026-10-12 — coder: lift WebKit hover, five uncached three-engine layer-2 runs (`node tools/ci-local/run-job.mjs ci unit -- npx nx test ngx-yeti --output-style=static --skip-nx-cache -- --project=browser`, nothing else holding the heavy lock): all five exit 0, each 69 files / 1227 tests passed. "raises a hovered card by --yeti-lift-distance and deepens its shadow" in WebKit took 2945, 3201, 3733, 3864, 4102 ms (Chromium 1857-3941, Firefox 1599-2175); the 15 s timeout did not recur, so nothing changed for it.
+- 2026-10-12 — coder: Verify run exactly as written from the worktree root through the heavy lock: exit 0. lint and typecheck of ngx-yeti and ngx-yeti-testing passed; `nx test ngx-yeti-testing` 6 files / 80 tests; `nx test ngx-yeti` (local Chromium) 72 files / 554 tests; ci unit job (`run-many -t test --skip-nx-cache`, three engines) passed for 5 projects (largest run 118 files / 1372 tests; others 1/1, 1/1, 8/88). `npx prettier --check .` also passed. Ledger: no accessibility, standards, parity, or compatibility change; no row needed.
+- 2026-10-12 — orchestrator Verify (isolate gsd-path-task/T038): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

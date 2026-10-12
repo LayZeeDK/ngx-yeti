@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import {
-  allOpeningTags,
   attributeValue,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -56,20 +58,13 @@ describe(YetiScroller, () => {
   });
 
   it('writes one scroller item link into the head', async () => {
-    expect.assertions(4);
+    expect.assertions(3);
 
-    const links = headLinks(await render()).filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') === 'scroller',
-    );
-    const [scroller, ...rest] = links;
-    assert.exists(scroller);
+    const scroller = itemLinkOf(await render(), 'scroller');
 
-    expect(rest).toStrictEqual([]);
-    expect(attributeValue(scroller, 'data-ngx-yeti-styles')).toBe('scroller');
-    expect(attributeValue(scroller, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(scroller, 'href')).toMatch(
-      /^yeti-css\/layouts\/scroller\/scroller\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(scroller.count).toBe(1);
+    expect(scroller.beastiesSkip).toBe(true);
+    expect(scroller.href).toMatch(itemHref('layouts', 'scroller'));
   });
 
   it('writes the scroller link before the box link, in Yeti order', async () => {
@@ -85,10 +80,6 @@ describe(YetiScroller, () => {
   it('puts no jsaction on any element', async () => {
     expect.assertions(1);
 
-    expect(
-      allOpeningTags(await render(), '[a-z][\\w-]*').filter(
-        (tag) => attributeValue(tag, 'jsaction') !== null,
-      ),
-    ).toStrictEqual([]);
+    expect(jsactionTags(await render())).toStrictEqual([]);
   });
 });

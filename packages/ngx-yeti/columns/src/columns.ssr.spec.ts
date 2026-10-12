@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import {
-  allOpeningTags,
   attributeValue,
-  headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -62,26 +63,16 @@ describe(NgxYetiColumns, () => {
   it('writes one columns item link into the head', async () => {
     expect.assertions(3);
 
-    const links = headLinks(await render()).filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') === 'columns',
-    );
-    const [link] = links;
-    assert.exists(link);
+    const link = itemLinkOf(await render(), 'columns');
 
-    expect(links).toHaveLength(1);
-    expect(attributeValue(link, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(link, 'href')).toMatch(
-      /^yeti-css\/layouts\/columns\/columns\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(link.count).toBe(1);
+    expect(link.beastiesSkip).toBe(true);
+    expect(link.href).toMatch(itemHref('layouts', 'columns'));
   });
 
   it('puts no jsaction on any element', async () => {
     expect.assertions(1);
 
-    expect(
-      allOpeningTags(await render(), '[a-z][\\w-]*').filter(
-        (tag) => attributeValue(tag, 'jsaction') !== null,
-      ),
-    ).toStrictEqual([]);
+    expect(jsactionTags(await render())).toStrictEqual([]);
   });
 });

@@ -10,6 +10,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiAlign, YetiGap, YetiSide, YetiWidth } from 'ngx-yeti';
 import { YetiBox } from 'ngx-yeti/box';
 import { YetiSidebar } from './sidebar';
@@ -40,38 +41,17 @@ class SidebarHost {
 }
 
 async function setupSidebar(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(YetiSidebar, {
+  return createDirectiveHost(YetiSidebar, {
     tagName: 'div',
     bindings,
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element, fixture };
 }
 
 async function setupSidebarChild(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(YetiSidebarChild, {
+  return createDirectiveHost(YetiSidebarChild, {
     tagName: 'nav',
     bindings,
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  return { element, fixture };
 }
 
 async function setupHost() {
@@ -101,9 +81,7 @@ async function expectNoHostListener(
   const addEventListener = vi.spyOn(EventTarget.prototype, 'addEventListener');
 
   try {
-    const fixture = TestBed.createDirective(type, { tagName });
-    await fixture.whenStable();
-    const element: unknown = fixture.nativeElement;
+    const { element } = await createDirectiveHost(type, { tagName });
 
     expect(addEventListener.mock.contexts).not.toContain(element);
   } finally {

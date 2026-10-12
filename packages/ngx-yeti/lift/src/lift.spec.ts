@@ -7,6 +7,7 @@ import {
   removeItemLinks,
   stylesheetLoaded,
 } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiLift } from 'ngx-yeti';
 import { YetiCard } from 'ngx-yeti/card';
 import { provideYetiStyles } from 'ngx-yeti/styles';
@@ -74,22 +75,10 @@ function settledStyle(element: Element): CSSStyleDeclaration {
 
 async function setupLift(bound?: YetiLift | '') {
   const gesture = signal<YetiLift | ''>(bound ?? '');
-  const fixture = TestBed.createDirective(NgxYetiLift, {
+  const { destroy, element, fixture } = await createDirectiveHost(NgxYetiLift, {
     tagName: 'article',
     bindings: bound === undefined ? [] : [inputBinding('yetiLift', gesture)],
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
 
   return { destroy, element, fixture, gesture };
 }

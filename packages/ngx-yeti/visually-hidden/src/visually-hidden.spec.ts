@@ -1,6 +1,7 @@
 import { Component, viewChild } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import { YetiVisuallyHidden } from './visually-hidden';
 
 @Component({
@@ -14,23 +15,7 @@ class ReferenceHost {
 }
 
 async function setupHidden() {
-  const fixture = TestBed.createDirective(YetiVisuallyHidden, {
-    tagName: 'span',
-  });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element };
+  return createDirectiveHost(YetiVisuallyHidden, { tagName: 'span' });
 }
 
 async function setupHost() {

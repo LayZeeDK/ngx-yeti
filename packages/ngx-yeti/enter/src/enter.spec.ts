@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiEnter, YetiSide } from 'ngx-yeti';
 import { NgxYetiEnter } from './enter';
 
@@ -48,25 +49,13 @@ function belowTheFold(): void {
 }
 
 async function setupEnter(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(NgxYetiEnter, {
+  const host = await createDirectiveHost(NgxYetiEnter, {
     tagName: 'p',
     bindings,
   });
+  host.element.textContent = 'A note that arrives.';
 
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-  element.textContent = 'A note that arrives.';
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element, fixture };
+  return host;
 }
 
 /** Creates a `once` host below the viewport, with `once` bound to a signal. */

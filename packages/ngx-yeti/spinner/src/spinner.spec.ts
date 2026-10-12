@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiSizeControl, YetiVariant } from 'ngx-yeti';
 import { YetiSpinner } from './spinner';
 
@@ -33,24 +34,10 @@ class WaitingHost {
 }
 
 async function setupSpinner(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(YetiSpinner, {
+  return createDirectiveHost(YetiSpinner, {
     tagName: 'span',
     bindings,
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element, fixture };
 }
 
 /** A spinner with both inputs bound to signals the test can change. */

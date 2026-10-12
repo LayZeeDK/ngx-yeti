@@ -4,6 +4,9 @@ import {
   allOpeningTags,
   attributeValue,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -73,26 +76,28 @@ describe(YetiOverlay, () => {
   it('writes one overlay item link into the head', async () => {
     expect.assertions(4);
 
-    const links = headLinks(await render()).filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
-    );
-    const [overlay, ...rest] = links;
-    assert.exists(overlay);
+    const html = await render();
+    const link = itemLinkOf(html, 'overlay');
 
-    expect(rest).toStrictEqual([]);
-    expect(attributeValue(overlay, 'data-ngx-yeti-styles')).toBe('overlay');
-    expect(attributeValue(overlay, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(overlay, 'href')).toMatch(
-      /^yeti-css\/layouts\/overlay\/overlay\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(
+      headLinks(html).filter(
+        (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
+      ),
+    ).toHaveLength(1);
+    expect(link.count).toBe(1);
+    expect(link.beastiesSkip).toBe(true);
+    expect(link.href).toMatch(itemHref('layouts', 'overlay'));
   });
 
   it('puts no jsaction, inert, or aria-hidden on any element', async () => {
-    expect.assertions(1);
+    expect.assertions(2);
 
+    const html = await render();
+
+    expect(jsactionTags(html)).toStrictEqual([]);
     expect(
-      allOpeningTags(await render(), '[a-z][\\w-]*').filter((tag) =>
-        ['jsaction', 'inert', 'aria-hidden'].some(
+      allOpeningTags(html, '[a-z][\\w-]*').filter((tag) =>
+        ['inert', 'aria-hidden'].some(
           (name) => attributeValue(tag, name) !== null,
         ),
       ),

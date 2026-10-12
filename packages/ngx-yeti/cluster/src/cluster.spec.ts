@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiAlign, YetiGap, YetiJustify, YetiWidth } from 'ngx-yeti';
 import { NgxYetiEnter } from 'ngx-yeti/enter';
 import { YetiCluster } from './cluster';
@@ -22,24 +23,10 @@ class ClusterHost {
 }
 
 async function setupCluster(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(YetiCluster, {
+  return createDirectiveHost(YetiCluster, {
     tagName: 'div',
     bindings,
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element, fixture };
 }
 
 async function setupHost() {

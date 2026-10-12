@@ -8,6 +8,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiColumns, YetiGap, YetiWidthOrNone } from 'ngx-yeti';
 import { YetiBox } from 'ngx-yeti/box';
 import { YetiMasonry } from './masonry';
@@ -23,24 +24,10 @@ class MasonryHost {
 }
 
 async function setupMasonry(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(YetiMasonry, {
+  return createDirectiveHost(YetiMasonry, {
     tagName: 'div',
     bindings,
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element, fixture };
 }
 
 async function setupHost() {

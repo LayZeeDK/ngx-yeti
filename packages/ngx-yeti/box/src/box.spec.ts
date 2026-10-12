@@ -8,6 +8,7 @@ import {
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiGap, YetiPaint, YetiSurface } from 'ngx-yeti';
 import { YetiCenter } from 'ngx-yeti/center';
 import { YetiBox } from './box';
@@ -48,21 +49,7 @@ async function setupDirective(
   tagName: string,
   bindings: Binding[] = [],
 ) {
-  const fixture = TestBed.createDirective(type, { tagName, bindings });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element, fixture };
+  return createDirectiveHost(type, { tagName, bindings });
 }
 
 async function setupHost<T>(type: Type<T>) {

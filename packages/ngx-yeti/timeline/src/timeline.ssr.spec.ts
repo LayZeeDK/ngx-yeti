@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import {
-  allOpeningTags,
   attributeValue,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -61,27 +63,22 @@ describe(YetiTimeline, () => {
   it('writes one timeline item link into the head', async () => {
     expect.assertions(4);
 
-    const links = headLinks(await render()).filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
-    );
-    const [timeline, ...rest] = links;
-    assert.exists(timeline);
+    const html = await render();
+    const link = itemLinkOf(html, 'timeline');
 
-    expect(rest).toStrictEqual([]);
-    expect(attributeValue(timeline, 'data-ngx-yeti-styles')).toBe('timeline');
-    expect(attributeValue(timeline, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(timeline, 'href')).toMatch(
-      /^yeti-css\/layouts\/timeline\/timeline\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(
+      headLinks(html).filter(
+        (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
+      ),
+    ).toHaveLength(1);
+    expect(link.count).toBe(1);
+    expect(link.beastiesSkip).toBe(true);
+    expect(link.href).toMatch(itemHref('layouts', 'timeline'));
   });
 
   it('puts no jsaction on any element', async () => {
     expect.assertions(1);
 
-    expect(
-      allOpeningTags(await render(), '[a-z][\\w-]*').filter(
-        (tag) => attributeValue(tag, 'jsaction') !== null,
-      ),
-    ).toStrictEqual([]);
+    expect(jsactionTags(await render())).toStrictEqual([]);
   });
 });

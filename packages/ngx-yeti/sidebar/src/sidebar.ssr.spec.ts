@@ -1,8 +1,10 @@
 import { Component, signal } from '@angular/core';
 import {
-  allOpeningTags,
   attributeValue,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -61,32 +63,22 @@ describe(YetiSidebar, () => {
   it('writes one sidebar item link into the head, before the box link', async () => {
     expect.assertions(4);
 
-    const links = headLinks(await render()).filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
-    );
-    const sidebars = links.filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') === 'sidebar',
-    );
-    const [sidebar] = sidebars;
-    assert.exists(sidebar);
+    const html = await render();
+    const sidebar = itemLinkOf(html, 'sidebar');
 
-    expect(sidebars).toHaveLength(1);
+    expect(sidebar.count).toBe(1);
     expect(
-      links.map((tag) => attributeValue(tag, 'data-ngx-yeti-styles')),
+      headLinks(html)
+        .map((tag) => attributeValue(tag, 'data-ngx-yeti-styles'))
+        .filter((item) => item !== null),
     ).toStrictEqual(['sidebar', 'box']);
-    expect(attributeValue(sidebar, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(sidebar, 'href')).toMatch(
-      /^yeti-css\/layouts\/sidebar\/sidebar\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(sidebar.beastiesSkip).toBe(true);
+    expect(sidebar.href).toMatch(itemHref('layouts', 'sidebar'));
   });
 
   it('puts no jsaction on any element', async () => {
     expect.assertions(1);
 
-    expect(
-      allOpeningTags(await render(), '[a-z][\\w-]*').filter(
-        (tag) => attributeValue(tag, 'jsaction') !== null,
-      ),
-    ).toStrictEqual([]);
+    expect(jsactionTags(await render())).toStrictEqual([]);
   });
 });

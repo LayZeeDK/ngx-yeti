@@ -1,41 +1,9 @@
-import { checkContract } from '@ngx-yeti/testing/server';
+import { checkContract, gaps, widths } from '@ngx-yeti/testing/server';
 import manifest from 'yeti-css/manifest';
 import { YetiSidebar } from './sidebar';
 import { YetiSidebarChild } from './sidebar-child';
 
 const sides = ['start', 'end'] as const;
-const widths = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl'] as const;
-const gaps = [
-  'none',
-  'xs',
-  'sm',
-  'md',
-  'lg',
-  'xl',
-  '2xl',
-  '3xl',
-  'xs-sm',
-  'xs-md',
-  'xs-lg',
-  'xs-xl',
-  'xs-2xl',
-  'xs-3xl',
-  'sm-md',
-  'sm-lg',
-  'sm-xl',
-  'sm-2xl',
-  'sm-3xl',
-  'md-lg',
-  'md-xl',
-  'md-2xl',
-  'md-3xl',
-  'lg-xl',
-  'lg-2xl',
-  'lg-3xl',
-  'xl-2xl',
-  'xl-3xl',
-  '2xl-3xl',
-] as const;
 const alignments = ['start', 'center', 'end', 'stretch', 'baseline'] as const;
 
 // Compile-time half: each list holds exactly the values its input accepts,

@@ -1,8 +1,10 @@
 import { Component, signal } from '@angular/core';
 import {
-  allOpeningTags,
   attributeValue,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -114,27 +116,22 @@ describe(YetiSpinner, () => {
   it('writes one spinner item link into the head', async () => {
     expect.assertions(4);
 
-    const links = headLinks(await render()).filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
-    );
-    const [link, ...rest] = links;
-    assert.exists(link);
+    const html = await render();
+    const link = itemLinkOf(html, 'spinner');
 
-    expect(rest).toStrictEqual([]);
-    expect(attributeValue(link, 'data-ngx-yeti-styles')).toBe('spinner');
-    expect(attributeValue(link, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(link, 'href')).toMatch(
-      /^yeti-css\/components\/spinner\/spinner\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(
+      headLinks(html).filter(
+        (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
+      ),
+    ).toHaveLength(1);
+    expect(link.count).toBe(1);
+    expect(link.beastiesSkip).toBe(true);
+    expect(link.href).toMatch(itemHref('components', 'spinner'));
   });
 
   it('puts no jsaction on any element', async () => {
     expect.assertions(1);
 
-    expect(
-      allOpeningTags(await render(), '[a-z][\\w-]*').filter(
-        (tag) => attributeValue(tag, 'jsaction') !== null,
-      ),
-    ).toStrictEqual([]);
+    expect(jsactionTags(await render())).toStrictEqual([]);
   });
 });

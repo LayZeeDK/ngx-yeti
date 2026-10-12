@@ -8,6 +8,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiRatio } from 'ngx-yeti';
 import { YetiBorder } from 'ngx-yeti/box';
 import { YetiBreakout, YetiBreakoutChild } from 'ngx-yeti/breakout';
@@ -24,24 +25,10 @@ class FrameHost {
 }
 
 async function setupFrame(bindings: Binding[] = []) {
-  const fixture = TestBed.createDirective(YetiFrame, {
+  return createDirectiveHost(YetiFrame, {
     tagName: 'div',
     bindings,
   });
-
-  await fixture.whenStable();
-
-  const element: unknown = fixture.nativeElement;
-  assert.instanceOf(element, HTMLElement);
-
-  /** Destroys the fixture and takes its host out of the document. */
-  function destroy(): void {
-    assert.instanceOf(element, HTMLElement);
-    fixture.destroy();
-    element.remove();
-  }
-
-  return { destroy, element, fixture };
 }
 
 async function setupHost() {

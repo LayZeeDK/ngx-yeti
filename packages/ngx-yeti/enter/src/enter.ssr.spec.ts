@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 import {
-  allOpeningTags,
   attributeValue,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -70,28 +72,24 @@ describe(NgxYetiEnter, () => {
   it('writes one enter item link into the head', async () => {
     expect.assertions(5);
 
-    const links = headLinks(await render()).filter(
+    const html = await render();
+    const links = headLinks(html).filter(
       (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
     );
-    const [enter, ...rest] = links;
-    assert.exists(enter);
+    const [only] = links;
+    const link = itemLinkOf(html, 'enter');
+    assert.exists(only);
 
-    expect(rest).toStrictEqual([]);
-    expect(attributeValue(enter, 'data-ngx-yeti-styles')).toBe('enter');
-    expect(attributeValue(enter, 'data-ngx-yeti-app')).toBe('ng');
-    expect(attributeValue(enter, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(enter, 'href')).toMatch(
-      /^yeti-css\/utilities\/enter\/enter\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(links).toHaveLength(1);
+    expect(link.count).toBe(1);
+    expect(attributeValue(only, 'data-ngx-yeti-app')).toBe('ng');
+    expect(link.beastiesSkip).toBe(true);
+    expect(link.href).toMatch(itemHref('utilities', 'enter'));
   });
 
   it('puts no jsaction on any element', async () => {
     expect.assertions(1);
 
-    expect(
-      allOpeningTags(await render(), '[a-z][\\w-]*').filter(
-        (tag) => attributeValue(tag, 'jsaction') !== null,
-      ),
-    ).toStrictEqual([]);
+    expect(jsactionTags(await render())).toStrictEqual([]);
   });
 });

@@ -1,8 +1,10 @@
 import { Component, signal } from '@angular/core';
 import {
-  allOpeningTags,
   attributeValue,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -61,30 +63,21 @@ describe(YetiCenter, () => {
   it('writes one center item link, after the stack link and before the card link', async () => {
     expect.assertions(3);
 
-    const links = headLinks(await render()).filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
-    );
-    const [center] = links.filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') === 'center',
-    );
-    assert.exists(center);
+    const html = await render();
+    const center = itemLinkOf(html, 'center');
 
     expect(
-      links.map((tag) => attributeValue(tag, 'data-ngx-yeti-styles')),
+      headLinks(html)
+        .map((tag) => attributeValue(tag, 'data-ngx-yeti-styles'))
+        .filter((item) => item !== null),
     ).toStrictEqual(['stack', 'center', 'card']);
-    expect(attributeValue(center, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(center, 'href')).toMatch(
-      /^yeti-css\/layouts\/center\/center\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(center.beastiesSkip).toBe(true);
+    expect(center.href).toMatch(itemHref('layouts', 'center'));
   });
 
   it('puts no jsaction on any element', async () => {
     expect.assertions(1);
 
-    expect(
-      allOpeningTags(await render(), '[a-z][\\w-]*').filter(
-        (tag) => attributeValue(tag, 'jsaction') !== null,
-      ),
-    ).toStrictEqual([]);
+    expect(jsactionTags(await render())).toStrictEqual([]);
   });
 });

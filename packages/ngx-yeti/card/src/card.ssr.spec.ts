@@ -4,6 +4,9 @@ import { RouterLink, provideRouter } from '@angular/router';
 import {
   attributeValue,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -81,34 +84,30 @@ describe(YetiCard, () => {
   it('writes one card item link into the head', async () => {
     expect.assertions(4);
 
-    const links = headLinks(await render()).filter(
-      (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
-    );
-    const [card, ...rest] = links;
-    assert.exists(card);
+    const html = await render();
+    const link = itemLinkOf(html, 'card');
 
-    expect(rest).toStrictEqual([]);
-    expect(attributeValue(card, 'data-ngx-yeti-styles')).toBe('card');
-    expect(attributeValue(card, 'data-beasties-skip')).toBe('');
-    expect(attributeValue(card, 'href')).toMatch(
-      /^yeti-css\/components\/card\/card\.css\?v=[0-9a-f]{40}$/,
-    );
+    expect(
+      headLinks(html).filter(
+        (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
+      ),
+    ).toHaveLength(1);
+    expect(link.count).toBe(1);
+    expect(link.beastiesSkip).toBe(true);
+    expect(link.href).toMatch(itemHref('components', 'card'));
   });
 
   it('puts no jsaction from the package on the card or its link', async () => {
-    expect.assertions(3);
+    expect.assertions(2);
 
     const html = await render();
-    const [card] = openingTags(html, 'article');
     const [stretched, plain] = openingTags(html, 'a');
-    assert.exists(card);
     assert.exists(stretched);
     assert.exists(plain);
 
     // RouterLink's click listener is the only one in the fixture: the
     // stretched link carries what the plain routerLink link carries, no more.
-    expect(attributeValue(card, 'jsaction')).toBeNull();
-    expect(attributeValue(plain, 'jsaction')).not.toBeNull();
+    expect(jsactionTags(html)).toStrictEqual([stretched, plain]);
     expect(attributeValue(stretched, 'jsaction')).toBe(
       attributeValue(plain, 'jsaction'),
     );
