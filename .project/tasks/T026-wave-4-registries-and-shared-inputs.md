@@ -2,7 +2,7 @@
 id: T026
 title: Add the wave-4 items to the registries and prove one exported type per shared input name
 wave: 4
-deps: [T020, T021, T022, T023, T024, T025, T039]
+deps: [T020, T021, T022, T023, T024, T025, T039, T049]
 status: pending
 agent: null
 base: null
@@ -63,3 +63,4 @@ Heavy: no
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
 - 2026-10-11 — planner: build repair before wave 4 (user rulings of 2026-10-11, quoted in T035 to T041). `deps` gains T039, which adds the primary-entry test to packages/ngx-yeti/src/name-collision.node.spec.ts, a file this task edits. The Interface contract carries the item-named export rule, and Approach keeps that test and lists `YetiTableAlign` under ngx-yeti/table. Acceptance criteria, files, wave, and Verify are unchanged.
+- 2026-10-12 — planner (build repair #3, the user's ruling to rename the package stylesheet, T049): deps gains T049 for file overlap (packages/ngx-yeti/README.md, packages/ngx-yeti/CHANGELOG.md, docs/specs/upstream-bugs.md). Nothing else changes.

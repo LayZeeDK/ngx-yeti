@@ -17,6 +17,8 @@ files:
   - tools/playwright/browser-projects.mjs
   - tools/playwright/playwright-configs.test.mjs
   - apps/yeti-app-e2e/src/cache-probe.spec.ts
+  - tools/ci-local/run-job.test.mjs
+  - project.json
 ---
 
 # T043 — Run a job's matrix legs concurrently in run-job.mjs, with a local e2e worker count and a build-only Nx cache, capped by measured memory
@@ -46,6 +48,7 @@ Facts this task builds on:
 - Never change what a job runs or asserts in GitHub CI. `.github/workflows/*.yml` are not in this task's files. `run-job.mjs` keeps reading the image, `env`, matrix and steps from the workflow, keeps refusing keys it does not run, keeps the `--matrix` filter and the `--` replacement command, and keeps `CI=true`. Locally, runs differ from CI only in the worker count, the restored builds and the leg concurrency. `references/ci-local.md` states those differences.
 - Output. Every leg still runs to its end when another fails, as `fail-fast: false` does. The exit code is 1 when any leg fails. Each leg's output stays readable on its own, for example as a log file in its reports folder or with a label prefix on every line. The closing summary lists each leg's result, wall time and reports folder. `--dry-run` still prints each leg's full `docker run` command. An interrupt (Ctrl+C) leaves no container running; check with `docker ps`.
 - Tests. If the worker change lands, `tools/playwright/playwright-configs.test.mjs` (run by `npm exec nx -- run @ngx-yeti/source:test`) proves, for every e2e config, that with `CI=true` and the local variable unset the worker count is the preset's 1, and with the variable set it is that number. Keep the test hermetic, as the file's existing tests are.
+- Quoting test (security review of M002, informational finding 3, triaged by the orchestrator on 2026-10-12, verbatim: "tools/ci-local/run-job.mjs:134-138,272-274,404-440: [A03] matrix and run text come only from the local user and the repo's own workflows, docker gets an argument array, and quoting escapes `'`. This is by design. Keep the single-quote escape covered by a test."). Add `tools/ci-local/run-job.test.mjs`, the script's first test file, hermetic and run by `node --test`: a run text, a matrix value, and a `--` replacement command that each contain `'` (and `$(...)` or a backtick) reach the container's `bash -e -c` script quoted so bash reads them as literal text, shown through `--dry-run` output or an exported `quote`, without Docker. Add the file to the `test` command and inputs of the root `project.json` (`@ngx-yeti/source:test`) with `tools/ci-local/run-job.mjs` as an input, so a change to either reruns it.
 - Docs in this task: in `references/ci-local.md`, the "Container jobs" section describes concurrent legs, the cap, the option that lowers it, the per-leg volumes, the build cache, and the local worker count. The "Run one job at a time per checkout" sentence still holds for whole jobs. Add the measured runs (before and after, cold and warm, peak memory) to "Measured runs". Leave the NVDA lane section to T041 and the unit-job lines to T042.
 - Heavy runs take the machine and use fixed ports inside each container, so the orchestrator serializes heavy commands. Read `references/ci-local.md` before running a container job.
 - Skills: `.claude/skills/ngx-yeti-testing/SKILL.md` (e2e projects, engines), `.claude/skills/type-safety/SKILL.md` for the `.mts` configs.
@@ -67,11 +70,12 @@ Facts this task builds on:
 5. The Log and `references/ci-local.md` record, for each change: wall clock before and after (cold and warm), peak total memory against the 16 GB VM, the flake-check results, and whether it landed. Every dropped or lowered setting has its numbers.
 6. Each landed change can be switched off by an option or variable that `references/ci-local.md` documents. No workflow file changes. In GitHub CI every job runs the same steps with the same settings as before.
 7. `npx prettier --check .` and `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD~1` pass at the task commit.
+8. `tools/ci-local/run-job.test.mjs` runs in `npm exec nx -- run @ngx-yeti/source:test` and shows a `'` in a run text, a matrix value, and a replacement command reaching the container script as literal text; it fails when the escape in `quote` is removed (the Log records that control run).
 
 ## Verify
 
 ```bash
-npm ci && test "$(node tools/ci-local/run-job.mjs ci e2e --matrix engine=chromium --dry-run | rg -o "[A-Za-z0-9_.-]+:/src/node_modules'" | sort -u | wc -l)" = 2 && test ! -e apps/yeti-app-e2e/src/cache-probe.spec.ts && npm exec nx -- run @ngx-yeti/source:test && npm exec nx -- run-many -t lint typecheck -p ngx-yeti-e2e yeti-app-e2e yeti-analog-e2e && node tools/ci-local/run-job.mjs ci e2e --matrix engine=chromium && node tools/ci-local/run-job.mjs floor firefox-146-e2e && node tools/ci-local/run-job.mjs ci unit; status=$?; npx --no-install nx daemon --stop; exit $status
+npm ci && test "$(node tools/ci-local/run-job.mjs ci e2e --matrix engine=chromium --dry-run | rg -o "[A-Za-z0-9_.-]+:/src/node_modules'" | sort -u | wc -l)" = 2 && test ! -e apps/yeti-app-e2e/src/cache-probe.spec.ts && test -f tools/ci-local/run-job.test.mjs && rg -q -F "tools/ci-local/run-job.test.mjs" project.json && npm exec nx -- run @ngx-yeti/source:test && npm exec nx -- run-many -t lint typecheck -p ngx-yeti-e2e yeti-app-e2e yeti-analog-e2e && node tools/ci-local/run-job.mjs ci e2e --matrix engine=chromium && node tools/ci-local/run-job.mjs floor firefox-146-e2e && node tools/ci-local/run-job.mjs ci unit; status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: yes
@@ -79,3 +83,4 @@ Heavy: yes
 ## Log
 
 - 2026-10-12 — created by planner (build repair #2; user rulings quoted in Context). On the current script both chromium legs mount the same `node_modules` volume, so the Verify's first check fails if this task is skipped. The real runs then exercise two concurrent e2e legs, two concurrent floor shards with their `npm install --no-save` setup, and the single-leg `unit` job. `apps/yeti-app-e2e/src/cache-probe.spec.ts` is listed only because the coder creates and deletes it. It must not be in the commit, and the Verify fails if it is. The Verify ends by stopping the Nx daemon and keeps its own exit code; run it exactly as written and never set NX_DAEMON.
+- 2026-10-12 — planner (build repair #3): the orchestrator's triage of the security review routes the quoting test of finding 3 to this task. `files` gains `tools/ci-local/run-job.test.mjs` and the root `project.json` (its `test` target); Approach gains one bullet; criterion 8 is new; the Verify checks the test file exists and is in the target before running `@ngx-yeti/source:test`, which already ran. Everything else is unchanged. No other pending task edits the root `project.json`.

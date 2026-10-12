@@ -2,7 +2,7 @@
 id: T024
 title: Add the Tailwind C1 and C2 Fixture build configurations with their cases
 wave: 4
-deps: [T022, T031, T036, T041]
+deps: [T022, T031, T036, T041, T049]
 status: pending
 agent: null
 base: null
@@ -27,7 +27,7 @@ files:
 
 ## Context
 
-An M001 carry-over (setup.md:344; ticket 50 decision 70): the setup route built under two more build configurations of the Fixture app, with the Tailwind forms C2 and C1 of setup.md section 4, asserting that utilities win over Yeti, Yeti wins over preflight, a rule of `@layer ngx-yeti` wins over Yeti's, and a Yeti `container` is not capped at 1024 px at a 1100 px viewport with `@source not inline('container');` in place (ADR 0060:17). M001 moved it to M002 because it needs `yetiContainer` (T022) and an `@layer ngx-yeti` rule. Planner confirmation of INTENT's inference: the A11Y-30 `--_yeti-t` redefinition in `packages/ngx-yeti/accessibility.css` is a `@layer ngx-yeti` rule that overrides Yeti's `@layer yeti` definition in every engine without forced-colours emulation, so it is the rule this case asserts; A11Y-1a applies only under forced colours.
+An M001 carry-over (setup.md:344; ticket 50 decision 70): the setup route built under two more build configurations of the Fixture app, with the Tailwind forms C2 and C1 of setup.md section 4, asserting that utilities win over Yeti, Yeti wins over preflight, a rule of `@layer ngx-yeti` wins over Yeti's, and a Yeti `container` is not capped at 1024 px at a 1100 px viewport with `@source not inline('container');` in place (ADR 0060:17). M001 moved it to M002 because it needs `yetiContainer` (T022) and an `@layer ngx-yeti` rule. Planner confirmation of INTENT's inference: the A11Y-30 `--_yeti-t` redefinition in `packages/ngx-yeti/ngx-yeti-globals.css` is a `@layer ngx-yeti` rule that overrides Yeti's `@layer yeti` definition in every engine without forced-colours emulation, so it is the rule this case asserts; A11Y-1a applies only under forced colours.
 
 ## Approach
 
@@ -41,6 +41,7 @@ An M001 carry-over (setup.md:344; ticket 50 decision 70): the setup route built 
 
 ## Interface contract
 
+- Global stylesheet (T049): the package's own stylesheet is `packages/ngx-yeti/ngx-yeti-globals.css`, published as "ngx-yeti/ngx-yeti-globals.css" through the `exports` key "./ngx-yeti-globals.css"; its rules live inside one `@layer ngx-yeti` block. No file of the repository outside `docs/specs/`, `docs/decisions/`, `.project/`, and verbatim quotes names `accessibility.css`.
 - Container route (T022): `/sub/container` renders at least one host carrying `data-ngx-yeti-item-container` whose content box is wider than 1024 px at a 1100 px viewport in the default build.
 - Playwright helpers (T036): the entry `@ngx-yeti/testing/playwright` (`packages/ngx-yeti-testing/src/playwright.ts`, mapped in tsconfig.base.json) is for the two e2e apps and exports `interface Box { readonly top: number; readonly right: number; readonly bottom: number; readonly left: number; readonly width: number; readonly height: number }`; `rect(locator: Locator): Promise<Box>`; `childRects(parent: Locator): Promise<Box[]>`, the boxes of the element's children in DOM order; `usedLength(scope: Locator, length: string, axis?: 'inline' | 'block'): Promise<number>`, the used px size of a CSS length such as `var(--yeti-width-md)`, read from a probe appended to `scope`, on the inline axis unless `axis` says otherwise; `horizontalOverflow(page: Page): Promise<number>`, how far the document is wider than the viewport; `resize(element: Locator, width: number): Promise<void>`, which sets the element's inline size in px and throws when it is not an HTMLElement; and `expectItemSheetsApplied(page: Page, items: readonly string[]): Promise<void>`, which expects one item link per named item in the head and waits until each has a stylesheet with at least one rule. No e2e spec declares a copy of these, and no other helper checks that an item sheet has loaded.
 
@@ -70,3 +71,4 @@ Heavy: yes
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
 - 2026-10-11 — planner: build repair (user ruling "Wave-1 defects: Approve recommendation."). `deps` gains T031: T031 (wave 2) updates the NVDA lane section of references/ci-local.md, a file this task also edits. Acceptance criteria, files, wave, and Verify are unchanged.
 - 2026-10-11 — planner: build repair before wave 4 (user rulings of 2026-10-11, quoted in T035 to T041). `deps` gains T036 (the Playwright helpers the Tailwind spec consumes; T036 and T038 also edit the testing skill this task edits, reached through T022) and T041 (it updates the NVDA lane section of references/ci-local.md first). The Interface contract gains the Playwright shapes. Acceptance criteria, files, wave, and Verify are unchanged.
+- 2026-10-12 — planner (build repair #3, the user's ruling to rename the package stylesheet, T049): deps gains T049 for file overlap (.claude/skills/ngx-yeti-testing/SKILL.md); the Context's stylesheet path now reads ngx-yeti-globals.css, and the Interface contract gains the T049 global-stylesheet bullet, which the Tailwind stylesheets import. Criteria and Verify are unchanged.

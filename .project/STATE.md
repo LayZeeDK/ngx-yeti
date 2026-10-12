@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -110,3 +110,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-12 — build — plan repair 2 (T042 ci unit fix, T043 faster local runs) approved by the orchestrator acting as owner under the user's instructions of 2026-10-12: 'Starting now, cap to 2 parallel agents and run in AFK mode overnight' and 'Approve both changes: Faster and narrower'
 - 2026-10-12 — build — paused for the user: Claude Code reaped the background finish of T042 for low memory (the WSL VM grew to 14.7 GB during its container runs, host free 1.9 GB), the second reap tonight; T042 is ready in its isolate (coder Verify 5/5 unit runs), nothing landed; finish T042 waits for the user's word
 - 2026-10-12 — build — review round 1 (tmp lars-review r1, 2 majors, ~35 minors) and the security review need fix tasks, and plan owns the task inventory; T042 (ready, landing reaped for low memory and not restarted without the user's word) saved as a patch with its Log, isolate retired, back to pending
+- 2026-10-12 — plan — build plan repair requested
+- 2026-10-12 — plan — build recovery: {"base": "85ff4ebedffc9df9cdf5075dcbdc86633cfd786d", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
+- 2026-10-12 — plan — plan approved

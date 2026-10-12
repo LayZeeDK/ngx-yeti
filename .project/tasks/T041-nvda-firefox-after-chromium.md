@@ -2,7 +2,7 @@
 id: T041
 title: Make the NVDA lane pass in Firefox after Chromium and with several tests in one worker
 wave: 4
-deps: [T031, T043]
+deps: [T031, T038, T043, T049]
 status: pending
 agent: null
 base: null
@@ -14,6 +14,9 @@ files:
   - apps/screen-reader-e2e/screen-reader.config.mts
   - apps/screen-reader-e2e/project.json
   - references/ci-local.md
+  - AGENTS.md
+  - .claude/skills/ngx-yeti-testing/SKILL.md
+  - apps/screen-reader-e2e/src/card.screen-reader.ts
 ---
 
 # T041 — Make the NVDA lane pass in Firefox after Chromium and with several tests in one worker
@@ -26,6 +29,8 @@ The defect (T031's Log, measured 2026-10-11; the orchestrator measured it twice 
 
 Why it matters. The `nvda` job of `.github/workflows/ci.yml` runs exactly this, Chromium and then Firefox in one invocation on `windows-2025`, and it has never run in CI. T027 adds five test files to each browser, and `references/ci-local.md` records a second local limit: a second test in one Firefox worker can find the foreground taken by another window. T027 and T028 must pass the lane in both browsers, and SC8 needs the job green.
 
+Review round 1 of M002 (triaged by the orchestrator on 2026-10-12) routes three findings on this task's lane to it; the triage file is a git-ignored local record, so they are inlined, verbatim. Triage item 9, minor (g4 code reviewer): "the documented local NVDA command does not run the CI job's browsers. Where: AGENTS.md:251, references/ci-local.md:43, .claude/skills/ngx-yeti-testing/SKILL.md:108. Evidence: AGENTS.md:251: 'Every job ... passes locally and in CI before a push ... The `nvda` job runs real NVDA natively on Windows: `BROWSERS=msedge npm exec nx -- run screen-reader-e2e:nvda`'. The ci.yml `nvda` job sets no `BROWSERS`. ci-local.md:51 says that without it 'the lane runs Playwright's Chromium and Firefox, as CI does'. ngx-yeti-testing SKILL.md:93 says msedge is for local use 'and never as evidence for a CI claim'. Failure: The command these files give as the local run of the `nvda` job runs Edge only, so a local pass never covers CI's Chromium and Firefox lanes (the Firefox lane is where known item 1 fails). The 'passes locally' gate is therefore met on a different browser set from the job." Triage item 7, minor (comment analyzer and g3 code reviewer): "apps/screen-reader-e2e/src/focus-guard.nvda.ts:40-41 ... 'NVDA 2026.2's focus report ... recorded by T004 on 2026-10-10'. It cites a task ID and a date, which is history. Keep only the fact the test depends on: NVDA speaks the title token with a space inside it." "apps\screen-reader-e2e\src\card.screen-reader.ts:7: `(INTENT E16: wording varies by reader and version)`" (a pipeline record that is archived at ship) and "apps/screen-reader-e2e/src/card.screen-reader.ts:20-21 ... 'Not yet measured: the first CI run records the phrases, and these substrings follow them.' It describes a temporary state, and it goes stale as soon as a CI run has recorded the phrases." Line numbers are at 1747fe0.
+
 How the lane works today, in `apps/screen-reader-e2e/src/support/nvda.ts`. There is one worker at a time, and each browser project gets a fresh one. Its `startReader` starts NVDA in English and launches one headed browser; its `stopReader` closes the browser and stops NVDA. `open` loads the story, adds the start marker, raises the window by its title token (a PowerShell script minimizes, restores, and calls `SetForegroundWindow` until Windows reports that window in the foreground), waits until NVDA is quiet, sends the focus-report key through the key guard, and accepts the report only when it holds the token or the start marker.
 
 ## Approach
@@ -33,7 +38,9 @@ How the lane works today, in `apps/screen-reader-e2e/src/support/nvda.ts`. There
 - Find the cause before changing anything. In the failing sequence record, at the moment `open` refuses: the foreground window's title, what NVDA reports as its focus, and in the page `document.hasFocus()` and the active element. Compare with a Firefox-alone run that passes. Candidates to test, not a prescription: the keyboard focus sits in the browser's own chrome after the raise; NVDA, restarted between the two workers, keeps a stale focus object until a real focus event arrives; the first worker's shutdown overlaps the second worker's start. Write the cause and its evidence in the Log.
 - Fix the cause inside the lane: the driver, the config, or the target's commands. `.github/workflows/ci.yml` is not in this task's files, so the job's command stays `npx nx run screen-reader-e2e:nvda`. If each browser needs a Playwright invocation of its own, give the `nvda` target of `apps/screen-reader-e2e/project.json` one command per browser.
 - Keep the key guard contract: every key the lane sends goes through the guard, and only `open` raises a window. A key that moves the focus into the document is a key like any other. A wait is on a condition; a fixed sleep is not the fix.
-- `Lane` and `Driver` in `apps/screen-reader-e2e/src/support/screen-reader.ts` do not change (that file is not in this task's files), and `apps/screen-reader-e2e/src/card.screen-reader.ts` keeps passing unchanged.
+- `Lane` and `Driver` in `apps/screen-reader-e2e/src/support/screen-reader.ts` do not change (that file is not in this task's files), and `apps/screen-reader-e2e/src/card.screen-reader.ts` keeps its checks unchanged and passing; only its two comments change (below).
+- Review round 1 docs: AGENTS.md's "Run CI locally" section, the NVDA row of `references/ci-local.md`'s job table, and the NVDA sentence of `.claude/skills/ngx-yeti-testing/SKILL.md`'s "Screen readers" section give the run with no `BROWSERS` (Playwright's Chromium and then Firefox, the `nvda` job's browsers) as the local run of the job, and may name `BROWSERS=msedge` only as a faster native extra that is not evidence for the job. Keep each file's other wording.
+- Review round 1 comments: `apps/screen-reader-e2e/src/focus-guard.nvda.ts` keeps only the fact its test depends on (NVDA speaks the title token with a space inside it), with no task id or date; `apps/screen-reader-e2e/src/card.screen-reader.ts` names no INTENT edge id and drops the "Not yet measured" sentence. That VoiceOver's phrases are first measured on the milestone's pull request is recorded in PLAN.md's Risks and T027's Approach, not in a comment.
 - Show the second-test case with an automated test in `apps/screen-reader-e2e/src/focus-guard.nvda.ts`: one test opens two stories in turn in the same worker, and both `open` calls return with the story's focus report. T027's five files then need nothing of their own.
 - Prohibition N9 (judgment): must not quietly fall back to a manual test, or skip or loosen a screen-reader check, when it flakes; a flaky VoiceOver check is retried within the job's stated retry budget and fixed or escalated to the user; it is never marked skipped, deleted, or turned into a manual test without the user's ruling. The same holds for the NVDA lane here. The budget in the config stays at 2 retries. A pass on a retry is recorded in the Log with its cause, never hidden; the aim is a first-attempt pass in both browsers.
 - Run alone. The lane starts real NVDA, speaks, raises windows on the desktop, and serves the static Storybook on port 4401. While it runs, no other coder, Verify, or person may type, click, run a headed browser, or use port 4401 on this machine. The orchestrator dispatches this task in a round of its own and runs its Verify with nothing else running.
@@ -59,11 +66,12 @@ How the lane works today, in `apps/screen-reader-e2e/src/support/nvda.ts`. There
 5. Every key the lane sends still goes through the key guard, only `open` raises a window, `Lane` and `Driver` are unchanged, the retry budget is unchanged, and no test of the lane is skipped, deleted, loosened, or turned into a manual step (N9).
 6. The NVDA lane section of `references/ci-local.md` states the cause, what the lane does about it, and the measured runs, in place of the known local limit.
 7. `npx prettier --check .` and `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD~1` pass at the task commit.
+8. AGENTS.md, `references/ci-local.md`'s job table, and the testing skill give the no-`BROWSERS` run as the local run of the `nvda` job; `focus-guard.nvda.ts` and `card.screen-reader.ts` carry no task id, date, INTENT edge id, or "Not yet measured" comment.
 
 ## Verify
 
 ```bash
-npm ci && npx playwright install chromium firefox && test -f apps/screen-reader-e2e/src/support/nvda.ts && npm exec nx -- run-many -t lint typecheck -p screen-reader-e2e && npm exec nx -- run screen-reader-e2e:nvda && BROWSERS=msedge npm exec nx -- run screen-reader-e2e:nvda; status=$?; npx --no-install nx daemon --stop; exit $status
+npm ci && npx playwright install chromium firefox && test -f apps/screen-reader-e2e/src/support/nvda.ts && ! rg -q -F "T004 on 2026-10-10" apps/screen-reader-e2e/src/focus-guard.nvda.ts && ! rg -q -F "INTENT E16" apps/screen-reader-e2e/src/card.screen-reader.ts && npx prettier --check AGENTS.md references/ci-local.md .claude/skills/ngx-yeti-testing/SKILL.md && npm exec nx -- run-many -t lint typecheck -p screen-reader-e2e && npm exec nx -- run screen-reader-e2e:nvda && BROWSERS=msedge npm exec nx -- run screen-reader-e2e:nvda; status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: yes
@@ -83,3 +91,5 @@ Heavy: yes
   - Planned run order once the desktop is unlocked: run 14 again (patched cfg, as the test-mode check); then option (a) F6, Firefox alone first; then Chromium then Firefox; then the cleanup above, references/ci-local.md, three lane runs, BROWSERS=msedge, and the full Verify. Option (b), a real rendered page before the story navigation, follows if (a) fails.
   - State at pause: `npm exec nx -- run-many -t lint typecheck -p screen-reader-e2e` passes and `npx prettier --check apps/screen-reader-e2e` is clean. references/ci-local.md and project.json are unchanged. Verify not run.
 - 2026-10-12 — planner (build repair #2): deps now [T031, T043]. The only reason is file overlap: T042 and T043 also edit `references/ci-local.md` (the unit-job lines and the container-job sections), and same-wave tasks that share a file must be ordered. T041 edits only the NVDA lane section. It goes after T043 rather than before so that the faster local runs are not held behind the locked desktop. Everything else in this contract is unchanged.
+- 2026-10-12 — planner (build repair #3, review round 1): the orchestrator's triage routes items 9 and 7 (the two screen-reader comment sites) to this task. `files` gains AGENTS.md, `.claude/skills/ngx-yeti-testing/SKILL.md`, and `apps/screen-reader-e2e/src/card.screen-reader.ts`; Context quotes the findings; Approach gains two bullets and the card bullet now allows its comment edits; criterion 8 is new; the Verify gains two comment checks and a Prettier check of the three docs before the lane runs. `deps` gains T038 for file overlap only: T036 and T038 (both done, wave 4, T038 after T036) edited the testing skill, and same-wave tasks that share a file must be ordered. The lane fix, its criteria 1 to 7, and wave are unchanged. T024 and the new T048 edit the testing skill after this task.
+- 2026-10-12 — planner (build repair #3, the user's ruling to rename the package stylesheet, T049): deps gains T049 for file overlap (.claude/skills/ngx-yeti-testing/SKILL.md). Nothing else changes.
