@@ -3,9 +3,9 @@ id: T022
 title: Ship container with yetiShow and yetiHide
 wave: 4
 deps: [T001, T002, T036, T037, T038]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T022
+base: 89e30eaafa7e5d2d6c18329122b9114945d36f5d
 worktree: null
 task_branch: null
 files:
@@ -87,3 +87,30 @@ Heavy: yes
 - 2026-10-10 — created by planner
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
 - 2026-10-11 — planner: build repair before wave 4 (user rulings of 2026-10-11, quoted in T035 to T041). `deps` gains T036, T037, and T038 (shared test helpers). The Interface contract gains their shapes and Approach consumes them. Acceptance criteria, files, wave, and Verify are unchanged.
+- 2026-10-12 — coder (build_T022): implemented. `YetiContainer` (static class, presence attribute, `injectYetiItemStyles('container')` last), `YetiShow` and `YetiHide` (one required `YetiWidth` input each, bound as `data-show` / `data-hide`; no class, no presence attribute, no item file), index and README, the numbered usage rules with the Tailwind `.container` note in each JSDoc. Stories: `container--default`, `--show-hide`, `--all-widths`, `--bound`, `--in-nav` (plain-`nav` stand-in, attributes only), `--on-item`, `--self`, `--named`, `--outside-a-container`; `--table-column` is left to T023. `--show-hide` renders the docs pair twice, in a 12rem `aside` and a full-width `section`, so layer 4 gets "one markup, two decisions" without a story id the spec does not name. Thresholds are read from `--yeti-width-*` probes; `--all-widths` takes its seven widths from the manifest's `data-show` marker (`manifestValues` reads attributes only, so the story reads `markers` directly). Fixture route: `#wide-container` (the Interface-contract host), Yeti's example on a `yetiContainer yetiBox` host, a `hydrate never` container and a `hydrate never` `yetiContainer yetiBox`, and a client-only `@defer` container.
+- 2026-10-12 — coder (build_T022): measurements. (1) At a 1100 px viewport `#wide-container`'s content box passes `> 1024` in Chromium, Firefox, and WebKit, both route kinds. (2) The example box's content box is fractional (383.4584 px at a whole-px viewport, from the box's border width), so the viewport-resizing e2e cases set the widest whole-px viewport below the threshold and the narrowest that reaches it, and assert the content box is within 1 px of the threshold on the right side; the container-resizing cases hit the token width and the width minus 1 px exactly. (3) Client-only `@defer`: `recordFrames` (a read at the start of each animation frame) saw `#client-narrow` as `display: block` in exactly 1 frame, 2 of 2 runs (Chromium, both route kinds), with the container link already applied. The markers' attributes are bound, and that read ran before Angular wrote them in the same frame. A local before-paint probe in `apps/yeti-app-e2e/src/container.spec.ts` (`recordPaintedDisplayCounts`, a ResizeObserver armed per frame, the technique of `recordPaintedAttributes`) counts the displayed paragraphs at each paint and feeds `expectStyledFrames`: 0 painted frames with other than one paragraph in Chromium 54 of 54 (3 repeats), and in Firefox and WebKit in the Verify run. `support/style-probe.ts` has no helper that reads a style before paint and is outside this task's files; if the reviewer wants the probe shared, it moves there in a later task.
+- 2026-10-12 — coder (build_T022): not tested here: usage rule 7's NG8002 for a forgotten `YetiShow` with a bound value is compiler behaviour and would need a fixture under `packages/ngx-yeti/compile-fixtures`, which is outside this task's files; rule 4 (table column) is T023's `container--table-column`. No ledger row and no upstream bug.
+- 2026-10-12 — coder (build_T022): Verify run exactly as written through the heavy lock, exit 0. lint and typecheck: 4 projects passed. `nx test ngx-yeti -- container/src`: 3 files, 20 tests passed. `nx test-storybook ngx-yeti -- container/src`: 9 of 9 passed (Chromium; a separate `CI=1` run passed 27 of 27 in Chromium, Firefox, and WebKit). `nx e2e ngx-yeti-e2e -- container.spec.ts`: 5 passed (Chromium). `nx e2e yeti-app-e2e -- container.spec.ts`: 18 passed (development); production: 16 passed, 2 skipped (the hydration-diagnostics cases, development only). run-job Firefox: ngx-yeti-e2e 5 passed, yeti-app-e2e 18 passed. run-job WebKit: ngx-yeti-e2e 5 passed, yeti-app-e2e 18 passed. `npx prettier --check .` passed before the run.
+- 2026-10-12 — orchestrator Verify (isolate gsd-path-task/T022): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [ci-e2e-firefox-development] [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [ci-e2e-firefox-development] [2m[WebServer] [22m(node:991) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [ci-e2e-firefox-development] [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [ci-e2e-firefox-development] [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [ci-e2e-webkit-development] [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [ci-e2e-webkit-development] [2m[WebServer] [22m(node:987) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [ci-e2e-webkit-development] [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [ci-e2e-webkit-development] [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```
