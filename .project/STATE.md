@@ -101,3 +101,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-11 — plan — plan approved
 - 2026-10-11 — build — build started
 - 2026-10-11 — build — plan repair (T035-T041 before wave 4) approved by the orchestrator acting as owner under the user's instruction of 2026-10-11: 'Continue autonomously (AFK mode). Use at most 3 parallel agents.'; the user approved each repair item earlier; enter once rule placement stays open for the user
+- 2026-10-12 — build — T037 attempt 1 rejected by finish (Verify failed in the isolate: ci unit browser-session connect timeout and lift hover timeout, runner overload measured by the ci-unit spike); Log copied, patch saved (25 product files); retry after the unit-job fix lands
