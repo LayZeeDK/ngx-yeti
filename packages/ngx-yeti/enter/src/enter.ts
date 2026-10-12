@@ -77,6 +77,8 @@ export class NgxYetiEnter {
    * Withholds the arrival until the element first nears the viewport, then
    * plays it once. The arrival is one-way: once played, or when `once` is
    * false at the first render in the browser, a later `true` renders nothing.
+   * A named arrival is withheld through the package's accessibility
+   * stylesheet (ledger row A11Y-33).
    */
   readonly once = input(false, { transform: booleanAttribute });
 

@@ -1,14 +1,25 @@
 import {
   type Binding,
   Component,
+  Directive,
+  ElementRef,
+  inject,
   inputBinding,
   signal,
   viewChild,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
+import {
+  itemLinks,
+  itemStylesLoaded,
+  nextFrame,
+  removeItemLinks,
+  stylesheetLoaded,
+} from '@ngx-yeti/testing';
 import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiEnter, YetiSide } from 'ngx-yeti';
+import { provideYetiStyles } from 'ngx-yeti/styles';
+import { server } from 'vitest/browser';
 import { NgxYetiEnter } from './enter';
 
 @Component({
@@ -32,6 +43,256 @@ class ReferenceHost {
     '<ul data-testid="arriving" yetiEnter="rise" stagger once role="list"><li><a href="#hills">Hills</a></li><li><a href="#lakes">Lakes</a></li></ul>',
 })
 class OrderHost {}
+
+/** Reads its host when it is created, before the host's first update. */
+@Directive({ selector: '[yetiEnterCreationProbe]' })
+class CreationProbe {
+  readonly enterAtCreation =
+    inject<ElementRef<Element>>(ElementRef).nativeElement.classList.contains(
+      'enter',
+    );
+}
+
+@Component({
+  selector: 'yeti-enter-binding-host',
+  imports: [NgxYetiEnter, CreationProbe],
+  template: '<p yetiEnter once yetiEnterCreationProbe>A note that arrives.</p>',
+})
+class BindingHost {
+  readonly probe = viewChild.required(CreationProbe);
+}
+
+/** Yeti's built CSS, served by Vite from the workspace's node_modules. */
+const yetiCss: `${string}/` = `/@fs/${server.config.root.replaceAll('\\', '/')}/../../node_modules/yeti-css/dist/css/`;
+
+/** Storybook's global stylesheet, which Vite serves with its imports inlined. */
+const globalHref = `/@fs/${server.config.root.replaceAll('\\', '/')}/.storybook/styles.css`;
+
+/**
+ * Adds the global stylesheet, which ends with the package's accessibility
+ * stylesheet, once per test file, as an application does.
+ */
+async function globalStylesheet(): Promise<void> {
+  let link = document.head.querySelector<HTMLLinkElement>(
+    `link[href="${globalHref}"]`,
+  );
+
+  if (link === null) {
+    link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = globalHref;
+    document.head.append(link);
+  }
+
+  await stylesheetLoaded(link);
+}
+
+/** A `once` arrival and the keyframes it plays when it arrives. */
+interface Arrival {
+  readonly form: string;
+  readonly enter: YetiEnter | '';
+  readonly side?: YetiSide;
+  readonly stagger?: boolean;
+  readonly rtl?: boolean;
+  readonly keyframes: string;
+}
+
+const arrivals: readonly Arrival[] = [
+  { form: 'the fade', enter: '', keyframes: 'yeti-enter-fade' },
+  { form: 'rise', enter: 'rise', keyframes: 'yeti-enter-rise' },
+  { form: 'fall', enter: 'fall', keyframes: 'yeti-enter-fall' },
+  { form: 'scale', enter: 'scale', keyframes: 'yeti-enter-scale' },
+  { form: 'slide', enter: 'slide', keyframes: 'yeti-enter-slide-start' },
+  {
+    form: 'slide from the end edge',
+    enter: 'slide',
+    side: 'end',
+    keyframes: 'yeti-enter-slide-end',
+  },
+  {
+    form: 'slide in a right-to-left page',
+    enter: 'slide',
+    rtl: true,
+    keyframes: 'yeti-enter-slide-end',
+  },
+  {
+    form: 'staggered rise',
+    enter: 'rise',
+    stagger: true,
+    keyframes: 'yeti-enter-rise',
+  },
+  {
+    form: 'staggered slide from the end edge',
+    enter: 'slide',
+    side: 'end',
+    stagger: true,
+    keyframes: 'yeti-enter-slide-end',
+  },
+  {
+    form: 'staggered slide in a right-to-left page',
+    enter: 'slide',
+    stagger: true,
+    rtl: true,
+    keyframes: 'yeti-enter-slide-end',
+  },
+];
+
+/** Puts the document in right-to-left until the test ends. */
+function rightToLeft(): void {
+  const root = document.documentElement;
+  const dir = root.getAttribute('dir');
+
+  root.setAttribute('dir', 'rtl');
+  onTestFinished(() => {
+    if (dir === null) {
+      root.removeAttribute('dir');
+    } else {
+      root.setAttribute('dir', dir);
+    }
+  });
+}
+
+/**
+ * Records each `animationstart` in the document until the test ends, and
+ * returns a reader of the animation names started on one element.
+ */
+function recordStarts(): (target: Element) => string[] {
+  const starts: {
+    readonly target: EventTarget | null;
+    readonly name: string;
+  }[] = [];
+  const record = (event: AnimationEvent): void => {
+    starts.push({ target: event.target, name: event.animationName });
+  };
+
+  document.addEventListener('animationstart', record, true);
+  onTestFinished(() => {
+    document.removeEventListener('animationstart', record, true);
+  });
+
+  return (target) =>
+    starts.flatMap((start) => (start.target === target ? [start.name] : []));
+}
+
+/**
+ * Creates `arrival` below the viewport with `once`, under the global
+ * stylesheet and Yeti's built enter file. The targets are the elements that
+ * play the arrival: the host, or a staggered host's children.
+ */
+async function setupArrival(arrival: Arrival) {
+  removeItemLinks();
+  belowTheFold();
+
+  if (arrival.rtl === true) {
+    rightToLeft();
+  }
+
+  await globalStylesheet();
+  TestBed.configureTestingModule({
+    providers: [provideYetiStyles({ url: yetiCss })],
+  });
+  const startsOn = recordStarts();
+  const { element } = await createDirectiveHost(NgxYetiEnter, {
+    tagName: arrival.stagger === true ? 'ul' : 'p',
+    bindings: [
+      inputBinding('yetiEnter', () => arrival.enter),
+      inputBinding('side', () => arrival.side),
+      inputBinding('stagger', () => arrival.stagger ?? false),
+      inputBinding('once', () => true),
+    ],
+  });
+
+  if (arrival.stagger === true) {
+    for (const text of ['Hills', 'Lakes']) {
+      const item = document.createElement('li');
+      item.textContent = text;
+      element.append(item);
+    }
+  } else {
+    element.textContent = 'A note that arrives.';
+  }
+
+  await itemStylesLoaded('enter');
+  await nextFrame();
+  await nextFrame();
+
+  const targets = arrival.stagger === true ? [...element.children] : [element];
+
+  return { element, startsOn, targets };
+}
+
+/**
+ * Each form Yeti's enter file fails to withhold, as Yeti's own markup. On a
+ * staggered host the element `data-once` should hold back is its first child.
+ */
+const brokenForms: Readonly<Record<string, string>> = {
+  rise: '<p class="enter" data-enter="rise" data-once>A</p>',
+  fall: '<p class="enter" data-enter="fall" data-once>A</p>',
+  scale: '<p class="enter" data-enter="scale" data-once>A</p>',
+  slide: '<p class="enter" data-enter="slide" data-once>A</p>',
+  'slide from the end edge':
+    '<p class="enter" data-enter="slide" data-side="end" data-once>A</p>',
+  'slide in a right-to-left page':
+    '<div dir="rtl"><p class="enter" data-enter="slide" data-once>A</p></div>',
+  'staggered slide from the end edge':
+    '<div class="enter" data-enter="slide" data-side="end" data-stagger data-once><p>A</p></div>',
+  'staggered slide in a right-to-left page':
+    '<div dir="rtl"><div class="enter" data-enter="slide" data-stagger data-once><p>A</p></div></div>',
+};
+
+const brokenFormsMessage = [
+  "Yeti has fixed its once bug, upstream-bugs.md row Y14; the forms received are the ones Yeti's enter file still fails to withhold.",
+  'If none is still broken: remove the rule on .enter[data-once] from packages/ngx-yeti/accessibility.css and its fix test in this file; remove this test and its control;',
+  'set "What the package adds" of ledger.md row A11Y-33 to "none" and name the pin that fixed it; record that pin in row Y14;',
+  'and remove the Departures row for enter.md from .claude/skills/ngx-yeti-specs/SKILL.md and the A11Y-33 entry of sanctionedSelectors in packages/ngx-yeti/src/published-output.node.spec.ts.',
+  'If some forms are still broken: keep the fix, and take the fixed forms out of brokenForms and out of row Y14.',
+].join(' ');
+
+/** Yeti's built enter file, the one its item link loads. */
+async function yetiEnterCss(): Promise<string> {
+  // As a stylesheet link asks for it; otherwise Vite serves a module.
+  const response = await fetch(`${yetiCss}utilities/enter/enter.css`, {
+    headers: { Accept: 'text/css' },
+  });
+  const css = await response.text();
+
+  assert.isTrue(response.ok, "Yeti's built enter file is served");
+  assert.include(css, '@keyframes yeti-enter-rise');
+  assert.notInclude(css, 'import.meta');
+
+  return css;
+}
+
+/**
+ * The forms of `brokenForms` whose withheld element computes an animation
+ * name other than `none` in a shadow tree that holds only `css`, out of reach
+ * of every rule of the document.
+ */
+function stillNamed(css: string): string[] {
+  const shadowHost = document.createElement('div');
+  document.body.append(shadowHost);
+  onTestFinished(() => {
+    shadowHost.remove();
+  });
+  const root = shadowHost.attachShadow({ mode: 'open' });
+  const style = document.createElement('style');
+  style.textContent = css;
+  root.append(style);
+
+  return Object.entries(brokenForms).flatMap(([form, markup]) => {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = markup;
+    root.append(wrapper);
+    const withheld = wrapper.querySelector('[data-once]');
+    assert.exists(withheld);
+    const target = withheld.hasAttribute('data-stagger')
+      ? withheld.firstElementChild
+      : withheld;
+    assert.exists(target);
+
+    return getComputedStyle(target).animationName === 'none' ? [] : [form];
+  });
+}
 
 /**
  * Pushes everything TestBed appends to the body below the viewport and
@@ -300,6 +561,86 @@ describe(NgxYetiEnter, () => {
     await nextFrame();
 
     expect(itemLinks('enter')).toHaveLength(0);
+  });
+
+  it('writes the enter class in the same update as data-once, not at creation', async () => {
+    expect.assertions(3);
+
+    belowTheFold();
+    const fixture = TestBed.createComponent(BindingHost);
+    await fixture.whenStable();
+    const element: unknown = fixture.nativeElement;
+    assert.instanceOf(element, HTMLElement);
+    const paragraph = element.querySelector('p');
+    assert.exists(paragraph);
+
+    expect(fixture.componentInstance.probe().enterAtCreation).toBe(false);
+    expect(paragraph.getAttribute('class')).toBe('enter');
+    expect(paragraph.getAttribute('data-once')).toBe('');
+  });
+
+  // Real Safari reports reduced motion, where the arrival lasts 0.01 ms, so
+  // no duration or play state is asserted.
+  describe('with the accessibility stylesheet (ledger row A11Y-33)', () => {
+    it.for(arrivals)(
+      'withholds $form below the viewport, then arrives once when scrolled to',
+      async (arrival) => {
+        expect.assertions(8);
+
+        const { element, startsOn, targets } = await setupArrival(arrival);
+        const each = <T>(value: T): T[] => targets.map(() => value);
+        const opacities = (): string[] =>
+          targets.map((target) => getComputedStyle(target).opacity);
+
+        expect(element.getAttribute('data-once')).toBe('');
+        expect(
+          targets.map((target) => getComputedStyle(target).animationName),
+        ).toStrictEqual(each('none'));
+        expect(opacities()).toStrictEqual(each('1'));
+        expect(targets.flatMap(startsOn)).toStrictEqual([]);
+
+        await scrollIn(element);
+
+        await expect.poll(() => element.hasAttribute('data-once')).toBe(false);
+        await expect
+          .poll(() => targets.map(startsOn))
+          .toStrictEqual(each([arrival.keyframes]));
+        await expect.poll(opacities).toStrictEqual(each('1'));
+
+        expect(targets.map(startsOn)).toStrictEqual(each([arrival.keyframes]));
+      },
+    );
+  });
+
+  describe("yeti's once bug (upstream Y14)", () => {
+    it("still breaks the eight named once arrivals in Yeti's enter file alone (upstream Y14)", async () => {
+      expect.assertions(1);
+
+      const broken = stillNamed(await yetiEnterCss());
+
+      // The failure carries what to remove when Yeti fixes the bug.
+      expect(() => {
+        assert.deepStrictEqual(
+          broken,
+          Object.keys(brokenForms),
+          brokenFormsMessage,
+        );
+      }).not.toThrow();
+    });
+
+    it('reports no broken form for a Yeti whose once withholding outranks its named arrivals', async () => {
+      expect.assertions(1);
+
+      const fixedYeti = `${await yetiEnterCss()}
+@layer yeti.utilities {
+  .enter[data-once][data-once][data-once][data-once][data-once],
+  .enter[data-once][data-once][data-once][data-once][data-stagger] > * {
+    animation: none;
+  }
+}`;
+
+      expect(stillNamed(fixedYeti)).toStrictEqual([]);
+    });
   });
 
   describe('in a template', () => {

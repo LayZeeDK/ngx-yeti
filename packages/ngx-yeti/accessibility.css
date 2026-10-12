@@ -1,5 +1,6 @@
 /* Each accessibility rule arrives with the item spec whose ledger row it
-   closes. The one other rule is the Firefox scale workaround below. */
+   closes. The two other rules are the enter once fix and the Firefox scale
+   workaround below. */
 @layer ngx-yeti {
   /* A11Y-32: forced colours paint every edge of the spinner's ring, and of a
      busy button's ring, in one colour, so the bright edge is lost and the
@@ -11,6 +12,18 @@
       border-color: Canvas;
       border-block-start-color: CanvasText;
     }
+  }
+
+  /* Yeti withholds a once arrival with `animation: none`, and its named
+     arrivals (rise, fall, scale, slide, and a staggered slide from the end
+     edge or in a right-to-left page) set `animation-name` at a higher
+     specificity, so they win the name while `none` wins the duration: the
+     element never arrives (upstream Y14, ledger row A11Y-33). This layer
+     outranks every Yeti layer whatever the specificity. Delete this rule
+     when the Y14 test of the enter spec fails. */
+  .enter[data-once]:not([data-stagger]),
+  .enter[data-once][data-stagger] > * {
+    animation-name: none;
   }
 
   /* Firefox 145 to 152 reject atan2() with a relative length, so Yeti's

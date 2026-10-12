@@ -16,31 +16,31 @@ The package ships none of Yeti's CSS. You bring a build of Yeti at the commit th
 
 ## Entry points
 
-| Specifier                    | What it exports                                                                  |
-| ---------------------------- | -------------------------------------------------------------------------------- |
-| `ngx-yeti`                   | Types only, such as `YetiComponentName`, generated from Yeti at the pin          |
-| `ngx-yeti/styles`            | `provideYetiStyles`, `injectYetiItemStyles`, and `YetiStylesConfig`              |
-| `ngx-yeti/box`               | `YetiBox`, `YetiBorder`, `NgxYetiPaint`, and `YetiText`                          |
-| `ngx-yeti/breakout`          | `YetiBreakout`, `YetiBreakoutChild`, `YetiBreakoutNote`, and `yetiBreakoutToken` |
-| `ngx-yeti/card`              | `YetiCard`, `YetiCardLink`, and `yetiCardToken`                                  |
-| `ngx-yeti/center`            | `YetiCenter`                                                                     |
-| `ngx-yeti/cluster`           | `YetiCluster`                                                                    |
-| `ngx-yeti/columns`           | `NgxYetiColumns`, `YetiColumnsChild`, and `yetiColumnsToken`                     |
-| `ngx-yeti/cover`             | `YetiCover`, `YetiCoverChild`, and `yetiCoverToken`                              |
-| `ngx-yeti/enter`             | `NgxYetiEnter`                                                                   |
-| `ngx-yeti/frame`             | `YetiFrame`                                                                      |
-| `ngx-yeti/grid`              | `YetiGrid`, `YetiGridChild`, and `yetiGridToken`                                 |
-| `ngx-yeti/layer`             | `YetiLayer`, `YetiLayerChild`, and `yetiLayerToken`                              |
-| `ngx-yeti/lift`              | `NgxYetiLift`                                                                    |
-| `ngx-yeti/masonry`           | `YetiMasonry`                                                                    |
-| `ngx-yeti/overlay`           | `YetiOverlay`, `YetiOverlayChild`, and `yetiOverlayToken`                        |
-| `ngx-yeti/scroller`          | `YetiScroller` and the `YetiScrollerJustify` type                                |
-| `ngx-yeti/sidebar`           | `YetiSidebar`, `YetiSidebarChild`, and `yetiSidebarToken`                        |
-| `ngx-yeti/spinner`           | `YetiSpinner`                                                                    |
-| `ngx-yeti/stack`             | `YetiStack`, `YetiStackChild`, and `yetiStackToken`                              |
-| `ngx-yeti/timeline`          | `YetiTimeline`                                                                   |
-| `ngx-yeti/visually-hidden`   | `YetiVisuallyHidden`                                                             |
-| `ngx-yeti/accessibility.css` | The package's accessibility stylesheet, and Yeti's scale in Firefox 145 to 152   |
+| Specifier                    | What it exports                                                                                                       |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `ngx-yeti`                   | Types only, such as `YetiComponentName`, generated from Yeti at the pin                                               |
+| `ngx-yeti/styles`            | `provideYetiStyles`, `injectYetiItemStyles`, and `YetiStylesConfig`                                                   |
+| `ngx-yeti/box`               | `YetiBox`, `YetiBorder`, `NgxYetiPaint`, and `YetiText`                                                               |
+| `ngx-yeti/breakout`          | `YetiBreakout`, `YetiBreakoutChild`, `YetiBreakoutNote`, and `yetiBreakoutToken`                                      |
+| `ngx-yeti/card`              | `YetiCard`, `YetiCardLink`, and `yetiCardToken`                                                                       |
+| `ngx-yeti/center`            | `YetiCenter`                                                                                                          |
+| `ngx-yeti/cluster`           | `YetiCluster`                                                                                                         |
+| `ngx-yeti/columns`           | `NgxYetiColumns`, `YetiColumnsChild`, and `yetiColumnsToken`                                                          |
+| `ngx-yeti/cover`             | `YetiCover`, `YetiCoverChild`, and `yetiCoverToken`                                                                   |
+| `ngx-yeti/enter`             | `NgxYetiEnter`                                                                                                        |
+| `ngx-yeti/frame`             | `YetiFrame`                                                                                                           |
+| `ngx-yeti/grid`              | `YetiGrid`, `YetiGridChild`, and `yetiGridToken`                                                                      |
+| `ngx-yeti/layer`             | `YetiLayer`, `YetiLayerChild`, and `yetiLayerToken`                                                                   |
+| `ngx-yeti/lift`              | `NgxYetiLift`                                                                                                         |
+| `ngx-yeti/masonry`           | `YetiMasonry`                                                                                                         |
+| `ngx-yeti/overlay`           | `YetiOverlay`, `YetiOverlayChild`, and `yetiOverlayToken`                                                             |
+| `ngx-yeti/scroller`          | `YetiScroller` and the `YetiScrollerJustify` type                                                                     |
+| `ngx-yeti/sidebar`           | `YetiSidebar`, `YetiSidebarChild`, and `yetiSidebarToken`                                                             |
+| `ngx-yeti/spinner`           | `YetiSpinner`                                                                                                         |
+| `ngx-yeti/stack`             | `YetiStack`, `YetiStackChild`, and `yetiStackToken`                                                                   |
+| `ngx-yeti/timeline`          | `YetiTimeline`                                                                                                        |
+| `ngx-yeti/visually-hidden`   | `YetiVisuallyHidden`                                                                                                  |
+| `ngx-yeti/accessibility.css` | The package's accessibility stylesheet, Yeti's scale in Firefox 145 to 152, and the `once` arrival of a named `enter` |
 
 ## Requirements
 

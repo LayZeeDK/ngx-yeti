@@ -3,9 +3,9 @@ id: T040
 title: Withhold a named once arrival with one package rule, and fail when Yeti fixes its once bug
 wave: 4
 deps: [T036, T038, T039]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T040
+base: 311f351fd9c7fd03b07021c88679593a68fb4323
 worktree: null
 task_branch: null
 files:
@@ -99,3 +99,30 @@ Heavy: yes
 ## Log
 
 - 2026-10-11 — created by planner (build repair before wave 4; the user's two rulings on the once bug). The measurements in Context are from a spike of 2026-10-11 in a sidecar at 7e0045f, whose files are not in the repository. Open with the user: whether the rule may live in the accessibility stylesheet or needs a stylesheet of its own; the task keeps it easy to move. The Verify ends by stopping the Nx daemon and keeps its own exit code; run it exactly as written and never set NX_DAEMON.
+- 2026-10-12 — coder (build_T040): implementation. `accessibility.css` gains one self-contained block inside `@layer ngx-yeti` (own comment, its own two selectors `.enter[data-once]:not([data-stagger])` and `.enter[data-once][data-stagger] > *`, only `animation-name: none`), and the header comment now names two other rules; `sanctionedSelectors` lists both selectors under A11Y-33; `accessibility.node.spec.ts` unchanged. `enter.ts`: one sentence on the `once` doc comment only. `enter.spec.ts`: the ten-form fix test (`it.for`, global stylesheet + `provideYetiStyles({ url })` as in lift.spec.ts, one `animationstart` recorder on the document, RTL and scroll restored with `onTestFinished`, no duration or play-state assertion), the Y14 tripwire (eight forms as Yeti markup in a shadow tree whose only style is the fetched built `utilities/enter/enter.css`; the fetch sends `Accept: text/css` because Vite otherwise serves a JS module, and asserts the text holds `@keyframes yeti-enter-rise`), its permanent control (same probe, the fetched text plus a `@layer yeti.utilities` rule with `[data-once]` repeated to (0,6,0) → no broken form), and the binding pin (a `CreationProbe` directive reads `classList` in its constructor). The tripwire carries its removal instructions through `expect(() => assert.deepStrictEqual(..., message)).not.toThrow()`, because `vitest/valid-expect` forbids a message argument to `expect`. Fixture: `#in-view-rise` (first live block), `#below-slide` and `#below-stagger` (`<ul>`, first child `#below-stagger-first`) after `#below-once` in the second live block. e2e: `expectArrived(host, arrivals, keyframes, target?)` now checks the started animation names; the hydration-attribute test also leaves out `#in-view-rise`; the JavaScript-off counts go from 6/4 to 9/7; four new cases per route kind (named hosts still and visible with JavaScript off; still before hydration with the bundle held, then the in-view one arrives once with `yeti-enter-rise` and the two below stay withheld; in-view duration under no-preference and reduce motion; below-the-fold arrivals with `yeti-enter-slide-end`, the staggered one on its first child, and no replay). Docs: ledger.md row A11Y-33 plus a dated note with both rulings verbatim; upstream-bugs.md row Y14 corrected; the ngx-yeti-specs Departures table gets a row for enter.md:27, :174, :307, :322, and the building-blocks 1.13 row names the third kind; CHANGELOG and README name the fix (Prettier re-padded the README entry-point table and the Departures table).
+- 2026-10-12 — coder: deviation from the Approach, for the orchestrator to judge. The contract's reduced-motion duration `1e-05s` is engine-specific: Firefox (ci e2e container) computes `0.00001s`, so the duration is compared as a number. The floor job's WebKit 26.4 (Playwright 1.59.1) ignores `reducedMotion: 'reduce'` (computed 0.6 s in all 6 attempts), so the expected duration follows `matchMedia('(prefers-reduced-motion: reduce)')` on the page, and a run where the emulation does not reach the page is annotated `reduced-motion`.
+- 2026-10-12 — coder: control runs (Chromium, `nx test ngx-yeti -- --project=browser enter/src`). (a) Rule disabled (its declaration swapped for a custom property): 8 failed / 27 passed of 35. The eight broken forms failed (rise, fall, scale, slide, slide from the end edge, slide right-to-left, staggered slide from the end edge, staggered slide right-to-left); the fade and staggered rise passed. Rule restored. (b) Host metadata `class: 'enter'` instead of `'[class.enter]': 'true'`: 1 failed / 34 passed. "writes the enter class in the same update as data-once, not at creation" failed with `expected true to be false`. Binding restored. (c) The tripwire passes against the vendored Yeti, and its control (the fixed-Yeti probe, reporting no broken form) passes in every Verify run. Before the Accept fix, a run returned [] for every form; that is how the Vite module response was found.
+- 2026-10-12 — coder: Verify, run exactly as written from the worktree root through the heavy lock (third run): exit 0. lint+typecheck OK for 3 projects. `nx test ngx-yeti` (enter/src, src/accessibility, src/published-output): 62/62. e2e dev Chromium 60/60; e2e production Chromium 56/56. ci unit (container): 108/108. ci e2e firefox dev 60/60, webkit dev 60/60, webkit production 56/56. floor webkit-26-4 unit 35/35, e2e 60/60. floor firefox-146-e2e shard 1 60/60. FLOOR_FIREFOX (stock Firefox 145) unit 35/35. Daemon stopped. The two earlier runs failed only on the new reduced-motion duration case: run 1 in ci e2e firefox (0.00001s against 1e-05s, 2 failed / 58 passed), run 2 in floor webkit-26-4 e2e (0.6 against 0.00001, 2 failed / 58 passed). Both are fixed as described above. No container timeouts were seen. `npx prettier --check .` passes.
+- 2026-10-12 — orchestrator Verify (isolate gsd-path-task/T040): pass, exit 0; output tail:
+  ```
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/spinner
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/stack
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/table
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/timeline
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/visually-hidden
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```

@@ -16,6 +16,10 @@ const builtPackage = path.join(workspaceRoot, 'dist/packages/ngx-yeti');
  */
 const sanctionedSelectors: Readonly<Record<string, readonly string[]>> = {
   'A11Y-32': ['.spinner', ".button[aria-busy='true']::after"],
+  'A11Y-33': [
+    '.enter[data-once]:not([data-stagger])',
+    '.enter[data-once][data-stagger] > *',
+  ],
 };
 
 function ledgerRowIds(): ReadonlySet<string> {

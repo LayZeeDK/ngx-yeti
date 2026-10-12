@@ -19,7 +19,11 @@ import {
 
 interface Arrivals {
   /** Each `animationstart`, by the id of the element it started on. */
-  readonly starts: readonly { readonly id: string; readonly time: number }[];
+  readonly starts: readonly {
+    readonly id: string;
+    readonly name: string;
+    readonly time: number;
+  }[];
   /** When each `enter` item link added to the document finished loading. */
   readonly linkLoads: readonly number[];
   /** The first contentful paint, or null where the engine reports none. */
@@ -45,7 +49,7 @@ function isArrivals(value: unknown): value is Arrivals {
  */
 async function recordArrivals(page: Page): Promise<() => Promise<Arrivals>> {
   await page.addInitScript(() => {
-    const starts: { id: string; time: number }[] = [];
+    const starts: { id: string; name: string; time: number }[] = [];
     const linkLoads: number[] = [];
 
     Reflect.set(window, '__ngxYetiEnter', { starts, linkLoads });
@@ -53,7 +57,11 @@ async function recordArrivals(page: Page): Promise<() => Promise<Arrivals>> {
       'animationstart',
       (event) => {
         if (event.target instanceof Element) {
-          starts.push({ id: event.target.id, time: event.timeStamp });
+          starts.push({
+            id: event.target.id,
+            name: event.animationName,
+            time: event.timeStamp,
+          });
         }
       },
       true,
@@ -96,6 +104,28 @@ function startsOn(arrivals: Arrivals, id: string): number {
   return arrivals.starts.filter((start) => start.id === id).length;
 }
 
+/** The animation names started on `id`, in order. */
+function namesOn(arrivals: Arrivals, id: string): string[] {
+  return arrivals.starts.flatMap((start) =>
+    start.id === id ? [start.name] : [],
+  );
+}
+
+/** The named `once` hosts, each with its own arrival. */
+const inViewRise = '#in-view-rise';
+const belowSlide = '#below-slide';
+const belowStagger = '#below-stagger';
+const namedOnceHosts = [inViewRise, belowSlide, belowStagger] as const;
+
+/** Expects a `once` host that has not arrived: still, visible, and opaque. */
+async function expectWithheld(host: Locator): Promise<void> {
+  await expect(host).toHaveAttribute('data-once', '');
+  await expect(host).toHaveAttribute('data-enter');
+  await expect(host).toBeVisible();
+  await expect(host).toHaveCSS('opacity', '1');
+  await expect(host).toHaveCSS('animation-name', 'none');
+}
+
 /**
  * Records, as an annotation, when the first `animationstart` on `id` fired
  * against when the last `enter` item link loaded (enter.md:272).
@@ -123,16 +153,27 @@ async function removeEveryEnterHost(page: Page): Promise<void> {
   await expect.poll(() => itemLinks(page)).not.toContain('enter');
 }
 
-/** Expects a `once` host to have arrived: no `data-once`, one start, opaque. */
+/**
+ * Expects a `once` host to have arrived: no `data-once`, and one start of
+ * `keyframes` on the element that plays it, the host or, on a staggered host,
+ * its child `target`, which ends opaque.
+ */
 async function expectArrived(
   host: Locator,
   arrivals: () => Promise<Arrivals>,
-  id: string,
+  keyframes: string,
+  target: Locator = host,
 ): Promise<void> {
+  await expect(target).toHaveAttribute('id', /.+/);
+
+  const id = await target.evaluate((element) => element.id);
+
   await expect(host).not.toHaveAttribute('data-once');
-  await expect.poll(async () => startsOn(await arrivals(), id)).toBe(1);
-  await expect(host).toHaveCSS('opacity', '1');
-  await expect(host).toHaveCSS('animation-name', 'yeti-enter-fade');
+  await expect
+    .poll(async () => namesOn(await arrivals(), id))
+    .toEqual([keyframes]);
+  await expect(target).toHaveCSS('opacity', '1');
+  await expect(target).toHaveCSS('animation-name', keyframes);
 }
 
 async function scrollToTop(page: Page): Promise<void> {
@@ -157,10 +198,10 @@ for (const { kind, prefix } of routeKinds) {
       page,
     }) => {
       const styleMutations = await recordStyleMutations(page);
-      // The in-view section arrives right after hydration, by design.
+      // The in-view sections arrive right after hydration, by design.
       const hostAttributes = await recordHostAttributes(
         page,
-        '[yetienter]:not(#in-view-once)',
+        `[yetienter]:not(#in-view-once, ${inViewRise})`,
       );
 
       await page.goto(`${prefix}enter`);
@@ -205,7 +246,7 @@ for (const { kind, prefix } of routeKinds) {
 
       await section.scrollIntoViewIfNeeded();
 
-      await expectArrived(section, arrivals, 'below-once');
+      await expectArrived(section, arrivals, 'yeti-enter-fade');
 
       await scrollToTop(page);
       await section.scrollIntoViewIfNeeded();
@@ -261,7 +302,11 @@ for (const { kind, prefix } of routeKinds) {
         .click();
       await expect(page.locator('#if-once')).toBeVisible();
 
-      await expectArrived(page.locator('#if-once'), arrivals, 'if-once');
+      await expectArrived(
+        page.locator('#if-once'),
+        arrivals,
+        'yeti-enter-fade',
+      );
       recordInsertion(await arrivals(), 'if-once', `${kind}, @if`, browserName);
     });
 
@@ -283,7 +328,7 @@ for (const { kind, prefix } of routeKinds) {
       await expectArrived(
         page.locator('#deferred-once'),
         arrivals,
-        'deferred-once',
+        'yeti-enter-fade',
       );
       recordInsertion(
         await arrivals(),
@@ -351,7 +396,7 @@ for (const { kind, prefix } of routeKinds) {
 
       await section.scrollIntoViewIfNeeded();
 
-      await expectArrived(section, arrivals, 'viewport-once');
+      await expectArrived(section, arrivals, 'yeti-enter-fade');
     });
 
     test('keeps the hydrate-never section still and visible, and its link, after the live hosts leave', async ({
@@ -394,7 +439,7 @@ for (const { kind, prefix } of routeKinds) {
 
         const hosts = page.locator('[data-ngx-yeti-item-enter]');
 
-        await expect(hosts).toHaveCount(6);
+        await expect(hosts).toHaveCount(9);
 
         for (const host of await hosts.all()) {
           await expect(host).toHaveClass('enter');
@@ -403,7 +448,7 @@ for (const { kind, prefix } of routeKinds) {
 
         const once = page.locator('[data-ngx-yeti-item-enter][data-once]');
 
-        await expect(once).toHaveCount(4);
+        await expect(once).toHaveCount(7);
 
         for (const host of await once.all()) {
           await expect(host).toHaveCSS('animation-name', 'none');
@@ -416,6 +461,156 @@ for (const { kind, prefix } of routeKinds) {
         );
         expect(await itemLinks(page)).toContain('enter');
       });
+
+      // Yeti alone lets a named arrival win the name over `animation: none`
+      // (upstream Y14); the accessibility stylesheet withholds it.
+      test('serves each named once host still and visible', async ({
+        page,
+      }) => {
+        await page.goto(`${prefix}enter`);
+
+        await expectItemSheetsApplied(page, ['enter']);
+
+        for (const host of namedOnceHosts) {
+          await expectWithheld(page.locator(host));
+        }
+
+        const first = page.locator('#below-stagger-first');
+
+        await expect(first).toHaveCSS('opacity', '1');
+        await expect(first).toHaveCSS('animation-name', 'none');
+      });
+    });
+
+    test('keeps the named once hosts still before hydration, then arrives the one in view once', async ({
+      page,
+    }) => {
+      const arrivals = await recordArrivals(page);
+      const release = await holdBackMainBundle(page);
+
+      await page.goto(`${prefix}enter`, { waitUntil: 'commit' });
+      await page.locator(belowStagger).waitFor({ state: 'attached' });
+      await expectItemSheetsApplied(page, ['enter']);
+
+      for (const host of namedOnceHosts) {
+        await expectWithheld(page.locator(host));
+      }
+
+      await expect(page.locator('#below-stagger-first')).toHaveCSS(
+        'animation-name',
+        'none',
+      );
+      expect((await arrivals()).starts.map(({ id }) => id)).not.toContain(
+        'in-view-rise',
+      );
+
+      release();
+      await waitForHydration(page);
+
+      await expectArrived(
+        page.locator(inViewRise),
+        arrivals,
+        'yeti-enter-rise',
+      );
+      await nextFrames(page);
+
+      const recorded = await arrivals();
+
+      expect(namesOn(recorded, 'in-view-rise')).toEqual(['yeti-enter-rise']);
+      expect(namesOn(recorded, 'below-slide')).toEqual([]);
+      expect(namesOn(recorded, 'below-stagger-first')).toEqual([]);
+      await expect(page.locator(belowSlide)).toHaveAttribute('data-once', '');
+      await expect(page.locator(belowStagger)).toHaveAttribute('data-once', '');
+    });
+
+    // Seconds, compared as numbers: Firefox writes 0.01 ms as 0.00001s and
+    // Chromium as 1e-05s. The floor job's WebKit ignores emulated reduced
+    // motion, so the duration follows what the page reports, and a run where
+    // the emulation did not reach the page is annotated.
+    for (const motion of ['no-preference', 'reduce'] as const) {
+      test.describe(`with ${motion} motion`, () => {
+        test.use({ reducedMotion: motion });
+
+        test('arrives the named once host in view once after hydration, at its duration', async ({
+          browserName,
+          page,
+        }) => {
+          const arrivals = await recordArrivals(page);
+
+          await page.goto(`${prefix}enter`);
+          await waitForHydration(page);
+
+          const host = page.locator(inViewRise);
+
+          await expectArrived(host, arrivals, 'yeti-enter-rise');
+
+          const reduced = await page.evaluate(
+            () => matchMedia('(prefers-reduced-motion: reduce)').matches,
+          );
+
+          if (reduced !== (motion === 'reduce')) {
+            test.info().annotations.push({
+              type: 'reduced-motion',
+              description: `${browserName}: emulated ${motion} motion did not reach the page`,
+            });
+          }
+
+          await expect
+            .poll(() =>
+              host.evaluate((element) =>
+                parseFloat(getComputedStyle(element).animationDuration),
+              ),
+            )
+            .toBe(reduced ? 0.00001 : 0.6);
+        });
+      });
+    }
+
+    test('arrives each named once host below the fold once when scrolled to, and replays none', async ({
+      page,
+    }) => {
+      const arrivals = await recordArrivals(page);
+
+      await page.goto(`${prefix}enter`);
+      await waitForHydration(page);
+      await nextFrames(page);
+
+      const slide = page.locator(belowSlide);
+      const stagger = page.locator(belowStagger);
+      const first = page.locator('#below-stagger-first');
+
+      await expectWithheld(slide);
+      await expectWithheld(stagger);
+      expect(namesOn(await arrivals(), 'below-slide')).toEqual([]);
+      expect(namesOn(await arrivals(), 'below-stagger-first')).toEqual([]);
+
+      await slide.scrollIntoViewIfNeeded();
+      await expectArrived(slide, arrivals, 'yeti-enter-slide-end');
+
+      await stagger.scrollIntoViewIfNeeded();
+      await expectArrived(stagger, arrivals, 'yeti-enter-slide-end', first);
+
+      await scrollToTop(page);
+      await slide.scrollIntoViewIfNeeded();
+      await stagger.scrollIntoViewIfNeeded();
+      await nextFrames(page);
+
+      const recorded = await arrivals();
+
+      expect(
+        [
+          'in-view-rise',
+          'below-slide',
+          'below-stagger',
+          'below-stagger-first',
+        ].map((id) => namesOn(recorded, id)),
+        'scrolling away and back replays nothing',
+      ).toEqual([
+        ['yeti-enter-rise'],
+        ['yeti-enter-slide-end'],
+        [],
+        ['yeti-enter-slide-end'],
+      ]);
     });
   });
 }

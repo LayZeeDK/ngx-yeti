@@ -4,11 +4,13 @@ import { NgxYetiEnter } from 'ngx-yeti/enter';
 
 /**
  * The enter spec's Fixture-app route (enter.md:266-274): live hosts above the
- * fold (a fade, a slide from the end edge, and a `once` section already in
- * view); a `once` section in a `hydrate never` block; client insertions of a
- * `once` section by an `@if` and by a client-only `@defer`; and, below the
- * fold, a `once` section and a `once` section in a `hydrate on viewport`
- * block, each a viewport and a half below the last. `enter` is not in the
+ * fold (a fade, a slide from the end edge, and a `once` section and a `once`
+ * rise already in view); a `once` section in a `hydrate never` block; client
+ * insertions of a `once` section by an `@if` and by a client-only `@defer`;
+ * below the fold, a `once` section, a `once` slide from the end edge, and a
+ * staggered `once` slide from the end edge; and a `once` section in a
+ * `hydrate on viewport` block, each group a viewport and a half below the
+ * last. `enter` is not in the
  * app's preload list, so the insertions run without it. One control removes
  * the live hosts.
  */
@@ -28,6 +30,10 @@ import { NgxYetiEnter } from 'ngx-yeti/enter';
       <section id="in-view-once" yetiEnter once>
         <h3>Already in view</h3>
         <p>This section arrives once the page has hydrated.</p>
+      </section>
+      <section id="in-view-rise" yetiEnter="rise" once>
+        <h3>Rising into view</h3>
+        <p>This section rises once the page has hydrated.</p>
       </section>
     }
     @defer (hydrate never) {
@@ -59,6 +65,14 @@ import { NgxYetiEnter } from 'ngx-yeti/enter';
         <h3>Further down the trail</h3>
         <p>This section arrives the first time it comes near the viewport.</p>
       </section>
+      <section id="below-slide" yetiEnter="slide" side="end" once>
+        <h3>Over the ridge</h3>
+        <p>This section slides in from the end edge when it comes near.</p>
+      </section>
+      <ul id="below-stagger" yetiEnter="slide" side="end" stagger once>
+        <li id="below-stagger-first">Hills</li>
+        <li>Lakes</li>
+      </ul>
     }
     <div class="app-enter-spacer"></div>
     @defer (hydrate on viewport) {
