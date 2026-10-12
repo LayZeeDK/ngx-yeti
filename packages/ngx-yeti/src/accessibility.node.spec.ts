@@ -90,12 +90,9 @@ const systemColours = new Set([
   'VisitedText',
 ]);
 
-/**
- * Each declaration inside an `@media (forced-colors: active)` block whose
- * value is not one system colour keyword, as `property: value`.
- */
-function nonSystemColours(css: string): string[] {
-  const findings: string[] = [];
+/** The contents of each `@media (forced-colors: active)` block. */
+function forcedColourBlocks(css: string): string[] {
+  const blocks: string[] = [];
   const opening = /@media\s*\(\s*forced-colors\s*:\s*active\s*\)\s*\{/g;
 
   for (const match of css.matchAll(opening)) {
@@ -107,8 +104,38 @@ function nonSystemColours(css: string): string[] {
       end += 1;
     }
 
-    const block = css.slice(match.index + match[0].length, end - 1);
+    blocks.push(css.slice(match.index + match[0].length, end - 1));
+  }
 
+  return blocks;
+}
+
+/**
+ * The style rules of the forced-colours blocks: each rule's comma-separated
+ * selectors and the properties it declares.
+ */
+function forcedColourRules(
+  css: string,
+): { selectors: string[]; properties: string[] }[] {
+  return forcedColourBlocks(css.replaceAll(/\/\*[\s\S]*?\*\//g, '')).flatMap(
+    (block) =>
+      [...block.matchAll(/([^{}]+)\{([^{}]*)\}/g)].map(([, prelude, body]) => ({
+        selectors: (prelude ?? '').split(',').map((part) => part.trim()),
+        properties: [...(body ?? '').matchAll(/([\w-]+)\s*:/g)].map(
+          ([, property]) => property ?? '',
+        ),
+      })),
+  );
+}
+
+/**
+ * Each declaration inside an `@media (forced-colors: active)` block whose
+ * value is not one system colour keyword, as `property: value`.
+ */
+function nonSystemColours(css: string): string[] {
+  const findings: string[] = [];
+
+  for (const block of forcedColourBlocks(css)) {
     for (const [, property, value] of block.matchAll(
       /([\w-]+)\s*:\s*([^;{}]+?)\s*(?:;|\})/g,
     )) {
@@ -138,6 +165,46 @@ describe('ngx-yeti/ngx-yeti-globals.css', () => {
 
     expect(css).toMatch(/@media \(forced-colors: active\)/);
     expect(nonSystemColours(css)).toStrictEqual([]);
+  });
+
+  // A11Y-1a (button.md:241): the pressed toggle and the checked toggle label,
+  // on Yeti's state hooks only, drawn with a border and nothing else.
+  it("draws A11Y-1a's pressed and checked states with a border alone", () => {
+    expect(
+      forcedColourRules(readPackageFile('ngx-yeti-globals.css')).filter(
+        ({ selectors }) =>
+          selectors.some(
+            (selector) =>
+              selector.includes('aria-pressed') ||
+              selector.includes('input:checked'),
+          ),
+      ),
+    ).toStrictEqual([
+      {
+        selectors: [
+          ".button[aria-pressed='true']",
+          '.button:has(> input:checked)',
+        ],
+        properties: [expect.stringMatching(/^border-/)],
+      },
+    ]);
+  });
+
+  it('reads the selectors and properties of each forced-colours rule', () => {
+    expect(
+      forcedColourRules(`
+        /* .x { color: red; } */
+        @media (forced-colors: active) {
+          .a, .b > c { border-color: Canvas; outline-width: 2px; }
+        }
+        .d { color: blue; }
+      `),
+    ).toStrictEqual([
+      {
+        selectors: ['.a', '.b > c'],
+        properties: ['border-color', 'outline-width'],
+      },
+    ]);
   });
 
   it('reports a forced-colours declaration that is not a system colour', () => {

@@ -9,6 +9,7 @@ import {
   renderServer,
 } from '@ngx-yeti/testing/server';
 import type { YetiVariant } from 'ngx-yeti';
+import { YetiButton } from 'ngx-yeti/button';
 import { YetiSpinner } from './spinner';
 
 /**
@@ -61,6 +62,15 @@ class SpinnerFixture {
   protected readonly loading = signal(true);
   protected readonly hue = signal<YetiVariant>('neutral');
 }
+
+/** A spinner beside a button, which acquires `spinner` too. */
+@Component({
+  selector: 'yeti-spinner-with-button-fixture',
+  imports: [YetiButton, YetiSpinner],
+  template:
+    '<p><span yetiSpinner role="status" aria-label="Loading"></span> <span i18n>Loading the latest posts</span></p><button yetiButton type="button">Cancel</button>',
+})
+class SpinnerWithButtonFixture {}
 
 function render(): Promise<string> {
   return renderServer(SpinnerFixture);
@@ -127,6 +137,15 @@ describe(YetiSpinner, () => {
     expect(link.count).toBe(1);
     expect(link.beastiesSkip).toBe(true);
     expect(link.href).toMatch(itemHref('components', 'spinner'));
+  });
+
+  it('writes exactly one spinner link with a button on the page', async () => {
+    expect.assertions(2);
+
+    const html = await renderServer(SpinnerWithButtonFixture);
+
+    expect(itemLinkOf(html, 'spinner').count).toBe(1);
+    expect(itemLinkOf(html, 'button').count).toBe(1);
   });
 
   it('puts no jsaction on any element', async () => {

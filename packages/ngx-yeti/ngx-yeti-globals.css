@@ -3,6 +3,17 @@
    with the item spec whose row it closes, and the workarounds for upstream
    bugs: the enter once fix and the Firefox scale workaround below. */
 @layer ngx-yeti {
+  /* A11Y-1a: forced colours drop the fill that is Yeti's only sign of a
+     pressed toggle and a checked toggle label, so they look like their
+     siblings. A border in the highlight colour draws the state, after
+     Material's button toggle. */
+  @media (forced-colors: active) {
+    .button[aria-pressed='true'],
+    .button:has(> input:checked) {
+      border-color: Highlight;
+    }
+  }
+
   /* A11Y-32: forced colours paint every edge of the spinner's ring, and of a
      busy button's ring, in one colour, so the bright edge is lost and the
      turning ring looks still. The ring takes the canvas colour and the

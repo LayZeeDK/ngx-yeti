@@ -15,6 +15,9 @@ const compileErrorCases: readonly {
 }[] = [
   // `max="large"` is not a `YetiWidth` (center.md:274).
   { fixture: 'center-max-large.ts', code: 2322 },
+  // `[disabled]` on an `a[yetiButton]` without `YetiButtonDisabledLink`
+  // (button.md:179).
+  { fixture: 'button-disabled-link-not-imported.ts', code: -998002 },
 ];
 
 /**

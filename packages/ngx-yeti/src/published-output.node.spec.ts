@@ -15,6 +15,7 @@ const builtPackage = path.join(workspaceRoot, 'dist/packages/ngx-yeti');
  * closes. A rule on a Yeti class changes its entry in the same commit.
  */
 const sanctionedSelectors: Readonly<Record<string, readonly string[]>> = {
+  'A11Y-1a': [".button[aria-pressed='true']", '.button:has(> input:checked)'],
   'A11Y-32': ['.spinner', ".button[aria-busy='true']::after"],
   'A11Y-33': [
     '.enter[data-once]:not([data-stagger])',

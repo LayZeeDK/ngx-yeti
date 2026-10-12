@@ -251,6 +251,43 @@ for (const { kind, prefix } of routeKinds) {
       });
     });
 
+    // The spinner route has no link to the button route, so the walk starts
+    // there: the button route, the spinner route, and back.
+    test('keeps the spinner link on navigating to the button route, which has a button and no spinner', async ({
+      page,
+    }) => {
+      await page.goto(`${prefix}button`);
+      await waitForHydration(page);
+      await page.getByRole('link', { name: 'Go to the spinner page' }).click();
+      await expect(page).toHaveURL(/\/spinner$/);
+      await expect(page.locator('#loading-spinner')).toBeVisible();
+      await nextFrames(page);
+
+      const link = page.locator('head link[data-ngx-yeti-styles="spinner"]');
+
+      await expect(link).toHaveCount(1);
+      await link.evaluate((element) => {
+        Reflect.set(element, '__ngxYetiMarked', true);
+      });
+
+      await page.goBack();
+      await expect(page).toHaveURL(/\/button$/);
+      await expect(page.locator('[data-ngx-yeti-item-button]')).not.toHaveCount(
+        0,
+      );
+      await expect(page.locator('[data-ngx-yeti-item-spinner]')).toHaveCount(0);
+      await nextFrames(page);
+
+      await expect(link).toHaveCount(1);
+      expect(
+        await link.evaluate(
+          (element) => Reflect.get(element, '__ngxYetiMarked') === true,
+        ),
+        'the link was kept, not removed and inserted again',
+      ).toBe(true);
+      await expectItemSheetsApplied(page, ['spinner']);
+    });
+
     test('passes axe with JavaScript on', async ({ axeViolations, page }) => {
       await page.goto(`${prefix}spinner`);
       await waitForHydration(page);

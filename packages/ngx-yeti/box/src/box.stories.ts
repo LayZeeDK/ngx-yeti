@@ -374,6 +374,7 @@ export const Paint: Story = {
               )
               .join('')}
             <p data-testid="link-band" yetiPaint="primary">News: dark mode. <a href="#paint">Read the changelog</a>.</p>
+            <div data-testid="button-band" yetiPaint="primary"><button type="button" yetiText="primary">Dismiss the news</button></div>
             ${fillPaints
               .map(
                 (paint) =>
@@ -420,6 +421,26 @@ export const Paint: Story = {
         getComputedStyle(linkBand).color,
       );
       await expectReadableOn(link, linkBand);
+
+      // A button in the band keeps the page's focus ring. Whether the ring
+      // stands out from the band is the ledger's, not asserted here.
+      const buttonBand = byTestId(wrapper, 'button-band');
+      const button = buttonBand.querySelector('button');
+
+      if (button === null) {
+        throw new Error('No button in the band');
+      }
+
+      link.focus();
+      await userEvent.tab();
+
+      await expect(button).toHaveFocus();
+      await expect(button.matches(':focus-visible')).toBe(true);
+
+      const { outlineStyle, outlineWidth } = getComputedStyle(button);
+
+      await expect(outlineStyle).not.toBe('none');
+      await expect(parseFloat(outlineWidth)).toBeGreaterThan(0);
     }
   },
 };

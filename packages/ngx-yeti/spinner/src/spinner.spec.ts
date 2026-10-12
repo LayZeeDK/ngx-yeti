@@ -11,6 +11,7 @@ import { TestBed } from '@angular/core/testing';
 import { itemLinks, nextFrame, removeItemLinks } from '@ngx-yeti/testing';
 import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiSizeControl, YetiVariant } from 'ngx-yeti';
+import { YetiButton } from 'ngx-yeti/button';
 import { YetiSpinner } from './spinner';
 
 @Component({
@@ -184,6 +185,28 @@ describe(YetiSpinner, () => {
     expect(itemLinks('spinner')).toHaveLength(1);
 
     second.destroy();
+    await nextFrame();
+
+    expect(itemLinks('spinner')).toHaveLength(0);
+  });
+
+  it('keeps the spinner link for a button that outlives the spinner', async () => {
+    expect.assertions(3);
+
+    removeItemLinks();
+    const spinner = await setupSpinner();
+    const button = await createDirectiveHost(YetiButton, {
+      tagName: 'button',
+    });
+
+    expect(itemLinks('spinner')).toHaveLength(1);
+
+    spinner.destroy();
+    await nextFrame();
+
+    expect(itemLinks('spinner')).toHaveLength(1);
+
+    button.destroy();
     await nextFrame();
 
     expect(itemLinks('spinner')).toHaveLength(0);
