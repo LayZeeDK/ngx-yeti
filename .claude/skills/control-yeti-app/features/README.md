@@ -38,7 +38,10 @@ the feature file that matches the case.
 - For a fix, run the same recipe on a baseline (the parent commit in a second worktree on its own derived port) and
   report one verdict: verified, not verified, or inconclusive.
 - Name an entry point you could not reach and why; never report it as covered through another path.
-- Manual only: Angular DevTools checks, real screen readers, engines other than this machine's Chromium.
+- Screen readers are automated, not manual: `apps/screen-reader-e2e` runs real NVDA (CI's `nvda` job, and locally
+  on Windows) and real VoiceOver in Safari (CI's `voiceover` job) on Storybook stories (ngx-yeti-testing,
+  "Screen readers"). Firefox and WebKit run in the e2e projects, and real Safari in CI's `safari` job.
+- Manual only: Angular DevTools checks.
 
 ## Feature entry contract
 

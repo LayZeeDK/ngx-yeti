@@ -26,7 +26,8 @@ What an agent can reach in the `ngx-yeti` Storybook and how to drive it with `co
 - A recipe that passed once after a fix runs a second time before it counts.
 - The play function and the axe report are the repeatable proof; a by-hand recipe that keeps proving the same thing is a candidate play function. Suggest it; do not write it uninvited.
 - Name every entry point you could not reach and its missing prerequisite; never report it as covered through another path.
-- Manual only: Angular DevTools checks; screen-reader output (playwright-cli reads the accessibility tree, not speech); real Safari (CI's `safari` job).
+- Screen-reader output is automated, not manual: `apps/screen-reader-e2e` runs real NVDA (CI's `nvda` job, and locally on Windows) and real VoiceOver in Safari (CI's `voiceover` job) on the static build's stories (ngx-yeti-testing, "Screen readers"); playwright-cli reads only the accessibility tree. Real Safari runs in CI's `safari` job.
+- Manual only: Angular DevTools checks.
 
 ## Feature entry contract
 

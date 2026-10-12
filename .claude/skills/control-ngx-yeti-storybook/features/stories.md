@@ -11,7 +11,7 @@ Every item of the package has `<item>.stories.ts` in `packages/ngx-yeti/<item>/s
 
 ## How to get to it (user POV)
 
-- `<url>/index.json`: every id, measured in the static build of this commit: `card--default`, `card--stretched-link`, `card--inputs`, `card--figure`, `card--list`, `card--rtl`, `card--anti-pattern-wrapped-link`, `card--with-lift`, `lift--default`, `lift--keyboard`, `lift--bound`, `lift--without`, `setup--shared-host`. Later items add theirs.
+- `<url>/index.json`: every id the running build has, under `entries`. Read the ids from there (the command below) rather than from a list: each item adds its own.
 - `<url>/iframe.html?id=<story-id>&viewMode=story&embed=true`: the story alone, no play function.
 - `<url>/iframe.html?id=<story-id>&viewMode=story`: the story after its play function.
 - `<url>/?path=/story/<story-id>`: the manager UI with the Accessibility and Interactions panels, for people.

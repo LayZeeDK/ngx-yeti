@@ -43,7 +43,8 @@ Rows one and four ran in the proof (measured); rows two and three are read from 
 (inferred, not run).
 
 The script starts Nx as `<this node> node_modules/nx/dist/bin/nx.js`, the way
-`tools/playwright/browser-projects.mjs` starts the e2e servers, with `NX_DAEMON=false`. Readiness: `GET
+`tools/playwright/browser-projects.mjs` starts the e2e servers, with the Nx daemon on (it inherits the caller's
+environment and sets nothing about the daemon); `down` stops the checkout's daemon. Readiness: `GET
 <url>card` answers 200 and contains `Welcome yeti-app` (the `h1` of `apps/yeti-app/src/app/app.html`), and the
 listening PID is in the started process tree. Time to ready: 16 to 22 s for `serve` development (measured in
 two proof runs); `ssr` runs `yeti-css:yeti-build` and `yeti-app:build:<configuration>` first: 5 s for production SSR when
@@ -68,10 +69,10 @@ reports one line per check:
 | `process-alive`       | the recorded PID is running                                                                                                                                                                                                                                                                                         |
 | `port-owned`          | a PID listening on the port is in the recorded PID's tree                                                                                                                                                                                                                                                           |
 | `build-log` (`serve`) | `server.log` has no `[ERROR]` or `Error:` line                                                                                                                                                                                                                                                                      |
-| `build-fresh` (`ssr`) | `server.log` shows `nx run yeti-app:build:<configuration>` (built or restored from the Nx cache at launch) and no file in `apps/yeti-app/src` or anywhere in `packages/ngx-yeti` (every entry point; directories named `node_modules`, `storybook-static` and `dist` skipped) changed after the recorded start time |
+| `build-fresh` (`ssr`) | `server.log` shows `nx run yeti-app:build:<configuration>` (built or restored from the Nx cache at launch) and no file in `apps/yeti-app`, `packages/ngx-yeti` (every entry point) or `vendor/yeti` (directories named `node_modules`, `storybook-static` and `dist` skipped) changed after the recorded start time |
 | `page-marker`         | `<url>card` answers 200 and `app-root h1` reads `Welcome yeti-app`                                                                                                                                                                                                                                                  |
-| `build`               | always passes; says `development` when `window.ng` exists, else `production`                                                                                                                                                                                                                                        |
-| `hydration`           | development: Angular logs `Angular hydrated ... 0 component(s) were skipped.` and no `NG05xx` message; production: skipped (no summary is logged)                                                                                                                                                                   |
+| `build`               | from the state file: the recorded `configuration`; with `--url`: `development` when `window.ng` exists, `production` when it does not, and fails when the page did not load or the probe threw                                                                                                                      |
+| `hydration`           | development: Angular logs `Angular hydrated ... 0 component(s) were skipped.` and no `NG05xx` message; production: skipped (no summary is logged); unknown build: fails                                                                                                                                             |
 | `console-errors`      | no `console.error` and no page error on first load                                                                                                                                                                                                                                                                  |
 
 With `--url`, `process-alive` and `port-owned` report `skip`; the page checks still run. Exit 0 healthy, 1 not
@@ -125,8 +126,14 @@ node .claude/skills/control-yeti-app/scripts/control.mjs down --json
 ```
 
 Closes the run's playwright-cli sessions (`-s=<session> close` and `-s=<session>-jsoff close`), stops the recorded PID's process tree with
-`taskkill /PID <pid> /T /F`, waits until the port is free and every PID of the tree is gone, removes
-`state.json`, and keeps the evidence directory. It never runs `close-all` or `kill-all`: those reach every
+`taskkill /PID <pid> /T /F`, waits until the port is free and every PID of the tree is gone, stops the checkout's
+Nx daemon (`nx daemon --stop`), removes `state.json`, and keeps the evidence directory.
+
+It runs playwright-cli's own script (`<shim dir>/node_modules/@playwright/cli/playwright-cli.js`) under this Node,
+with the session as an argument, so the name never reaches a shell. `sessions` reports each close: `closed`,
+`not-open`, `absent` (no playwright-cli on `PATH`), `timeout` (no answer in 30 s) or `failed` (a non-zero exit,
+with its output). A `timeout` or `failed` close, or a failed daemon stop (`daemon.stopped: false`), makes `down`
+exit 1 with `teardown incomplete` naming the session and the command that closes it. It never runs `close-all` or `kill-all`: those reach every
 playwright-cli session on the machine, including other agents'.
 
 When the wait ends with a PID of the tree alive or the port still listening, `down` exits 1 with
@@ -135,25 +142,28 @@ and `stateFile`. Run `down` again: it stops a recorded survivor only when its st
 match, and it keeps the file and exits 1 until the port is free and no survivor is left. `up` refuses while the file
 exists.
 
-Test: `node --test .claude/skills/control-yeti-app/scripts/control.test.mjs` launches `--mode=ssr
---configuration=production` on the checkout's port, proves the `build-fresh` scan and the kept state file, and
-ends with a complete `down`. It builds the Fixture app, so nothing else may build in the checkout while it runs.
+Test: `node --test .claude/skills/control-yeti-app/scripts/control.test.mjs` proves the refused flags, launches
+`--mode=ssr --configuration=production` on the checkout's port with the Nx daemon on, proves the `build-fresh` scan,
+the refused planted state file and the kept state file, and ends with a complete `down` that leaves the port free
+and no Nx daemon running. It builds the Fixture app, so nothing else may build in the checkout while it runs.
 
 ## Helpers
 
 `node .claude/skills/control-yeti-app/scripts/control.mjs <command> [flags]`
 
-| Command  | Does                                                                                                                                                                                                                                                                 | Exit codes                                                                                   |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `up`     | refuses when a state file exists, when the port is a main-checkout port in a worktree, or when anything listens on the port (names the owning PID); starts the target; writes `tmp/control-yeti-app/state.json`; writes `<evidenceDir>/js-off.json`; polls readiness | 0 ready, 1 launch exited or not ready (state removed on exit), 2 refused                     |
-| `doctor` | the checks above                                                                                                                                                                                                                                                     | 0, 1, 2                                                                                      |
-| `info`   | prints the state: `flow`, `mode`, `configuration`, `pid`, `start`, `commandLine`, `port`, `url`, `session`, `evidenceDir`, `logFile`                                                                                                                                 | 0, 2 no state file                                                                           |
-| `down`   | stops only a PID whose start time and command line match the state file, then recorded survivors that still match; removes the state file only when the port is free and no recorded PID survives, else keeps it with the survivors                                  | 0 stopped, 1 port or a tree PID survived (state kept), 2 refused (mismatch) or no state file |
+| Command  | Does                                                                                                                                                                                                                                                                 | Exit codes                                                                                                                                                                       |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `up`     | refuses when a state file exists, when the port is a main-checkout port in a worktree, or when anything listens on the port (names the owning PID); starts the target; writes `tmp/control-yeti-app/state.json`; writes `<evidenceDir>/js-off.json`; polls readiness | 0 ready, 1 launch exited or not ready (state removed on exit), 2 refused                                                                                                         |
+| `doctor` | the checks above                                                                                                                                                                                                                                                     | 0, 1, 2                                                                                                                                                                          |
+| `info`   | prints the state: `flow`, `mode`, `configuration`, `pid`, `start`, `commandLine`, `port`, `url`, `session`, `evidenceDir`, `logFile`                                                                                                                                 | 0, 2 no state file                                                                                                                                                               |
+| `down`   | stops only a PID whose start time and command line match the state file, then recorded survivors that still match; removes the state file only when the port is free and no recorded PID survives, else keeps it with the survivors; stops the Nx daemon             | 0 stopped, 1 port or a tree PID survived (state kept), a session close timed out or failed, or the daemon stop failed, 2 refused (mismatch, invalid state file) or no state file |
 
 Flags: `--mode=serve|ssr`, `--configuration=development|production`, `--port=<n>` (up), `--url=<base url>`
 (doctor), `--timeout=<seconds>` (up), `--json` (one JSON object on stdout; otherwise `[OK]`/`[ERROR]`/`[SKIP]`
-lines). Windows only: the process table comes from `pwsh` and `Get-CimInstance Win32_Process`, ports from
-`netstat -ano`.
+lines). Any other flag, a value written after a space (`--mode ssr`) and a bare value flag exit 2 with
+`unknown argument <arg>` before anything runs. Every command refuses (exit 2, nothing run) a state file whose
+`session` is not `[\w-]` only, whose `pid` or a survivor's is not a positive integer, or whose `port` is not 1 to 65535. Windows only: the process table comes from `pwsh` and `Get-CimInstance Win32_Process`, listeners from
+`Get-NetTCPConnection -State Listen` (netstat translates its state column).
 
 ## Gotchas
 
@@ -181,7 +191,8 @@ lines). Windows only: the process table comes from `pwsh` and `Get-CimInstance W
   session (measured). Use only your own session name; never `close-all`.
 - A page answering on 4200 or 4000 may be Lars's own server. From a worktree the script refuses those ports;
   check them on purpose with `doctor --url`.
-- The Fixture app preloads every item stylesheet its e2e cases need (`app.config.ts`), so Chromium logs one
+- The Fixture app preloads the item stylesheets its e2e cases need (`app.config.ts`) and leaves `lift` and `enter`
+  out on purpose, so their routes measure arrival without a preload. Chromium logs one
   `was preloaded using link preload but not used` warning per unused item about 6 s after load (measured on
   `/sub/card`). They are warnings, so `doctor`'s `console-errors` ignores them; do not read them as a failure.
 - A pass here is Chromium on this machine only; Firefox, WebKit and Safari results come from the e2e projects and

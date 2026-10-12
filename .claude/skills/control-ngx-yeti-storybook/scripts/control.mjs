@@ -2,7 +2,7 @@
 // Launch, health-check, describe and stop the ngx-yeti Storybook for agents.
 // Usage: node .claude/skills/control-ngx-yeti-storybook/scripts/control.mjs
 //   <up|doctor|info|down> [--dev] [--url=<origin>] [--json]
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
   closeSync,
@@ -39,11 +39,23 @@ const DERIVED_BASE = 4420;
 const DERIVED_SLOTS = 100;
 
 const args = process.argv.slice(2);
-const command = args.find((arg) => !arg.startsWith('--'));
+const [command, ...extra] = args.filter((arg) => !arg.startsWith('--'));
 const json = args.includes('--json');
 const flowName = args.includes('--dev') ? 'dev' : 'static';
 const urlArg = args.find((arg) => arg.startsWith('--url='))?.slice(6);
 const flow = FLOWS[flowName];
+// Only the flags the skill names, in their written form: a mistyped flag or a
+// value after a space must not fall back to the recorded instance.
+const unknown = [
+  ...args.filter(
+    (arg) =>
+      arg.startsWith('--') &&
+      !['--dev', '--json'].includes(arg) &&
+      !/^--url=./.test(arg),
+  ),
+  ...extra,
+];
+const SESSION_NAME = /^[\w-]+$/;
 
 const isWorktree = existsSync(path.join(ROOT, '.git'))
   ? statSync(path.join(ROOT, '.git')).isFile()
@@ -90,12 +102,116 @@ function finish(code, result) {
   process.exit(code);
 }
 
+// The recorded session, PID and port reach commands, so a state file that
+// holds anything else is refused before any of them runs.
 function readState() {
   if (!existsSync(statePath)) {
     return null;
   }
 
-  return JSON.parse(readFileSync(statePath, 'utf8'));
+  const state = JSON.parse(readFileSync(statePath, 'utf8'));
+
+  if (
+    typeof state.session !== 'string' ||
+    !SESSION_NAME.test(state.session) ||
+    !Number.isInteger(state.pid) ||
+    state.pid <= 0 ||
+    !Number.isInteger(state.port) ||
+    state.port <= 0 ||
+    state.port > 65535
+  ) {
+    finish(2, {
+      message: `refused: ${statePath} records a session outside [\\w-], a PID that is not a positive integer or an invalid port; nothing was run`,
+      statePath,
+    });
+  }
+
+  return state;
+}
+
+// The shim's own script under this Node: the session name never passes
+// through a shell.
+function playwrightCli() {
+  // npm puts the package beside its Windows shim, and in ../lib elsewhere.
+  const modules = IS_WINDOWS ? ['node_modules'] : ['..', 'lib', 'node_modules'];
+
+  for (const dir of (process.env.PATH ?? '').split(path.delimiter)) {
+    const entry = path.join(
+      dir,
+      ...modules,
+      '@playwright',
+      'cli',
+      'playwright-cli.js',
+    );
+
+    if (dir && existsSync(entry)) {
+      return entry;
+    }
+  }
+
+  return null;
+}
+
+function closeSession(name) {
+  const entry = playwrightCli();
+
+  if (entry === null) {
+    return {
+      session: name,
+      outcome: 'absent',
+      detail: 'no playwright-cli on PATH',
+    };
+  }
+
+  const run = spawnSync(process.execPath, [entry, `-s=${name}`, 'close'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    timeout: 30_000,
+    windowsHide: true,
+  });
+  const output = `${run.stdout ?? ''}${run.stderr ?? ''}`.trim();
+
+  if (run.error?.code === 'ETIMEDOUT') {
+    return {
+      session: name,
+      outcome: 'timeout',
+      detail: 'no answer within 30 s',
+    };
+  }
+
+  if (run.error !== undefined || run.status !== 0) {
+    return {
+      session: name,
+      outcome: 'failed',
+      detail: `exit ${String(run.status)}: ${output || String(run.error)}`,
+    };
+  }
+
+  // playwright-cli exits 0 whether or not the session was open.
+  return {
+    session: name,
+    outcome: output.includes('is not open') ? 'not-open' : 'closed',
+    detail: output,
+  };
+}
+
+function stopDaemon() {
+  const run = spawnSync(
+    process.execPath,
+    [
+      path.join(ROOT, 'node_modules', 'nx', 'dist', 'bin', 'nx.js'),
+      'daemon',
+      '--stop',
+    ],
+    { cwd: ROOT, encoding: 'utf8', timeout: 60_000, windowsHide: true },
+  );
+
+  return run.status === 0
+    ? { stopped: true }
+    : {
+        stopped: false,
+        detail: `exit ${String(run.status)}: ${`${run.stdout ?? ''}${run.stderr ?? ''}`.trim() || String(run.error)}`,
+      };
 }
 
 // One snapshot of every process: pid, parent pid, start time, command line.
@@ -268,6 +384,14 @@ async function renderCheck(origin) {
   }
 }
 
+// What the static build reads: the stories, the shared story helpers and Yeti.
+const SOURCE_DIRS = [
+  'packages/ngx-yeti',
+  'packages/ngx-yeti-testing',
+  'vendor/yeti',
+];
+const NOT_SOURCE = ['storybook-static', 'node_modules', 'dist'];
+
 function newestMtime(dir, skip) {
   let newest = 0;
 
@@ -353,7 +477,6 @@ async function up() {
     stdio: ['ignore', log, log],
     env: {
       ...process.env,
-      NX_DAEMON: 'false',
       NX_TUI: 'false',
       NX_NO_CLOUD: 'true',
     },
@@ -487,16 +610,18 @@ async function doctor() {
       'packages/ngx-yeti/storybook-static/index.json',
     );
     const builtAt = existsSync(built) ? statSync(built).mtimeMs : 0;
-    const sourceAt = newestMtime(path.join(ROOT, 'packages/ngx-yeti'), [
-      'storybook-static',
-      'node_modules',
-    ]);
+    const sourceAt = Math.max(
+      ...SOURCE_DIRS.map((dir) =>
+        newestMtime(path.join(ROOT, dir), NOT_SOURCE),
+      ),
+    );
+    const scanned = `${SOURCE_DIRS.join(', ')} (${NOT_SOURCE.join(', ')} skipped)`;
     add(
       'build matches checkout',
       builtAt >= sourceAt,
       builtAt >= sourceAt
-        ? 'storybook-static is newer than every source file'
-        : 'a source file changed after the build; run down and up',
+        ? `storybook-static is newer than every file in ${scanned}`
+        : `a file in ${scanned} changed after the build; run down and up`,
     );
   } else {
     const errors = tail(state.log, 500).filter((line) =>
@@ -570,23 +695,7 @@ async function down() {
     });
   }
 
-  // playwright-cli exits 0 whether or not the session was open, so the
-  // result is read from its output. The session name holds only [a-z0-9-].
-  let sessionClosed = 'playwright-cli not found';
-
-  try {
-    const [file, prefix] = IS_WINDOWS
-      ? ['cmd.exe', ['/d', '/c', 'playwright-cli']]
-      : ['playwright-cli', []];
-    const out = execFileSync(
-      file,
-      [...prefix, `-s=${state.session}`, 'close'],
-      { cwd: ROOT, encoding: 'utf8', stdio: 'pipe', windowsHide: true },
-    );
-    sessionClosed = out.includes('is not open') ? 'was not open' : 'closed';
-  } catch {
-    // playwright-cli is absent; there is no session to close.
-  }
+  const sessionClose = closeSession(state.session);
 
   const tree = [...descendants(table, state.pid)];
 
@@ -628,23 +737,51 @@ async function down() {
       message: 'teardown incomplete',
       remaining,
       portBusy,
+      sessionClose,
       statePath,
     });
   }
 
   rmSync(statePath);
-  finish(0, {
-    message: `stopped pid ${String(state.pid)} and ${String(tree.length - 1)} descendants`,
+  const daemon = stopDaemon();
+  const result = {
     stoppedPids: tree,
     port: state.port,
     portFree: true,
     session: state.session,
-    sessionClosed,
+    sessionClose,
+    daemon,
     evidenceDir: state.evidenceDir,
+  };
+  const closeFailed = ['timeout', 'failed'].includes(sessionClose.outcome);
+
+  if (closeFailed || !daemon.stopped) {
+    finish(1, {
+      message: `teardown incomplete: ${[
+        ...(closeFailed
+          ? [
+              `playwright-cli session ${state.session} ${sessionClose.outcome}; close it with playwright-cli -s=${state.session} close`,
+            ]
+          : []),
+        ...(daemon.stopped ? [] : ['nx daemon --stop failed']),
+      ].join('; ')}`,
+      ...result,
+    });
+  }
+
+  finish(0, {
+    message: `stopped pid ${String(state.pid)} and ${String(tree.length - 1)} descendants`,
+    ...result,
   });
 }
 
 const commands = { up, doctor, info, down };
+
+if (unknown.length > 0) {
+  finish(2, {
+    message: `unknown argument ${unknown[0]}; flags are --dev, --json and --url=<origin>`,
+  });
+}
 
 if (!(command in commands)) {
   finish(2, {

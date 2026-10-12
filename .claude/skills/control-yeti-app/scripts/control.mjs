@@ -16,7 +16,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { createRequire } from 'node:module';
-import { dirname, join, resolve } from 'node:path';
+import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
 
@@ -34,25 +34,39 @@ const readyPath = 'card';
 const hydrationSummary =
   /^Angular hydrated \d+ component\(s\) and \d+ node\(s\), \d+ component\(s\) were skipped\./;
 
+const valueFlags = ['mode', 'configuration', 'port', 'url', 'timeout'];
+const sessionName = /^[\w-]+$/;
+
 const [command, ...rest] = process.argv.slice(2);
 const json = rest.includes('--json');
 const flags = parseFlags(rest);
 
+// Only `--json` and `--<name>=<value>` for the names above: a mistyped name or
+// a value after a space must not fall back to a default.
 function parseFlags(args) {
   const result = {};
 
   for (const arg of args) {
-    const match = /^--([^=]+)(?:=(.*))?$/.exec(arg);
-
-    if (!match) {
-      finish(2, { error: `unknown argument ${arg}` });
+    if (arg === '--json') {
+      continue;
     }
 
-    result[match[1]] = match[2] ?? true;
+    const match = /^--([^=]+)=(.+)$/.exec(arg);
+
+    if (!match || !valueFlags.includes(match[1])) {
+      finish(2, {
+        error: `unknown argument ${arg}; flags are --json and ${valueFlags.map((name) => `--${name}=<value>`).join(', ')}`,
+      });
+    }
+
+    result[match[1]] = match[2];
   }
 
   return result;
 }
+
+const positiveInteger = (value) => Number.isInteger(value) && value > 0;
+const validPort = (value) => positiveInteger(value) && value <= 65535;
 
 function finish(code, result) {
   if (json) {
@@ -145,34 +159,117 @@ function tree(table, pid) {
   return [...pids].filter((member) => table.has(member));
 }
 
+// Get-NetTCPConnection, not netstat: netstat translates its state column.
 function listeners(port) {
-  const run = spawnSync('netstat', ['-ano'], {
-    encoding: 'utf8',
-    windowsHide: true,
-  });
-  const pids = new Set();
+  const run = spawnSync(
+    'pwsh',
+    [
+      '-NoProfile',
+      '-NonInteractive',
+      '-Command',
+      `Get-NetTCPConnection -State Listen -LocalPort ${String(port)} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess; exit 0`,
+    ],
+    { encoding: 'utf8', windowsHide: true },
+  );
 
-  for (const line of run.stdout.split(/\r?\n/)) {
-    const cols = line.trim().split(/\s+/);
-
-    if (
-      cols[0] === 'TCP' &&
-      cols[3] === 'LISTENING' &&
-      cols[1].endsWith(`:${port}`)
-    ) {
-      pids.add(Number(cols[4]));
-    }
+  if (run.status !== 0) {
+    finish(2, { error: `listeners on ${port}: ${run.stderr || run.error}` });
   }
 
-  return [...pids];
+  return [...new Set(run.stdout.split(/\r?\n/).filter(Boolean).map(Number))];
 }
 
+// The recorded session, PIDs and port reach commands, so a state file that
+// holds anything else is refused before any of them runs.
 function readState() {
   if (!existsSync(stateFile)) {
     return null;
   }
 
-  return JSON.parse(readFileSync(stateFile, 'utf8'));
+  const state = JSON.parse(readFileSync(stateFile, 'utf8'));
+  const pids = [state.pid, ...(state.survivors ?? []).map(({ pid }) => pid)];
+
+  if (
+    typeof state.session !== 'string' ||
+    !sessionName.test(state.session) ||
+    !pids.every(positiveInteger) ||
+    !validPort(state.port)
+  ) {
+    finish(2, {
+      error: `refused: ${stateFile} records a session outside [\\w-], a PID that is not a positive integer or an invalid port; nothing was run`,
+      stateFile,
+    });
+  }
+
+  return state;
+}
+
+// The shim's own script under this Node: the session name never passes
+// through a shell.
+function playwrightCli() {
+  for (const dir of (process.env.PATH ?? '').split(delimiter)) {
+    const entry = join(
+      dir,
+      'node_modules',
+      '@playwright',
+      'cli',
+      'playwright-cli.js',
+    );
+
+    if (dir && existsSync(entry)) {
+      return entry;
+    }
+  }
+
+  return null;
+}
+
+function closeSession(entry, session) {
+  if (!entry) {
+    return { session, outcome: 'absent', detail: 'no playwright-cli on PATH' };
+  }
+
+  const run = spawnSync(process.execPath, [entry, `-s=${session}`, 'close'], {
+    cwd: root,
+    encoding: 'utf8',
+    timeout: 30000,
+    windowsHide: true,
+  });
+  const output = `${run.stdout ?? ''}${run.stderr ?? ''}`.trim();
+
+  if (run.error?.code === 'ETIMEDOUT') {
+    return { session, outcome: 'timeout', detail: 'no answer within 30 s' };
+  }
+
+  if (run.error || run.status !== 0) {
+    return {
+      session,
+      outcome: 'failed',
+      detail: `exit ${run.status}: ${output || run.error}`,
+    };
+  }
+
+  // playwright-cli exits 0 whether or not the session was open.
+  return {
+    session,
+    outcome: output.includes('is not open') ? 'not-open' : 'closed',
+    detail: output,
+  };
+}
+
+function stopDaemon() {
+  const run = spawnSync(
+    process.execPath,
+    [requireFromRoot.resolve('nx'), 'daemon', '--stop'],
+    { cwd: root, encoding: 'utf8', timeout: 60000, windowsHide: true },
+  );
+
+  return run.status === 0
+    ? { stopped: true }
+    : {
+        stopped: false,
+        detail: `exit ${run.status}: ${`${run.stdout ?? ''}${run.stderr ?? ''}`.trim() || run.error}`,
+      };
 }
 
 async function fetchPage(url) {
@@ -203,6 +300,15 @@ async function up() {
   }
 
   const existing = readState();
+  const timeoutSeconds = Number(flags.timeout ?? 900);
+
+  if (!(timeoutSeconds > 0)) {
+    finish(2, { error: '--timeout is a number of seconds above 0' });
+  }
+
+  if (flags.port && !validPort(Number(flags.port))) {
+    finish(2, { error: '--port is an integer from 1 to 65535' });
+  }
 
   if (existing) {
     finish(2, {
@@ -255,7 +361,7 @@ async function up() {
   const child = spawn(process.execPath, nxArgs, {
     cwd: root,
     detached: true,
-    env: { ...process.env, PORT: String(port), NX_DAEMON: 'false' },
+    env: { ...process.env, PORT: String(port) },
     stdio: ['ignore', log, log],
     windowsHide: true,
   });
@@ -277,7 +383,7 @@ async function up() {
     logFile,
   };
   writeFileSync(stateFile, `${JSON.stringify(state, null, 2)}\n`);
-  const timeout = Number(flags.timeout ?? 900) * 1000;
+  const timeout = timeoutSeconds * 1000;
 
   while (Date.now() - started < timeout) {
     if (child.exitCode !== null || !processTable().has(child.pid)) {
@@ -323,6 +429,7 @@ function serverLog(state) {
 
 // Directories whose files change without changing the build.
 const notSource = ['node_modules', 'storybook-static', 'dist'];
+const sourceDirs = ['apps/yeti-app', 'packages/ngx-yeti', 'vendor/yeti'];
 
 function newestSource(dir) {
   let newest = 0;
@@ -349,6 +456,7 @@ async function doctor() {
   const state = readState();
   const checks = [];
   const check = (name, status, detail) => checks.push({ name, status, detail });
+  const fromState = !flags.url;
   let url = flags.url;
 
   if (!url && !state) {
@@ -405,17 +513,17 @@ async function doctor() {
         `nx run yeti-app:build:${state.configuration}`,
       );
       const sources = Math.max(
-        newestSource(join(root, 'apps/yeti-app/src')),
-        newestSource(join(root, 'packages/ngx-yeti')),
+        ...sourceDirs.map((dir) => newestSource(join(root, dir))),
       );
       const fresh = built && sources < Date.parse(state.start);
+      const scanned = `${sourceDirs.join(', ')} (${notSource.join(', ')} skipped)`;
       check(
         'build-fresh',
         fresh ? 'pass' : 'fail',
         fresh
-          ? `yeti-app:build:${state.configuration} ran at launch and no file in apps/yeti-app/src or packages/ngx-yeti (${notSource.join(', ')} skipped) changed since`
+          ? `yeti-app:build:${state.configuration} ran at launch and no file in ${scanned} changed since`
           : built
-            ? `a file in apps/yeti-app/src or packages/ngx-yeti (${notSource.join(', ')} skipped) changed after launch; run down and up`
+            ? `a file in ${scanned} changed after launch; run down and up`
             : `no yeti-app:build:${state.configuration} run in ${state.logFile}`,
       );
     }
@@ -460,15 +568,25 @@ async function doctor() {
       ? `${url}${readyPath} answered 200 with "${marker}"`
       : `status ${status}, marker missing`,
   );
-  const build = (await page
-    .evaluate(() => typeof globalThis.ng === 'object')
-    .catch(() => false))
-    ? 'development'
-    : 'production';
+  // A recorded launch knows its build. An instance named by --url is probed,
+  // and a probe that could not run leaves the build unknown, never production.
+  let build = fromState ? state.configuration : null;
+
+  if (!fromState && shown) {
+    const ng = await page
+      .evaluate(() => typeof globalThis.ng === 'object')
+      .catch(() => null);
+    build = ng === null ? null : ng ? 'development' : 'production';
+  }
+
   check(
     'build',
-    'pass',
-    `${build} build (window.ng ${build === 'development' ? 'present' : 'absent'})`,
+    build ? 'pass' : 'fail',
+    build
+      ? fromState
+        ? `${build} build (state file)`
+        : `${build} build (window.ng ${build === 'development' ? 'present' : 'absent'})`
+      : 'the page probe failed; build unknown',
   );
 
   if (build === 'development') {
@@ -489,8 +607,10 @@ async function doctor() {
         ? `${summary}${ng05.length ? ` plus ${ng05.length} NG05xx message(s)` : ''}`
         : 'no hydration summary logged',
     );
-  } else {
+  } else if (build === 'production') {
     check('hydration', 'skip', 'production builds log no hydration summary');
+  } else {
+    check('hydration', 'fail', 'build unknown');
   }
 
   const errors = messages.filter(
@@ -538,6 +658,7 @@ async function down() {
     entry?.Start === recorded.start &&
     entry?.CommandLine === recorded.commandLine;
   let members;
+  let sessions = [];
 
   if (live) {
     if (!same(live, state)) {
@@ -549,17 +670,10 @@ async function down() {
     }
 
     // Never close-all: it reaches every playwright-cli session on the machine.
-    for (const session of [state.session, `${state.session}-jsoff`]) {
-      // One string: the session name is [\w-] only, and shell: true resolves
-      // the playwright-cli shim.
-      spawnSync(`playwright-cli -s=${session} close`, {
-        cwd: root,
-        encoding: 'utf8',
-        shell: true,
-        timeout: 30000,
-        windowsHide: true,
-      });
-    }
+    const entry = playwrightCli();
+    sessions = [state.session, `${state.session}-jsoff`].map((session) =>
+      closeSession(entry, session),
+    );
 
     members = tree(table, state.pid).map((pid) => table.get(pid));
     spawnSync('taskkill', ['/PID', String(state.pid), '/T', '/F'], {
@@ -597,6 +711,7 @@ async function down() {
     }
   }
 
+  const daemon = stopDaemon();
   const result = {
     pid: state.pid,
     stopped: members.map((member) => member.ProcessId),
@@ -604,6 +719,8 @@ async function down() {
     port: state.port,
     portFree,
     session: state.session,
+    sessions,
+    daemon,
     evidenceDir: state.evidenceDir,
     evidenceKept: existsSync(state.evidenceDir),
   };
@@ -632,6 +749,23 @@ async function down() {
   }
 
   rmSync(stateFile, { force: true });
+  const unclosed = sessions.filter(({ outcome }) =>
+    ['timeout', 'failed'].includes(outcome),
+  );
+
+  if (unclosed.length > 0 || !daemon.stopped) {
+    finish(1, {
+      error: `teardown incomplete: ${[
+        ...unclosed.map(
+          ({ session, outcome }) =>
+            `playwright-cli session ${session} ${outcome}; close it with playwright-cli -s=${session} close`,
+        ),
+        ...(daemon.stopped ? [] : ['nx daemon --stop failed']),
+      ].join('; ')}`,
+      ...result,
+    });
+  }
+
   finish(0, result);
 }
 

@@ -3,9 +3,9 @@ id: T047
 title: Harden both control scripts (checked session names, refused unknown flags, reported close failures, full freshness scans) and run them with the Nx daemon on
 wave: 4
 deps: []
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T047
+base: 93ddcb27cd6954aa578dadc89e26b07f89392602
 worktree: null
 task_branch: null
 files:
@@ -84,3 +84,29 @@ Heavy: yes
 ## Log
 
 - 2026-10-12 — created by planner (build repair #3, review round 1 fixes and security finding 1; triage items 10 to 17 for the control skills, item 12's dead-root halves excluded as deferred). Both scripts set `NX_DAEMON` and the Storybook skill has no test file at 1747fe0, so the Verify fails if this task is skipped. No pending task edits these files, so the task has no dependency. The Verify ends by stopping the Nx daemon and keeps its own exit code; run it exactly as written and never set NX_DAEMON.
+- 2026-10-12 — coder (build_T047): implemented. Both scripts: `NX_DAEMON` removed from the launch env (inherited, nothing set); `down` stops the checkout's daemon (`<root>/node_modules/nx/dist/bin/nx.js daemon --stop`, the resolved nx entry rather than npx, as `up` launches Nx) after the tree is gone and reports `daemon.stopped`; `readState()` refuses with exit 2 before anything runs a state whose `session` is not `^[\w-]+$`, whose pid (and yeti-app survivor pids) is not a positive integer, or whose port is not 1-65535; playwright-cli close runs the shim's own `@playwright/cli/playwright-cli.js` under `process.execPath` with the session as an argument (no shell, no `cmd.exe /c`), and each close is reported as `closed`, `not-open`, `absent` (no shim on PATH), `timeout` (30 s) or `failed` (non-zero exit); a timeout/failed close or failed daemon stop makes `down` exit 1 naming the session and the manual close command. Dead-root paths unchanged (yeti-app closes only in the live branch; Storybook's not-running branch untouched). Flags: only `--json` and `--mode|configuration|port|url|timeout=<value>` (yeti-app; plus `--port` range and `--timeout` > 0 checks) and `--dev`, `--json`, `--url=<origin>` (Storybook); anything else, a space-separated value or a second positional exits 2 `unknown argument <arg>`. Freshness: yeti-app `build-fresh` scans `apps/yeti-app`, `packages/ngx-yeti`, `vendor/yeti`; Storybook static scans `packages/ngx-yeti`, `packages/ngx-yeti-testing`, `vendor/yeti` (both skip `node_modules`, `storybook-static`, `dist`). yeti-app doctor `build` comes from `state.configuration`; with `--url` a failed or thrown probe fails `build` and `hydration`. yeti-app `listeners()` and its test helper use `Get-NetTCPConnection -State Listen ...; exit 0` (without `exit 0` pwsh exits 1 when no listener matches; measured, the first measurement run refused `up` on that). Docs: both SKILL.md (daemon stop, refused flags, checked session, close outcomes, Storybook test line), both features/README.md (screen readers automated via `apps/screen-reader-e2e`, `nvda`/`voiceover` jobs, `safari` job; Angular DevTools the only manual check), yeti-app preload gotcha (lift and enter left out on purpose), stories.md (read ids from `<url>/index.json`). Tests: yeti-app test extended (flags, planted `x & echo planted > <file>` session with a live launch, vendor/yeti freshness, build from state, daemon gone after down); new Storybook test (flags, static launch, ngx-yeti-testing freshness, planted session, down outcome/port/daemon). No ledger row needed (no a11y/standards/parity change).
+- 2026-10-12 — coder (build_T047): daemon-on measurement, worktree T047, env NX_DAEMON unset, each cycle in its own heavy-lock hold, daemon process counted by command line `<root>\node_modules\nx\dist\src\daemon\server\start.js`. yeti-app serve:development (port 4736): up 0 (ready 27 s), daemon 1 running, doctor 0 (7/7 pass, hydration summary 0 skipped), down 0 (sessions not-open x2, daemon.stopped true, port free), daemon 0. yeti-app serve-ssr:development: up 0 (10 s), daemon 1, doctor 0 (7/7, build-fresh pass), down 0, daemon 0. Storybook static (4493): up 0 (29.8 s), daemon 1, doctor 0 (6/6), down 0 (not-open, daemon stopped), daemon 0. Storybook dev (4492): up 0 (16.1 s), daemon 1, doctor 0 (6/6), down 0, daemon 0. The daemon starts as a child of the launched nx process, so `down`'s taskkill /T already removes it and `nx daemon --stop` confirms. Sidecar cleanup: `git clean -fdx` itself is refused in this session by the gsd-path guard hook ("git clean -f deletes untracked evidence and retained task worktrees"), so I did not run it; instead, after the four cycles, each path `git clean -ndx` lists (.angular, .nx, dist, node_modules, packages/ngx-yeti/node_modules, packages/ngx-yeti/storybook-static, tmp, vendor/yeti/dist, vendor/yeti/node_modules) was renamed away and back with no error (Windows refuses that while a handle is held): 9/9 OK, no process from the worktree left besides shells. The orchestrator's real sidecar `git clean -fdx` is the remaining proof.
+- 2026-10-12 — coder (build_T047): Verify run exactly as written through the heavy lock: exit 0. npm ci ok; playwright chromium ok; no `NX_DAEMON` in either script; yeti-app test 9/9 pass (193.8 s); Storybook test 6/6 pass (112.1 s); prettier check clean; final `nx daemon --stop` printed "Daemon Server - Stopped". Afterwards: no daemon, no server, no state file, no playwright-cli session opened by this run.
+- 2026-10-12 — orchestrator Verify (isolate gsd-path-task/T047): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```
