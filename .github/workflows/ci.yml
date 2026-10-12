@@ -53,6 +53,10 @@ jobs:
       # GitHub runs the container as root with HOME owned by the image's
       # pwuser, and Firefox refuses to start as root in another user's home.
       HOME: /root
+      # Vitest's default is one page per CPU less one, for each of the three
+      # engines, which leaves the runner no slack for its 15 s test and 60 s
+      # connect timeouts.
+      VITEST_MAX_WORKERS: 2
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -60,7 +64,9 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx nx run-many --output-style=static -t test test-storybook
+      # test and test-storybook each open pages in all three engines, and
+      # together they overload the runner.
+      - run: npx nx run-many --output-style=static -t test test-storybook --parallel=1
 
   e2e:
     runs-on: ubuntu-latest

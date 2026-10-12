@@ -3,9 +3,9 @@ id: T042
 title: Run the ci unit job's tasks one at a time with two Vitest pages per engine
 wave: 4
 deps: []
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T042
+base: 93ddcb27cd6954aa578dadc89e26b07f89392602
 worktree: null
 task_branch: null
 files:
@@ -70,3 +70,27 @@ Heavy: yes
 - 2026-10-12 — created by planner (build repair #2; user rulings "Approve both changes: Faster and narrower" and "Unless you don't think we should land Verify-narrowing"). The evidence in Context is from the spike of 2026-10-12 (sidecar spike-ci-unit at 2e70371). Its files are git-ignored and not in the repository. The spike's `SPIKE_DOCKER_ARGS` passthrough in `run-job.mjs` was spike-only and does not land. GitHub-hosted CI is not measured by this task: a push is a human-only gate (PLAN.md Risks). The Verify ends by stopping the Nx daemon and keeps its own exit code; run it exactly as written and never set NX_DAEMON.
 - 2026-10-12 — coder: implemented. `.github/workflows/ci.yml` job `unit` gains `VITEST_MAX_WORKERS: 2` in `env` and `--parallel=1` on the check step, each with a reason comment. `references/ci-local.md` gives the native equivalent with both settings and replaces the old `--parallel=1` pitfall with the measured cause and effect. `npx prettier --check` passes on both files.
 - 2026-10-12 — coder: Verify run once through the heavy lock, as written except that the five runs sat in a loop that prints each run's wall time. Result: exit 0. Setting checks and `--dry-run` passed. Pass count 5 of 5; wall times 167 s, 108 s, 109 s, 111 s, 114 s. Peak container memory was not captured (no `docker stats` sample was taken during the runs), so the 8 to 9 GiB expectation is unverified here.
+- 2026-10-12 — coder (retry): reapplied attempt 1 product patch unchanged (ci.yml, ci-local.md); diff matches the contract. Ran the Verify exactly as written once through the heavy lock after `wsl --shutdown` (no containers running). Result: exit 0. Setting checks and `--dry-run` passed; pass count 5 of 5. Last run: Nx run duration 1m 44s. Peak container memory not sampled.
+- 2026-10-12 — orchestrator Verify (isolate gsd-path-task/T042): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```
