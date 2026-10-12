@@ -5,7 +5,7 @@ milestone: layouts-and-button
 phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: active
+status: blocked
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -102,3 +102,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-11 — build — build started
 - 2026-10-11 — build — plan repair (T035-T041 before wave 4) approved by the orchestrator acting as owner under the user's instruction of 2026-10-11: 'Continue autonomously (AFK mode). Use at most 3 parallel agents.'; the user approved each repair item earlier; enter once rule placement stays open for the user
 - 2026-10-12 — build — T037 attempt 1 rejected by finish (Verify failed in the isolate: ci unit browser-session connect timeout and lift hover timeout, runner overload measured by the ci-unit spike); Log copied, patch saved (25 product files); retry after the unit-job fix lands
+- 2026-10-12 — build — T040 landed ab65119. T041 paused (Windows session locked, NVDA lane cannot run): Log copied, patch saved (2 files), isolate retired, back to pending. The ci-unit spike (8/8 with ci.yml unit VITEST_MAX_WORKERS=2 and --parallel=1) and the user's rulings 'Approve both changes: Faster and narrower' and 'We can adapt to a local multi-core setup.' need new tasks, and plan owns the task inventory
