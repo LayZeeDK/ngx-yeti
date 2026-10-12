@@ -4,7 +4,7 @@ import {
   type Meta,
   type StoryObj,
 } from '@storybook/angular-vite';
-import { itemNames, itemStylesLoaded, nextFrame } from '@ngx-yeti/testing';
+import { itemNames, itemStyled, nextFrame } from '@ngx-yeti/testing';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
 import { YetiCenter } from 'ngx-yeti/center';
 import { NgxYetiLift } from 'ngx-yeti/lift';
@@ -63,14 +63,16 @@ export const ItemLinks: Story = {
     const expectInnerCentred = async (): Promise<void> => {
       const inner = canvas.getByTestId('inner');
 
-      await itemStylesLoaded('stack');
-      await itemStylesLoaded('center');
-      // Upstream bug O2: computed styles can lag a stylesheet insertion.
-      await waitFor(async () => {
-        await expect(
-          parseFloat(getComputedStyle(inner).marginLeft),
-        ).toBeGreaterThan(0);
-      });
+      await itemStyled('stack', canvas.getByTestId('stack'), 'display', 'flex');
+      await itemStyled(
+        'center',
+        inner,
+        'margin-left',
+        (value) => parseFloat(value) > 0,
+      );
+      await expect(
+        parseFloat(getComputedStyle(inner).marginLeft),
+      ).toBeGreaterThan(0);
 
       const { marginLeft, marginRight } = getComputedStyle(inner);
 

@@ -3,9 +3,9 @@ id: T037
 title: Share the story helpers, wait for applied item styles with a longer poll, and migrate every story
 wave: 4
 deps: [T042]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T037
+base: 8286cc59ae9d892643ea0e2adf221ca5e36e8814
 worktree: null
 task_branch: null
 files:
@@ -142,4 +142,28 @@ Heavy: yes
   [7m[1m[31m NX [39m[22m[27m  [31mCould not find Nx modules at "C:\Users\LarsGyrupBrinkNielse\.gsd-path\projects\20bec08a0fc50cc0\7193083e730a694f\task\T037".[39m
   
   Have you run [1m[37mnpm/yarn install[39m[22m?
+  ```
+- 2026-10-12 — coder (build_T037, retry 3): reapplied attempt 2's verified patch unchanged (25 files); the orchestrator's finish runs the authoritative Verify.
+- 2026-10-12 — orchestrator Verify (isolate gsd-path-task/T037): pass, exit 0; output tail:
+  ```
+  Intrinsic image size: 1600w x 900h. 
+  Recommended intrinsic image size: 500.906w x 281.75h. 
+  Note: Recommended intrinsic image size is calculated assuming a maximum DPR of 2. To improve loading time, resize the image or consider using the "ngSrcset" and "sizes" attributes.
+  14.33.34 [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mNG02960: The NgOptimizedImage directive (activated on an <img> element with the `ngSrc="/.storybook/assets/trail.svg?no-inline"`) has detected that the intrinsic image is significantly larger than necessary. 
+  Rendered image size: 250.469w x 140.875h. 
+  Intrinsic image size: 1600w x 900h. 
+  Recommended intrinsic image size: 500.938w x 281.75h. 
+  Note: Recommended intrinsic image size is calculated assuming a maximum DPR of 2. To improve loading time, resize the image or consider using the "ngSrcset" and "sizes" attributes.
+  14.33.34 [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mNG02960: The NgOptimizedImage directive (activated on an <img> element with the `ngSrc="/.storybook/assets/trail.svg?no-inline"`) has detected that the intrinsic image is significantly larger than necessary. 
+  Rendered image size: 250.453w x 140.875h. 
+  Intrinsic image size: 1600w x 900h. 
+  Recommended intrinsic image size: 500.906w x 281.75h. 
+  Note: Recommended intrinsic image size is calculated assuming a maximum DPR of 2. To improve loading time, resize the image or consider using the "ngSrcset" and "sizes" attributes.
+  14.33.34 [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mNG02952: The NgOptimizedImage directive (activated on an <img> element with the `ngSrc="/.storybook/assets/trail.svg?no-inline"`) has detected that the height of the fill-mode image is zero. This is likely because the containing element does not have the CSS 'position' property set to one of the following: "relative", "fixed", or "absolute". To fix this problem, make sure the container element has the CSS 'position' property defined and the height of the element is not zero.
+  14.33.34 [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mNG02960: The NgOptimizedImage directive (activated on an <img> element with the `ngSrc="/.storybook/assets/trail.svg?no-inline"`) has detected that the intrinsic image is significantly larger than necessary. 
+  Rendered image size: 256w x 144h. 
+  Intrinsic image size: 1600w x 900h. 
+  Recommended intrinsic image size: 512w x 288h. 
+  Note: Recommended intrinsic image size is calculated assuming a maximum DPR of 2. To improve loading time, resize the image or consider using the "ngSrcset" and "sizes" attributes.
+  14.33.37 [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mNG02955: The NgOptimizedImage directive (activated on an <img> element with the `ngSrc="http://127.0.0.1:57871/.storybook/assets/trail.svg?no-inline"`) has detected that this image is the Largest Contentful Paint (LCP) element but was not marked "priority". This image should be marked "priority" in order to prioritize its loading. To fix this, add the "priority" attribute.
   ```

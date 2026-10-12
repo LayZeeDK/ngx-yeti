@@ -1,6 +1,6 @@
 import { NgOptimizedImage } from '@angular/common';
 import { signal, type WritableSignal } from '@angular/core';
-import { itemStylesLoaded } from '@ngx-yeti/testing';
+import { assertWithin, itemStyled, storyStates } from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
@@ -78,53 +78,32 @@ function byTestId(root: HTMLElement, id: string): HTMLElement {
   return element;
 }
 
-async function expectClose(actual: number, expected: number): Promise<void> {
-  await expect(Math.abs(actual - expected)).toBeLessThanOrEqual(1);
-}
-
-/**
- * Waits for the frame's item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2). The file sets `overflow: hidden`.
- */
-async function frameStyled(frame: HTMLElement): Promise<void> {
-  await itemStylesLoaded('frame');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(frame).overflow).toBe('hidden');
-  });
-}
-
 /** The frame's rendered width over height is `ratio`, within one pixel. */
-async function expectRatio(frame: HTMLElement, ratio: string): Promise<void> {
+function assertRatio(frame: HTMLElement, ratio: string): void {
   const { width, height } = frame.getBoundingClientRect();
 
-  await expectClose(height, width / ratioValue(ratio));
+  assertWithin(height, width / ratioValue(ratio));
 }
 
 /** The element's box equals the frame's, within one pixel. */
-async function expectFills(
-  frame: HTMLElement,
-  element: Element,
-): Promise<void> {
+function assertFills(frame: HTMLElement, element: Element): void {
   const outer = frame.getBoundingClientRect();
   const inner = element.getBoundingClientRect();
 
-  await expectClose(inner.left, outer.left);
-  await expectClose(inner.top, outer.top);
-  await expectClose(inner.width, outer.width);
-  await expectClose(inner.height, outer.height);
+  assertWithin(inner.left, outer.left);
+  assertWithin(inner.top, outer.top);
+  assertWithin(inner.width, outer.width);
+  assertWithin(inner.height, outer.height);
 }
 
-/** Resolves when the image has loaded. */
+/** Resolves when the image has loaded and decoded; rejects if it fails. */
 async function imageLoaded(image: Element | null): Promise<void> {
-  await waitFor(async () => {
-    await expect(
-      image instanceof HTMLImageElement &&
-        image.complete &&
-        image.naturalWidth > 0,
-    ).toBe(true);
-  });
+  if (!(image instanceof HTMLImageElement)) {
+    throw new Error('No image');
+  }
+
+  await image.decode();
+  await expect(image.naturalWidth).toBeGreaterThan(0);
 }
 
 /** The package adds no role and no tab stop to the frame or its child. */
@@ -137,17 +116,7 @@ async function expectNoRoleOrTabStop(frame: HTMLElement): Promise<void> {
 }
 
 /** The ratio the ratios story binds, by story id. */
-const ratioStates = new Map<string, WritableSignal<YetiRatio | undefined>>();
-
-function ratioState(id: string): WritableSignal<YetiRatio | undefined> {
-  const state = ratioStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No ratio state for the story ${id}`);
-  }
-
-  return state;
-}
+const ratioStates = storyStates<WritableSignal<YetiRatio | undefined>>('frame');
 
 /** The `console.warn` spy of the optimized-image story, by story id. */
 const warnSpies = new Map<string, ReturnType<typeof spyOn>>();
@@ -195,15 +164,15 @@ export const Default: Story = {
     await expect(frame).not.toHaveAttribute('tabindex');
     await expect(frame).not.toHaveAttribute('role');
 
-    await frameStyled(frame);
+    await itemStyled('frame', frame, 'overflow', 'hidden');
     await imageLoaded(image);
-    await expectRatio(frame, '16/9');
+    assertRatio(frame, '16/9');
 
     if (image === null) {
       throw new Error('The frame holds no image');
     }
 
-    await expectFills(frame, image);
+    assertFills(frame, image);
     await expect(getComputedStyle(image).objectFit).toBe('cover');
   },
 };
@@ -215,7 +184,7 @@ export const Default: Story = {
 export const Ratios: Story = {
   render: (_args, { id }) => {
     const bound = signal<YetiRatio | undefined>('21/9');
-    ratioStates.set(id, bound);
+    ratioStates.track(id, bound);
 
     return {
       props: { bound, portrait, ratios },
@@ -239,13 +208,13 @@ export const Ratios: Story = {
     const unset = byTestId(canvasElement, 'unset');
     const bound = byTestId(canvasElement, 'bound');
 
-    await frameStyled(unset);
+    await itemStyled('frame', unset, 'overflow', 'hidden');
 
     for (const ratio of ratios) {
       const frame = byTestId(canvasElement, `frame-${ratio}`);
 
       await expect(frame).toHaveAttribute('data-ratio', ratio);
-      await expectRatio(frame, ratio);
+      assertRatio(frame, ratio);
 
       const image = frame.querySelector('img');
 
@@ -253,21 +222,21 @@ export const Ratios: Story = {
         throw new Error('The frame holds no image');
       }
 
-      await expectFills(frame, image);
+      assertFills(frame, image);
     }
 
     await expect(unset).not.toHaveAttribute('data-ratio');
-    await expectRatio(unset, defaultRatio());
+    assertRatio(unset, defaultRatio());
 
     await expect(bound).toHaveAttribute('data-ratio', '21/9');
-    await expectRatio(bound, '21/9');
+    assertRatio(bound, '21/9');
 
-    ratioState(id).set(undefined);
+    ratioStates.get(id).set(undefined);
 
     await waitFor(async () => {
       await expect(bound).not.toHaveAttribute('data-ratio');
     });
-    await expectRatio(bound, defaultRatio());
+    assertRatio(bound, defaultRatio());
   },
 };
 
@@ -314,17 +283,20 @@ export const Media: Story = {
       throw new Error('The object frame lost its object');
     }
 
-    await frameStyled(pictureFrame);
+    await itemStyled('frame', pictureFrame, 'overflow', 'hidden');
     await imageLoaded(picture.querySelector('img'));
 
-    await expectFills(pictureFrame, picture);
-    await expectFills(pictureFrame, picture.querySelector('img') ?? picture);
-    await expectFills(videoFrame, video);
-    await expectFills(iframeFrame, iframe);
+    assertFills(pictureFrame, picture);
+    assertFills(pictureFrame, picture.querySelector('img') ?? picture);
+    assertFills(videoFrame, video);
+    assertFills(iframeFrame, iframe);
     // Gecko lays out an `object` at no size until its document loads.
-    await waitFor(async () => {
-      await expectFills(objectFrame, object);
-    });
+    await waitFor(
+      () => {
+        assertFills(objectFrame, object);
+      },
+      { timeout: 5000 },
+    );
     await expect(getComputedStyle(iframe).borderTopWidth).toBe('0px');
     await expect(getComputedStyle(iframe).borderLeftWidth).toBe('0px');
 
@@ -356,21 +328,15 @@ export const Centred: Story = {
       throw new Error('The frame lost its icon');
     }
 
-    await frameStyled(frame);
+    await itemStyled('frame', frame, 'overflow', 'hidden');
 
     const outer = frame.getBoundingClientRect();
     const inner = icon.getBoundingClientRect();
 
-    await expectClose(
-      inner.left + inner.width / 2,
-      outer.left + outer.width / 2,
-    );
-    await expectClose(
-      inner.top + inner.height / 2,
-      outer.top + outer.height / 2,
-    );
-    await expectClose(inner.width, 48);
-    await expectClose(inner.height, 48);
+    assertWithin(inner.left + inner.width / 2, outer.left + outer.width / 2);
+    assertWithin(inner.top + inner.height / 2, outer.top + outer.height / 2);
+    assertWithin(inner.width, 48);
+    assertWithin(inner.height, 48);
     await expectNoRoleOrTabStop(frame);
   },
 };
@@ -407,7 +373,12 @@ export const Bordered: Story = {
       ['tinted', 'tinted-probe'],
     ] as const;
 
-    await frameStyled(byTestId(canvasElement, 'frame'));
+    await itemStyled(
+      'frame',
+      byTestId(canvasElement, 'frame'),
+      'overflow',
+      'hidden',
+    );
 
     for (const [frameId, probeId] of pairs) {
       const frame = byTestId(canvasElement, frameId);
@@ -445,14 +416,14 @@ export const Composed: Story = {
           </div>
           <p>Then the text picks up at the width it left off.</p>
         </article>
-        <div yetiSidebar width="2xs" gap="md">
+        <div data-testid="sidebar" yetiSidebar width="2xs" gap="md">
           <div data-testid="avatar" yetiFrame ratio="1/1">
             <img [ngSrc]="trail" width="1600" height="900" alt="The trail's sun, cropped square" />
           </div>
           <p>The media object: a square picture beside its text, from a sidebar and a frame.</p>
         </div>
         <div yetiBox yetiBorder style="inline-size: 20rem">
-          <div yetiStack gap="sm">
+          <div data-testid="stack" yetiStack gap="sm">
             <div data-testid="thumb" yetiFrame ratio="4/3">
               <img [ngSrc]="trail" width="1600" height="900" alt="A mountain trail at dawn, cropped to four by three" />
             </div>
@@ -466,18 +437,28 @@ export const Composed: Story = {
     const breakout = byTestId(canvasElement, 'breakout');
     const bleeding = byTestId(canvasElement, 'bleeding');
 
-    await frameStyled(bleeding);
-    await itemStylesLoaded('breakout');
-    await itemStylesLoaded('sidebar');
-    await itemStylesLoaded('stack');
+    await itemStyled('frame', bleeding, 'overflow', 'hidden');
+    await itemStyled('breakout', breakout, 'display', 'grid');
+    await itemStyled(
+      'sidebar',
+      byTestId(canvasElement, 'sidebar'),
+      'flex-wrap',
+      'wrap',
+    );
+    await itemStyled(
+      'stack',
+      byTestId(canvasElement, 'stack'),
+      'display',
+      'flex',
+    );
 
     await expect(bleeding).toHaveAttribute('data-bleed', '');
-    await expectRatio(bleeding, '21/9');
-    await expectRatio(byTestId(canvasElement, 'avatar'), '1/1');
-    await expectRatio(byTestId(canvasElement, 'thumb'), '4/3');
+    assertRatio(bleeding, '21/9');
+    assertRatio(byTestId(canvasElement, 'avatar'), '1/1');
+    assertRatio(byTestId(canvasElement, 'thumb'), '4/3');
 
-    await waitFor(async () => {
-      await expectClose(
+    await waitFor(() => {
+      assertWithin(
         bleeding.getBoundingClientRect().width,
         breakout.getBoundingClientRect().width,
       );
@@ -501,8 +482,8 @@ export const WithCaption: Story = {
     const frame = byTestId(canvasElement, 'frame');
     const caption = byTestId(canvasElement, 'caption');
 
-    await frameStyled(frame);
-    await expectRatio(frame, '3/2');
+    await itemStyled('frame', frame, 'overflow', 'hidden');
+    assertRatio(frame, '3/2');
 
     await expect(frame.contains(caption)).toBe(false);
     await expect(caption.parentElement).toBe(byTestId(canvasElement, 'figure'));
@@ -540,7 +521,12 @@ export const OptimizedImage: Story = {
   play: async ({ canvasElement, id }) => {
     const forms = ['fill', 'sized'] as const;
 
-    await frameStyled(byTestId(canvasElement, 'fill'));
+    await itemStyled(
+      'frame',
+      byTestId(canvasElement, 'fill'),
+      'overflow',
+      'hidden',
+    );
 
     for (const form of forms) {
       const frame = byTestId(canvasElement, form);
@@ -552,8 +538,8 @@ export const OptimizedImage: Story = {
         throw new Error('The frame holds no image');
       }
 
-      await expectRatio(frame, '4/3');
-      await expectFills(frame, image);
+      assertRatio(frame, '4/3');
+      assertFills(frame, image);
     }
 
     // Angular's distortion check runs in a load listener.

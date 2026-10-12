@@ -2,7 +2,14 @@ import { NgOptimizedImage } from '@angular/common';
 import { provideLocationMocks } from '@angular/common/testing';
 import { Component, signal, type WritableSignal } from '@angular/core';
 import { RouterLink, RouterOutlet, provideRouter } from '@angular/router';
-import { contrastRatio, itemStylesLoaded, parseColor } from '@ngx-yeti/testing';
+import {
+  contrastRatio,
+  itemStyled,
+  manifestValues,
+  parseColor,
+  storyStates,
+  usedLength,
+} from '@ngx-yeti/testing';
 import {
   applicationConfig,
   moduleMetadata,
@@ -24,15 +31,6 @@ import { YetiCardLink } from './card-link';
 })
 class HillsPage {}
 
-/** The values of one of the card's enum attributes, from Yeti's manifest. */
-function cardValues(name: string): readonly string[] {
-  return (
-    manifest.components.card.attributes.find(
-      (attribute) => attribute.name === name,
-    )?.values ?? []
-  );
-}
-
 interface CardState {
   readonly variant: YetiVariant | undefined;
   readonly threshold: YetiWidth | undefined;
@@ -51,17 +49,7 @@ const unset: CardState = {
  * The inputs each rendered story binds, by story id, so a play function can
  * change them the way a Storybook control does.
  */
-const cardStates = new Map<string, WritableSignal<CardState>>();
-
-function cardState(id: string): WritableSignal<CardState> {
-  const state = cardStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No card state for the story ${id}`);
-  }
-
-  return state;
-}
+const cardStates = storyStates<WritableSignal<CardState>>('card');
 
 const heading = 'Weekend in the hills';
 const summary = 'Six miles, one summit, and a view worth the early start.';
@@ -95,7 +83,7 @@ function trackedDefaultCard(
   id: string,
 ): { props: Record<string, unknown>; template: string } {
   const state = signal<CardState>(unset);
-  cardStates.set(id, state);
+  cardStates.track(id, state);
 
   // Template props are named unlike the inputs, which they would collide
   // with once `component` is set.
@@ -113,31 +101,15 @@ function element(canvas: HTMLElement, selector: string): HTMLElement {
 }
 
 /**
- * Waits for the card's item file to apply. Chromium and WebKit can keep stale
- * computed styles right after a stylesheet is inserted (upstream bug O2).
- */
-async function cardStyled(card: HTMLElement): Promise<void> {
-  await itemStylesLoaded('card');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(card).display).toBe('flex');
-  });
-}
-
-/**
  * The frame width at the `xs` stop: `16rem` of card content plus the card's
- * padding and border, read from a probe styled with the card's tokens, so the
- * width holds for any token value.
+ * padding and border, from the card's tokens, so the width holds for any
+ * token value.
  */
 function xsStop(frame: HTMLElement): number {
-  const probe = document.createElement('div');
-  probe.style.cssText =
-    'box-sizing: content-box; inline-size: 16rem; padding-inline: var(--yeti-card-padding); border-inline: var(--yeti-border-width) solid';
-  frame.append(probe);
-  const { width } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return width;
+  return usedLength(
+    frame,
+    'calc(16rem + 2 * var(--yeti-card-padding) + 2 * var(--yeti-border-width))',
+  );
 }
 
 /** The card's padding box, inside its computed border widths. */
@@ -292,11 +264,11 @@ export const Default: Story = {
     await expect(marked('[role]')).toStrictEqual([]);
     await expect(marked('[tabindex]')).toStrictEqual([footerLink]);
 
-    await cardStyled(card);
+    await itemStyled('card', card, 'display', 'flex');
     await expectReadable(frame, card, [link, canvas.getByText(summary)]);
 
     // The ratio is set for the geometry, after the unset case above.
-    cardState(id).update((state) => ({ ...state, ratio: '4/3' }));
+    cardStates.get(id).update((state) => ({ ...state, ratio: '4/3' }));
     await waitFor(async () => {
       await expect(card).toHaveAttribute('data-ratio', '4/3');
     });
@@ -337,7 +309,7 @@ export const StretchedLink: Story = {
     const link = within(title).getByRole('link', { name: title.textContent });
     const button = canvas.getByRole('button', { name: 'Save' });
 
-    await cardStyled(card);
+    await itemStyled('card', card, 'display', 'flex');
 
     // The accessible name is the heading's text alone.
     await expect(link).toHaveAccessibleName(title.textContent);
@@ -390,9 +362,18 @@ export const Inputs: Story = {
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    variant: { control: 'select', options: cardValues('data-variant') },
-    threshold: { control: 'select', options: cardValues('data-threshold') },
-    ratio: { control: 'select', options: cardValues('data-ratio') },
+    variant: {
+      control: 'select',
+      options: manifestValues(manifest.components.card, 'data-variant'),
+    },
+    threshold: {
+      control: 'select',
+      options: manifestValues(manifest.components.card, 'data-threshold'),
+    },
+    ratio: {
+      control: 'select',
+      options: manifestValues(manifest.components.card, 'data-ratio'),
+    },
     raised: { control: 'boolean' },
   },
   render: (args, { id }) => {
@@ -402,7 +383,7 @@ export const Inputs: Story = {
       ratio: args.ratio,
       raised: args.raised === true,
     });
-    cardStates.set(id, state);
+    cardStates.track(id, state);
 
     return {
       props: { state },
@@ -416,7 +397,7 @@ export const Inputs: Story = {
     };
   },
   play: async ({ canvas, id }) => {
-    const state = cardState(id);
+    const state = cardStates.get(id);
     const card = canvas.getByRole('article');
     const cases: readonly {
       readonly attribute: string;
@@ -433,7 +414,7 @@ export const Inputs: Story = {
       { attribute: 'data-raised', set: { raised: true }, value: '' },
     ];
 
-    await cardStyled(card);
+    await itemStyled('card', card, 'display', 'flex');
     await expectReadable(canvas.getByTestId('frame'), card, [
       within(card).getByRole('link'),
       canvas.getByText(summary),
@@ -495,7 +476,7 @@ export const Figure: Story = {
     const media = element(canvasElement, 'figure > img');
     const caption = element(canvasElement, 'figcaption');
 
-    await cardStyled(card);
+    await itemStyled('card', card, 'display', 'flex');
 
     frame.style.inlineSize = `${String(xsStop(frame) - 4)}px`;
 
@@ -551,7 +532,7 @@ export const Rtl: Story = {
     const title = canvas.getByRole('heading', { level: 3 });
     const media = element(canvasElement, 'article > img');
 
-    await cardStyled(card);
+    await itemStyled('card', card, 'display', 'flex');
 
     frame.style.inlineSize = `${String(2 * xsStop(frame))}px`;
 
@@ -619,8 +600,13 @@ export const WithLift: Story = {
       throw new Error('No card');
     }
 
-    await cardStyled(first);
-    await itemStylesLoaded('lift');
+    await itemStyled('card', first, 'display', 'flex');
+    await itemStyled(
+      'lift',
+      first,
+      'transition-property',
+      (value) => value !== 'all',
+    );
 
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();

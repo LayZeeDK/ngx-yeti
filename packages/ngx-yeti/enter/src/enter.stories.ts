@@ -1,5 +1,10 @@
 import { signal } from '@angular/core';
-import { itemStylesLoaded, nextFrame } from '@ngx-yeti/testing';
+import {
+  elementChildren,
+  itemStyled,
+  itemStylesLoaded,
+  nextFrame,
+} from '@ngx-yeti/testing';
 import {
   applicationConfig,
   moduleMetadata,
@@ -13,17 +18,6 @@ import { NgxYetiEnter } from './enter';
 /** A block that pushes what follows it below the viewport. */
 const spacer =
   '<div data-testid="spacer" style="block-size: 150vh"><p>Scroll down for the section that arrives.</p></div>';
-
-/**
- * Waits for the enter item file to apply. Chromium and WebKit can keep stale
- * computed styles right after a stylesheet is inserted (upstream bug O2).
- */
-async function enterStyled(element: HTMLElement, name: string): Promise<void> {
-  await itemStylesLoaded('enter');
-  await waitFor(async () => {
-    await expect(getComputedStyle(element).animationName).toBe(name);
-  });
-}
 
 /** A computed time such as `0.2s` or `150ms`, in seconds. */
 function seconds(time: string): number {
@@ -82,6 +76,8 @@ async function expectArrivesOnce(
   host: HTMLElement,
   targets: readonly HTMLElement[],
 ): Promise<void> {
+  // A withheld host has the page's own values, no animation and full opacity,
+  // so no computed value tells that the file has applied.
   await itemStylesLoaded('enter');
 
   await expect(host).toHaveAttribute('data-once', '');
@@ -114,11 +110,6 @@ async function expectArrivesOnce(
 
   await expect(host).not.toHaveAttribute('data-once');
   await expect(starts()).toBe(targets.length);
-}
-
-/** The children of `parent` that are elements. */
-function children(parent: HTMLElement): HTMLElement[] {
-  return [...parent.children].filter((child) => child instanceof HTMLElement);
 }
 
 const insertedTemplate = `
@@ -154,7 +145,7 @@ async function expectInsertedArrivals(
   const plain = canvas.getByTestId('plain');
   const once = canvas.getByTestId('inserted-once');
 
-  await enterStyled(plain, 'yeti-enter-fade');
+  await itemStyled('enter', plain, 'animation-name', 'yeti-enter-fade');
   await expectArrivesOnce(once, [once]);
 
   window.scrollTo(0, 0);
@@ -201,7 +192,7 @@ export const Default: Story = {
     await expect(host).not.toHaveAttribute('data-once');
     await expect(host).not.toHaveAttribute('role');
     await expect(host).not.toHaveAttribute('tabindex');
-    await enterStyled(host, 'yeti-enter-fade');
+    await itemStyled('enter', host, 'animation-name', 'yeti-enter-fade');
     await settled(host);
   },
 };
@@ -234,12 +225,10 @@ export const Arrivals: Story = {
       </div>`,
   }),
   play: async ({ canvas, canvasElement }) => {
-    await itemStylesLoaded('enter');
-
     for (const [testId, name] of Object.entries(arrivalNames)) {
       const host = canvas.getByTestId(testId);
 
-      await enterStyled(host, name);
+      await itemStyled('enter', host, 'animation-name', name);
     }
 
     await expect(canvas.getByTestId('slide-end')).toHaveAttribute(
@@ -267,7 +256,7 @@ export const Stagger: Story = {
   }),
   play: async ({ canvas }) => {
     const list = canvas.getByTestId('stagger');
-    const items = children(list);
+    const items = elementChildren(list);
     const [first] = items;
 
     if (first === undefined) {
@@ -276,7 +265,7 @@ export const Stagger: Story = {
 
     await expect(list).toHaveAttribute('data-stagger', '');
     await expect(items).toHaveLength(11);
-    await enterStyled(first, 'yeti-enter-rise');
+    await itemStyled('enter', first, 'animation-name', 'yeti-enter-rise');
     await expect(getComputedStyle(list).animationName).toBe('none');
 
     const delay = tokenTime(list, '--yeti-enter-delay');
@@ -311,7 +300,7 @@ export const View: Story = {
     const figure = canvas.getByTestId('view');
 
     await expect(figure).toHaveAttribute('data-view', '');
-    await enterStyled(figure, 'yeti-enter-scale');
+    await itemStyled('enter', figure, 'animation-name', 'yeti-enter-scale');
 
     if (!CSS.supports('animation-timeline', 'view()')) {
       await settled(figure);
@@ -360,7 +349,7 @@ export const OnceStagger: Story = {
   play: async ({ canvas }) => {
     const list = canvas.getByTestId('once-stagger');
 
-    await expectArrivesOnce(list, children(list));
+    await expectArrivesOnce(list, elementChildren(list));
   },
 };
 

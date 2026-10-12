@@ -1,5 +1,12 @@
 import { signal, type WritableSignal } from '@angular/core';
-import { itemStylesLoaded } from '@ngx-yeti/testing';
+import {
+  assertWithin,
+  elementChildren,
+  itemStyled,
+  manifestValues,
+  storyStates,
+  usedLength,
+} from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
@@ -11,15 +18,6 @@ import { expect, userEvent, waitFor } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import { NgxYetiColumns } from './columns';
 import { YetiColumnsChild } from './columns-child';
-
-/** The values of one of the layout's enum attributes, from Yeti's manifest. */
-function columnsValues(name: string): readonly string[] {
-  return (
-    manifest.components.columns.attributes.find(
-      (attribute) => attribute.name === name,
-    )?.values ?? []
-  );
-}
 
 interface ColumnsState {
   readonly gap: YetiGap | undefined;
@@ -35,49 +33,12 @@ const unset: ColumnsState = {
   columns: undefined,
 };
 
-/**
- * The inputs a story binds, by story id, so its play function can change
- * them the way a Storybook control does.
- */
-const columnsStates = new Map<string, WritableSignal<ColumnsState>>();
+const columnsManifest = manifest.components.columns;
 
-function trackedState(
-  id: string,
-  initial: ColumnsState,
-): WritableSignal<ColumnsState> {
-  const state = signal(initial);
-  columnsStates.set(id, state);
+const columnsStates = storyStates<WritableSignal<ColumnsState>>('columns');
 
-  return state;
-}
-
-function columnsState(id: string): WritableSignal<ColumnsState> {
-  const state = columnsStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No columns state for the story ${id}`);
-  }
-
-  return state;
-}
-
-function children(parent: HTMLElement): HTMLElement[] {
-  return [...parent.children].filter((child) => child instanceof HTMLElement);
-}
-
-/**
- * The used inline size of a CSS length in `root`, read from a probe, so an
- * assertion holds for any token value.
- */
-function inlineLength(root: HTMLElement, length: string): number {
-  const probe = document.createElement('div');
-  probe.style.inlineSize = length;
-  root.append(probe);
-  const { width } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return width;
-}
+/** A box's padding once its file has applied: the page's default is none. */
+const padded = (value: string): boolean => value !== '0px';
 
 /**
  * Sizes the container 2rem wider or narrower than the threshold's width
@@ -88,34 +49,13 @@ function sizeAround(
   threshold: string,
   side: 'wider' | 'narrower',
 ): void {
-  const width = inlineLength(frame, `var(--yeti-width-${threshold})`);
-  const margin = inlineLength(frame, '2rem');
+  const width = usedLength(frame, `var(--yeti-width-${threshold})`);
+  const margin = usedLength(frame, '2rem');
   frame.style.inlineSize = `${String(side === 'wider' ? width + margin : width - margin)}px`;
 }
 
-/**
- * Waits for the columns' item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2).
- */
-async function columnsStyled(columns: HTMLElement): Promise<void> {
-  await itemStylesLoaded('columns');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(columns).flexWrap).toBe('wrap');
-  });
-}
-
-async function expectClose(
-  actual: number,
-  expected: number,
-  tolerance = 1,
-): Promise<void> {
-  await expect(Math.abs(actual - expected)).toBeLessThanOrEqual(tolerance);
-}
-
 /** The children share one row (equal tops) in equal shares. */
-async function expectOneRow(items: readonly HTMLElement[]): Promise<void> {
+function assertOneRow(items: readonly HTMLElement[]): void {
   const [first, ...rest] = items;
 
   if (first === undefined) {
@@ -123,11 +63,11 @@ async function expectOneRow(items: readonly HTMLElement[]): Promise<void> {
   }
 
   for (const item of rest) {
-    await expectClose(
+    assertWithin(
       item.getBoundingClientRect().top,
       first.getBoundingClientRect().top,
     );
-    await expectClose(
+    assertWithin(
       item.getBoundingClientRect().width,
       first.getBoundingClientRect().width,
     );
@@ -136,11 +76,11 @@ async function expectOneRow(items: readonly HTMLElement[]): Promise<void> {
 
 /** Each child starts its own row at the parent's full width. */
 async function expectRows(columns: HTMLElement): Promise<void> {
-  const items = children(columns);
+  const items = elementChildren(columns);
   const width = columns.getBoundingClientRect().width;
 
   for (const [index, item] of items.entries()) {
-    await expectClose(item.getBoundingClientRect().width, width);
+    assertWithin(item.getBoundingClientRect().width, width);
 
     const previous = items[index - 1];
 
@@ -203,11 +143,11 @@ export const Default: Story = {
       ),
     ).toStrictEqual([]);
 
-    await columnsStyled(columns);
-    await itemStylesLoaded('box');
+    await itemStyled('columns', columns, 'flex-wrap', 'wrap');
+    await itemStyled('box', canvas.getByTestId('plan'), 'padding-top', padded);
 
     sizeAround(frame, 'md', 'wider');
-    await expectOneRow(children(columns));
+    assertOneRow(elementChildren(columns));
 
     sizeAround(frame, 'md', 'narrower');
     await expectRows(columns);
@@ -235,15 +175,15 @@ export const Capped: Story = {
 
     await expect(columns).toHaveAttribute('data-columns', '2');
 
-    await columnsStyled(columns);
-    await itemStylesLoaded('box');
+    await itemStyled('columns', columns, 'flex-wrap', 'wrap');
+    await itemStyled('box', first, 'padding-top', padded);
 
     sizeAround(frame, 'sm', 'wider');
-    await expectOneRow([first, second]);
+    assertOneRow([first, second]);
     await expect(third.getBoundingClientRect().top).toBeGreaterThanOrEqual(
       first.getBoundingClientRect().bottom - 0.5,
     );
-    await expectClose(
+    assertWithin(
       third.getBoundingClientRect().width,
       columns.getBoundingClientRect().width,
     );
@@ -270,16 +210,16 @@ export const Span: Story = {
     await expect(article).toHaveAttribute('data-span', '2');
     await expect(article).toHaveAttribute('span', '2');
 
-    await columnsStyled(columns);
+    await itemStyled('columns', columns, 'flex-wrap', 'wrap');
 
     sizeAround(frame, 'sm', 'wider');
-    await expectClose(
+    assertWithin(
       article.getBoundingClientRect().top,
       aside.getBoundingClientRect().top,
     );
     // Both children have a basis of 0, so the row less the gap is split
     // two to one.
-    await expectClose(
+    assertWithin(
       article.getBoundingClientRect().width,
       2 * aside.getBoundingClientRect().width,
     );
@@ -294,18 +234,33 @@ export const Inputs: Story = {
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    gap: { control: 'select', options: columnsValues('data-gap') },
-    align: { control: 'select', options: columnsValues('data-align') },
-    justify: { control: 'select', options: columnsValues('data-justify') },
-    columns: { control: 'select', options: columnsValues('data-columns') },
+    gap: {
+      control: 'select',
+      options: manifestValues(columnsManifest, 'data-gap'),
+    },
+    align: {
+      control: 'select',
+      options: manifestValues(columnsManifest, 'data-align'),
+    },
+    justify: {
+      control: 'select',
+      options: manifestValues(columnsManifest, 'data-justify'),
+    },
+    columns: {
+      control: 'select',
+      options: manifestValues(columnsManifest, 'data-columns'),
+    },
   },
   render: (args, { id }) => {
-    const state = trackedState(id, {
-      gap: args.gap,
-      align: args.align,
-      justify: args.justify,
-      columns: args.columns,
-    });
+    const state = columnsStates.track(
+      id,
+      signal<ColumnsState>({
+        gap: args.gap,
+        align: args.align,
+        justify: args.justify,
+        columns: args.columns,
+      }),
+    );
 
     // Template props are named unlike the inputs, which they would collide
     // with once `component` is set.
@@ -324,7 +279,7 @@ export const Inputs: Story = {
     };
   },
   play: async ({ canvas, id }) => {
-    const state = columnsState(id);
+    const state = columnsStates.get(id);
     const columns = canvas.getByTestId('columns');
     const cases: readonly {
       readonly attribute: string;
@@ -355,7 +310,7 @@ export const Inputs: Story = {
 
     const aligned = canvas.getByTestId('static');
 
-    await columnsStyled(aligned);
+    await itemStyled('columns', aligned, 'flex-wrap', 'wrap');
 
     await expect(aligned).toHaveAttribute('data-align', 'center');
     await expect(aligned).not.toHaveAttribute('align');
@@ -388,7 +343,7 @@ export const Nested: Story = {
     const inner = canvas.getByTestId('inner');
     const third = canvas.getByTestId('third');
 
-    await columnsStyled(outer);
+    await itemStyled('columns', outer, 'flex-wrap', 'wrap');
 
     await expect(getComputedStyle(inner).columnGap).toBe(
       getComputedStyle(third).columnGap,
@@ -405,13 +360,13 @@ export const Rtl: Story = {
   play: async ({ canvas }) => {
     const frame = canvas.getByTestId('frame');
     const columns = canvas.getByTestId('columns');
-    const [first, ...rest] = children(columns);
+    const [first, ...rest] = elementChildren(columns);
 
-    await columnsStyled(columns);
-    await itemStylesLoaded('box');
+    await itemStyled('columns', columns, 'flex-wrap', 'wrap');
+    await itemStyled('box', canvas.getByTestId('plan'), 'padding-top', padded);
 
     sizeAround(frame, 'md', 'wider');
-    await expectOneRow(children(columns));
+    assertOneRow(elementChildren(columns));
 
     if (first === undefined) {
       throw new Error('No columns');

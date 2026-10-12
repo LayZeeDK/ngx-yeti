@@ -1,6 +1,12 @@
 import { NgOptimizedImage } from '@angular/common';
 import { signal, type WritableSignal } from '@angular/core';
-import { itemStylesLoaded } from '@ngx-yeti/testing';
+import {
+  elementChildren,
+  itemStyled,
+  manifestValues,
+  storyStates,
+  usedLength,
+} from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
@@ -12,15 +18,6 @@ import manifest from 'yeti-css/manifest';
 // Kept a URL in the static build too: NgOptimizedImage refuses `data:` URLs.
 import trail from '../../.storybook/assets/trail.svg?no-inline';
 import { YetiMasonry } from './masonry';
-
-/** The values of one of the masonry's enum attributes, from Yeti's manifest. */
-function masonryValues(name: string): readonly string[] {
-  return (
-    manifest.components.masonry.attributes.find(
-      (attribute) => attribute.name === name,
-    )?.values ?? []
-  );
-}
 
 interface MasonryState {
   readonly min: YetiWidthOrNone | undefined;
@@ -38,54 +35,16 @@ const unset: MasonryState = {
  * The inputs the inputs story binds, by story id, so its play function can
  * change them the way a Storybook control does.
  */
-const masonryStates = new Map<string, WritableSignal<MasonryState>>();
+const masonryStates = storyStates<WritableSignal<MasonryState>>('masonry');
 
-function masonryState(id: string): WritableSignal<MasonryState> {
-  const state = masonryStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No masonry state for the story ${id}`);
-  }
-
-  return state;
-}
-
-function children(parent: HTMLElement): HTMLElement[] {
-  return [...parent.children].filter((child) => child instanceof HTMLElement);
-}
-
-/**
- * The used length of a public token in `root`, read from a probe, so an
- * assertion holds for any token value.
- */
-function tokenLength(root: HTMLElement, token: string): number {
-  const probe = document.createElement('div');
-  probe.style.inlineSize = `var(${token})`;
-  root.append(probe);
-  const { width } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return width;
-}
-
-/**
- * Waits for the masonry's item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2). Either path sets a gap between the columns.
- */
-async function masonryStyled(masonry: HTMLElement): Promise<void> {
-  await itemStylesLoaded('masonry');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(masonry).columnGap).not.toBe('normal');
-  });
-}
+/** Either of Yeti's paths sets a gap between the columns. */
+const columnGapSet = (value: string): boolean => value !== 'normal';
 
 /** The left edges of the columns, rounded, in screen order. */
 function columnLefts(masonry: HTMLElement): number[] {
   return [
     ...new Set(
-      children(masonry).map((item) =>
+      elementChildren(masonry).map((item) =>
         Math.round(item.getBoundingClientRect().left),
       ),
     ),
@@ -115,14 +74,14 @@ async function expectPathOrder(
 ): Promise<void> {
   const lefts = columnLefts(masonry);
   const ordered = dir === 'ltr' ? lefts : lefts.toReversed();
-  const columns = children(masonry).map((item) =>
+  const columns = elementChildren(masonry).map((item) =>
     ordered.indexOf(Math.round(item.getBoundingClientRect().left)),
   );
 
   await expect(lefts.length).toBeGreaterThan(1);
 
   if (nativePath()) {
-    const firstRow = children(masonry)
+    const firstRow = elementChildren(masonry)
       .slice(0, lefts.length)
       .map((item) => item.getBoundingClientRect());
 
@@ -222,10 +181,10 @@ export const Fit: Story = {
     const stage = canvas.getByTestId('stage');
     const masonry = canvas.getByTestId('masonry');
 
-    await masonryStyled(masonry);
+    await itemStyled('masonry', masonry, 'column-gap', columnGapSet);
 
-    const min = tokenLength(canvasElement, '--yeti-width-xs');
-    const gap = tokenLength(canvasElement, '--yeti-space-sm');
+    const min = usedLength(canvasElement, 'var(--yeti-width-xs)');
+    const gap = usedLength(canvasElement, 'var(--yeti-space-sm)');
 
     for (const count of [3, 2]) {
       resize(stage, count * min + (count - 1) * gap + 8);
@@ -247,7 +206,7 @@ export const Capped: Story = {
     const masonry = canvas.getByTestId('masonry');
 
     await expect(masonry).toHaveAttribute('data-columns', '2');
-    await masonryStyled(masonry);
+    await itemStyled('masonry', masonry, 'column-gap', columnGapSet);
 
     await expect(columnLefts(masonry)).toHaveLength(2);
   },
@@ -276,12 +235,12 @@ export const Exact: Story = {
     const exact = canvas.getByTestId('exact');
     const loose = canvas.getByTestId('loose');
 
-    await masonryStyled(exact);
+    await itemStyled('masonry', exact, 'column-gap', columnGapSet);
 
     await expect(columnLefts(exact)).toHaveLength(3);
     await expect(columnLefts(loose)).toHaveLength(1);
     await expect(
-      Math.round(children(loose)[0]?.getBoundingClientRect().width ?? 0),
+      Math.round(elementChildren(loose)[0]?.getBoundingClientRect().width ?? 0),
     ).toBe(Math.round(loose.getBoundingClientRect().width));
 
     resize(stage, 500);
@@ -302,13 +261,13 @@ export const Order: Story = {
   play: async ({ canvas, canvasElement }) => {
     const masonry = canvas.getByTestId('masonry');
 
-    await masonryStyled(masonry);
+    await itemStyled('masonry', masonry, 'column-gap', columnGapSet);
     await expectPathOrder(masonry, 'ltr');
 
     if (!nativePath()) {
       // Consecutive items in one column sit one gap apart.
-      const gap = tokenLength(canvasElement, '--yeti-space-sm');
-      const items = children(masonry).map((item) =>
+      const gap = usedLength(canvasElement, 'var(--yeti-space-sm)');
+      const items = elementChildren(masonry).map((item) =>
         item.getBoundingClientRect(),
       );
 
@@ -335,9 +294,18 @@ export const Inputs: Story = {
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    min: { control: 'select', options: masonryValues('data-min') },
-    columns: { control: 'select', options: masonryValues('data-columns') },
-    gap: { control: 'select', options: masonryValues('data-gap') },
+    min: {
+      control: 'select',
+      options: manifestValues(manifest.components.masonry, 'data-min'),
+    },
+    columns: {
+      control: 'select',
+      options: manifestValues(manifest.components.masonry, 'data-columns'),
+    },
+    gap: {
+      control: 'select',
+      options: manifestValues(manifest.components.masonry, 'data-gap'),
+    },
   },
   render: (args, { id }) => {
     const state = signal<MasonryState>({
@@ -345,7 +313,7 @@ export const Inputs: Story = {
       columns: args.columns,
       gap: args.gap,
     });
-    masonryStates.set(id, state);
+    masonryStates.track(id, state);
 
     // Template props are named unlike the inputs, which they would collide
     // with once `component` is set.
@@ -363,7 +331,7 @@ export const Inputs: Story = {
     };
   },
   play: async ({ canvas, id }) => {
-    const state = masonryState(id);
+    const state = masonryStates.get(id);
     const masonry = canvas.getByTestId('masonry');
     const fixed = canvas.getByTestId('static');
     const cases: readonly {
@@ -402,12 +370,14 @@ export const Rtl: Story = {
   play: async ({ canvas }) => {
     const masonry = canvas.getByTestId('masonry');
 
-    await masonryStyled(masonry);
+    await itemStyled('masonry', masonry, 'column-gap', columnGapSet);
 
     const lefts = columnLefts(masonry);
 
     await expect(
-      Math.round(children(masonry)[0]?.getBoundingClientRect().left ?? 0),
+      Math.round(
+        elementChildren(masonry)[0]?.getBoundingClientRect().left ?? 0,
+      ),
     ).toBe(lefts.at(-1));
     await expectPathOrder(masonry, 'rtl');
     await expectTabInSourceOrder(masonry);

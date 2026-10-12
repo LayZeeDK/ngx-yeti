@@ -1,5 +1,12 @@
 import { signal, type WritableSignal } from '@angular/core';
-import { itemNames, itemStylesLoaded, nextFrame } from '@ngx-yeti/testing';
+import {
+  elementChildren,
+  itemNames,
+  itemStyled,
+  manifestValues,
+  nextFrame,
+  storyStates,
+} from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
@@ -11,15 +18,6 @@ import { YetiStack } from 'ngx-yeti/stack';
 import { expect, userEvent, waitFor } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import { YetiCenter } from './center';
-
-/** The values of one of the center's enum attributes, from Yeti's manifest. */
-function centerValues(name: string): readonly string[] {
-  return (
-    manifest.components.center.attributes.find(
-      (attribute) => attribute.name === name,
-    )?.values ?? []
-  );
-}
 
 interface CenterState {
   readonly max: YetiWidth | undefined;
@@ -37,30 +35,7 @@ const unset: CenterState = {
  * The inputs the controls story binds, by story id, so its play function can
  * change them the way a Storybook control does.
  */
-const centerStates = new Map<string, WritableSignal<CenterState>>();
-
-function centerState(id: string): WritableSignal<CenterState> {
-  const state = centerStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No center state for the story ${id}`);
-  }
-
-  return state;
-}
-
-/**
- * Waits for the center's item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2).
- */
-async function centerStyled(center: HTMLElement): Promise<void> {
-  await itemStylesLoaded('center');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(center).boxSizing).toBe('content-box');
-  });
-}
+const centerStates = storyStates<WritableSignal<CenterState>>('center');
 
 /** The center's maximum and its gutter, in px. */
 function column(center: HTMLElement): {
@@ -170,7 +145,7 @@ export const Default: Story = {
     await expect(box).toHaveAttribute('data-surface', 'raised');
     await expect(box).toHaveAttribute('data-border', '');
 
-    await centerStyled(center);
+    await itemStyled('center', center, 'box-sizing', 'content-box');
 
     await expect(getComputedStyle(center).maxInlineSize).toBe(
       getComputedStyle(canvas.getByTestId('probe')).maxInlineSize,
@@ -197,7 +172,7 @@ export const Unset: Story = {
         .toSorted(),
     ).toStrictEqual(['data-ngx-yeti-item-center', 'data-testid']);
 
-    await centerStyled(center);
+    await itemStyled('center', center, 'box-sizing', 'content-box');
 
     await expect(getComputedStyle(center).maxInlineSize).toBe(
       getComputedStyle(canvas.getByTestId('probe')).maxInlineSize,
@@ -225,7 +200,7 @@ export const Intrinsic: Story = {
 
     await expect(center).toHaveAttribute('data-intrinsic', '');
 
-    await centerStyled(center);
+    await itemStyled('center', center, 'box-sizing', 'content-box');
     frame.style.inlineSize = '40rem';
 
     const columnRect = center.getBoundingClientRect();
@@ -281,21 +256,24 @@ export const WithBox: Story = {
     await expect(center).toHaveAttribute('data-ngx-yeti-item-center', '');
     await expect(center).toHaveAttribute('data-ngx-yeti-item-box', '');
 
-    await centerStyled(center);
-    await itemStylesLoaded('box');
-
     const probe = getComputedStyle(canvas.getByTestId('probe'));
+
+    await itemStyled('center', center, 'box-sizing', 'content-box');
+    await itemStyled(
+      'box',
+      center,
+      'padding-block-start',
+      probe.paddingBlockStart,
+    );
 
     // The center's gutter on the inline axis and the box's padding on the
     // block axis both come from the one gap.
-    await waitFor(async () => {
-      const style = getComputedStyle(center);
+    const style = getComputedStyle(center);
 
-      await expect(style.paddingInlineStart).toBe(probe.paddingInlineStart);
-      await expect(style.paddingInlineEnd).toBe(probe.paddingInlineStart);
-      await expect(style.paddingBlockStart).toBe(probe.paddingBlockStart);
-      await expect(style.paddingBlockEnd).toBe(probe.paddingBlockStart);
-    });
+    await expect(style.paddingInlineStart).toBe(probe.paddingInlineStart);
+    await expect(style.paddingInlineEnd).toBe(probe.paddingInlineStart);
+    await expect(style.paddingBlockStart).toBe(probe.paddingBlockStart);
+    await expect(style.paddingBlockEnd).toBe(probe.paddingBlockStart);
   },
 };
 
@@ -363,24 +341,17 @@ export const InStack: Story = {
   play: async ({ canvas }) => {
     const frame = canvas.getByTestId('frame');
     const sections = (): HTMLElement[] =>
-      [...canvas.getByTestId('page').children].filter(
-        (child) => child instanceof HTMLElement,
-      );
+      elementChildren(canvas.getByTestId('page'));
     const stackAndCenter = (): (string | null)[] =>
       itemNames().filter((name) => name === 'stack' || name === 'center');
     const press = (name: string): Promise<void> =>
       userEvent.click(canvas.getByRole('button', { name }));
     /** Both item files have applied to the page and its sections. */
     const styled = async (): Promise<void> => {
-      await itemStylesLoaded('stack');
-      await waitFor(async () => {
-        await expect(getComputedStyle(canvas.getByTestId('page')).display).toBe(
-          'flex',
-        );
-      });
+      await itemStyled('stack', canvas.getByTestId('page'), 'display', 'flex');
 
       for (const section of sections()) {
-        await centerStyled(section);
+        await itemStyled('center', section, 'box-sizing', 'content-box');
       }
     };
 
@@ -416,8 +387,14 @@ export const Controls: Story = {
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    max: { control: 'select', options: centerValues('data-max') },
-    gap: { control: 'select', options: centerValues('data-gap') },
+    max: {
+      control: 'select',
+      options: manifestValues(manifest.components.center, 'data-max'),
+    },
+    gap: {
+      control: 'select',
+      options: manifestValues(manifest.components.center, 'data-gap'),
+    },
     intrinsic: { control: 'boolean' },
   },
   render: (args, { id }) => {
@@ -426,7 +403,7 @@ export const Controls: Story = {
       gap: args.gap,
       intrinsic: args.intrinsic === true,
     });
-    centerStates.set(id, state);
+    centerStates.track(id, state);
 
     // Template props are named unlike the inputs, which they would collide
     // with once `component` is set.
@@ -439,7 +416,7 @@ export const Controls: Story = {
     };
   },
   play: async ({ canvas, id }) => {
-    const state = centerState(id);
+    const state = centerStates.get(id);
     const center = canvas.getByTestId('center');
     const cases: readonly {
       readonly attribute: string;
@@ -489,7 +466,7 @@ export const Themed: Story = {
     await expect(center).not.toHaveAttribute('data-max');
     await expect(center).not.toHaveAttribute('data-gap');
 
-    await centerStyled(center);
+    await itemStyled('center', center, 'box-sizing', 'content-box');
 
     const style = getComputedStyle(center);
 

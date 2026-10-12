@@ -1,4 +1,9 @@
-import { itemStylesLoaded } from '@ngx-yeti/testing';
+import {
+  assertWithin,
+  elementChildren,
+  itemStyled,
+  usedLength,
+} from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
@@ -19,13 +24,9 @@ function byTestId(root: Element, id: string): HTMLElement {
   return element;
 }
 
-function children(parent: HTMLElement): HTMLElement[] {
-  return [...parent.children].filter((child) => child instanceof HTMLElement);
-}
-
 /** The child at `index`, which the story's markup is known to hold. */
 function childAt(parent: HTMLElement, index: number): HTMLElement {
-  const child = children(parent)[index];
+  const child = elementChildren(parent)[index];
 
   if (child === undefined) {
     throw new Error(`No child ${String(index)}`);
@@ -36,48 +37,20 @@ function childAt(parent: HTMLElement, index: number): HTMLElement {
 
 /** The last child, which the story's markup is known to hold. */
 function lastChild(parent: HTMLElement): HTMLElement {
-  return childAt(parent, children(parent).length - 1);
+  return childAt(parent, elementChildren(parent).length - 1);
 }
 
-/**
- * The used length of a public token in `scope`, read from a probe, so an
- * assertion holds for any token value.
- */
-function tokenLength(scope: HTMLElement, token: string): number {
-  const probe = document.createElement('div');
-  probe.style.blockSize = `var(${token})`;
-  scope.append(probe);
-  const { height } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return height;
-}
-
-/**
- * Waits for the cluster's item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2).
- */
-async function clusterStyled(cluster: HTMLElement): Promise<void> {
-  await itemStylesLoaded('cluster');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(cluster).display).toBe('flex');
-  });
-}
+/** A box's padding once its file has applied: the page's default is none. */
+const padded = (value: string): boolean => value !== '0px';
 
 /** Sets the width of the element the story resizes. */
 function resize(stage: HTMLElement, width: string): void {
   stage.style.inlineSize = width;
 }
 
-async function expectClose(actual: number, expected: number): Promise<void> {
-  await expect(Math.abs(actual - expected)).toBeLessThanOrEqual(1);
-}
-
 function rows(cluster: HTMLElement): number {
   return new Set(
-    children(cluster).map((item) =>
+    elementChildren(cluster).map((item) =>
       Math.round(item.getBoundingClientRect().top),
     ),
   ).size;
@@ -135,7 +108,7 @@ export const Default: Story = {
   play: async ({ canvas, canvasElement }) => {
     const stage = byTestId(canvasElement, 'stage');
     const cluster = byTestId(canvasElement, 'cluster');
-    const items = children(cluster);
+    const items = elementChildren(cluster);
 
     await expect(cluster).toHaveAttribute('class', 'cluster');
     await expect(cluster).toHaveAttribute('data-gap', 'sm');
@@ -149,19 +122,19 @@ export const Default: Story = {
     );
     await expect(items).toHaveLength(siteLinks.length);
 
-    await clusterStyled(cluster);
-    await itemStylesLoaded('box');
+    await itemStyled('cluster', cluster, 'display', 'flex');
+    await itemStyled('box', childAt(cluster, 0), 'padding-top', padded);
 
     await expect(getComputedStyle(cluster).containerType).toBe('normal');
 
-    const sm = tokenLength(canvasElement, '--yeti-space-sm');
+    const sm = usedLength(canvasElement, 'var(--yeti-space-sm)', 'block');
 
     try {
       resize(stage, '90rem');
       await waitFor(async () => {
         await expect(rows(cluster)).toBe(1);
       });
-      await expectClose(inlineGapAfter(childAt(cluster, 0)), sm);
+      assertWithin(inlineGapAfter(childAt(cluster, 0)), sm);
 
       resize(stage, '12rem');
       await waitFor(async () => {
@@ -178,7 +151,7 @@ export const Default: Story = {
         throw new Error('The cluster did not wrap');
       }
 
-      await expectClose(
+      assertWithin(
         nextRow.getBoundingClientRect().top -
           first.getBoundingClientRect().bottom,
         sm,
@@ -211,12 +184,12 @@ export const Tags: Story = {
     await expect(within(cluster).getAllByRole('listitem')).toHaveLength(3);
     await expect(cluster).toHaveAttribute('data-gap', 'xs');
 
-    await clusterStyled(cluster);
+    await itemStyled('cluster', cluster, 'display', 'flex');
 
-    const xs = tokenLength(canvasElement, '--yeti-space-xs');
+    const xs = usedLength(canvasElement, 'var(--yeti-space-xs)', 'block');
 
-    await expectClose(inlineGapAfter(childAt(cluster, 0)), xs);
-    await expectClose(inlineGapAfter(childAt(cluster, 1)), xs);
+    assertWithin(inlineGapAfter(childAt(cluster, 0)), xs);
+    assertWithin(inlineGapAfter(childAt(cluster, 1)), xs);
   },
 };
 
@@ -266,17 +239,17 @@ export const Justify: Story = {
     const end = byTestId(canvasElement, 'end');
     const rtl = byTestId(canvasElement, 'rtl');
 
-    await clusterStyled(between);
+    await itemStyled('cluster', between, 'display', 'flex');
 
-    await expectClose(
+    assertWithin(
       childAt(between, 0).getBoundingClientRect().left,
       between.getBoundingClientRect().left,
     );
-    await expectClose(
+    assertWithin(
       lastChild(between).getBoundingClientRect().right,
       between.getBoundingClientRect().right,
     );
-    await expectClose(
+    assertWithin(
       lastChild(end).getBoundingClientRect().right,
       end.getBoundingClientRect().right,
     );
@@ -284,7 +257,7 @@ export const Justify: Story = {
       childAt(end, 0).getBoundingClientRect().left -
         end.getBoundingClientRect().left,
     ).toBeGreaterThan(1);
-    await expectClose(
+    assertWithin(
       childAt(rtl, 0).getBoundingClientRect().right,
       rtl.getBoundingClientRect().right,
     );
@@ -332,16 +305,16 @@ export const Align: Story = {
     const start = byTestId(canvasElement, 'start');
     const end = byTestId(canvasElement, 'end');
 
-    await clusterStyled(start);
+    await itemStyled('cluster', start, 'display', 'flex');
 
-    await expectClose(
+    assertWithin(
       childAt(start, 0).getBoundingClientRect().top,
       childAt(start, 1).getBoundingClientRect().top,
     );
     await expect(childAt(start, 0).getBoundingClientRect().height).toBeLessThan(
       childAt(start, 1).getBoundingClientRect().height,
     );
-    await expectClose(
+    assertWithin(
       childAt(end, 0).getBoundingClientRect().bottom,
       childAt(end, 1).getBoundingClientRect().bottom,
     );
@@ -364,7 +337,7 @@ export const Legend: Story = {
   }),
   play: async ({ canvasElement }) => {
     const legend = byTestId(canvasElement, 'legend');
-    const legendRows = children(legend);
+    const legendRows = elementChildren(legend);
 
     await expect(within(legend).getAllByRole('term')).toHaveLength(3);
     await expect(within(legend).getAllByRole('definition')).toHaveLength(3);
@@ -373,16 +346,13 @@ export const Legend: Story = {
       await expect(row).toHaveAttribute('data-justify', 'between');
     }
 
-    await clusterStyled(childAt(legend, 0));
+    await itemStyled('cluster', childAt(legend, 0), 'display', 'flex');
 
     for (const row of legendRows) {
       const box = row.getBoundingClientRect();
 
-      await expectClose(childAt(row, 0).getBoundingClientRect().left, box.left);
-      await expectClose(
-        childAt(row, 1).getBoundingClientRect().right,
-        box.right,
-      );
+      assertWithin(childAt(row, 0).getBoundingClientRect().left, box.left);
+      assertWithin(childAt(row, 1).getBoundingClientRect().right, box.right);
     }
   },
 };
@@ -405,11 +375,11 @@ export const Threshold: Story = {
   play: async ({ canvasElement }) => {
     const stage = byTestId(canvasElement, 'stage');
     const cluster = byTestId(canvasElement, 'cluster');
-    const items = children(cluster);
+    const items = elementChildren(cluster);
 
     await expect(cluster).toHaveAttribute('data-threshold', 'sm');
 
-    await clusterStyled(cluster);
+    await itemStyled('cluster', cluster, 'display', 'flex');
 
     await expect(getComputedStyle(cluster).containerType).toBe('inline-size');
 
@@ -420,7 +390,7 @@ export const Threshold: Story = {
       });
 
       for (const item of items) {
-        await expectClose(
+        assertWithin(
           item.getBoundingClientRect().width,
           cluster.getBoundingClientRect().width,
         );
@@ -459,11 +429,11 @@ export const ThresholdInRow: Story = {
   play: async ({ canvasElement }) => {
     const inner = byTestId(canvasElement, 'inner');
 
-    await clusterStyled(inner);
+    await itemStyled('cluster', inner, 'display', 'flex');
 
     await expect(inner.getBoundingClientRect().width).toBeGreaterThan(0);
 
-    for (const item of children(inner)) {
+    for (const item of elementChildren(inner)) {
       const { width, height } = item.getBoundingClientRect();
 
       await expect(width).toBeGreaterThan(0);

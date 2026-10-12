@@ -1,11 +1,11 @@
-import { itemStylesLoaded } from '@ngx-yeti/testing';
+import { itemStyled } from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
   type StoryObj,
 } from '@storybook/angular-vite';
 import { YetiStack } from 'ngx-yeti/stack';
-import { expect, userEvent, waitFor } from 'storybook/test';
+import { expect, userEvent } from 'storybook/test';
 import { YetiVisuallyHidden } from './visually-hidden';
 
 type Canvas = Parameters<NonNullable<Story['play']>>[0]['canvas'];
@@ -68,17 +68,6 @@ function hiddenSpan(control: HTMLElement): HTMLElement {
   return span;
 }
 
-/**
- * Waits for the item file to apply. Chromium and WebKit can keep stale
- * computed styles right after a stylesheet is inserted (upstream bug O2).
- */
-async function hiddenStyled(span: HTMLElement): Promise<void> {
-  await itemStylesLoaded('visually-hidden');
-  await waitFor(async () => {
-    await expect(getComputedStyle(span).position).toBe('absolute');
-  });
-}
-
 async function expectHiddenBox(span: HTMLElement): Promise<void> {
   const style = getComputedStyle(span);
   const { width, height } = span.getBoundingClientRect();
@@ -132,7 +121,7 @@ export const ReadMore: Story = {
         'data-ngx-yeti-item-visually-hidden',
         '',
       );
-      await hiddenStyled(span);
+      await itemStyled('visually-hidden', span, 'position', 'absolute');
       await expectHiddenBox(span);
     }
 
@@ -167,7 +156,7 @@ export const IconButton: Story = {
     const button = await namedControl(canvas, 'button', 'Close');
     const span = hiddenSpan(button);
 
-    await hiddenStyled(span);
+    await itemStyled('visually-hidden', span, 'position', 'absolute');
     await expectHiddenBox(span);
   },
 };
@@ -197,7 +186,12 @@ export const CarouselDots: Story = {
     ];
 
     for (const dot of dots) {
-      await hiddenStyled(hiddenSpan(dot));
+      await itemStyled(
+        'visually-hidden',
+        hiddenSpan(dot),
+        'position',
+        'absolute',
+      );
     }
 
     if (document.activeElement instanceof HTMLElement) {

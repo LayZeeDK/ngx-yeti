@@ -1,5 +1,12 @@
 import { signal, type WritableSignal } from '@angular/core';
-import { itemStylesLoaded } from '@ngx-yeti/testing';
+import {
+  assertWithin,
+  elementChildren,
+  itemStyled,
+  manifestValues,
+  storyStates,
+  usedLength,
+} from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
@@ -12,15 +19,6 @@ import { expect, waitFor } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import { YetiCover } from './cover';
 import { YetiCoverChild } from './cover-child';
-
-/** The values of one of the cover's enum attributes, from Yeti's manifest. */
-function coverValues(name: string): readonly string[] {
-  return (
-    manifest.components.cover.attributes.find(
-      (attribute) => attribute.name === name,
-    )?.values ?? []
-  );
-}
 
 interface CoverState {
   readonly gap: YetiGap | undefined;
@@ -38,79 +36,23 @@ const unset: CoverState = {
  * The inputs a story binds, by story id, so its play function can change
  * them the way a Storybook control does.
  */
-const coverStates = new Map<string, WritableSignal<CoverState>>();
-
-function trackedState(
-  id: string,
-  initial: CoverState,
-): WritableSignal<CoverState> {
-  const state = signal(initial);
-  coverStates.set(id, state);
-
-  return state;
-}
-
-function coverState(id: string): WritableSignal<CoverState> {
-  const state = coverStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No cover state for the story ${id}`);
-  }
-
-  return state;
-}
-
-function children(parent: HTMLElement): HTMLElement[] {
-  return [...parent.children].filter((child) => child instanceof HTMLElement);
-}
-
-/**
- * The used block size of a CSS length in `root`, read from a probe, so an
- * assertion holds for any token value.
- */
-function blockLength(root: HTMLElement, length: string): number {
-  const probe = document.createElement('div');
-  probe.style.blockSize = length;
-  root.append(probe);
-  const { height } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return height;
-}
-
-/**
- * Waits for the cover's item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2).
- */
-async function coverStyled(cover: HTMLElement): Promise<void> {
-  await itemStylesLoaded('cover');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(cover).flexDirection).toBe('column');
-  });
-}
-
-async function expectClose(
-  actual: number,
-  expected: number,
-  tolerance = 1,
-): Promise<void> {
-  await expect(Math.abs(actual - expected)).toBeLessThanOrEqual(tolerance);
-}
+const coverStates = storyStates<WritableSignal<CoverState>>('cover');
 
 /**
  * The centred child's vertical midpoint sits halfway between its
  * neighbours' facing edges (Yeti's "centers the data-center child" case).
  */
-async function expectCentredBetween(
+/** A box's padding once its file has applied: the page's default is none. */
+const padded = (value: string): boolean => value !== '0px';
+
+function assertCentredBetween(
   above: HTMLElement,
   centred: HTMLElement,
   below: HTMLElement,
-): Promise<void> {
+): void {
   const box = centred.getBoundingClientRect();
 
-  await expectClose(
+  assertWithin(
     (box.top + box.bottom) / 2,
     (above.getBoundingClientRect().bottom + below.getBoundingClientRect().top) /
       2,
@@ -167,11 +109,11 @@ export const Default: Story = {
       ),
     ).toStrictEqual([]);
 
-    await coverStyled(cover);
-    await itemStylesLoaded('box');
+    await itemStyled('cover', cover, 'flex-direction', 'column');
+    await itemStyled('box', cover, 'padding-top', padded);
 
     await expect(cover.getBoundingClientRect().height).toBeGreaterThanOrEqual(
-      blockLength(canvasElement, 'var(--yeti-cover-height)') - 0.5,
+      usedLength(canvasElement, 'var(--yeti-cover-height)', 'block') - 0.5,
     );
 
     const style = getComputedStyle(cover);
@@ -184,9 +126,9 @@ export const Default: Story = {
       parseFloat(style.borderBottomWidth) -
       parseFloat(style.paddingBottom);
 
-    await expectClose(nav.getBoundingClientRect().top, contentTop);
-    await expectClose(footnote.getBoundingClientRect().bottom, contentBottom);
-    await expectCentredBetween(nav, heading, footnote);
+    assertWithin(nav.getBoundingClientRect().top, contentTop);
+    assertWithin(footnote.getBoundingClientRect().bottom, contentBottom);
+    assertCentredBetween(nav, heading, footnote);
 
     // `.cover > *` zeroes every child's margins; the centred child's block
     // margins are then `auto` and resolve to its share of the free space.
@@ -208,17 +150,21 @@ export const Default: Story = {
       '0px',
       '0px',
     ]);
-    await expectClose(
+    assertWithin(
       parseFloat(centred.marginTop),
       parseFloat(centred.marginBottom),
     );
 
     // The accessibility tree follows the DOM: nothing reorders the children
     // on screen or through ARIA.
-    await expect(children(cover)).toStrictEqual([nav, heading, footnote]);
+    await expect(elementChildren(cover)).toStrictEqual([
+      nav,
+      heading,
+      footnote,
+    ]);
     await expect(style.flexDirection).toBe('column');
     await expect(
-      children(cover).map((child) => getComputedStyle(child).order),
+      elementChildren(cover).map((child) => getComputedStyle(child).order),
     ).toStrictEqual(['0', '0', '0']);
     await expect(
       cover.querySelectorAll('[aria-owns], [aria-flowto]'),
@@ -251,15 +197,24 @@ export const Settings: Story = {
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    gap: { control: 'select', options: coverValues('data-gap') },
-    height: { control: 'select', options: coverValues('data-height') },
+    gap: {
+      control: 'select',
+      options: manifestValues(manifest.components.cover, 'data-gap'),
+    },
+    height: {
+      control: 'select',
+      options: manifestValues(manifest.components.cover, 'data-height'),
+    },
   },
   render: (args, { id }) => {
-    const state = trackedState(id, {
-      ...unset,
-      gap: args.gap,
-      height: args.height,
-    });
+    const state = coverStates.track(
+      id,
+      signal<CoverState>({
+        ...unset,
+        gap: args.gap,
+        height: args.height,
+      }),
+    );
 
     // Template props are named unlike the inputs, which they would collide
     // with once `component` is set.
@@ -274,7 +229,7 @@ export const Settings: Story = {
     };
   },
   play: async ({ canvas, canvasElement, id }) => {
-    const state = coverState(id);
+    const state = coverStates.get(id);
     const cover = canvas.getByTestId('cover');
     const first = canvas.getByTestId('first');
     const second = canvas.getByTestId('second');
@@ -289,7 +244,7 @@ export const Settings: Story = {
       await expect(cover).not.toHaveAttribute('data-gap');
     });
 
-    await coverStyled(cover);
+    await itemStyled('cover', cover, 'flex-direction', 'column');
 
     for (const { height, token } of heightTokens) {
       state.set({ ...unset, height });
@@ -299,10 +254,10 @@ export const Settings: Story = {
           ? expect(cover).not.toHaveAttribute('data-height')
           : expect(cover).toHaveAttribute('data-height', height));
       });
-      await waitFor(async () => {
-        await expectClose(
+      await waitFor(() => {
+        assertWithin(
           cover.getBoundingClientRect().height,
-          blockLength(canvasElement, `var(${token})`),
+          usedLength(canvasElement, `var(${token})`, 'block'),
         );
       });
     }
@@ -325,13 +280,13 @@ export const Settings: Story = {
       await expect(second).toHaveAttribute('data-center', '');
     });
     await expect(first).not.toHaveAttribute('data-center');
-    await waitFor(async () => {
-      await expectClose(
+    await waitFor(() => {
+      assertWithin(
         first.getBoundingClientRect().top,
         cover.getBoundingClientRect().top,
       );
     });
-    await expectCentredBetween(first, second, last);
+    assertCentredBetween(first, second, last);
   },
 };
 
@@ -352,12 +307,12 @@ export const Grows: Story = {
     await expect(cover).toHaveAttribute('data-height', 'sm');
     await expect(cover).toHaveAttribute('height', 'sm');
 
-    await coverStyled(cover);
+    await itemStyled('cover', cover, 'flex-direction', 'column');
 
     const band = cover.getBoundingClientRect();
 
     await expect(band.height).toBeGreaterThan(
-      blockLength(canvasElement, 'var(--yeti-height-sm)') + 1,
+      usedLength(canvasElement, 'var(--yeti-height-sm)', 'block') + 1,
     );
     await expect(band.height).toBeGreaterThanOrEqual(
       tall.getBoundingClientRect().height - 0.5,
@@ -389,15 +344,18 @@ export const HoldingCenter: Story = {
 
     await expect(center).toHaveAttribute('data-center', '');
 
-    await coverStyled(cover);
-    await itemStylesLoaded('center');
+    await itemStyled('cover', cover, 'flex-direction', 'column');
+    await itemStyled(
+      'center',
+      center,
+      'margin-left',
+      (value) => parseFloat(value) > 0,
+    );
 
-    await waitFor(async () => {
-      await expect(
-        parseFloat(getComputedStyle(center).marginLeft),
-      ).toBeGreaterThan(0);
-    });
-    await expectClose(
+    await expect(
+      parseFloat(getComputedStyle(center).marginLeft),
+    ).toBeGreaterThan(0);
+    assertWithin(
       parseFloat(getComputedStyle(center).marginLeft),
       parseFloat(getComputedStyle(center).marginRight),
     );
@@ -426,19 +384,20 @@ export const Themed: Story = {
     const top = canvas.getByTestId('auto-top');
     const bottom = canvas.getByTestId('auto-bottom');
 
-    await coverStyled(fixed);
+    await itemStyled('cover', fixed, 'flex-direction', 'column');
 
-    await expectClose(
+    assertWithin(
       fixed.getBoundingClientRect().height,
-      blockLength(
+      usedLength(
         canvas.getByTestId('fixed-wrapper'),
         'var(--yeti-cover-height)',
+        'block',
       ),
     );
 
     const gap = parseFloat(getComputedStyle(auto).rowGap);
 
-    await expectClose(
+    assertWithin(
       auto.getBoundingClientRect().height,
       top.getBoundingClientRect().height +
         gap +

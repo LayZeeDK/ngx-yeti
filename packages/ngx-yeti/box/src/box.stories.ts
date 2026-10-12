@@ -2,7 +2,7 @@ import { signal } from '@angular/core';
 import {
   contrastRatio,
   itemLinks,
-  itemStylesLoaded,
+  itemStyled,
   nextFrame,
 } from '@ngx-yeti/testing';
 import {
@@ -100,19 +100,9 @@ function textToken(value: YetiPaint): string {
   return value.startsWith('grey') ? `--yeti-${value}` : `--yeti-color-${value}`;
 }
 
-/**
- * Waits for the box's item file to apply to `box`. Chromium and WebKit can
- * keep stale computed styles right after a stylesheet is inserted (upstream
- * bug O2).
- */
-async function boxPadded(box: HTMLElement, probe: HTMLElement): Promise<void> {
-  await itemStylesLoaded('box');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(box).paddingTop).toBe(
-      getComputedStyle(probe).paddingTop,
-    );
-  });
+/** The padding the box's file gives a box, read from a probe of its token. */
+function paddingOf(probe: HTMLElement): string {
+  return getComputedStyle(probe).paddingTop;
 }
 
 async function expectSamePadding(
@@ -202,7 +192,7 @@ export const Default: Story = {
     await expect(box).not.toHaveAttribute('tabindex');
     await expect(box).not.toHaveAttribute('role');
 
-    await boxPadded(box, probe);
+    await itemStyled('box', box, 'padding-top', paddingOf(probe));
     await expectSamePadding(box, probe);
     await expect(getComputedStyle(box).backgroundColor).toBe(
       getComputedStyle(probe).backgroundColor,
@@ -233,7 +223,7 @@ export const Gaps: Story = {
       parseFloat(getComputedStyle(box(id)).paddingTop);
 
     await expect(box('unset')).not.toHaveAttribute('data-gap');
-    await boxPadded(box('unset'), box('md'));
+    await itemStyled('box', box('unset'), 'padding-top', paddingOf(box('md')));
     await expectSamePadding(box('unset'), box('md'));
 
     const inline = getComputedStyle(box('inline'));
@@ -294,7 +284,12 @@ export const Surfaces: Story = {
   }),
   play: async ({ canvasElement }) => {
     for (const wrapper of wrappers(canvasElement)) {
-      await boxPadded(byTestId(wrapper, 'none'), byTestId(wrapper, 'md'));
+      await itemStyled(
+        'box',
+        byTestId(wrapper, 'none'),
+        'padding-top',
+        paddingOf(byTestId(wrapper, 'md')),
+      );
 
       for (const surface of ['base', 'raised', 'sunken']) {
         const box = byTestId(wrapper, surface);
@@ -520,13 +515,11 @@ export const Composed: Story = {
       column.getAttributeNames().filter((name) => name === 'data-gap'),
     ).toHaveLength(1);
 
-    await boxPadded(column, lg);
-    await itemStylesLoaded('center');
-    await waitFor(async () => {
-      await expect(getComputedStyle(column).maxInlineSize).toBe(
-        getComputedStyle(canvas.getByTestId('xl-width')).maxInlineSize,
-      );
-    });
+    const { maxInlineSize } = getComputedStyle(canvas.getByTestId('xl-width'));
+
+    await itemStyled('box', column, 'padding-top', paddingOf(lg));
+    await itemStyled('center', column, 'max-inline-size', maxInlineSize);
+    await expect(getComputedStyle(column).maxInlineSize).toBe(maxInlineSize);
     await expect(getComputedStyle(column).paddingBlockStart).toBe(
       getComputedStyle(lg).paddingBlockStart,
     );

@@ -1,11 +1,16 @@
 import { NgOptimizedImage } from '@angular/common';
 import { signal, type WritableSignal } from '@angular/core';
 import {
+  assertWithin,
   composite,
   contrastRatio,
-  itemStylesLoaded,
+  elementChildren,
+  itemStyled,
+  manifestValues,
   parseColor,
+  storyStates,
   type SrgbColor,
+  usedLength,
 } from '@ngx-yeti/testing';
 import {
   moduleMetadata,
@@ -22,15 +27,6 @@ import { YetiBreakout } from './breakout';
 import { YetiBreakoutChild } from './breakout-child';
 import { YetiBreakoutNote } from './breakout-note';
 
-/** The values of one of the breakout's enum attributes, from Yeti's manifest. */
-function breakoutValues(name: string): readonly string[] {
-  return (
-    manifest.components.breakout.attributes.find(
-      (attribute) => attribute.name === name,
-    )?.values ?? []
-  );
-}
-
 interface BreakoutState {
   readonly max: YetiWidth | undefined;
   readonly gap: YetiGap | undefined;
@@ -43,17 +39,7 @@ const unset: BreakoutState = { max: undefined, gap: undefined, bleed: false };
  * The inputs the settings story binds, by story id, so its play function can
  * change them the way a Storybook control does.
  */
-const breakoutStates = new Map<string, WritableSignal<BreakoutState>>();
-
-function breakoutState(id: string): WritableSignal<BreakoutState> {
-  const state = breakoutStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No breakout state for the story ${id}`);
-  }
-
-  return state;
-}
+const breakoutStates = storyStates<WritableSignal<BreakoutState>>('breakout');
 
 function byTestId(root: Element, id: string): HTMLElement {
   const element = root.querySelector(`[data-testid="${id}"]`);
@@ -63,35 +49,6 @@ function byTestId(root: Element, id: string): HTMLElement {
   }
 
   return element;
-}
-
-/**
- * The used length of a public token where `scope` sits, read from an
- * absolutely positioned probe, so an assertion holds for any token value and
- * the probe takes no grid cell.
- */
-function tokenLength(scope: HTMLElement, token: string): number {
-  const probe = document.createElement('div');
-  probe.style.position = 'absolute';
-  probe.style.blockSize = `var(${token})`;
-  scope.append(probe);
-  const { height } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return height;
-}
-
-/**
- * Waits for the breakout's item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2).
- */
-async function breakoutStyled(breakout: HTMLElement): Promise<void> {
-  await itemStylesLoaded('breakout');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(breakout).display).toBe('grid');
-  });
 }
 
 /**
@@ -123,7 +80,7 @@ function effectiveBackground(element: Element): SrgbColor {
 
 /**
  * A11Y-10c: the exact WCAG ratio of each text on its effective background,
- * unrounded, at least 4.5:1 (ticket 50 decision 8).
+ * unrounded, at least 4.5:1.
  */
 async function expectReadable(texts: readonly HTMLElement[]): Promise<void> {
   for (const text of texts) {
@@ -131,10 +88,6 @@ async function expectReadable(texts: readonly HTMLElement[]): Promise<void> {
       contrastRatio(getComputedStyle(text).color, effectiveBackground(text)),
     ).toBeGreaterThanOrEqual(4.5);
   }
-}
-
-async function expectClose(actual: number, expected: number): Promise<void> {
-  await expect(Math.abs(actual - expected)).toBeLessThanOrEqual(1);
 }
 
 /**
@@ -160,7 +113,7 @@ const longRead = `
 async function expectLongReadReadable(root: HTMLElement): Promise<void> {
   const breakout = byTestId(root, 'breakout');
 
-  await breakoutStyled(breakout);
+  await itemStyled('breakout', breakout, 'display', 'grid');
   await expectReadable([
     byTestId(root, 'heading'),
     byTestId(root, 'paragraph'),
@@ -197,9 +150,7 @@ export const Default: Story = {
     const bleed = byTestId(canvasElement, 'bleed');
     const plain = byTestId(canvasElement, 'plain');
     const note = byTestId(canvasElement, 'note');
-    const children = [...breakout.children].filter(
-      (child) => child instanceof HTMLElement,
-    );
+    const children = elementChildren(breakout);
 
     await expect(breakout).toHaveAttribute('class', 'breakout');
     await expect(breakout).toHaveAttribute('data-ngx-yeti-item-breakout', '');
@@ -219,17 +170,20 @@ export const Default: Story = {
       ),
     ).toStrictEqual([]);
 
-    await breakoutStyled(breakout);
+    await itemStyled('breakout', breakout, 'display', 'grid');
 
     const box = breakout.getBoundingClientRect();
     const column = plain.getBoundingClientRect();
 
     // Unset `max`, so Yeti's own maximum applies; the frame is wide enough
     // that the column reaches it.
-    await expectClose(column.width, tokenLength(breakout, '--yeti-width-md'));
-    await expectClose(column.left - box.left, box.right - column.right);
-    await expectClose(bleed.getBoundingClientRect().width, box.width);
-    await expectClose(bleed.getBoundingClientRect().left, box.left);
+    assertWithin(
+      column.width,
+      usedLength(breakout, 'var(--yeti-width-md)', 'block'),
+    );
+    assertWithin(column.left - box.left, box.right - column.right);
+    assertWithin(bleed.getBoundingClientRect().width, box.width);
+    assertWithin(bleed.getBoundingClientRect().left, box.left);
 
     // Reading order is source order: nothing reorders the children on
     // screen or in the accessibility tree, and each starts below the last.
@@ -267,8 +221,14 @@ export const Settings: StoryObj<
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    max: { control: 'select', options: breakoutValues('data-max') },
-    gap: { control: 'select', options: breakoutValues('data-gap') },
+    max: {
+      control: 'select',
+      options: manifestValues(manifest.components.breakout, 'data-max'),
+    },
+    gap: {
+      control: 'select',
+      options: manifestValues(manifest.components.breakout, 'data-gap'),
+    },
     bleed: { control: 'boolean' },
   },
   render: (args, { id }) => {
@@ -277,7 +237,7 @@ export const Settings: StoryObj<
       gap: args.gap,
       bleed: args.bleed === true,
     });
-    breakoutStates.set(id, state);
+    breakoutStates.track(id, state);
 
     // Template props are named unlike the inputs, which they would collide
     // with once `component` is set.
@@ -292,7 +252,7 @@ export const Settings: StoryObj<
     };
   },
   play: async ({ canvasElement, id }) => {
-    const state = breakoutState(id);
+    const state = breakoutStates.get(id);
     const breakout = byTestId(canvasElement, 'breakout');
     const child = byTestId(canvasElement, 'child');
     const cases: readonly {
@@ -328,12 +288,12 @@ export const Settings: StoryObj<
       });
     }
 
-    await breakoutStyled(breakout);
+    await itemStyled('breakout', breakout, 'display', 'grid');
 
     // A narrow column, so the bleed's move is visible at any width.
     state.set({ ...unset, max: '2xs', bleed: true });
-    await waitFor(async () => {
-      await expectClose(
+    await waitFor(() => {
+      assertWithin(
         child.getBoundingClientRect().width,
         breakout.getBoundingClientRect().width,
       );
@@ -371,11 +331,11 @@ export const Note: Story = {
     const annotated = byTestId(canvasElement, 'annotated');
     const note = byTestId(canvasElement, 'note');
 
-    await breakoutStyled(breakout);
+    await itemStyled('breakout', breakout, 'display', 'grid');
 
     // Wide: in the end gutter, beside the child it follows.
-    await waitFor(async () => {
-      await expectClose(
+    await waitFor(() => {
+      assertWithin(
         note.getBoundingClientRect().left,
         annotated.getBoundingClientRect().right,
       );
@@ -394,14 +354,14 @@ export const Note: Story = {
         annotated.getBoundingClientRect().bottom,
       );
     });
-    await expectClose(
+    assertWithin(
       note.getBoundingClientRect().left,
       annotated.getBoundingClientRect().left,
     );
 
     frame.style.inlineSize = '70rem';
-    await waitFor(async () => {
-      await expectClose(
+    await waitFor(() => {
+      assertWithin(
         note.getBoundingClientRect().left,
         annotated.getBoundingClientRect().right,
       );
@@ -441,19 +401,27 @@ export const HeadingRhythm: Story = {
       }
 
       await expect(breakout).toHaveAttribute('data-gap', 'lg');
-      await breakoutStyled(breakout);
+      await itemStyled('breakout', breakout, 'display', 'grid');
 
-      const spaceBefore = tokenLength(breakout, '--yeti-heading-space-before');
-      const spaceAfter = tokenLength(breakout, '--yeti-heading-space-after');
-      const gap = tokenLength(breakout, '--yeti-space-lg');
+      const spaceBefore = usedLength(
+        breakout,
+        'var(--yeti-heading-space-before)',
+        'block',
+      );
+      const spaceAfter = usedLength(
+        breakout,
+        'var(--yeti-heading-space-after)',
+        'block',
+      );
+      const gap = usedLength(breakout, 'var(--yeti-space-lg)', 'block');
 
       await expect(spaceBefore).not.toBeCloseTo(gap, 0);
-      await expectClose(
+      assertWithin(
         heading.getBoundingClientRect().top -
           before.getBoundingClientRect().bottom,
         spaceBefore,
       );
-      await expectClose(
+      assertWithin(
         after.getBoundingClientRect().top -
           heading.getBoundingClientRect().bottom,
         spaceAfter,
@@ -461,12 +429,17 @@ export const HeadingRhythm: Story = {
     }
 
     await expect(
-      tokenLength(
+      usedLength(
         byTestId(canvasElement, 'wide-rhythm'),
-        '--yeti-heading-space-before',
+        'var(--yeti-heading-space-before)',
+        'block',
       ),
     ).toBeCloseTo(
-      tokenLength(byTestId(canvasElement, 'wide-rhythm'), '--yeti-space-3xl'),
+      usedLength(
+        byTestId(canvasElement, 'wide-rhythm'),
+        'var(--yeti-space-3xl)',
+        'block',
+      ),
       1,
     );
   },

@@ -1,6 +1,14 @@
 import { NgOptimizedImage } from '@angular/common';
 import { signal, type WritableSignal } from '@angular/core';
-import { contrastRatio, itemStylesLoaded } from '@ngx-yeti/testing';
+import {
+  assertWithin,
+  contrastRatio,
+  elementChildren,
+  itemStyled,
+  manifestValues,
+  storyStates,
+  usedLength,
+} from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
@@ -12,15 +20,6 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import trail from '../../.storybook/assets/trail.svg?no-inline';
 import { YetiScroller, type YetiScrollerJustify } from './scroller';
-
-/** The values of one of the scroller's enum attributes, from Yeti's manifest. */
-function scrollerValues(name: string): readonly string[] {
-  return (
-    manifest.components.scroller.attributes.find(
-      (attribute) => attribute.name === name,
-    )?.values ?? []
-  );
-}
 
 interface ScrollerState {
   readonly gap: YetiGap | undefined;
@@ -40,35 +39,11 @@ const unset: ScrollerState = {
  * The inputs a story binds, by story id, so its play function can change
  * them the way a Storybook control does.
  */
-const scrollerStates = new Map<string, WritableSignal<ScrollerState>>();
-
-function trackedState(
-  id: string,
-  initial: ScrollerState,
-): WritableSignal<ScrollerState> {
-  const state = signal(initial);
-  scrollerStates.set(id, state);
-
-  return state;
-}
-
-function scrollerState(id: string): WritableSignal<ScrollerState> {
-  const state = scrollerStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No scroller state for the story ${id}`);
-  }
-
-  return state;
-}
-
-function children(parent: HTMLElement): HTMLElement[] {
-  return [...parent.children].filter((child) => child instanceof HTMLElement);
-}
+const scrollerStates = storyStates<WritableSignal<ScrollerState>>('scroller');
 
 /** The child at `index`, which the story's markup is known to hold. */
 function childAt(parent: HTMLElement, index: number): HTMLElement {
-  const child = children(parent)[index];
+  const child = elementChildren(parent)[index];
 
   if (child === undefined) {
     throw new Error(`No child ${String(index)}`);
@@ -77,36 +52,8 @@ function childAt(parent: HTMLElement, index: number): HTMLElement {
   return child;
 }
 
-/**
- * The used inline size of a CSS length in `root`, read from a probe, so an
- * assertion holds for any token value.
- */
-function inlineLength(root: HTMLElement, length: string): number {
-  const probe = document.createElement('div');
-  probe.style.inlineSize = length;
-  root.append(probe);
-  const { width } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return width;
-}
-
-/**
- * Waits for the scroller's item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2).
- */
-async function scrollerStyled(scroller: HTMLElement): Promise<void> {
-  await itemStylesLoaded('scroller');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(scroller).display).toBe('flex');
-  });
-}
-
-async function expectClose(actual: number, expected: number): Promise<void> {
-  await expect(Math.abs(actual - expected)).toBeLessThanOrEqual(1);
-}
+/** A box's padding once its file has applied: the page's default is none. */
+const padded = (value: string): boolean => value !== '0px';
 
 async function expectOverflowing(scroller: HTMLElement): Promise<void> {
   await expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
@@ -143,7 +90,7 @@ export const Default: Story = {
   render: () => ({ template: defaultScroller('ltr') }),
   play: async ({ canvas, canvasElement }) => {
     const scroller = canvas.getByTestId('scroller');
-    const items = children(scroller);
+    const items = elementChildren(scroller);
 
     await expect(scroller).toHaveAttribute('class', 'scroller');
     await expect(scroller).toHaveAttribute('role', 'region');
@@ -162,11 +109,11 @@ export const Default: Story = {
         .map((heading) => heading.textContent.trim()),
     ).toStrictEqual(items.map((item) => item.textContent.trim()));
 
-    await scrollerStyled(scroller);
-    await itemStylesLoaded('box');
+    await itemStyled('scroller', scroller, 'display', 'flex');
+    await itemStyled('box', childAt(scroller, 0), 'padding-top', padded);
 
-    const width = inlineLength(canvasElement, 'var(--yeti-width-sm)');
-    const gap = inlineLength(canvasElement, 'var(--yeti-space-md)');
+    const width = usedLength(canvasElement, 'var(--yeti-width-sm)');
+    const gap = usedLength(canvasElement, 'var(--yeti-space-md)');
     const tops = new Set(items.map((item) => item.offsetTop));
 
     await expectOverflowing(scroller);
@@ -175,7 +122,7 @@ export const Default: Story = {
     for (const item of items) {
       const style = getComputedStyle(item);
 
-      await expectClose(item.getBoundingClientRect().width, width);
+      assertWithin(item.getBoundingClientRect().width, width);
 
       for (const margin of [
         style.marginTop,
@@ -187,7 +134,7 @@ export const Default: Story = {
       }
     }
 
-    await expectClose(
+    assertWithin(
       childAt(scroller, 1).getBoundingClientRect().left -
         childAt(scroller, 0).getBoundingClientRect().right,
       gap,
@@ -223,7 +170,7 @@ export const Keyboard: Story = {
     const scroller = canvas.getByTestId('scroller');
     const button = canvas.getByRole('button', { name: 'Before the strip' });
 
-    await scrollerStyled(scroller);
+    await itemStyled('scroller', scroller, 'display', 'flex');
     await expectOverflowing(scroller);
 
     button.focus();
@@ -261,18 +208,30 @@ export const Settings: Story = {
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    gap: { control: 'select', options: scrollerValues('data-gap') },
-    width: { control: 'select', options: scrollerValues('data-width') },
+    gap: {
+      control: 'select',
+      options: manifestValues(manifest.components.scroller, 'data-gap'),
+    },
+    width: {
+      control: 'select',
+      options: manifestValues(manifest.components.scroller, 'data-width'),
+    },
     snap: { control: 'boolean' },
-    justify: { control: 'select', options: scrollerValues('data-justify') },
+    justify: {
+      control: 'select',
+      options: manifestValues(manifest.components.scroller, 'data-justify'),
+    },
   },
   render: (args, { id }) => {
-    const state = trackedState(id, {
-      gap: args.gap,
-      width: args.width,
-      snap: args.snap === true,
-      justify: args.justify,
-    });
+    const state = scrollerStates.track(
+      id,
+      signal<ScrollerState>({
+        gap: args.gap,
+        width: args.width,
+        snap: args.snap === true,
+        justify: args.justify,
+      }),
+    );
 
     // Template props are named unlike the inputs, which they would collide
     // with once `component` is set.
@@ -291,7 +250,7 @@ export const Settings: Story = {
     };
   },
   play: async ({ canvas, id }) => {
-    const state = scrollerState(id);
+    const state = scrollerStates.get(id);
     const scroller = canvas.getByTestId('scroller');
     const first = childAt(scroller, 0);
     const bound: readonly [Partial<ScrollerState>, string, string][] = [
@@ -312,7 +271,7 @@ export const Settings: Story = {
       });
     }
 
-    await scrollerStyled(scroller);
+    await itemStyled('scroller', scroller, 'display', 'flex');
 
     await expect(getComputedStyle(scroller).scrollSnapType).toBe('none');
 
@@ -374,12 +333,12 @@ export const Media: Story = {
       canvas.getByRole('region', { name: 'Photos from the ridge' }),
     ).toBe(scroller);
 
-    await scrollerStyled(scroller);
+    await itemStyled('scroller', scroller, 'display', 'flex');
 
-    await expectClose(image.getBoundingClientRect().width, 900);
+    assertWithin(image.getBoundingClientRect().width, 900);
     await expectOverflowing(scroller);
     await expect(caption.getBoundingClientRect().width).toBeLessThanOrEqual(
-      inlineLength(canvasElement, 'var(--yeti-measure)') + 1,
+      usedLength(canvasElement, 'var(--yeti-measure)') + 1,
     );
   },
 };
@@ -393,17 +352,17 @@ export const Rtl: Story = {
   play: async ({ canvas }) => {
     const scroller = canvas.getByTestId('scroller');
 
-    await scrollerStyled(scroller);
+    await itemStyled('scroller', scroller, 'display', 'flex');
     await expectOverflowing(scroller);
 
     await expect(scroller.scrollLeft).toBe(0);
 
-    const rights = children(scroller).map(
+    const rights = elementChildren(scroller).map(
       (item) => item.getBoundingClientRect().right,
     );
 
     await expect(rights).toStrictEqual(rights.toSorted((a, b) => b - a));
-    await expectClose(
+    assertWithin(
       childAt(scroller, 0).getBoundingClientRect().right,
       scroller.getBoundingClientRect().right,
     );

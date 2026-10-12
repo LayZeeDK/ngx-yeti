@@ -82,6 +82,19 @@ The gate runs axe on that story like any other, so a dark-scheme story is how a 
 - Media emulation (`prefers-reduced-motion`, `forced-colors`, print) belongs to layer 4 (building-blocks 1.12).
 - Routing stories use `provideRouter` with `provideLocationMocks()` so the Storybook iframe's URL does not change.
 
+## Story helpers
+
+`@ngx-yeti/testing` exports the helpers stories share, beside `itemStylesLoaded`. A story declares no copy of them.
+
+- `itemStyled(item, element, property, expected, options?)` resolves once the item's file has loaded and `element`'s computed `property` equals `expected` or satisfies it (a predicate). It checks every frame and rejects after 5 s (`options.timeout`), naming the last value read.
+- `usedLength(root, length, axis?)` is the used px size of a CSS length, such as `var(--yeti-space-sm)`, from a probe in `root`, on the inline axis unless `'block'`.
+- `elementChildren(parent)` is the element children of `parent`.
+- `assertWithin(actual, expected, tolerance?)` throws unless the numbers are within `tolerance` (1). It throws, so inside `waitFor` it retries.
+- `manifestValues(component, attribute)` is the values of a manifest component's attribute, for `argTypes` options.
+- `storyStates<T>(item)` keeps one state per story id: `track(id, signal(...))` in `render`, `get(id)` in `play`.
+
+A story waits through `itemStyled` before it reads geometry or colour that depends on an item's file, never on `itemStylesLoaded` alone: a loaded file is not an applied one (upstream bug O2), and the helper's poll outlasts Storybook's one-second `waitFor`. Wait on a property the item's file sets and the page's defaults do not, such as a box's `padding-top` with `(value) => value !== '0px'`. A `waitFor` whose condition depends on a stylesheet or another resource arriving becomes `itemStyled` or an explicit wait for that load (`image.decode()`). Never raise a global timeout or add a fixed sleep.
+
 ## Commands
 
 | Command                                  | What it runs                                                                                        |

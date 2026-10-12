@@ -1,5 +1,5 @@
 import { signal } from '@angular/core';
-import { itemStylesLoaded } from '@ngx-yeti/testing';
+import { itemStyled } from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
@@ -130,7 +130,12 @@ export const Keyboard: Story = {
     const link = canvas.getByRole('link', { name: 'Hover me' });
     const card = cardOf(link);
 
-    await itemStylesLoaded('lift');
+    await itemStyled(
+      'lift',
+      card,
+      'transition-property',
+      (value) => value !== 'all',
+    );
 
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();

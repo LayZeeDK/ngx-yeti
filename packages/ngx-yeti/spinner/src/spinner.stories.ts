@@ -2,8 +2,10 @@ import { signal, type WritableSignal } from '@angular/core';
 import {
   composite,
   contrastRatio,
-  itemStylesLoaded,
+  itemStyled,
+  manifestValues,
   parseColor,
+  storyStates,
   type SrgbColor,
 } from '@ngx-yeti/testing';
 import {
@@ -16,15 +18,6 @@ import { NgxYetiPaint } from 'ngx-yeti/box';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import { YetiSpinner } from './spinner';
-
-/** The values of one of the spinner's enum attributes, from Yeti's manifest. */
-function spinnerValues(name: string): readonly string[] {
-  return (
-    manifest.components.spinner.attributes.find(
-      (attribute) => attribute.name === name,
-    )?.values ?? []
-  );
-}
 
 const schemes = ['light', 'dark'] as const;
 
@@ -55,19 +48,6 @@ function lineOf(ring: HTMLElement): HTMLElement {
   }
 
   return line;
-}
-
-/**
- * Waits for the spinner's item file to apply to `ring`. Chromium and WebKit
- * can keep stale computed styles right after a stylesheet is inserted
- * (upstream bug O2).
- */
-async function spinnerStyled(ring: HTMLElement): Promise<void> {
-  await itemStylesLoaded('spinner');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(ring).display).toBe('inline-block');
-  });
 }
 
 /**
@@ -168,17 +148,7 @@ const unset: SpinnerState = { variant: undefined, size: undefined };
  * The inputs the inputs story binds, by story id, so its play function can
  * change them the way a Storybook control does.
  */
-const spinnerStates = new Map<string, WritableSignal<SpinnerState>>();
-
-function spinnerState(id: string): WritableSignal<SpinnerState> {
-  const state = spinnerStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No spinner state for the story ${id}`);
-  }
-
-  return state;
-}
+const spinnerStates = storyStates<WritableSignal<SpinnerState>>('spinner');
 
 const meta: Meta<YetiSpinner> = {
   id: 'spinner',
@@ -219,7 +189,7 @@ export const Default: Story = {
 
       await expect(ring).not.toHaveFocus();
       await expectAnnounced(ring);
-      await spinnerStyled(ring);
+      await itemStyled('spinner', ring, 'display', 'inline-block');
 
       const style = getComputedStyle(ring);
 
@@ -257,7 +227,7 @@ export const Sizes: Story = {
     }
 
     await expect(ring('lg')).toHaveAttribute('size', 'lg');
-    await spinnerStyled(ring('lg'));
+    await itemStyled('spinner', ring('lg'), 'display', 'inline-block');
     pauseRings(canvasElement);
 
     for (const size of ['sm', 'md', 'lg']) {
@@ -270,9 +240,10 @@ export const Sizes: Story = {
   },
 };
 
-const huedVariants = spinnerValues('data-variant').filter(
-  (variant) => variant !== 'black' && variant !== 'white',
-);
+const huedVariants = manifestValues(
+  manifest.components.spinner,
+  'data-variant',
+).filter((variant) => variant !== 'black' && variant !== 'white');
 
 /**
  * The seven hued rings on the wrapper's surface, then `black` on Yeti's
@@ -291,8 +262,8 @@ function variantLines(): string {
 
 /**
  * Every variant with visible text beside it, in a light and a dark wrapper.
- * The bright edge's ratio of each is recorded in layer 4, not asserted
- * (ticket 50 decision 191).
+ * The bright edge's ratio of each is recorded in layer 4, not asserted: the
+ * records ask for a measurement there, not a threshold.
  */
 export const Variants: Story = {
   decorators: [moduleMetadata({ imports: [YetiSpinner, NgxYetiPaint] })],
@@ -322,15 +293,21 @@ export const Inputs: Story = {
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    variant: { control: 'select', options: spinnerValues('data-variant') },
-    size: { control: 'select', options: spinnerValues('data-size') },
+    variant: {
+      control: 'select',
+      options: manifestValues(manifest.components.spinner, 'data-variant'),
+    },
+    size: {
+      control: 'select',
+      options: manifestValues(manifest.components.spinner, 'data-size'),
+    },
   },
   render: (args, { id }) => {
     const state = signal<SpinnerState>({
       variant: args.variant,
       size: args.size,
     });
-    spinnerStates.set(id, state);
+    spinnerStates.track(id, state);
 
     // Template props are named unlike the inputs, which they would collide
     // with once `component` is set.
@@ -340,7 +317,7 @@ export const Inputs: Story = {
     };
   },
   play: async ({ canvas, id }) => {
-    const state = spinnerState(id);
+    const state = spinnerStates.get(id);
     const ring = canvas.getByTestId('ring');
 
     await expectAnnounced(ring);

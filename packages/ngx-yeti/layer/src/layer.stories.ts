@@ -2,10 +2,15 @@ import { NgOptimizedImage } from '@angular/common';
 import { signal, type WritableSignal } from '@angular/core';
 import {
   composite,
+  assertWithin,
   contrastRatio,
-  itemStylesLoaded,
+  elementChildren,
+  itemStyled,
+  manifestValues,
   parseColor,
+  storyStates,
   type SrgbColor,
+  usedLength,
 } from '@ngx-yeti/testing';
 import {
   moduleMetadata,
@@ -21,12 +26,6 @@ import trail from '../../.storybook/assets/trail.svg?no-inline';
 import { withColorScheme } from '../../.storybook/decorators';
 import { YetiLayer } from './layer';
 import { YetiLayerChild } from './layer-child';
-
-/** The values of the layer's `data-align`, from Yeti's manifest. */
-const alignValues: readonly string[] =
-  manifest.components.layer.attributes.find(
-    (attribute) => attribute.name === 'data-align',
-  )?.values ?? [];
 
 /** The values of one of the layer's markers, from Yeti's manifest. */
 function markerValues(name: string): readonly string[] {
@@ -52,17 +51,7 @@ const unset: LayerState = {
  * The inputs the settings story binds, by story id, so its play function can
  * change them the way a Storybook control does.
  */
-const layerStates = new Map<string, WritableSignal<LayerState>>();
-
-function layerState(id: string): WritableSignal<LayerState> {
-  const state = layerStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No layer state for the story ${id}`);
-  }
-
-  return state;
-}
+const layerStates = storyStates<WritableSignal<LayerState>>('layer');
 
 function byTestId(root: Element, id: string): HTMLElement {
   const element = root.querySelector(`[data-testid="${id}"]`);
@@ -72,42 +61,6 @@ function byTestId(root: Element, id: string): HTMLElement {
   }
 
   return element;
-}
-
-function children(element: HTMLElement): HTMLElement[] {
-  return [...element.children].filter((child) => child instanceof HTMLElement);
-}
-
-/**
- * Waits for the layer's item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2).
- */
-async function layerStyled(layer: HTMLElement): Promise<void> {
-  await itemStylesLoaded('layer');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(layer).display).toBe('grid');
-  });
-}
-
-/**
- * The used length of a public token where `scope` sits, read from an
- * absolutely positioned probe, so an assertion holds for any token value.
- */
-function tokenLength(scope: HTMLElement, token: string): number {
-  const probe = document.createElement('div');
-  probe.style.position = 'absolute';
-  probe.style.inlineSize = `var(${token})`;
-  scope.append(probe);
-  const { width } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return width;
-}
-
-async function expectClose(actual: number, expected: number): Promise<void> {
-  await expect(Math.abs(actual - expected)).toBeLessThanOrEqual(1);
 }
 
 /**
@@ -140,8 +93,7 @@ function effectiveBackground(element: Element): SrgbColor {
 /**
  * A11Y-10b: the caption's text against its translucent scrim composited over
  * pure black and over pure white, the two extremes any picture can show
- * through it, exact formula, unrounded, at least 4.5:1 (ticket 50 decision
- * 55).
+ * through it, exact formula, unrounded, at least 4.5:1.
  */
 async function expectCaptionReadable(caption: HTMLElement): Promise<void> {
   const { color, backgroundColor } = getComputedStyle(caption);
@@ -157,7 +109,7 @@ async function expectCaptionReadable(caption: HTMLElement): Promise<void> {
 
 /** Reading order is source order: nothing reorders the children. */
 async function expectSourceOrder(layer: HTMLElement): Promise<void> {
-  const items = children(layer);
+  const items = elementChildren(layer);
 
   await expect(items.map((child) => getComputedStyle(child).order)).toEqual(
     items.map(() => '0'),
@@ -229,22 +181,22 @@ export const Default: Story = {
     await expect(caption).not.toHaveAttribute('data-justify-self');
     await expectNoRoleOrTabStop(layer);
 
-    await layerStyled(layer);
+    await itemStyled('layer', layer, 'display', 'grid');
 
     const box = layer.getBoundingClientRect();
     const image = picture.getBoundingClientRect();
     const text = caption.getBoundingClientRect();
 
-    await expectClose(image.top, box.top);
-    await expectClose(image.left, box.left);
-    await expectClose(text.left, box.left);
-    await expectClose(text.bottom, box.bottom);
+    assertWithin(image.top, box.top);
+    assertWithin(image.left, box.left);
+    assertWithin(text.left, box.left);
+    assertWithin(text.bottom, box.bottom);
     // As wide as the box, unless Yeti's prose measure caps the caption first.
-    await expectClose(
+    assertWithin(
       text.width,
-      Math.min(box.width, tokenLength(caption, '--yeti-measure')),
+      Math.min(box.width, usedLength(caption, 'var(--yeti-measure)')),
     );
-    await expectClose(box.height, Math.max(image.height, text.height));
+    assertWithin(box.height, Math.max(image.height, text.height));
 
     await expectSourceOrder(layer);
     await expectCaptionReadable(caption);
@@ -259,7 +211,7 @@ export const DarkScheme: Story = {
     const layer = byTestId(canvasElement, 'layer');
 
     await expect(getComputedStyle(layer).colorScheme).toBe('dark');
-    await layerStyled(layer);
+    await itemStyled('layer', layer, 'display', 'grid');
     await expectCaptionReadable(byTestId(canvasElement, 'caption'));
   },
 };
@@ -282,13 +234,13 @@ export const Badge: Story = {
       await expect(badge).toHaveAttribute('data-align-self', 'start');
       await expect(badge).toHaveAttribute('data-justify-self', 'end');
       await expect(badge).toHaveAttribute('data-paint', 'primary');
-      await layerStyled(layer);
+      await itemStyled('layer', layer, 'display', 'grid');
 
       const box = layer.getBoundingClientRect();
       const corner = badge.getBoundingClientRect();
 
-      await expectClose(corner.top, box.top);
-      await expectClose(corner.right, box.right);
+      assertWithin(corner.top, box.top);
+      assertWithin(corner.right, box.right);
       await expect(corner.width).toBeLessThan(box.width / 2);
       await expect(
         contrastRatio(
@@ -310,7 +262,10 @@ export const Settings: StoryObj<
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    align: { control: 'select', options: alignValues },
+    align: {
+      control: 'select',
+      options: manifestValues(manifest.components.layer, 'data-align'),
+    },
     alignSelf: {
       control: 'select',
       options: markerValues('data-align-self'),
@@ -326,7 +281,7 @@ export const Settings: StoryObj<
       alignSelf: args.alignSelf,
       justifySelf: args.justifySelf,
     });
-    layerStates.set(id, state);
+    layerStates.track(id, state);
 
     // Template props are named unlike the inputs, which they would collide
     // with once `component` is set.
@@ -343,7 +298,7 @@ export const Settings: StoryObj<
     };
   },
   play: async ({ canvasElement, id }) => {
-    const state = layerState(id);
+    const state = layerStates.get(id);
     const layer = byTestId(canvasElement, 'layer');
     const tall = byTestId(canvasElement, 'tall');
     const short = byTestId(canvasElement, 'short');
@@ -386,27 +341,27 @@ export const Settings: StoryObj<
       });
     }
 
-    await layerStyled(layer);
+    await itemStyled('layer', layer, 'display', 'grid');
 
     // `end`: the short child sits on the box's bottom, under the tall one's
     // top.
     state.set({ ...unset, align: 'end' });
-    await waitFor(async () => {
-      await expectClose(
+    await waitFor(() => {
+      assertWithin(
         short.getBoundingClientRect().bottom,
         layer.getBoundingClientRect().bottom,
       );
     });
-    await expectClose(
+    assertWithin(
       tall.getBoundingClientRect().top,
       layer.getBoundingClientRect().top,
     );
-    await expectClose(layer.getBoundingClientRect().height, 200);
+    assertWithin(layer.getBoundingClientRect().height, 200);
 
     // `baseline` behaves as `start`.
     state.set({ ...unset, align: 'baseline' });
-    await waitFor(async () => {
-      await expectClose(
+    await waitFor(() => {
+      assertWithin(
         short.getBoundingClientRect().top,
         layer.getBoundingClientRect().top,
       );
@@ -419,15 +374,15 @@ export const Settings: StoryObj<
       const box = layer.getBoundingClientRect();
       const corner = placed.getBoundingClientRect();
 
-      await expectClose(corner.top, box.top);
-      await expectClose(corner.right, box.right);
+      assertWithin(corner.top, box.top);
+      assertWithin(corner.right, box.right);
       await expect(corner.width).toBeLessThan(box.width / 2);
     });
-    await expectClose(
+    assertWithin(
       short.getBoundingClientRect().bottom,
       layer.getBoundingClientRect().bottom,
     );
-    await expectClose(
+    assertWithin(
       short.getBoundingClientRect().width,
       layer.getBoundingClientRect().width,
     );

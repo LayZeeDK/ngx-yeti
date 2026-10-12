@@ -1,6 +1,13 @@
 import { NgOptimizedImage } from '@angular/common';
 import { signal, type WritableSignal } from '@angular/core';
-import { itemStylesLoaded } from '@ngx-yeti/testing';
+import {
+  assertWithin,
+  elementChildren,
+  itemStyled,
+  manifestValues,
+  storyStates,
+  usedLength,
+} from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
@@ -21,15 +28,6 @@ import manifest from 'yeti-css/manifest';
 import trail from '../../.storybook/assets/trail.svg?no-inline';
 import { YetiGrid } from './grid';
 import { YetiGridChild } from './grid-child';
-
-/** The values of one of the grid's enum attributes, from Yeti's manifest. */
-function gridValues(name: string): readonly string[] {
-  return (
-    manifest.components.grid.attributes.find(
-      (attribute) => attribute.name === name,
-    )?.values ?? []
-  );
-}
 
 interface GridState {
   readonly min: YetiWidthOrNone | undefined;
@@ -55,25 +53,11 @@ const unset: GridState = {
  * The inputs the settings story binds, by story id, so its play function can
  * change them the way a Storybook control does.
  */
-const gridStates = new Map<string, WritableSignal<GridState>>();
-
-function gridState(id: string): WritableSignal<GridState> {
-  const state = gridStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No grid state for the story ${id}`);
-  }
-
-  return state;
-}
-
-function children(parent: HTMLElement): HTMLElement[] {
-  return [...parent.children].filter((child) => child instanceof HTMLElement);
-}
+const gridStates = storyStates<WritableSignal<GridState>>('grid');
 
 /** The child at `index`, which the story's markup is known to hold. */
 function childAt(parent: HTMLElement, index: number): HTMLElement {
-  const child = children(parent)[index];
+  const child = elementChildren(parent)[index];
 
   if (child === undefined) {
     throw new Error(`No child ${String(index)}`);
@@ -82,36 +66,12 @@ function childAt(parent: HTMLElement, index: number): HTMLElement {
   return child;
 }
 
-/**
- * The used length of a public token in `root`, read from a probe, so an
- * assertion holds for any token value.
- */
-function tokenLength(root: HTMLElement, token: string): number {
-  const probe = document.createElement('div');
-  probe.style.inlineSize = `var(${token})`;
-  root.append(probe);
-  const { width } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return width;
-}
-
-/**
- * Waits for the grid's item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2).
- */
-async function gridStyled(grid: HTMLElement): Promise<void> {
-  await itemStylesLoaded('grid');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(grid).display).toBe('grid');
-  });
-}
+/** A box's padding once its file has applied: the page's default is none. */
+const padded = (value: string): boolean => value !== '0px';
 
 /** How many cells share the first row. */
 function perRow(grid: HTMLElement): number {
-  const tops = children(grid).map((cell) =>
+  const tops = elementChildren(grid).map((cell) =>
     Math.round(cell.getBoundingClientRect().top),
   );
   const first = Math.min(...tops);
@@ -124,16 +84,14 @@ function resize(stage: HTMLElement, width: number): void {
   stage.style.inlineSize = `${String(width)}px`;
 }
 
-async function expectClose(actual: number, expected: number): Promise<void> {
-  await expect(Math.abs(actual - expected)).toBeLessThanOrEqual(1);
-}
-
 /**
  * Expects the cells to be drawn in source order: each one below the last,
  * or in the same row and after it in the writing direction.
  */
 async function expectSourceOrderOnScreen(grid: HTMLElement): Promise<void> {
-  const rects = children(grid).map((cell) => cell.getBoundingClientRect());
+  const rects = elementChildren(grid).map((cell) =>
+    cell.getBoundingClientRect(),
+  );
 
   for (const [index, rect] of rects.entries()) {
     const previous = rects[index - 1];
@@ -197,10 +155,10 @@ export const Default: Story = {
     await expect(grid).toHaveAttribute('role', 'list');
     await expect(items).toHaveLength(names.length);
     // The accessibility tree lists the items in DOM order.
-    await expect(items).toStrictEqual(children(grid));
+    await expect(items).toStrictEqual(elementChildren(grid));
 
-    await gridStyled(grid);
-    await itemStylesLoaded('box');
+    await itemStyled('grid', grid, 'display', 'grid');
+    await itemStyled('box', childAt(grid, 0), 'padding-top', padded);
 
     await expect(getComputedStyle(grid).paddingInlineStart).toBe('0px');
     await expect(perRow(grid)).toBeLessThanOrEqual(3);
@@ -213,13 +171,31 @@ export const Settings: Story = {
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    min: { control: 'select', options: gridValues('data-min') },
-    columns: { control: 'select', options: gridValues('data-columns') },
-    gap: { control: 'select', options: gridValues('data-gap') },
-    rows: { control: 'select', options: gridValues('data-rows') },
+    min: {
+      control: 'select',
+      options: manifestValues(manifest.components.grid, 'data-min'),
+    },
+    columns: {
+      control: 'select',
+      options: manifestValues(manifest.components.grid, 'data-columns'),
+    },
+    gap: {
+      control: 'select',
+      options: manifestValues(manifest.components.grid, 'data-gap'),
+    },
+    rows: {
+      control: 'select',
+      options: manifestValues(manifest.components.grid, 'data-rows'),
+    },
     fold: { control: 'boolean' },
-    tracks: { control: 'select', options: gridValues('data-tracks') },
-    threshold: { control: 'select', options: gridValues('data-threshold') },
+    tracks: {
+      control: 'select',
+      options: manifestValues(manifest.components.grid, 'data-tracks'),
+    },
+    threshold: {
+      control: 'select',
+      options: manifestValues(manifest.components.grid, 'data-threshold'),
+    },
   },
   render: (args, { id }) => {
     const state = signal<GridState>({
@@ -231,7 +207,7 @@ export const Settings: Story = {
       tracks: args.tracks,
       threshold: args.threshold,
     });
-    gridStates.set(id, state);
+    gridStates.track(id, state);
 
     // Template props are named unlike the inputs, which they would collide
     // with once `component` is set.
@@ -247,7 +223,7 @@ export const Settings: Story = {
     };
   },
   play: async ({ canvas, id }) => {
-    const state = gridState(id);
+    const state = gridStates.get(id);
     const grid = canvas.getByTestId('grid');
     const cases: readonly {
       readonly attribute: string;
@@ -302,7 +278,7 @@ export const ExactCount: Story = {
     const exact = canvas.getByTestId('exact');
     const loose = canvas.getByTestId('loose');
 
-    await gridStyled(exact);
+    await itemStyled('grid', exact, 'display', 'grid');
     resize(stage, 1000);
 
     await expect(perRow(exact)).toBe(4);
@@ -336,7 +312,7 @@ export const Fold: Story = {
     const grid = canvas.getByTestId('grid');
 
     await expect(grid).toHaveAttribute('data-fold', '');
-    await gridStyled(grid);
+    await itemStyled('grid', grid, 'display', 'grid');
 
     const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
 
@@ -396,12 +372,14 @@ export const Tracks: Story = {
     await expect(first).toHaveAttribute('data-span', '6');
     await expect(spanned).not.toHaveAttribute('data-start');
     await expect(plain).not.toHaveAttribute('data-span');
-    await expect(canvas.getAllByRole('figure')).toStrictEqual(children(grid));
+    await expect(canvas.getAllByRole('figure')).toStrictEqual(
+      elementChildren(grid),
+    );
 
-    await gridStyled(grid);
+    await itemStyled('grid', grid, 'display', 'grid');
     resize(stage, 1000);
 
-    const gap = tokenLength(canvasElement, '--yeti-space-sm');
+    const gap = usedLength(canvasElement, 'var(--yeti-space-sm)');
     const box = grid.getBoundingClientRect();
     const track = (box.width - 11 * gap) / 12;
     const line = (n: number): number => box.left + (n - 1) * (track + gap);
@@ -419,28 +397,30 @@ export const Tracks: Story = {
       throw new Error('The wall has four cells');
     }
 
-    await expectClose(a.left, line(2));
-    await expectClose(a.width, width(6));
-    await expectClose(b.left, line(9));
-    await expectClose(b.width, width(4));
-    await expectClose(b.top, a.top);
+    assertWithin(a.left, line(2));
+    assertWithin(a.width, width(6));
+    assertWithin(b.left, line(9));
+    assertWithin(b.width, width(4));
+    assertWithin(b.top, a.top);
     // Track 1 and track 8 of the first row stay empty.
     await expect(a.left - box.left).toBeGreaterThan(track - 1);
-    await expectClose(b.left - a.right, track + 2 * gap);
+    assertWithin(b.left - a.right, track + 2 * gap);
     await expect(c.top).toBeGreaterThan(a.bottom);
-    await expectClose(c.left, line(1));
-    await expectClose(c.width, width(3));
-    await expectClose(d.left, line(4));
-    await expectClose(d.width, width(1));
+    assertWithin(c.left, line(1));
+    assertWithin(c.width, width(3));
+    assertWithin(d.left, line(4));
+    assertWithin(d.width, width(1));
 
     resize(stage, 400);
 
     const narrow = grid.getBoundingClientRect();
-    const rects = children(grid).map((cell) => cell.getBoundingClientRect());
+    const rects = elementChildren(grid).map((cell) =>
+      cell.getBoundingClientRect(),
+    );
 
     for (const [index, rect] of rects.entries()) {
-      await expectClose(rect.width, narrow.width);
-      await expectClose(rect.left, narrow.left);
+      assertWithin(rect.width, narrow.width);
+      assertWithin(rect.left, narrow.left);
 
       const previous = rects[index - 1];
 
@@ -449,7 +429,9 @@ export const Tracks: Story = {
       }
     }
 
-    await expect(canvas.getAllByRole('figure')).toStrictEqual(children(grid));
+    await expect(canvas.getAllByRole('figure')).toStrictEqual(
+      elementChildren(grid),
+    );
   },
 };
 
@@ -483,8 +465,8 @@ export const Rows: Story = {
     const grid = canvas.getByTestId('grid');
 
     await expect(grid).toHaveAttribute('data-rows', '3');
-    await gridStyled(grid);
-    await itemStylesLoaded('box');
+    await itemStyled('grid', grid, 'display', 'grid');
+    await itemStyled('box', childAt(grid, 0), 'padding-top', padded);
 
     const footers = [...grid.querySelectorAll('footer')].map((footer) =>
       Math.round(footer.getBoundingClientRect().top),

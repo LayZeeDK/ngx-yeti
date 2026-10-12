@@ -2,10 +2,14 @@ import { NgOptimizedImage } from '@angular/common';
 import { signal, type WritableSignal } from '@angular/core';
 import {
   composite,
+  assertWithin,
   contrastRatio,
-  itemStylesLoaded,
+  itemStyled,
+  manifestValues,
   parseColor,
+  storyStates,
   type SrgbColor,
+  usedLength,
 } from '@ngx-yeti/testing';
 import {
   moduleMetadata,
@@ -20,12 +24,6 @@ import manifest from 'yeti-css/manifest';
 import trail from '../../.storybook/assets/trail.svg?no-inline';
 import { YetiOverlay } from './overlay';
 import { YetiOverlayChild } from './overlay-child';
-
-/** The values of the overlay's `data-gap`, from Yeti's manifest. */
-const gapValues: readonly string[] =
-  manifest.components.overlay.attributes.find(
-    (attribute) => attribute.name === 'data-gap',
-  )?.values ?? [];
 
 interface OverlayState {
   readonly gap: YetiGap | undefined;
@@ -45,17 +43,7 @@ const unset: OverlayState = {
  * The inputs the settings story binds, by story id, so its play function can
  * change them the way a Storybook control does.
  */
-const overlayStates = new Map<string, WritableSignal<OverlayState>>();
-
-function overlayState(id: string): WritableSignal<OverlayState> {
-  const state = overlayStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No overlay state for the story ${id}`);
-  }
-
-  return state;
-}
+const overlayStates = storyStates<WritableSignal<OverlayState>>('overlay');
 
 function byTestId(root: Element, id: string): HTMLElement {
   const element = root.querySelector(`[data-testid="${id}"]`);
@@ -67,50 +55,21 @@ function byTestId(root: Element, id: string): HTMLElement {
   return element;
 }
 
-/**
- * Waits for the overlay's item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2).
- */
-async function overlayStyled(overlay: HTMLElement): Promise<void> {
-  await itemStylesLoaded('overlay');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(overlay).position).toBe('relative');
-  });
-}
-
-/**
- * The used length of a public token where `scope` sits, read from an
- * absolutely positioned probe, so an assertion holds for any token value.
- */
-function tokenLength(scope: HTMLElement, token: string): number {
-  const probe = document.createElement('div');
-  probe.style.position = 'absolute';
-  probe.style.inlineSize = `var(${token})`;
-  scope.append(probe);
-  const { width } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return width;
-}
-
-async function expectClose(actual: number, expected: number): Promise<void> {
-  await expect(Math.abs(actual - expected)).toBeLessThanOrEqual(1);
-}
+/** A box's padding once its file has applied: the page's default is none. */
+const padded = (value: string): boolean => value !== '0px';
 
 function centre(rect: DOMRect): { readonly x: number; readonly y: number } {
   return { x: (rect.left + rect.right) / 2, y: (rect.top + rect.bottom) / 2 };
 }
 
-async function expectCentredOn(
+function assertCentredOn(
   element: HTMLElement,
   target: { readonly x: number; readonly y: number },
-): Promise<void> {
+): void {
   const { x, y } = centre(element.getBoundingClientRect());
 
-  await expectClose(x, target.x);
-  await expectClose(y, target.y);
+  assertWithin(x, target.x);
+  assertWithin(y, target.y);
 }
 
 /**
@@ -177,11 +136,11 @@ async function expectStamp(root: HTMLElement, testId: string): Promise<void> {
   const overlay = byTestId(root, testId);
   const held = byTestId(root, `${testId}-held`);
   const box = overlay.getBoundingClientRect();
-  const gap = tokenLength(overlay, '--yeti-space-md');
+  const gap = usedLength(overlay, 'var(--yeti-space-md)');
   const rect = held.getBoundingClientRect();
 
-  await expectCentredOn(held, centre(box));
-  await expectClose(
+  assertCentredOn(held, centre(box));
+  assertWithin(
     byTestId(root, `${testId}-picture`).getBoundingClientRect().top,
     box.top,
   );
@@ -240,7 +199,7 @@ export const Default: Story = {
       ),
     ).toStrictEqual([]);
 
-    await overlayStyled(overlay);
+    await itemStyled('overlay', overlay, 'position', 'relative');
     await expectStamp(canvasElement, 'overlay');
     await expectSourceOrder(overlay);
 
@@ -259,7 +218,10 @@ export const Settings: StoryObj<
   argTypes: {
     // Yeti's vocabulary, which the contract spec proves equal to the input's
     // type, so a pin move that adds a value adds its option.
-    gap: { control: 'select', options: gapValues },
+    gap: {
+      control: 'select',
+      options: manifestValues(manifest.components.overlay, 'data-gap'),
+    },
     fixed: { control: 'boolean' },
     over: { control: 'boolean' },
     fill: { control: 'boolean' },
@@ -271,7 +233,7 @@ export const Settings: StoryObj<
       over: args.over === true,
       fill: args.fill === true,
     });
-    overlayStates.set(id, state);
+    overlayStates.track(id, state);
 
     // Template props are named unlike the inputs, which they would collide
     // with once `component` is set.
@@ -285,7 +247,7 @@ export const Settings: StoryObj<
     };
   },
   play: async ({ canvasElement, id }) => {
-    const state = overlayState(id);
+    const state = overlayStates.get(id);
     const overlay = byTestId(canvasElement, 'overlay');
     const under = byTestId(canvasElement, 'under');
     const held = byTestId(canvasElement, 'held');
@@ -318,13 +280,10 @@ export const Settings: StoryObj<
       });
     }
 
-    await overlayStyled(overlay);
+    await itemStyled('overlay', overlay, 'position', 'relative');
     // The held child's padding comes from box's item file, which can apply
     // after the overlay's; the in-flow box is measured with it.
-    await itemStylesLoaded('box');
-    await waitFor(async () => {
-      await expect(getComputedStyle(held).paddingTop).not.toBe('0px');
-    });
+    await itemStyled('box', held, 'padding-top', padded);
 
     // `over` off: the held child is back in the flow, below the content.
     state.set(unset);
@@ -345,15 +304,15 @@ export const Settings: StoryObj<
 
     const filledInFlow = held.getBoundingClientRect();
 
-    await expectClose(filledInFlow.top, inFlow.top);
-    await expectClose(filledInFlow.left, inFlow.left);
-    await expectClose(filledInFlow.width, inFlow.width);
-    await expectClose(filledInFlow.height, inFlow.height);
+    assertWithin(filledInFlow.top, inFlow.top);
+    assertWithin(filledInFlow.left, inFlow.left);
+    assertWithin(filledInFlow.width, inFlow.width);
+    assertWithin(filledInFlow.height, inFlow.height);
 
     // `over` on: the held child leaves the flow and is centred on the box.
     state.set({ ...unset, over: true });
-    await waitFor(async () => {
-      await expectCentredOn(held, centre(overlay.getBoundingClientRect()));
+    await waitFor(() => {
+      assertCentredOn(held, centre(overlay.getBoundingClientRect()));
     });
   },
 };
@@ -376,7 +335,7 @@ function veilForm(testId: string, savingExpression: string): string {
 
 /**
  * The "Saving..." text against the translucent scrim composited over pure
- * black and over pure white (ticket 50 decisions 8 and 55).
+ * black and over pure white, the two extremes behind the scrim.
  */
 async function expectMessageReadable(
   veil: HTMLElement,
@@ -403,11 +362,11 @@ async function expectVeil(root: HTMLElement, testId: string): Promise<void> {
   const message = byTestId(root, `${testId}-message`);
   const rect = veil.getBoundingClientRect();
 
-  await expectClose(rect.top, box.top);
-  await expectClose(rect.right, box.right);
-  await expectClose(rect.bottom, box.bottom);
-  await expectClose(rect.left, box.left);
-  await expectCentredOn(message, centre(rect));
+  assertWithin(rect.top, box.top);
+  assertWithin(rect.right, box.right);
+  assertWithin(rect.bottom, box.bottom);
+  assertWithin(rect.left, box.left);
+  assertCentredOn(message, centre(rect));
   await expectMessageReadable(veil, message);
 }
 
@@ -432,7 +391,7 @@ export const Veil: Story = {
     const input = byTestId(canvasElement, 'form-input');
 
     await expect(form).not.toHaveAttribute('inert');
-    await overlayStyled(form);
+    await itemStyled('overlay', form, 'position', 'relative');
 
     await userEvent.click(toggle);
     await waitFor(async () => {
@@ -495,17 +454,17 @@ export const Fixed: Story = {
     });
 
     await expect(overlay).toHaveAttribute('data-fixed', '');
-    await overlayStyled(overlay);
+    await itemStyled('overlay', overlay, 'position', 'relative');
     await waitFor(async () => {
       await expect(getComputedStyle(held).position).toBe('fixed');
     });
-    await expectCentredOn(held, viewport());
+    assertCentredOn(held, viewport());
 
     window.scrollTo(0, document.documentElement.clientHeight);
     await waitFor(async () => {
       await expect(window.scrollY).toBeGreaterThan(0);
     });
-    await expectCentredOn(held, viewport());
+    assertCentredOn(held, viewport());
     window.scrollTo(0, 0);
   },
 };
@@ -530,13 +489,13 @@ export const Scrolls: Story = {
     const overlay = byTestId(canvasElement, 'overlay');
     const held = byTestId(canvasElement, 'held');
 
-    await overlayStyled(overlay);
+    await itemStyled('overlay', overlay, 'position', 'relative');
     await waitFor(async () => {
       await expect(held.scrollHeight).toBeGreaterThan(held.clientHeight);
     });
 
     const box = overlay.getBoundingClientRect();
-    const gap = tokenLength(overlay, '--yeti-space-md');
+    const gap = usedLength(overlay, 'var(--yeti-space-md)');
 
     await expect(held.getBoundingClientRect().bottom).toBeLessThanOrEqual(
       box.bottom - gap + 1,
@@ -560,8 +519,8 @@ export const Rtl: Story = {
   play: async ({ canvasElement }) => {
     const overlay = byTestId(canvasElement, 'overlay');
 
-    await overlayStyled(overlay);
-    await expectCentredOn(
+    await itemStyled('overlay', overlay, 'position', 'relative');
+    assertCentredOn(
       byTestId(canvasElement, 'overlay-held'),
       centre(overlay.getBoundingClientRect()),
     );

@@ -1,5 +1,12 @@
 import { signal, type WritableSignal } from '@angular/core';
-import { itemStylesLoaded } from '@ngx-yeti/testing';
+import {
+  assertWithin,
+  elementChildren,
+  itemStyled,
+  manifestValues,
+  storyStates,
+  usedLength,
+} from '@ngx-yeti/testing';
 import {
   moduleMetadata,
   type Meta,
@@ -11,15 +18,6 @@ import { expect, waitFor } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import { YetiStack } from './stack';
 import { YetiStackChild } from './stack-child';
-
-/** The values of one of the stack's enum attributes, from Yeti's manifest. */
-function stackValues(name: string): readonly string[] {
-  return (
-    manifest.components.stack.attributes.find(
-      (attribute) => attribute.name === name,
-    )?.values ?? []
-  );
-}
 
 interface StackState {
   readonly gap: YetiGap | undefined;
@@ -45,25 +43,11 @@ const unset: StackState = {
  * The inputs the settings story binds, by story id, so its play function can
  * change them the way a Storybook control does.
  */
-const stackStates = new Map<string, WritableSignal<StackState>>();
-
-function stackState(id: string): WritableSignal<StackState> {
-  const state = stackStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No stack state for the story ${id}`);
-  }
-
-  return state;
-}
-
-function children(parent: HTMLElement): HTMLElement[] {
-  return [...parent.children].filter((child) => child instanceof HTMLElement);
-}
+const stackStates = storyStates<WritableSignal<StackState>>('stack');
 
 /** The child at `index`, which the story's markup is known to hold. */
 function childAt(parent: HTMLElement, index: number): HTMLElement {
-  const child = children(parent)[index];
+  const child = elementChildren(parent)[index];
 
   if (child === undefined) {
     throw new Error(`No child ${String(index)}`);
@@ -72,32 +56,8 @@ function childAt(parent: HTMLElement, index: number): HTMLElement {
   return child;
 }
 
-/**
- * The used length of a public token in `root`, read from a probe, so an
- * assertion holds for any token value.
- */
-function tokenLength(root: HTMLElement, token: string): number {
-  const probe = document.createElement('div');
-  probe.style.blockSize = `var(${token})`;
-  root.append(probe);
-  const { height } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return height;
-}
-
-/**
- * Waits for the stack's item file to apply. Chromium and WebKit can keep
- * stale computed styles right after a stylesheet is inserted (upstream bug
- * O2).
- */
-async function stackStyled(stack: HTMLElement): Promise<void> {
-  await itemStylesLoaded('stack');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(stack).display).toBe('flex');
-  });
-}
+/** A box's padding once its file has applied: the page's default is none. */
+const padded = (value: string): boolean => value !== '0px';
 
 /** The space between the bottom of one child and the top of the next. */
 function gapBefore(child: HTMLElement): number {
@@ -125,10 +85,6 @@ function ruleLine(child: HTMLElement): {
     top: parseFloat(style.top),
     width: parseFloat(style.borderTopWidth),
   };
-}
-
-async function expectClose(actual: number, expected: number): Promise<void> {
-  await expect(Math.abs(actual - expected)).toBeLessThanOrEqual(0.5);
 }
 
 const meta: Meta<YetiStack> = {
@@ -162,7 +118,7 @@ export const Default: Story = {
   }),
   play: async ({ canvas, canvasElement }) => {
     const stack = canvas.getByTestId('stack');
-    const items = children(stack);
+    const items = elementChildren(stack);
     const spaced = childAt(stack, 3);
     const split = childAt(stack, 5);
 
@@ -193,8 +149,8 @@ export const Default: Story = {
       ),
     ).toStrictEqual([]);
 
-    await stackStyled(stack);
-    await itemStylesLoaded('box');
+    await itemStyled('stack', stack, 'display', 'flex');
+    await itemStyled('box', childAt(stack, 0), 'padding-top', padded);
 
     for (const item of items) {
       const { marginTop, marginRight, marginBottom, marginLeft } =
@@ -211,17 +167,20 @@ export const Default: Story = {
       }
     }
 
-    await expectClose(
+    assertWithin(
       gapBefore(childAt(stack, 1)),
-      tokenLength(canvasElement, '--yeti-space-lg'),
+      usedLength(canvasElement, 'var(--yeti-space-lg)', 'block'),
+      0.5,
     );
-    await expectClose(
+    assertWithin(
       gapBefore(spaced),
-      tokenLength(canvasElement, '--yeti-space-3xl'),
+      usedLength(canvasElement, 'var(--yeti-space-3xl)', 'block'),
+      0.5,
     );
-    await expectClose(
+    assertWithin(
       split.getBoundingClientRect().bottom,
       stack.getBoundingClientRect().bottom,
+      0.5,
     );
 
     // Reading order is source order: one column, top to bottom, with nothing
@@ -247,12 +206,21 @@ export const Settings: StoryObj<
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    gap: { control: 'select', options: stackValues('data-gap') },
-    align: { control: 'select', options: stackValues('data-align') },
+    gap: {
+      control: 'select',
+      options: manifestValues(manifest.components.stack, 'data-gap'),
+    },
+    align: {
+      control: 'select',
+      options: manifestValues(manifest.components.stack, 'data-align'),
+    },
     fill: { control: 'boolean' },
     rule: { control: 'boolean' },
     split: { control: 'boolean' },
-    space: { control: 'select', options: stackValues('data-gap') },
+    space: {
+      control: 'select',
+      options: manifestValues(manifest.components.stack, 'data-gap'),
+    },
     sticky: { control: 'boolean' },
   },
   render: (args, { id }) => {
@@ -265,7 +233,7 @@ export const Settings: StoryObj<
       space: args.space,
       sticky: args.sticky === true,
     });
-    stackStates.set(id, state);
+    stackStates.track(id, state);
 
     // Template props are named unlike the inputs, which they would collide
     // with once `component` is set.
@@ -280,7 +248,7 @@ export const Settings: StoryObj<
     };
   },
   play: async ({ canvas, id }) => {
-    const state = stackState(id);
+    const state = stackStates.get(id);
     const stack = canvas.getByTestId('stack');
     const child = canvas.getByTestId('child');
     const cases: readonly {
@@ -356,14 +324,15 @@ export const Align: Story = {
     await expect(stretch).not.toHaveAttribute('data-align');
     await expect(stretch).not.toHaveAttribute('align');
 
-    await stackStyled(start);
+    await itemStyled('stack', start, 'display', 'flex');
 
     await expect(childAt(start, 0).getBoundingClientRect().width).toBeLessThan(
       start.getBoundingClientRect().width,
     );
-    await expectClose(
+    assertWithin(
       childAt(stretch, 0).getBoundingClientRect().width,
       stretch.getBoundingClientRect().width,
+      0.5,
     );
   },
 };
@@ -400,24 +369,28 @@ export const Rule: Story = {
     await expect(list).toHaveAttribute('data-gap', 'sm');
     await expect(canvas.queryAllByRole('separator')).toHaveLength(0);
 
-    await stackStyled(list);
+    await itemStyled('stack', list, 'display', 'flex');
 
-    const sm = tokenLength(canvasElement, '--yeti-space-sm');
-    const xs = tokenLength(canvasElement, '--yeti-space-xs');
-    const border = tokenLength(canvasElement, '--yeti-border-width');
+    const sm = usedLength(canvasElement, 'var(--yeti-space-sm)', 'block');
+    const xs = usedLength(canvasElement, 'var(--yeti-space-xs)', 'block');
+    const border = usedLength(
+      canvasElement,
+      'var(--yeti-border-width)',
+      'block',
+    );
 
     await expect(ruleLine(childAt(list, 0)).content).toBe('none');
 
-    for (const row of children(list).slice(1)) {
+    for (const row of elementChildren(list).slice(1)) {
       const line = ruleLine(row);
 
       // The rule leaves the gap as it is.
-      await expectClose(gapBefore(row), sm);
+      assertWithin(gapBefore(row), sm, 0.5);
       await expect(line.width).toBe(border);
-      await expectClose(line.top, -sm / 2);
+      assertWithin(line.top, -sm / 2, 0.5);
     }
 
-    const [first, second, closer, nested] = children(ruled);
+    const [first, second, closer, nested] = elementChildren(ruled);
 
     if (
       first === undefined ||
@@ -428,19 +401,20 @@ export const Rule: Story = {
       throw new Error('The ruled stack has four children');
     }
 
-    await expectClose(
+    assertWithin(
       first.getBoundingClientRect().top,
       ruled.getBoundingClientRect().top,
+      0.5,
     );
     await expect(ruleLine(first).content).toBe('none');
-    await expectClose(gapBefore(second), sm);
-    await expectClose(ruleLine(second).top, -sm / 2);
-    await expectClose(gapBefore(closer), xs);
-    await expectClose(ruleLine(closer).top, -xs / 2);
+    assertWithin(gapBefore(second), sm, 0.5);
+    assertWithin(ruleLine(second).top, -sm / 2, 0.5);
+    assertWithin(gapBefore(closer), xs, 0.5);
+    assertWithin(ruleLine(closer).top, -xs / 2, 0.5);
     // The nested stack sets its own gap; its line is still placed by the
     // ruled stack's.
-    await expectClose(gapBefore(nested), sm);
-    await expectClose(ruleLine(nested).top, -sm / 2);
+    assertWithin(gapBefore(nested), sm, 0.5);
+    assertWithin(ruleLine(nested).top, -sm / 2, 0.5);
     await expect(ruleLine(nested).width).toBe(border);
   },
 };
@@ -470,9 +444,13 @@ export const Sticky: Story = {
     await expect(pinned).toHaveAttribute('data-sticky', '');
     await expect(canvas.getAllByRole('link')).toHaveLength(stops.length);
 
-    await stackStyled(stack);
+    await itemStyled('stack', stack, 'display', 'flex');
 
-    const offset = tokenLength(canvasElement, '--yeti-sticky-offset');
+    const offset = usedLength(
+      canvasElement,
+      'var(--yeti-sticky-offset)',
+      'block',
+    );
 
     window.scrollTo(
       0,
