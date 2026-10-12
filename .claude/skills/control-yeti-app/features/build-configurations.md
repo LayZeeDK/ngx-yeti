@@ -42,8 +42,9 @@ Preconditions:
   `storybook-static` and `dist`, whose files change without changing the build.
 - A build started by `up` and the e2e run (`npm exec nx -- e2e yeti-app-e2e`) write the same `dist` folder; do not
   run both at once in one checkout.
-- The Tailwind C1 and C2 Fixture build configurations of the setup spec do not exist yet in
-  `apps/yeti-app/project.json`; when a task adds them, add them to `--configuration` in
-  `scripts/control.mjs` and to this file.
+- The Tailwind C1 and C2 Fixture build configurations of the setup spec are `tailwind-c1` and `tailwind-c2` in
+  `apps/yeti-app/project.json`, under `build` and `serve-ssr`. `scripts/control.mjs` does not launch them yet: its
+  `--configuration` takes `development` or `production` only. `apps/yeti-app-e2e/src/tailwind.spec.ts` covers them
+  (`FIXTURE_CONFIGURATION=tailwind-c1 npm exec nx -- e2e yeti-app-e2e`).
 - Production frames can lose tokens to critical-CSS inlining (upstream bug A4); record such frames, do not treat
   them as a control-skill failure.

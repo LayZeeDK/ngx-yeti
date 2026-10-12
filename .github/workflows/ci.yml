@@ -76,7 +76,10 @@ jobs:
       fail-fast: false
       matrix:
         engine: [chromium, firefox, webkit]
-        configuration: [development, production]
+        # tailwind-c1 and tailwind-c2 are the Fixture app beside Tailwind v4,
+        # in the two forms of the setup spec, which tests them in layer 4, so
+        # in the three engines as every other layer-4 case.
+        configuration: [development, production, tailwind-c1, tailwind-c2]
     name: e2e (${{ matrix.engine }}, ${{ matrix.configuration }})
     env:
       HOME: /root
@@ -90,8 +93,8 @@ jobs:
       - run: npm ci
       # e2e depends on ^yeti-build, so Nx builds Yeti before Playwright starts
       # the web servers, whose own Nx processes then hit the cache.
-      # The production configuration changes the Fixture app only.
-      - run: npx nx run-many --output-style=static -t e2e -p ${{ matrix.configuration == 'production' && 'yeti-app-e2e' || 'yeti-analog-e2e ngx-yeti-e2e yeti-app-e2e' }} -- --project=${{ matrix.engine }}
+      # Every other configuration changes the Fixture app only.
+      - run: npx nx run-many --output-style=static -t e2e -p ${{ matrix.configuration == 'development' && 'yeti-analog-e2e ngx-yeti-e2e yeti-app-e2e' || 'yeti-app-e2e' }} -- --project=${{ matrix.engine }}
 
   safari:
     # Real Safari, as the macOS image ships it (26.6 on every macOS image in

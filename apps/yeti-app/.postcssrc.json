@@ -1,0 +1,7 @@
+{
+  "plugins": {
+    "./tailwind-forms.postcss.cjs": {
+      "base": "apps/yeti-app"
+    }
+  }
+}

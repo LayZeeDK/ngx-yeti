@@ -1,0 +1,24 @@
+/* Form C1 of the setup spec: Tailwind v4 with preflight. */
+@layer theme, base, yeti, ngx-yeti, components, utilities;
+@import 'tailwindcss';
+@source not inline('container');
+@import 'yeti-css/css/layers.css';
+@import 'yeti-css/css/tokens/scale.css';
+@import 'yeti-css/css/tokens/space.css';
+@import 'yeti-css/css/tokens/type.css';
+@import 'yeti-css/css/tokens/color.css';
+@import 'yeti-css/css/tokens/tone.css';
+@import 'yeti-css/css/tokens/motion.css';
+@import 'yeti-css/css/tokens/surface.css';
+@import 'yeti-css/css/tokens/components.css';
+@import 'yeti-css/css/base/reset.css';
+@import 'yeti-css/css/base/typography.css';
+@import 'yeti-css/css/base/prose.css';
+@import 'yeti-css/css/base/controls.css';
+@import 'yeti-css/css/base/media.css';
+@import 'yeti-css/css/base/transitions.css';
+@import 'yeti-css/css/layouts/attributes.css';
+@import 'ngx-yeti/ngx-yeti-globals.css';
+
+/* The utility tailwind.spec.ts adds at run time, which no template holds. */
+@source inline('p-8');

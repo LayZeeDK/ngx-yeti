@@ -71,3 +71,30 @@ for (const path of configs) {
     assert.equal(load(path, { CI: 'true', E2E_LOCAL_WORKERS: '3' }).workers, 3);
   });
 }
+
+test('apps/yeti-app-e2e runs tailwind.spec.ts only against the Tailwind builds, each on its own port', () => {
+  const path = 'apps/yeti-app-e2e/playwright.config.mts';
+  const ports = new Set();
+
+  for (const configuration of ['development', 'production']) {
+    const config = load(path, { FIXTURE_CONFIGURATION: configuration });
+
+    assert.equal(config.testIgnore, 'tailwind.spec.ts');
+    assert.equal(config.testMatch, undefined);
+    ports.add(hostPort(config.use.baseURL));
+  }
+
+  for (const configuration of ['tailwind-c1', 'tailwind-c2']) {
+    const config = load(path, { FIXTURE_CONFIGURATION: configuration });
+
+    assert.equal(config.testMatch, 'tailwind.spec.ts');
+    assert.equal(config.testIgnore, undefined);
+    assert.deepEqual(
+      config.webServer.map(({ command }) => command.split(' ').at(-1)),
+      [`yeti-app:serve-ssr:${configuration}`],
+    );
+    ports.add(hostPort(config.use.baseURL));
+  }
+
+  assert.equal(ports.size, 4);
+});

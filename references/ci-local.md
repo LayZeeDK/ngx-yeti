@@ -35,12 +35,13 @@ Examples:
 ```sh
 node tools/ci-local/run-job.mjs floor webkit-26-4
 node tools/ci-local/run-job.mjs ci e2e --matrix engine=webkit --matrix configuration=development
+node tools/ci-local/run-job.mjs ci e2e --matrix configuration=tailwind-c1
 node tools/ci-local/run-job.mjs floor firefox-146-e2e --matrix shard=1
 node tools/ci-local/run-job.mjs ci unit -- npx nx test ngx-yeti -- --project=browser
 node tools/ci-local/run-job.mjs ci e2e --dry-run
 ```
 
-Without `--matrix`, every combination runs, up to `--legs` at a time. A job without a `container` is refused; run it natively, below. Run one job at a time per checkout: two runs of the same job share its volumes. The script needs Docker and a `tar` that reads a NUL-separated list (Git Bash's or Windows').
+Without `--matrix`, every combination runs, up to `--legs` at a time. The `e2e` job's `configuration` is `development` (every e2e project), `production`, `tailwind-c1` or `tailwind-c2` (the Fixture app only; the two Tailwind values build it beside Tailwind v4 and run `tailwind.spec.ts` alone), so the job has 12 combinations. A job without a `container` is refused; run it natively, below. Run one job at a time per checkout: two runs of the same job share its volumes. The script needs Docker and a `tar` that reads a NUL-separated list (Git Bash's or Windows').
 
 ## Jobs without a container: run them natively
 
@@ -66,7 +67,7 @@ Measured on 2026-10-12 on Windows 11 on ARM64 with NVDA 2026.2 (Guidepup asset `
 
 ## Container jobs without Docker
 
-- The three current engines: `VITEST_MAX_WORKERS=2 BROWSERS=chromium,firefox,webkit npm exec nx -- run-many -t test test-storybook --parallel=1` (the `unit` job's two settings, which `run-job.mjs` applies itself) and `CI=true npm exec nx -- run-many -t e2e -p <projects> -- --project=<engine>`, with `FIXTURE_CONFIGURATION=production` for the production e2e run. The e2e run keeps `CI=true` for the job's CI settings, which `BROWSERS` skips (below). Without `CI` or `BROWSERS`, the browser projects declare Chromium only.
+- The three current engines: `VITEST_MAX_WORKERS=2 BROWSERS=chromium,firefox,webkit npm exec nx -- run-many -t test test-storybook --parallel=1` (the `unit` job's two settings, which `run-job.mjs` applies itself) and `CI=true npm exec nx -- run-many -t e2e -p <projects> -- --project=<engine>`, with `FIXTURE_CONFIGURATION=production`, `tailwind-c1` or `tailwind-c2` and `-p yeti-app-e2e` for the other three configurations. The e2e run keeps `CI=true` for the job's CI settings, which `BROWSERS` skips (below). Without `CI` or `BROWSERS`, the browser projects declare Chromium only.
 - `webkit-26-4` and `firefox-146-e2e`: `npm install --no-save playwright@<release> @playwright/test@<release>`, `npx playwright install <browser>`, then the job's steps with its `FLOOR_*` variable. Run `npm ci` before anything else afterwards.
 
 ## Choose browsers with BROWSERS
@@ -118,9 +119,9 @@ The layers between the world and the browsers, and what each leaves open:
 - A Playwright `install` from an older release deletes the other releases' browsers from the shared `ms-playwright` cache. After `npm ci`, `npx playwright install chromium firefox webkit` puts the current release's browsers back. `run-job.mjs` avoids this: each image carries its own browsers.
 - On Windows on ARM64, Playwright's Windows browsers and Chrome for Testing are x64 builds that run under emulation. The Playwright images are arm64 and need no emulation.
 - The `unit` job overloads its runner unless it sets `--parallel=1` and `VITEST_MAX_WORKERS=2`. Nx runs three tasks at a time, so `test` and `test-storybook` overlap, and each opens `min(12, CPUs - 1)` Vitest pages in each of three engines, about 45 pages on 8 vCPUs. Peak memory reaches about 14.4 GiB and the job exceeds Vitest's 60 s browser connect timeout (always Firefox), its 15 s browser test timeout, or its 5 s Node test timeout. With both settings the job passed 8 of 8 runs, against 8 of 9 as found and 1 of 4 under a CPU quota, with peak memory about 8.7 GiB and no wall-clock cost. `--parallel=1` alone passed 2 of 4. `VITEST_MAX_WORKERS=2` overrides every Vitest project's `maxWorkers`, so set both only for this job; local runs keep their defaults.
-- Hyper-V and WinNAT reserve port ranges on Windows, for example once Docker Desktop or WSL2 starts. A server that fails with `listen EACCES` on a fixed port (the e2e ports 4310 to 4312 and 4401, Storybook's 4400) sits in one; `netsh interface ipv4 show excludedportrange protocol=tcp` lists them. The Vitest browser servers pick a free port and are not affected.
+- Hyper-V and WinNAT reserve port ranges on Windows, for example once Docker Desktop or WSL2 starts. A server that fails with `listen EACCES` on a fixed port (the e2e ports 4310 to 4314 and 4401, Storybook's 4400) sits in one; `netsh interface ipv4 show excludedportrange protocol=tcp` lists them. The Vitest browser servers pick a free port and are not affected.
 - Git Bash rewrites arguments that look like POSIX paths. `run-job.mjs` starts Docker without a shell, but the command after `--` passes through Git Bash first: prefix the call with `MSYS_NO_PATHCONV=1` when that command holds an absolute path, or run it from PowerShell.
-- The e2e ports are fixed (4310 to 4312 and 4401), so two native e2e runs, in two checkouts or two sessions, cannot overlap.
+- The e2e ports are fixed (4310 to 4314 and 4401), so two native e2e runs, in two checkouts or two sessions, cannot overlap.
 - Remove the volumes with `docker volume rm` and the names `docker volume ls -q -f name=ngx-yeti-run-job` lists.
 
 ## Measured runs
