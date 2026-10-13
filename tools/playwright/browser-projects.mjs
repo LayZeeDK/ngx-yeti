@@ -83,7 +83,14 @@ export function browserProjects(webServerUrls, env = localEnv()) {
       project({
         name: 'chromium',
         engine: 'chromium',
-        options: { launchOptions: { executablePath: chromiumFloor } },
+        options: {
+          launchOptions: {
+            executablePath: chromiumFloor,
+            // Under x64 emulation on Windows on Arm, a renderer started with
+            // the stack profiler can end unkillable, and the run never exits.
+            args: ['--disable-stack-profiler'],
+          },
+        },
       }),
     ];
   }

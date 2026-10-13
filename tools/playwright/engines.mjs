@@ -3,7 +3,13 @@ import { readFileSync } from 'node:fs';
 import net from 'node:net';
 
 /** @typedef {'chromium' | 'firefox' | 'webkit'} Engine */
-/** @typedef {{ channel?: string, executablePath?: string }} LaunchOptions */
+/**
+ * @typedef {{
+ *   channel?: string,
+ *   executablePath?: string,
+ *   args?: string[],
+ * }} LaunchOptions
+ */
 /** @typedef {{ wsEndpoint: string, exposeNetwork: string }} ConnectOptions */
 /**
  * The Playwright options of a browser, in the shape both consumers take as

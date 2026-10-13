@@ -44,7 +44,11 @@ function browserEngines(): Pick<
   if (chromiumFloor) {
     return {
       provider: playwright({
-        launchOptions: { executablePath: chromiumFloor },
+        launchOptions: {
+          executablePath: chromiumFloor,
+          // As in tools/playwright/browser-projects.mjs.
+          args: ['--disable-stack-profiler'],
+        },
       }),
       instances: [{ browser: 'chromium' }],
     };
