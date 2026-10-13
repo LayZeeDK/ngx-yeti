@@ -5,7 +5,7 @@ milestone: layouts-and-button
 phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: active
+status: blocked
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -120,3 +120,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-12 — build — paused by user ruling 2026-10-12 'Pause after T043 and T041, before T020-T026, T044-T046, and T048.' Wave 4 landed: T035-T043, T047, T049 (12 of 23). Next: T020-T026, T044-T046, T048 (ready per build_state.py), then the wave 4 gate and review; wave 5 stays paused ('Pause before the next wave'). Notes: tmp/afk-m002/RUN.md, coder rules tmp/afk-m002/coder-rules.md, heavy lock tmp/afk-m002/tools/heavy-lock.mjs; another session's Docker containers must not be stopped
 - 2026-10-12 — build — correction to the pause entry: wave 4 has 22 tasks, 11 landed (T035-T043, T047, T049); ready now: T020, T022
 - 2026-10-13 — build — paused by user ruling 2026-10-13 'Pause before spawning more subagents so that we may continue using /gsd-path in a fresh session'. Wave 4 landed 16 of 22: T035-T043, T047, T049, T020, T022, T024, T021, T045. T025 blocked by a spinner-link hydration defect outside its files (patch saved, isolate retired). Next: plan repair 4 (fix task for the spinner link, AGENTS.md Scripts task), then T025, T023, T048, T044, T046, T026; handoff in tmp/afk-m002/NEXT-SESSION.md
+- 2026-10-13 — build — plan repair 4 needed: T025 is blocked by a product defect from T020 (yetiButton loads spinner styles without a spinner presence host, so YetiStyles drops the server's spinner link at hydration; 3 yeti-app-e2e failures, ADR 0060 point 5) that lies outside T025's files, and the AGENTS.md Scripts rule (user rulings 2026-10-13) can land only through a task; plan owns the task inventory; every task is pending or done, no isolates
