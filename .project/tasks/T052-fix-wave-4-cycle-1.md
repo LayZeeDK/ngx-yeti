@@ -209,7 +209,7 @@ The source task contracts are unchanged; read them and .project/intent/INTENT.md
 ## Verify
 
 ```bash
-npm ci && npx playwright install chromium && ! rg -q -F "recorded 2026-10-10" apps/screen-reader-e2e/src/card.screen-reader.ts && npx prettier --check . && npm exec nx -- run-many -t lint typecheck && npm exec nx -- run-many -t test test-storybook --skip-nx-cache && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci e2e && node tools/ci-local/run-job.mjs floor webkit-26-4 && node tools/ci-local/run-job.mjs floor firefox-146-e2e; status=$?; npx --no-install nx daemon --stop; exit $status
+npm ci && npx playwright install chromium && ! rg -q -F "recorded 2026-10-10" apps/screen-reader-e2e/src/card.screen-reader.ts && npx prettier --check . && npm exec nx -- run-many -t lint typecheck && npm exec nx -- run-many -t test test-storybook --skip-nx-cache --parallel=1 && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci e2e && node tools/ci-local/run-job.mjs floor webkit-26-4 && node tools/ci-local/run-job.mjs floor firefox-146-e2e; status=$?; npx --no-install nx daemon --stop; exit $status
 ```
 
 Heavy: yes
@@ -265,3 +265,30 @@ Criterion: The enter reduced-motion case asserts in Chromium and Firefox that th
 
 - 2026-10-13 — created by dispatch_driver.py fix-tasks from wave 4 cycle 1
 - 2026-10-13 — orchestrator: plan-defect repair (Verify and files). The generated Verify chained the 11 source tasks' whole Verifies with a trailing '&&' before each ')' (a shell syntax error) and ran none of the gate's failing jobs together; the new Verify runs prettier, lint and typecheck, the uncached test and test-storybook suites, five ci unit runs (criteria 8 and 10), ci e2e, floor webkit-26-4 and floor firefox-146-e2e, the jobs the wave 4 gate failed in. files gains docs/specs/upstream-bugs.md for a Firefox 146 limit if the enter case needs a row. Gate evidence: tmp/afk-m002/gate-wave4-c1/.
+- 2026-10-13 — coder build_T052: implementation. sc1/t021_ac1/t021_ac6: button.stories.ts `Icon` now reads `effectiveBackground(close)` (which finishes the button's colour transition) before `settledStyle(svgOf(close)).color`; icon.stories.ts `icon--standalone` loop reads `effectiveBackground(svg)` before `getComputedStyle(svg).color`. sc3/t025_ac2 (E9): setup-serving.spec.ts lines 62 and 84 assert `expect.arrayContaining(['card', 'lift'])`. sc3/t046_ac3: yeti-app-e2e enter.spec.ts reduced-motion case calls `page.emulateMedia({ reducedMotion: motion })` before `goto` (test.use kept); measured first in `run-job.mjs floor firefox-146-e2e --matrix shard=1 -- npx nx e2e yeti-app-e2e -- enter.spec.ts --grep "reduce motion|no-preference motion"`: 4 passed (both route kinds, both motions), so the Chromium/Firefox assertion stays and no upstream-bugs row or floor annotation is needed. t036_ac4: standard-cases.ts gains an `afterLeave` hook run after the item link is gone; stack.spec.ts and center.spec.ts pass `stackAndCenterLinks(page)` polled to `[]`, restoring the pre-T036 check that the other item's link leaves too. t041_ac8: card.screen-reader.ts comment drops "recorded 2026-10-10" (no date, task id, edge id or "Not yet measured" left in it or focus-guard.nvda.ts, checked with rg).
+- 2026-10-13 — coder build_T052: Verify (as written, through heavy-lock, 07:41:29-08:21:07) exit 0. prettier clean; run-many lint typecheck: 8 projects OK; run-many test test-storybook --skip-nx-cache: 5 projects OK (button--icon and icon stories pass). ci unit x5, all exit 0 (t037_ac3 five results, t042_ac3 runs), wall times start-to-finish 155 s, 125 s, 122 s, 132 s, 125 s; each run 99 + 504 + 1711 + 1 + 1 tests passed. ci e2e 12 legs all OK: chromium dev 152+618 passed, prod 559 passed/61 skipped, c1 8, c2 8; firefox dev 152+616, prod 557/63 skipped, c1 8, c2 8; webkit dev 144+612, prod 553/67 skipped, c1 8, c2 8 (0 failed, setup-serving.spec.ts included). floor webkit-26-4: unit OK, e2e 136 + 608 passed. floor firefox-146-e2e: shard 1 76 + 308 passed, shard 2 76 + 308 passed (enter.spec.ts reduced-motion included). Nothing else held the lock during the run.
+- 2026-10-13 — coder build_T052: t042_ac3 peak container memory, `docker stats --no-stream` sampled every ~3 s through the five ci unit runs: peaks 9.70, 9.28, 9.14, 9.28, 8.98 GiB of an 11.66 GiB limit (in the expected 8-9 GiB band, not 14 GiB). The T037 and T042 Logs are outside this task's files; the orchestrator copies these results there if wanted.
+- 2026-10-13 — coder build_T052: rule-13 check `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (through the lock): 6 projects OK (697 + 168 + 1 tests passed). The source tasks' own Verifies were not re-run one by one; the orchestrator's Verify above runs the jobs the wave 4 gate failed (it omits floor firefox-145 and chromium-141, which the sc8 finding also names for the wave review rerun).
+- 2026-10-13 — orchestrator Verify (isolate gsd-path-task/T052): fail, exit 1; output tail:
+  ```
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  
+  [7m[1m[31m NX [39m[22m[27m  [31mRunning targets [1mtest[22m, [1mtest-storybook[22m for 5 projects and [1m2[22m tasks they depend on failed[39m
+  
+  [2mFailed tasks:[22m
+  
+  [2m-[22m @ngx-yeti/source:test
+  
+  [2mOutput of 7 successful tasks were not shown. Run with[22m --verbose [2mor[22m --output-style=static [2mto see it.[22m
+  
+  
+  [7m[1m[33m NX [39m[22m[27m  [33mNx detected 2 flaky tasks[39m
+  
+    @ngx-yeti/source:test
+    yeti-app:test
+  
+  Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
+  ```
+- 2026-10-13 — orchestrator: attempt 1 rejected by finish (Verify failed in the isolate): the only failure was tools/playwright-server/container.test.mjs:279 ('run-server did not answer' at 25.5 s) in the uncached run-many, a file outside this task; it passes 5/5 alone at ~6.3 s (measured). Plan-defect repair (Verify only): the uncached test and test-storybook run takes --parallel=1, as ci.yml's unit job does (T042's measured fix for a runner overloading itself). Attempt 1 saved at tmp/afk-m002/tools/T052-attempt1.patch (8 product files); retry reapplies it.
