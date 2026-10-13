@@ -464,6 +464,7 @@ export const Text: Story = {
               )
               .join('')}
             <p data-testid="override" yetiPaint="primary" yetiText="grey-0">Words in grey-0 on primary</p>
+            <div data-testid="override-probe" style="color: var(${textToken('grey-0')})"></div>
           </div>`,
         ),
       )
@@ -498,6 +499,9 @@ export const Text: Story = {
 
       await expect(override).toHaveAttribute('data-paint', 'primary');
       await expect(override).toHaveAttribute('data-text', 'grey-0');
+      await expect(getComputedStyle(override).color).toBe(
+        getComputedStyle(byTestId(wrapper, 'override-probe')).color,
+      );
       await expectReadableOn(override, override);
     }
   },
@@ -532,9 +536,6 @@ export const Composed: Story = {
       'center',
     ]);
     await expect(column).toHaveAttribute('data-gap', 'lg');
-    await expect(
-      column.getAttributeNames().filter((name) => name === 'data-gap'),
-    ).toHaveLength(1);
 
     const { maxInlineSize } = getComputedStyle(canvas.getByTestId('xl-width'));
 

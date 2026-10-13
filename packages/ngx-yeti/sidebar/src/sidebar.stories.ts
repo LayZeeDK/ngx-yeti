@@ -63,6 +63,10 @@ function sizeAround(
   frame.style.inlineSize = `${String(side === 'wider' ? width + margin : width - margin)}px`;
 }
 
+/** What a Tab walk in a play function proves; real Tab is layer 4's. */
+const tabWalkProves =
+  "No positive tabindex: Storybook's Tab moves focus through its own DOM-order list, not the browser's Tab order";
+
 /** A box's padding once its file has applied: the page's default is none. */
 const padded = (value: string): boolean => value !== '0px';
 
@@ -498,7 +502,7 @@ export const Rtl: Story = {
 
     for (const link of sidebar.querySelectorAll('a')) {
       await userEvent.tab();
-      await expect(link).toHaveFocus();
+      await expect(link, tabWalkProves).toHaveFocus();
     }
   },
 };

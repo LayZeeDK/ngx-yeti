@@ -138,10 +138,10 @@ describe(NgxYetiColumns, () => {
     expect(element.hasAttribute('role')).toBe(false);
   });
 
-  it('renders each bound input, updates it, and never writes align', async () => {
-    expect.assertions(7);
+  it('renders each bound input and never writes align', async () => {
+    expect.assertions(6);
 
-    const { element, fixture, inputs } = await setupBound();
+    const { element } = await setupBound();
 
     expect(element.getAttribute('data-threshold')).toBe('sm');
     expect(element.getAttribute('data-gap')).toBe('sm-lg');
@@ -149,11 +149,26 @@ describe(NgxYetiColumns, () => {
     expect(element.getAttribute('data-justify')).toBe('between');
     expect(element.getAttribute('data-columns')).toBe('2');
     expect(element.hasAttribute('align')).toBe(false);
+  });
 
+  it('updates each bound input when its value changes', async () => {
+    expect.assertions(6);
+
+    const { element, fixture, inputs } = await setupBound();
+
+    inputs.threshold.set('lg');
+    inputs.gap.set('xs');
+    inputs.align.set('end');
+    inputs.justify.set('center');
     inputs.columns.set('3');
     await fixture.whenStable();
 
+    expect(element.getAttribute('data-threshold')).toBe('lg');
+    expect(element.getAttribute('data-gap')).toBe('xs');
+    expect(element.getAttribute('data-align')).toBe('end');
+    expect(element.getAttribute('data-justify')).toBe('center');
     expect(element.getAttribute('data-columns')).toBe('3');
+    expect(element.hasAttribute('align')).toBe(false);
   });
 
   it('removes each bound input when it is unset', async () => {

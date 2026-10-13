@@ -19,7 +19,7 @@ import {
 } from '@storybook/angular-vite';
 import type { YetiAlign, YetiSelf } from 'ngx-yeti';
 import { NgxYetiPaint } from 'ngx-yeti/box';
-import { expect, waitFor } from 'storybook/test';
+import { expect, isInaccessible, waitFor, within } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 // Kept a URL in the static build too: NgOptimizedImage refuses `data:` URLs.
 import trail from '../../.storybook/assets/trail.svg?no-inline';
@@ -107,10 +107,17 @@ async function expectCaptionReadable(caption: HTMLElement): Promise<void> {
   }
 }
 
-/** Reading order is source order: nothing reorders the children. */
+/**
+ * Reading order is source order: the accessibility tree holds every child,
+ * and nothing reorders them. A child with no role of its own, such as a
+ * `figcaption`, is in the tree unless something hides it from the tree.
+ */
 async function expectSourceOrder(layer: HTMLElement): Promise<void> {
   const items = elementChildren(layer);
 
+  await expect(items.filter((child) => !isInaccessible(child))).toStrictEqual(
+    items,
+  );
   await expect(items.map((child) => getComputedStyle(child).order)).toEqual(
     items.map(() => '0'),
   );
@@ -198,6 +205,7 @@ export const Default: Story = {
     );
     assertWithin(box.height, Math.max(image.height, text.height));
 
+    await expect(within(layer).getAllByRole('img')).toStrictEqual([picture]);
     await expectSourceOrder(layer);
     await expectCaptionReadable(caption);
   },

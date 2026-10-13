@@ -242,15 +242,12 @@ describe(YetiOverlay, () => {
     });
 
     it('renders one data-fill for yetiStack with a filled yetiOverlayChild', async () => {
-      expect.assertions(2);
+      expect.assertions(1);
 
       const { byId } = await setupHost();
       const stacked = byId('stacked');
 
       expect(stacked.getAttribute('data-fill')).toBe('');
-      expect(
-        stacked.getAttributeNames().filter((name) => name === 'data-fill'),
-      ).toHaveLength(1);
     });
 
     it("keeps the consumer's own class on each host", async () => {

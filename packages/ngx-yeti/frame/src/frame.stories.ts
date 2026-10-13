@@ -210,6 +210,10 @@ export const Ratios: Story = {
 
     await itemStyled('frame', unset, 'overflow', 'hidden');
 
+    for (const image of canvasElement.querySelectorAll('img')) {
+      await imageLoaded(image);
+    }
+
     for (const ratio of ratios) {
       const frame = byTestId(canvasElement, `frame-${ratio}`);
 

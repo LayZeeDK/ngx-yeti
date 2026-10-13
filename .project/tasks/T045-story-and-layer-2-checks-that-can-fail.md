@@ -3,9 +3,9 @@ id: T045
 title: Make the story and layer-2 checks the review found unable to fail assert what their specs ask
 wave: 4
 deps: [T020, T037]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T045
+base: d60b47984ecd00d6ee19f73a679012cd75747c11
 worktree: null
 task_branch: null
 files:
@@ -94,3 +94,29 @@ Heavy: yes
 ## Log
 
 - 2026-10-12 — created by planner (build repair #3, review round 1 fixes; triage item 6 for breakout and stack and the g2 test analyzer's story and layer-2 minors and cosmetics). At 1747fe0 the overlay story has no `yetiCover`, the timeline story no `isFinite`, and the five length checks exist, so the Verify fails if this task is skipped. deps: T020 (file overlap, `packages/ngx-yeti/box/src/box.stories.ts`, where T020 adds the focus-ring button) and T037 (file overlap, every story file here, which T037 migrates). The Verify ends by stopping the Nx daemon and keeps its own exit code; run it exactly as written and never set NX_DAEMON.
+- 2026-10-13 — coder build_T045: implementation. box--text: the in-band `yetiText="grey-0"` override's computed colour is now asserted against an `override-probe` reading the same token. The five duplicate-attribute length checks are deleted (box story and spec, center story and spec, overlay spec); the `toHaveAttribute`/`getAttribute` beside each stays, and `expect.assertions` counts are lowered to match. columns spec: the bound-input test splits in two (vitest/max-expects caps a test at 10), and the second test changes threshold, gap, align, justify, and columns in place, asserting each attribute and no `align`. frame--ratios: `imageLoaded()` on every image before measuring. grid--default: the list sits in a stage resized to five times (the probe's `2xs` width + the grid's column gap); the story asserts more than three columns would fit uncapped, then exactly three per row (stronger than <=3). masonry--capped: the stage is resized to four times (probe `2xs` + column gap); the story asserts more than two would fit, then two columns. layer--default: the tree check is role queries, `getAllByRole('img')` equal to [picture], plus every child not `isInaccessible` (Testing Library), beside the kept `order`/aria-owns check; a role-name query on the figure was tried and dropped because Chromium's `figcaption` gives no name in dom-testing-library. overlay--default: `[...getAllByRole('img'), ...getAllByRole('paragraph')]` equals the overlay's DOM children. overlay--veil: the veil is `yetiCover yetiOverlayChild over fill class="veil"` holding `yetiCoverChild center role="status"`, with the story style `.veil { --yeti-cover-height: auto; background: var(--yeti-color-scrim); }`; the story asserts the cover class, presence attribute, and `data-center`, that the form is shorter than the viewport, that the veil's height equals the form's within 1 px, every edge, and a centred message. The forms are 24rem wide: at full width Yeti's prose measure capped the message at 336 px inside a 600 px veil, which failed the centring. timeline: `beforeBox` throws, naming the values, unless left, top, width, and height parse to finite numbers. The sidebar--rtl and timeline Tab walks pass the message "No positive tabindex: Storybook's Tab moves focus through its own DOM-order list, not the browser's Tab order" to each `toHaveFocus`. breakout: the bleeding child is `yetiFrame ratio="21/9" yetiBreakoutChild bleed` (spec section 8), with the stale comment rewritten. stack--rule: each row is `yetiCluster justify="between"` (stack.md section 8, without yetiNumeric, since table is not this task's), with the comment rewritten. Axe and every assertion stay green with both compositions.
+- 2026-10-13 — coder build_T045: control runs, each a scripted edit to one story file run with `nx test-storybook ngx-yeti --skip-nx-cache -- <item>/src` through the heavy lock, then restored (nothing kept). Every one failed, Chromium, 1 test each: (1) box Text with `yetiText="grey-0"` removed from the override: "expected 'oklch(0.99 0 0)' to be 'oklch(0.99 0.02 250)'" at the new probe assertion (the 4.5:1 check alone would have passed). (2) frame Ratios with `.frame { aspect-ratio: auto } .frame > img { block-size: auto }` (the frame grows to its image): "Expected 288 to be within 1 of 192" in assertRatio; (2b) the same with the decode wait removed: the same failure (Chromium decoded the data: SVGs in time here; the race stays inferred). (3) grid Default with `columns="3"` removed: "expected 5 to be 3". (4) masonry Capped with `columns="2"` removed: "expected [0, 214, 429, 643] to have a length of 2 but got 4". (5) layer Default with `aria-hidden="true"` on the caption: the not-isInaccessible list lost the caption (toStrictEqual); (5b) aria-hidden on the picture: "Unable to find an accessible element with the role img". (6) overlay Default with `aria-hidden="true"` on the held child (and the story's own aria-hidden filter dropped, so the role query is what fails): "Unable to find an accessible element with the role paragraph". (7) overlay Veil with inline `display:grid; place-items:center` and no `yetiCover`/`yetiCoverChild`: fails at `toHaveClass('cover', 'veil')`; (7b) yetiCover kept but `--yeti-cover-height: auto` dropped: "Expected 900 to be within 1 of 75.90625", meaning the veil is the viewport's height (upstream-bugs Y10, reproduced). (8) timeline Default with `.timeline > li::before { position: static }` (left and top resolve to `auto`): beforeBox throws the non-finite error from expectDotsClearOfDates.
+- 2026-10-13 — coder build_T045: Verify run exactly as written, through the heavy lock: exit 0. lint and typecheck ngx-yeti passed; `nx test ngx-yeti -- box/src center/src columns/src overlay/src`: 12 files, 83 tests passed; test-storybook (Chromium, local): 11 files, 71 tests passed; `ci unit` container test-storybook (Chromium, Firefox, WebKit): 33 files, 213 tests passed, each story's axe gate included; `ci unit` container browser tests: 12 files, 183 tests passed; Nx daemon stopped. Rule 13: `npx prettier --check .` passed. `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD`: 15 tasks; every lint, typecheck, and test-storybook task passed (ngx-yeti:test-storybook included). ngx-yeti:test failed 1 of 626 (77 of 78 files passed): `src/item-names.node.spec.ts` "load the item file their presence attribute names" reports `button/src/button.ts` (presence [button], styles [button, spinner]). That is the known failure from the landed button directive, which sibling T021 fixes, not caused by this task. I did not touch the file.
+- 2026-10-13 — orchestrator Verify (isolate gsd-path-task/T045): pass, exit 0; output tail:
+  ```
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/spinner
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/stack
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/table
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/timeline
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/visually-hidden
+  ```

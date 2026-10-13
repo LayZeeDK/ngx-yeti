@@ -36,6 +36,10 @@ const unset: TimelineState = { gap: undefined, alternate: false };
  */
 const timelineStates = storyStates<WritableSignal<TimelineState>>('timeline');
 
+/** What a Tab walk in a play function proves; real Tab is layer 4's. */
+const tabWalkProves =
+  "No positive tabindex: Storybook's Tab moves focus through its own DOM-order list, not the browser's Tab order";
+
 function byTestId(root: Element, id: string): HTMLElement {
   const element = root.querySelector(`[data-testid="${id}"]`);
 
@@ -57,15 +61,29 @@ interface Box {
 function beforeBox(element: HTMLElement): Box {
   const rect = element.getBoundingClientRect();
   const style = getComputedStyle(element, '::before');
-  const left = rect.left + parseFloat(style.left);
-  const top = rect.top + parseFloat(style.top);
+  const [x, y, width, height] = [
+    style.left,
+    style.top,
+    style.width,
+    style.height,
+  ].map(parseFloat);
 
-  return {
-    left,
-    right: left + parseFloat(style.width),
-    top,
-    bottom: top + parseFloat(style.height),
-  };
+  if (
+    x === undefined ||
+    y === undefined ||
+    width === undefined ||
+    height === undefined ||
+    ![x, y, width, height].every(Number.isFinite)
+  ) {
+    throw new Error(
+      `The ::before box has no used position or size: left ${style.left}, top ${style.top}, width ${style.width}, height ${style.height}`,
+    );
+  }
+
+  const left = rect.left + x;
+  const top = rect.top + y;
+
+  return { left, right: left + width, top, bottom: top + height };
 }
 
 function centre({ left, right }: Box): number {
@@ -445,7 +463,7 @@ export const Links: Story = {
 
     for (const link of links) {
       await userEvent.tab();
-      await expect(link).toHaveFocus();
+      await expect(link, tabWalkProves).toHaveFocus();
 
       const { top } = link.getBoundingClientRect();
 
@@ -503,7 +521,7 @@ export const Rtl: Story = {
 
     for (const link of within(canvasElement).getAllByRole('link')) {
       await userEvent.tab();
-      await expect(link).toHaveFocus();
+      await expect(link, tabWalkProves).toHaveFocus();
     }
   },
 };

@@ -196,19 +196,30 @@ export const Fit: Story = {
   },
 };
 
-/** `columns="2"` in a stage wide enough for more. */
+/** `columns="2"` in a stage wide enough for four columns. */
 export const Capped: Story = {
   render: () => ({
     props: { heights },
     template: blocks('min="2xs" columns="2"'),
   }),
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
+    const stage = canvas.getByTestId('stage');
     const masonry = canvas.getByTestId('masonry');
 
     await expect(masonry).toHaveAttribute('data-columns', '2');
     await itemStyled('masonry', masonry, 'column-gap', columnGapSet);
 
-    await expect(columnLefts(masonry)).toHaveLength(2);
+    const min = usedLength(canvasElement, 'var(--yeti-width-2xs)');
+    const gap = parseFloat(getComputedStyle(masonry).columnGap);
+
+    resize(stage, 4 * (min + gap));
+
+    await expect(
+      Math.floor((masonry.getBoundingClientRect().width + gap) / (min + gap)),
+    ).toBeGreaterThan(2);
+    await waitFor(async () => {
+      await expect(columnLefts(masonry)).toHaveLength(2);
+    });
   },
 };
 

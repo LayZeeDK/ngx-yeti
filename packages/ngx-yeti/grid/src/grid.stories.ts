@@ -85,6 +85,16 @@ function resize(stage: HTMLElement, width: number): void {
 }
 
 /**
+ * How many columns of `min` fit the layout's width with its own column gap,
+ * which is the count Yeti draws when nothing caps it.
+ */
+function columnsThatFit(layout: HTMLElement, min: number): number {
+  const gap = parseFloat(getComputedStyle(layout).columnGap);
+
+  return Math.floor((layout.getBoundingClientRect().width + gap) / (min + gap));
+}
+
+/**
  * Expects the cells to be drawn in source order: each one below the last,
  * or in the same row and after it in the writing direction.
  */
@@ -123,18 +133,24 @@ type Story = StoryObj<YetiGrid>;
 
 const names = ['One', 'Two', 'Three', 'Four', 'Five'];
 
-/** Yeti's grid example: a list of five raised, bordered boxes. */
+/**
+ * Yeti's grid example: a list of five raised, bordered boxes, in a stage
+ * wide enough for all five in one row, so the cap is what holds three.
+ */
 export const Default: Story = {
   render: () => ({
     props: { names },
     template: `
-      <ul data-testid="grid" yetiGrid min="2xs" columns="3" role="list">
-        @for (name of names; track name) {
-          <li yetiBox surface="raised" yetiBorder>{{ name }}</li>
-        }
-      </ul>`,
+      <div data-testid="stage">
+        <ul data-testid="grid" yetiGrid min="2xs" columns="3" role="list">
+          @for (name of names; track name) {
+            <li yetiBox surface="raised" yetiBorder>{{ name }}</li>
+          }
+        </ul>
+      </div>`,
   }),
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
+    const stage = canvas.getByTestId('stage');
     const grid = canvas.getByTestId('grid');
     const list = canvas.getByRole('list');
     const items = within(list).getAllByRole('listitem');
@@ -161,7 +177,16 @@ export const Default: Story = {
     await itemStyled('box', childAt(grid, 0), 'padding-top', padded);
 
     await expect(getComputedStyle(grid).paddingInlineStart).toBe('0px');
-    await expect(perRow(grid)).toBeLessThanOrEqual(3);
+
+    const min = usedLength(canvasElement, 'var(--yeti-width-2xs)');
+
+    resize(
+      stage,
+      names.length * (min + parseFloat(getComputedStyle(grid).columnGap)),
+    );
+
+    await expect(columnsThatFit(grid, min)).toBeGreaterThan(3);
+    await expect(perRow(grid)).toBe(3);
     await expectSourceOrderOnScreen(grid);
   },
 };

@@ -14,6 +14,7 @@ import {
 } from '@storybook/angular-vite';
 import type { YetiAlign, YetiGap } from 'ngx-yeti';
 import { YetiBorder, YetiBox } from 'ngx-yeti/box';
+import { YetiCluster } from 'ngx-yeti/cluster';
 import { expect, waitFor } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import { YetiStack } from './stack';
@@ -92,7 +93,7 @@ const meta: Meta<YetiStack> = {
   component: YetiStack,
   decorators: [
     moduleMetadata({
-      imports: [YetiStack, YetiStackChild, YetiBox, YetiBorder],
+      imports: [YetiStack, YetiStackChild, YetiBox, YetiBorder, YetiCluster],
     }),
   ],
 };
@@ -340,16 +341,16 @@ export const Align: Story = {
 /**
  * A ruled definition list (stack spec, section 8), and a ruled stack whose
  * first child's `space` does nothing (usage rule 4), with a closer child and
- * a child that is itself a stack with its own gap. Until `cluster` lands,
- * each row of the list is a plain `div`.
+ * a child that is itself a stack with its own gap. Each row of the list is a
+ * cluster.
  */
 export const Rule: Story = {
   render: () => ({
     template: `
       <dl data-testid="list" yetiStack rule gap="sm">
-        <div><dt>Distance</dt><dd>14.2 km</dd></div>
-        <div><dt>Ascent</dt><dd>1,120 m</dd></div>
-        <div><dt>Time</dt><dd>5 h 30 min</dd></div>
+        <div yetiCluster justify="between"><dt>Distance</dt><dd>14.2 km</dd></div>
+        <div yetiCluster justify="between"><dt>Ascent</dt><dd>1,120 m</dd></div>
+        <div yetiCluster justify="between"><dt>Time</dt><dd>5 h 30 min</dd></div>
       </dl>
       <div data-testid="ruled" yetiStack rule gap="sm">
         <p yetiStackChild space="xl">First, where the marker does nothing.</p>

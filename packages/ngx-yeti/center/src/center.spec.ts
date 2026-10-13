@@ -154,7 +154,7 @@ describe(YetiCenter, () => {
     });
 
     it('renders one data-gap from one gap binding beside yetiBox', async () => {
-      expect.assertions(3);
+      expect.assertions(2);
 
       const fixture = TestBed.createComponent(CenterBoxHost);
       await fixture.whenStable();
@@ -167,9 +167,6 @@ describe(YetiCenter, () => {
         'box',
         'center',
       ]);
-      expect(
-        section.getAttributeNames().filter((name) => name === 'data-gap'),
-      ).toHaveLength(1);
       expect(section.getAttribute('data-gap')).toBe('lg');
     });
   });

@@ -18,7 +18,8 @@ import {
 } from '@storybook/angular-vite';
 import type { YetiGap } from 'ngx-yeti';
 import { NgxYetiPaint, YetiBox } from 'ngx-yeti/box';
-import { expect, userEvent, waitFor } from 'storybook/test';
+import { YetiCover, YetiCoverChild } from 'ngx-yeti/cover';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 // Kept a URL in the static build too: NgOptimizedImage refuses `data:` URLs.
 import trail from '../../.storybook/assets/trail.svg?no-inline';
@@ -99,10 +100,18 @@ function effectiveBackground(element: Element): SrgbColor {
   throw new Error('No opaque background behind the element');
 }
 
-/** Reading order is source order: nothing reorders the children. */
+/**
+ * Reading order is source order: the accessibility tree lists the picture
+ * and the held child in DOM order, and nothing reorders them.
+ */
 async function expectSourceOrder(overlay: HTMLElement): Promise<void> {
   const items = [...overlay.children];
+  const tree = within(overlay);
 
+  await expect([
+    ...tree.getAllByRole('img'),
+    ...tree.getAllByRole('paragraph'),
+  ]).toStrictEqual(items);
   await expect(items.map((child) => getComputedStyle(child).order)).toEqual(
     items.map(() => '0'),
   );
@@ -159,6 +168,8 @@ const meta: Meta<YetiOverlay> = {
       imports: [
         YetiOverlay,
         YetiOverlayChild,
+        YetiCover,
+        YetiCoverChild,
         YetiBox,
         NgxYetiPaint,
         NgOptimizedImage,
@@ -317,17 +328,20 @@ export const Settings: StoryObj<
   },
 };
 
-/** The veil, its message, and the covered controls of one form. */
+/**
+ * The veil, its message, and the covered controls of one form, narrower
+ * than Yeti's prose measure, so the message spans the veil.
+ */
 function veilForm(testId: string, savingExpression: string): string {
   return `
-    <form data-testid="${testId}" yetiOverlay>
+    <form data-testid="${testId}" yetiOverlay style="inline-size: 24rem; max-inline-size: 100%">
       <div data-testid="${testId}-covered" [attr.inert]="${savingExpression} ? '' : null">
         <label for="${testId}-email">Email</label>
         <input data-testid="${testId}-input" id="${testId}-email" type="email" />
       </div>
       @if (${savingExpression}) {
-        <div data-testid="${testId}-veil" yetiOverlayChild over fill style="display: grid; place-items: center; background-color: var(--yeti-color-scrim)">
-          <p data-testid="${testId}-message" role="status">Saving...</p>
+        <div data-testid="${testId}-veil" yetiCover yetiOverlayChild over fill class="veil">
+          <p data-testid="${testId}-message" yetiCoverChild center role="status">Saving...</p>
         </div>
       }
     </form>`;
@@ -355,13 +369,24 @@ async function expectMessageReadable(
   }
 }
 
-/** The veil covers its box on every edge and centres its message. */
+/**
+ * The veil is a cover that covers its box on every edge, so it is the box's
+ * height and not the viewport's, and the cover centres its message.
+ */
 async function expectVeil(root: HTMLElement, testId: string): Promise<void> {
-  const box = byTestId(root, testId).getBoundingClientRect();
   const veil = byTestId(root, `${testId}-veil`);
   const message = byTestId(root, `${testId}-message`);
+
+  await expect(veil).toHaveClass('cover', 'veil');
+  await expect(veil).toHaveAttribute('data-ngx-yeti-item-cover', '');
+  await expect(message).toHaveAttribute('data-center', '');
+  await itemStyled('cover', veil, 'flex-direction', 'column');
+
+  const box = byTestId(root, testId).getBoundingClientRect();
   const rect = veil.getBoundingClientRect();
 
+  await expect(box.height).toBeLessThan(document.documentElement.clientHeight);
+  assertWithin(rect.height, box.height);
   assertWithin(rect.top, box.top);
   assertWithin(rect.right, box.right);
   assertWithin(rect.bottom, box.bottom);
@@ -373,12 +398,16 @@ async function expectVeil(root: HTMLElement, testId: string): Promise<void> {
 /**
  * A loading veil over a form (overlay spec, section 8), with the covered
  * controls made `inert` while it shows, and a permanently saving copy on
- * Yeti's dark page surface. The veil centres its message with the
- * consumer's own grid.
+ * Yeti's dark page surface. The veil is a `yetiCover` with the consumer's
+ * `--yeti-cover-height: auto`, which keeps it the form's height (usage
+ * rule 8).
  */
 export const Veil: Story = {
   render: () => ({
     props: { saving: signal(false) },
+    styles: [
+      '.veil { --yeti-cover-height: auto; background: var(--yeti-color-scrim); }',
+    ],
     template: `
       <button data-testid="toggle" type="button" (click)="saving.set(!saving())">Toggle saving</button>
       ${veilForm('form', 'saving()')}

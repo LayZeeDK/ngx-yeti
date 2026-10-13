@@ -18,6 +18,7 @@ import {
   type StoryObj,
 } from '@storybook/angular-vite';
 import type { YetiGap, YetiWidth } from 'ngx-yeti';
+import { YetiFrame } from 'ngx-yeti/frame';
 import { expect, waitFor } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 // Kept a URL in the static build too: NgOptimizedImage refuses `data:` URLs.
@@ -92,15 +93,15 @@ async function expectReadable(texts: readonly HTMLElement[]): Promise<void> {
 
 /**
  * Yeti's example with one note, in a frame narrower than the note's 64rem
- * threshold and wider than the column. The bleeding child stands in for a
- * `yetiFrame` until frame lands; it holds the picture.
+ * threshold and wider than the column. The bleeding child is a `yetiFrame`
+ * holding the picture.
  */
 const longRead = `
   <div data-testid="frame" style="inline-size: 60rem">
     <article data-testid="breakout" yetiBreakout>
       <h1 data-testid="heading">A long read</h1>
       <p data-testid="paragraph">Every paragraph here sits in the same narrow column, because that is what a long read wants: a line short enough that the eye finds the start of the next one.</p>
-      <div data-testid="bleed" yetiBreakoutChild bleed>
+      <div data-testid="bleed" yetiFrame ratio="21/9" yetiBreakoutChild bleed>
         <img [ngSrc]="trail" width="1600" height="900" priority alt="A mountain trail at dawn, edge to edge" />
       </div>
       <div data-testid="plain">The picture is the exception. Left in the column it would sit marooned in a sea of margin, so it is marked to bleed.</div>
@@ -130,6 +131,7 @@ const meta: Meta<YetiBreakout> = {
         YetiBreakout,
         YetiBreakoutChild,
         YetiBreakoutNote,
+        YetiFrame,
         NgOptimizedImage,
       ],
     }),

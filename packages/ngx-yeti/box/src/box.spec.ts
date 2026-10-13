@@ -198,16 +198,13 @@ describe(YetiBox, () => {
     });
 
     it('renders one data-gap from one gap binding beside yetiCenter', async () => {
-      expect.assertions(4);
+      expect.assertions(3);
 
       const { element, fixture } = await setupHost(BoxCenterHost);
       const host = element.querySelector('div');
       assert.exists(host);
 
       expect([...host.classList].toSorted()).toStrictEqual(['box', 'center']);
-      expect(
-        host.getAttributeNames().filter((name) => name === 'data-gap'),
-      ).toStrictEqual(['data-gap']);
       expect(host.getAttribute('data-gap')).toBe('lg');
 
       fixture.componentInstance.gap.set(undefined);

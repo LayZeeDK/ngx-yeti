@@ -250,9 +250,6 @@ export const WithBox: Story = {
       'center',
     ]);
     await expect(center).toHaveAttribute('data-gap', 'lg');
-    await expect(
-      center.getAttributeNames().filter((name) => name === 'data-gap'),
-    ).toHaveLength(1);
     await expect(center).toHaveAttribute('data-ngx-yeti-item-center', '');
     await expect(center).toHaveAttribute('data-ngx-yeti-item-box', '');
 
