@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: plan
+phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: done
+status: active
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -124,3 +124,5 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-13 — plan — build plan repair requested
 - 2026-10-13 — plan — build recovery: {"base": "d3093d56438c0541d9fab50ca55641990b0bb548", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-13 — plan — plan approved
+- 2026-10-13 — build — build started
+- 2026-10-13 — build — plan repair 4 (T050 loader keeps server links until the hydrating application settles; T051 AGENTS.md Scripts section; T025 after T050) approved by the orchestrator acting as owner under the user's /goal of 2026-10-13 ('You are running in AFK mode. Use lars-mode and other lars-* skills to keep going and make decisions without a HITL.'), after its own gate-plan rerun exited 0
