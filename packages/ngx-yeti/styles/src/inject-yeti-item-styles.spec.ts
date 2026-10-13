@@ -1,9 +1,11 @@
 import {
   APP_ID,
+  ApplicationRef,
   CSP_NONCE,
   Component,
   Directive,
   EnvironmentInjector,
+  PendingTasks,
   type EnvironmentProviders,
   ErrorHandler,
   type Provider,
@@ -70,6 +72,14 @@ class ProbeShell {
 class ProbeCard {
   constructor() {
     injectYetiItemStyles('card');
+  }
+}
+
+/** Acquires an item it marks no host for, as button acquires spinner. */
+@Directive({ selector: '[yetiProbeCrossItem]' })
+class ProbeCrossItem {
+  constructor() {
+    injectYetiItemStyles('cover');
   }
 }
 
@@ -351,6 +361,50 @@ describe(injectYetiItemStyles, () => {
     expect(own.isConnected).toBe(false);
     expect(other.isConnected).toBe(true);
     expect(itemLinks()).toStrictEqual([other]);
+  });
+
+  it('keeps an adopted link that a directive acquires before the application is stable', async () => {
+    expect.assertions(5);
+
+    setup();
+    const acquired = serverLink('cover', appId);
+    const unused = serverLink('center', appId);
+    document.head.append(acquired, unused);
+    const removed: Node[] = [];
+    const removals = new MutationObserver((records) => {
+      removed.push(...records.flatMap((record) => [...record.removedNodes]));
+    });
+    removals.observe(document.head, { childList: true });
+    const appRef = TestBed.inject(ApplicationRef);
+    // Held as the initial navigation holds a hydrating application.
+    const settle = TestBed.inject(PendingTasks).add();
+
+    try {
+      TestBed.createDirective(ProbeStack, { tagName: 'div' });
+      // The first render callback, then the frame its check would run in.
+      appRef.tick();
+      await nextFrame();
+      // A route component's directive that marks no host for its item.
+      TestBed.createDirective(ProbeCrossItem, { tagName: 'div' });
+      appRef.tick();
+      await nextFrame();
+
+      expect(itemLinks('cover')).toStrictEqual([acquired]);
+      expect(unused.isConnected).toBe(true);
+    } finally {
+      settle();
+    }
+
+    await appRef.whenStable();
+    await nextFrame();
+    removed.push(
+      ...removals.takeRecords().flatMap((record) => [...record.removedNodes]),
+    );
+    removals.disconnect();
+
+    expect(itemLinks('cover')).toStrictEqual([acquired]);
+    expect(removed).not.toContain(acquired);
+    expect(unused.isConnected).toBe(false);
   });
 
   it('inserts before the first later-ranked link in <head>, whatever its application', async () => {

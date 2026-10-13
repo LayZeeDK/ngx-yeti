@@ -1,6 +1,12 @@
 import { expectItemSheetsApplied, rect } from '@ngx-yeti/testing/playwright';
 import { type Locator, type Page } from '@playwright/test';
-import { expect, isProduction, routeKinds, test } from './support/fixtures';
+import {
+  expect,
+  expectOnlyClientPreloads,
+  isProduction,
+  routeKinds,
+  test,
+} from './support/fixtures';
 import { nextFrames, waitForHydration } from './support/hydration';
 import { clickWhileHeld, holdBackMainBundle } from './support/main-bundle';
 import { describeStandardRouteCases } from './support/standard-cases';
@@ -11,6 +17,7 @@ import {
   productionFramesRecordedAs,
   recordFrames,
   recordPaintedAttributes,
+  recordStyleMutations,
 } from './support/style-probe';
 
 /** The busy ring: the button's `::after`, which `spinner.css` draws. */
@@ -26,6 +33,27 @@ async function ringOf(
       animation: style.animationName,
     };
   });
+}
+
+const serverLinkMarker = '__ngxYetiServerLink';
+
+/**
+ * Call before `goto`. Marks every item link the server wrote in `<head>`
+ * once parsing ends, before any module script runs; an element the client
+ * inserts carries no mark.
+ */
+async function markServerLinks(page: Page): Promise<void> {
+  await page.addInitScript((marker) => {
+    document.addEventListener('readystatechange', () => {
+      if (document.readyState === 'interactive') {
+        for (const link of document.head.querySelectorAll(
+          'link[data-ngx-yeti-styles]',
+        )) {
+          Reflect.set(link, marker, true);
+        }
+      }
+    });
+  }, serverLinkMarker);
 }
 
 async function expectRing(button: Locator): Promise<void> {
@@ -148,6 +176,32 @@ for (const { kind, prefix } of routeKinds) {
       await expect.poll(() => buttonLinks(page)).toEqual(['button', 'spinner']);
       await expectItemSheetsApplied(page, ['button', 'spinner']);
       await expectRing(page.locator('#busy'));
+    });
+
+    test("adopts the server's button and spinner links at hydration", async ({
+      page,
+    }) => {
+      const styleMutations = await recordStyleMutations(page);
+      await markServerLinks(page);
+
+      await page.goto(`${prefix}button`);
+      await waitForHydration(page);
+      await nextFrames(page);
+
+      expectOnlyClientPreloads(await styleMutations());
+      expect(await buttonLinks(page)).toEqual(['button', 'spinner']);
+
+      for (const item of ['button', 'spinner']) {
+        expect(
+          await page
+            .locator(`head link[data-ngx-yeti-styles="${item}"]`)
+            .evaluate(
+              (link, marker) => Reflect.get(link, marker) === true,
+              serverLinkMarker,
+            ),
+          `the ${item} link is the server's element`,
+        ).toBe(true);
+      }
     });
 
     test('replays a click made on the toggle before hydration', async ({

@@ -3,9 +3,9 @@ id: T050
 title: Keep the server's spinner link through hydration on the button route, so hydration adds and removes no item link
 wave: 4
 deps: [T020, T021]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T050
+base: bbd0d7d357da9b9def51a8c4a3e4f389b6c5f1ef
 worktree: null
 task_branch: null
 files:
@@ -62,3 +62,29 @@ Heavy: yes
 ## Log
 
 - 2026-10-13 — created by planner (build repair 4). Evidence: T025's Log and its attempt-1 record tmp/afk-m002/tools/T025-attempt1.log.md.
+- 2026-10-13 — coder build_T050: implementation. `YetiStyles` (yeti-styles.ts) gates every check behind a `#settled` flag. The first render callback still creates the observer (client only), and now calls the public `ApplicationRef.whenStable()`; its resolution sets the flag and schedules the first check. Before that, observer events and releases schedule nothing, so an adopted link with count 0 and no presence host (spinner under a button) survives until the hydrating route acquires it. Signal chosen: `whenStable()`, because the Router holds a pending task for the whole initial navigation (router.ts:696 at 22.2.x, `scheduleNavigation` adds it and removes it after the navigation settles), and the change-detection scheduler holds one until the render that hydrates the activated route has run; hydration's own cleanup waits on the same signal (core/src/hydration/api.ts:146). So it is never earlier than the route's hydration. Cost if the app never stabilises: unused links are kept, never removed early. The destroy-time sweep and rule 2's timing after settling are unchanged; nothing new runs on the server (whenStable is called inside `afterNextRender`). Comments of yeti-styles.ts and provide-yeti-styles.ts updated. button.ts untouched.
+- 2026-10-13 — coder build_T050: tests. Layer 2 (inject-yeti-item-styles.spec.ts) "keeps an adopted link that a directive acquires before the application is stable": a `PendingTasks` task held, `ProbeCrossItem` (acquires `cover`, marks no host) created after the first render callback and its frame; the adopted cover link stays `[acquired]` and is never in the head's removed nodes, the unused adopted center link is kept until settled and gone after. At base (yeti-styles.ts from HEAD swapped in temporarily): fails ("expected [ <link …(4)> ] to strictly equal [ <link …(3)> ]", 1 failed / 135 passed); with the fix it passes. Layer 4 (button.spec.ts, inside the routeKinds loop) "adopts the server's button and spinner links at hydration": `recordStyleMutations` plus an init script that marks the head's item links at readyState `interactive`; asserts `expectOnlyClientPreloads`, `buttonLinks` == ['button', 'spinner'], and both links carry the mark. At base (development): 2 failed, both with `remove link[data-ngx-yeti-styles="spinner"]`, `add link[data-ngx-yeti-styles="spinner"]`.
+- 2026-10-13 — coder build_T050: Verify run exactly as written (through heavy-lock), exit 0: lint+typecheck ngx-yeti and yeti-app-e2e passed; `nx test ngx-yeti -- styles/src button/src` 7 files, 188 tests passed; `test-storybook -- styles/src` 1 file, 2 tests passed; e2e development button/setup/spinner 86 passed, 2 skipped (88); e2e production 78 passed, 10 skipped (88); daemon stopped. Rule 13: `npx prettier --check .` all files pass; `nx affected -t lint typecheck test test-storybook --base=HEAD` (through the lock) 16 of 16 tasks succeeded across 6 projects. No `ɵ` in any file of `files`; Git index untouched.
+- 2026-10-13 — orchestrator Verify (isolate gsd-path-task/T050): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

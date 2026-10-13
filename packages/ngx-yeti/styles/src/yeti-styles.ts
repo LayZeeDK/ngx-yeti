@@ -1,5 +1,6 @@
 import {
   APP_ID,
+  ApplicationRef,
   CSP_NONCE,
   DOCUMENT,
   DestroyRef,
@@ -77,6 +78,8 @@ export class YetiStyles {
   /** Created by the first render callback, which runs on the client only. */
   #observer: MutationObserver | undefined;
   #checkScheduled = false;
+  /** Set once the application has first become stable, on the client only. */
+  #settled = false;
 
   constructor() {
     // Rule 3: adopt this application's links from the server's HTML. The
@@ -122,7 +125,12 @@ export class YetiStyles {
 
     // Render callbacks split the rest of the platform work (building-blocks
     // 1.11): the observer, and with it every removal, exists on the client
-    // only.
+    // only. No check runs before the application first becomes stable: the
+    // first render callback can run before the initial navigation has
+    // activated its route components, and an adopted link that only such a
+    // component acquires must stay the server's element through hydration.
+    // An application that never becomes stable keeps its unused links.
+    const appRef = inject(ApplicationRef);
     afterNextRender(() => {
       this.#observer = new MutationObserver(() => {
         this.#scheduleCheck();
@@ -131,7 +139,10 @@ export class YetiStyles {
         childList: true,
         subtree: true,
       });
-      this.#scheduleCheck();
+      void appRef.whenStable().then(() => {
+        this.#settled = true;
+        this.#scheduleCheck();
+      });
     });
     // A destroyed loader removes its unused links at once, then forgets the
     // rest: a check it scheduled before, or a release after, never reaches a
@@ -228,7 +239,11 @@ export class YetiStyles {
 
   #scheduleCheck(): void {
     // The server never removes a link; render callbacks never run there.
-    if (this.#observer === undefined || this.#checkScheduled) {
+    if (
+      this.#observer === undefined ||
+      !this.#settled ||
+      this.#checkScheduled
+    ) {
       return;
     }
 

@@ -51,9 +51,11 @@ export function provideYetiStyles(
   return makeEnvironmentProviders([
     { provide: yetiStylesConfigToken, useValue: config },
     // Created at application start, the loader writes the prefetch or preload
-    // links and adopts the server's links at bootstrap (ADR 0060 point 5), so
-    // its check removes a server link with no host even before any item
-    // renders.
+    // links and adopts the server's links at bootstrap (ADR 0060 point 5). Its
+    // first check waits until the application is stable, so the hydrated
+    // route keeps every server link it acquires, and a server link that
+    // nothing acquires and no host holds is removed after that, even when no
+    // item renders.
     provideEnvironmentInitializer(() => {
       inject(YetiStyles);
     }),
