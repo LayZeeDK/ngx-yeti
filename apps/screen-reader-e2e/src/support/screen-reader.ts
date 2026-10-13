@@ -38,6 +38,18 @@ export interface Lane {
    * to the next item of the web content.
    */
   nextListItem(): Promise<string[]>;
+  /** Moves the reader to the next line (NVDA) or item (VoiceOver). */
+  next(): Promise<string[]>;
+  /**
+   * Runs `script` in the story document, waits `settle` milliseconds and
+   * returns what the reader spoke meanwhile. It sends no key and moves no
+   * focus, so the reader speaks only what the page change itself announces.
+   */
+  change(
+    script: (argument: string) => void,
+    argument: string,
+    settle?: number,
+  ): Promise<string[]>;
   /** Every phrase spoken since `open` began, the arrival included. */
   heard(): readonly string[];
   /** Ends the test; the worker keeps its reader and browser. */
@@ -107,7 +119,82 @@ export function addStartMarker(text: string): void {
 }
 
 /**
- * Writes the phrases a test heard to
+ * Runs in the page: takes the list role off the list `selector` names and
+ * keeps it without markers. Yeti removes the markers only from a list with
+ * `role="list"`, and a list without markers is the one WebKit stops
+ * exposing as a list, which is what the role restores.
+ */
+export function dropListRole(selector: string): void {
+  const list = document.querySelector(selector);
+
+  if (!(list instanceof HTMLElement) || !list.hasAttribute('role')) {
+    throw new Error(`No list with a role matches ${selector}`);
+  }
+
+  list.removeAttribute('role');
+  list.style.listStyle = 'none';
+}
+
+/** Runs in the page: clicks the button whose text is `name`. */
+export function clickButton(name: string): void {
+  const button = [...document.querySelectorAll('button')].find(
+    (candidate) => candidate.textContent.trim() === name,
+  );
+
+  if (!button) {
+    throw new Error(`No button named ${name}`);
+  }
+
+  button.click();
+}
+
+/**
+ * Moves the reader from the start marker into the story and then `steps`
+ * times on, and returns only what those moves made it say: the arrival may
+ * read the whole page.
+ */
+export async function walk(
+  lane: Lane,
+  steps: number,
+  on: 'next' | 'nextListItem',
+): Promise<string[]> {
+  const heard = await lane.top();
+
+  for (let step = 0; step < steps; step++) {
+    heard.push(...(await lane[on]()));
+  }
+
+  return heard;
+}
+
+/**
+ * The longest prefix of `expected` found in `phrases`, each substring after
+ * the one before it, so a failure shows which phrase is missing.
+ */
+export function inOrder(
+  phrases: readonly string[],
+  expected: readonly string[],
+): string[] {
+  const transcript = phrases.join('\n');
+  const found: string[] = [];
+  let from = 0;
+
+  for (const substring of expected) {
+    const at = transcript.indexOf(substring, from);
+
+    if (at === -1) {
+      break;
+    }
+
+    found.push(substring);
+    from = at + substring.length;
+  }
+
+  return found;
+}
+
+/**
+ * Writes the phrases a test heard and its annotations to
  * `dist/screen-reader-e2e/<lane>/<project>/<test>.json`, the report CI
  * uploads, and attaches them to the test.
  */
@@ -136,6 +223,7 @@ export async function recordPhrases(
       test: testInfo.titlePath.slice(1),
       retry: testInfo.retry,
       status: testInfo.status,
+      annotations: testInfo.annotations,
       phrases: lane.heard(),
     },
     null,

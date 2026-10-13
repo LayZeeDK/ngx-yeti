@@ -140,6 +140,23 @@ function nvdaLane(): Lane {
       move(async () =>
         key(async () => nvda.perform(nvda.keyboardCommands.moveToNextListItem)),
       ),
+    next: async () => move(async () => key(async () => nvda.next())),
+    // Guidepup logs only what NVDA speaks during one of its own actions, so
+    // the change runs inside `nvda.capture`, which first sends NVDA's stop
+    // speech key and therefore goes through the guard. NVDA announces a page
+    // change only in the foreground window, so a window that took the
+    // foreground during the wait fails the test instead of passing for
+    // silence.
+    change: async (script, argument, settle = 0) =>
+      move(async () =>
+        key(async () => {
+          await nvda.capture(async () => {
+            await page.evaluate(script, argument);
+            await delay(settle);
+            await requireForeground(token, 'what NVDA spoke is not the page');
+          });
+        }),
+      ),
     heard: () => log,
     stop: async () => Promise.resolve(),
   };
@@ -156,15 +173,22 @@ async function sendKey(
   token: string | undefined,
   send: () => Promise<void>,
 ): Promise<void> {
+  await requireForeground(token, 'no key sent');
+  await send();
+}
+
+/** Throws, naming the foreground window, unless it is the story window. */
+async function requireForeground(
+  token: string | undefined,
+  refused: string,
+): Promise<void> {
   const title = await foregroundTitle();
 
   if (token === undefined || !title.includes(token)) {
     throw new Error(
-      `NVDA lane: no key sent; the foreground window is "${title}", not the story window ${String(token)}.`,
+      `NVDA lane: ${refused}; the foreground window is "${title}", not the story window ${String(token)}.`,
     );
   }
-
-  await send();
 }
 
 /**

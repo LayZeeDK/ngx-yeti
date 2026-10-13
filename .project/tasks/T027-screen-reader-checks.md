@@ -3,9 +3,9 @@ id: T027
 title: Add the timeline, icon, spinner, grid, and cluster screen-reader checks and retire the manual tests
 wave: 5
 deps: [T004, T009, T010, T012, T016, T021, T031, T041]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T027
+base: d229acf7e1e11fa7b8eb1da43fcee1a9bace1e53
 worktree: null
 task_branch: null
 files:
@@ -70,3 +70,38 @@ Heavy: yes
 - 2026-10-10 — orchestrator: plan-defect repair (Verify only), user ruling "Resolve the NX_DAEMON=false issue". Verify now ends by stopping the Nx daemon and keeps its own exit code. Measured cause: for a serial task, the pipeline reverts and deletes the verify sidecar right after Verify (`git restore`, then `git clean -fdx`); a daemon that Verify left running rewrites `.nx/workspace-data` and `node_modules/.vite-temp` during that cleanup and it fails with "Directory not empty" (2 of 2 with T004's diff; passes once the daemon is stopped). Run Verify exactly as written; never set NX_DAEMON.
 - 2026-10-11 — planner: build repair (user ruling "Wave-1 defects: Approve recommendation."). `deps` gains T031 and the Interface contract gains T031's NVDA key guard, identical to T031's text: T031 (wave 2) changes apps/screen-reader-e2e/src/support/nvda.ts, which this task extends, and every key this task's new moves send goes through that guard. Acceptance criteria, files, wave, and Verify are unchanged.
 - 2026-10-11 — planner: build repair before wave 4 (user rulings of 2026-10-11, quoted in T035 to T041). `deps` gains T041 and the Interface contract gains T041's lane-run shape: T041 makes the lane pass in Firefox after Chromium and edits apps/screen-reader-e2e/src/support/nvda.ts, which this task extends. The Verify and criterion 1 also run the lane with no BROWSERS, as the CI job does. Files and wave are unchanged.
+- 2026-10-14 — coder (build_T027): implementation. New files `timeline`, `grid`, `cluster`, `icon` and `spinner.screen-reader.ts`, each with per-lane substring tables. The `Lane` interface in `support/screen-reader.ts` gains `next()` (NVDA down arrow, VoiceOver VO-Right) and `change(script, argument, settle)`, which runs a script in the story document and returns what the reader said meanwhile. The shared helpers gain `walk`, `inOrder` (moved out of card's file, which still has its own copy and is not in this task's files), `dropListRole` and `clickButton`, and the phrase report now includes the test's annotations. In `nvda.ts`, `next` and `change` go through the T031 guard: `change` runs inside `nvda.capture`, which sends NVDA's stop-speech key, and after the settle it re-reads the foreground title, so a window that takes the foreground fails the test instead of passing on silence. In `voiceover.ts`, `change` runs inside `voiceOver.capture`. The list negative controls (timeline, grid, cluster without `role="list"`) are defined only in the VoiceOver lane. `ci.yml` is unchanged: the retry budget stays at 2. Docs: the accessibility skill's Manual row is replaced by a Screen reader row plus a spinner row that names the measurement and the single human VoiceOver listen per release. The ngx-yeti-specs Departures table gains two rows: ADR 0015 point 7, and icon.md:304 / timeline.md:326 / spinner.md:197, :332.
+- 2026-10-14 — coder (build_T027): UPSTREAM: Guidepup 0.35.0 NVDA and VoiceOver clients add a phrase to `spokenPhraseLog` only while one of Guidepup's own actions runs (`NVDAClient.enqueueAndTap`). Speech caused by the page, such as a live region, is dropped. Measured in Edge 154 with NVDA 2026.2: `role="alert"` and `aria-live="polite"` text inserted through `page.evaluate` logged no phrase. The same insertions inside `nvda.capture` logged "Alert text one" and "Polite text two". This is a documented API rather than a bug, so the lanes use `capture`. Recorded here for the registry task to decide.
+- 2026-10-14 — coder (build_T027): measurements (NVDA 2026.2, Guidepup 0.35.0, Edge 154 arm64 and Playwright's x64 Chromium and Firefox; phrase reports under `dist/screen-reader-e2e/nvda/`). The temporary probe `src/zz-measure.screen-reader.ts`, outside `files`, has been deleted.
+  - Timeline: NVDA enters the list on the first entry's date line ("list, with 3 items, 12 September"), and its list-item key then reads each later entry whole ("13 September, The layouts, heading, level 3, ..."). So the NVDA substrings are the dates plus the second and third headings, and "The plan" is not asserted in NVDA.
+  - Grid and cluster: "list, with 5 items, One" … "no next list item" and "list, with 3 items, css" … "no next list item", the same in all three browsers.
+  - Icon (decorative): "same page, link, Download" and "button, Save", with no "graphic".
+  - Icon (standalone): "button, graphic, Close" and "graphic, Warning".
+  - Icon negative control, a deviation from the Approach: with only `aria-hidden` removed, the SVG has no role and no name, and NVDA says no "graphic" in Edge, Chromium or Firefox. Adding `role="img"` without a label also gives no "graphic". So the bare-removal case "it must then add image" cannot be asserted in the NVDA lane. The control test therefore records the bare removal as an annotation (both lanes, so the first green VoiceOver run records WebKit's result). It then asserts on the same link's SVG with `aria-hidden` removed plus `role="img"` and `aria-label="Arrow"`: NVDA says "same page, link, graphic, Arrow" in all three browsers. The reviewer should confirm this reading of criterion 2.
+  - Spinner (spinner.md:197's measurement), NVDA in Chromium, Firefox and Edge: the inserted `role="status" aria-label="Loading"` region with no text was not announced ("Loading" spoken not at all, phrase `""`), and "Loaded 12 posts" was spoken once. Both are recorded in the test annotation, the phrase report and the accessibility skill. VoiceOver's result is recorded on the first CI run.
+  - Watch item (O18/O19): no lane run hung. Every run exited by itself under `timeout 900` (Verify under `timeout 2400`). After every run no `nvda.exe` was listed. One probe step was refused by the guard because the window "ngx-yeti - gsd-path/M002" took the foreground. The guard sent nothing, and that probe file has been deleted.
+- 2026-10-14 — coder (build_T027): Verify, as written, through the heavy lock in `timeout 2400 bash -c`: exit 0. Lint and typecheck passed for screen-reader-e2e. `screen-reader-e2e:nvda` with no BROWSERS: 22 passed (Chromium and Firefox, 11 each). `BROWSERS=msedge`: 11 passed. No retries were used. The VoiceOver-only list controls are not defined in the NVDA lane. An earlier Verify attempt failed 2 of 22 because of a bug of mine: `exposeImage` called a module function from inside `page.evaluate`. It was fixed, and the icon file then passed 9 of 9 in Edge, Chromium and Firefox before the passing Verify.
+- 2026-10-14 — coder (build_T027): rule 13. `npx prettier --check .`: all files pass. `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD`, run through the lock: exit 0, 2 projects with lint, typecheck and test, plus 1 dependency task, and no test-storybook target affected. Git index untouched.
+- 2026-10-13 — orchestrator Verify (isolate gsd-path-task/T027): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m(node:50684) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:31544) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:40752) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m(node:27516) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:12208) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  ```

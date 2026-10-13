@@ -84,6 +84,16 @@ function voiceOverLane(): Lane {
       return move(async () => voiceOver.next());
     },
     nextListItem: async () => move(async () => voiceOver.next()),
+    next: async () => move(async () => voiceOver.next()),
+    // Guidepup logs only what VoiceOver speaks during one of its own
+    // actions, so the change runs inside `voiceOver.capture`.
+    change: async (script, argument, settle = 0) =>
+      move(async () => {
+        await voiceOver.capture(async () => {
+          await browser.execute(script, argument);
+          await browser.pause(settle);
+        });
+      }),
     heard: () => log,
     stop: async () => Promise.resolve(),
   };
