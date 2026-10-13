@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: plan
+phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: done
+status: active
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -136,3 +136,5 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-13 — plan — build plan repair requested
 - 2026-10-13 — plan — build recovery: {"base": "c5a8a3203b69d416818ed40ad67a337e10256a7a", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-13 — plan — plan approved
+- 2026-10-13 — build — build started
+- 2026-10-13 — build — plan repair 5 (wave 9: T053 typed scripts, T054 run-job and Playwright server test fixes, T055 control-script fixes, T056 records and docs, T057 tests and comments, T058 painted-band focus ring and plain-button rule; T028 moved to wave 9) approved by the orchestrator acting as owner under the user's /goal of 2026-10-13 and the user's rulings of that day ('Use subagents to type the .mjs scripts', 'Committed scripts must be type-checked as part of CI', 'Resolve all blocked items that don't require a heavy load.', 'Mapped replay'), after its own gate-plan rerun exited 0
