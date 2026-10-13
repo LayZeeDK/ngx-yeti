@@ -16,14 +16,17 @@ import {
   YetiBreakoutChild,
   YetiBreakoutNote,
 } from 'ngx-yeti/breakout';
+import { YetiButton, YetiButtonDisabledLink } from 'ngx-yeti/button';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
 import { YetiCenter } from 'ngx-yeti/center';
 import { YetiCluster } from 'ngx-yeti/cluster';
 import { NgxYetiColumns, YetiColumnsChild } from 'ngx-yeti/columns';
+import { YetiContainer, YetiHide, YetiShow } from 'ngx-yeti/container';
 import { YetiCover, YetiCoverChild } from 'ngx-yeti/cover';
 import { NgxYetiEnter } from 'ngx-yeti/enter';
 import { YetiFrame } from 'ngx-yeti/frame';
 import { YetiGrid, YetiGridChild } from 'ngx-yeti/grid';
+import { YetiIcon } from 'ngx-yeti/icon';
 import { YetiLayer, YetiLayerChild } from 'ngx-yeti/layer';
 import { NgxYetiLift } from 'ngx-yeti/lift';
 import { YetiMasonry } from 'ngx-yeti/masonry';
@@ -33,12 +36,15 @@ import { YetiSidebar, YetiSidebarChild } from 'ngx-yeti/sidebar';
 import { YetiSpinner } from 'ngx-yeti/spinner';
 import { YetiStack, YetiStackChild } from 'ngx-yeti/stack';
 import { injectYetiItemStyles, provideYetiStyles } from 'ngx-yeti/styles';
+import {
+  type YetiTableAlign,
+  YetiNumeric,
+  YetiTable,
+  YetiTableCell,
+  YetiTableHead,
+} from 'ngx-yeti/table';
 import { YetiTimeline } from 'ngx-yeti/timeline';
 import { YetiVisuallyHidden } from 'ngx-yeti/visually-hidden';
-export {} from 'ngx-yeti/button';
-export {} from 'ngx-yeti/container';
-export {} from 'ngx-yeti/icon';
-export {} from 'ngx-yeti/table';
 
 const preload: readonly YetiComponentName[] = ['card', 'lift'];
 
@@ -90,6 +96,16 @@ export class AppBadge {
     YetiSpinner,
     YetiTimeline,
     YetiVisuallyHidden,
+    YetiButton,
+    YetiButtonDisabledLink,
+    YetiIcon,
+    YetiContainer,
+    YetiShow,
+    YetiHide,
+    YetiTable,
+    YetiTableHead,
+    YetiTableCell,
+    YetiNumeric,
     AppBadge,
   ],
   template: `
@@ -160,6 +176,28 @@ export class AppBadge {
       <li>Entry</li>
     </ol>
     <span yetiVisuallyHidden>Hidden label</span>
+    <button yetiButton [variant]="variant" type="button">Save</button>
+    <a href="/next" yetiButton disabled>Next</a>
+    <a href="/home" yetiIcon [gap]="gap" [align]="align">
+      <svg aria-hidden="true" viewBox="0 0 1 1"></svg>
+      Home
+    </a>
+    <div yetiContainer>
+      <p [yetiShow]="threshold">Wide</p>
+      <p [yetiHide]="threshold">Narrow</p>
+    </div>
+    <table yetiTable striped>
+      <thead yetiTableHead sticky>
+        <tr>
+          <th yetiTableCell [align]="cellAlign" scope="col">Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td yetiNumeric>42</td>
+        </tr>
+      </tbody>
+    </table>
   `,
 })
 export class App {
@@ -170,4 +208,5 @@ export class App {
   protected readonly gap: YetiGap = 'sm-lg';
   protected readonly align: YetiAlign = 'start';
   protected readonly justify: YetiScrollerJustify = 'center';
+  protected readonly cellAlign: YetiTableAlign = 'end';
 }

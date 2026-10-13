@@ -12,14 +12,17 @@ Built against Yeti `7.0.0-alpha.0` at commit `f52d1e8b93de5bbde322480ba77d5be26c
 - `ngx-yeti/styles`: `provideYetiStyles` with its `YetiStylesConfig` type, and `injectYetiItemStyles`, which load each item's Yeti file as a counted link in `<head>` on the server and the client.
 - `ngx-yeti/box`: `YetiBox`, and the any-element markers `YetiBorder`, `NgxYetiPaint`, and `YetiText`, which load no item file.
 - `ngx-yeti/breakout`: `YetiBreakout`, `YetiBreakoutChild`, `YetiBreakoutNote`, and `yetiBreakoutToken`.
+- `ngx-yeti/button`: `YetiButton`, and `YetiButtonDisabledLink`, which gives a disabled `a[yetiButton]` the `link` role and `aria-disabled="true"`.
 - `ngx-yeti/card`: `YetiCard`, `YetiCardLink`, and `yetiCardToken`.
 - `ngx-yeti/center`: `YetiCenter`.
 - `ngx-yeti/cluster`: `YetiCluster`.
 - `ngx-yeti/columns`: `NgxYetiColumns`, `YetiColumnsChild`, and `yetiColumnsToken`.
+- `ngx-yeti/container`: `YetiContainer`, and the any-element `YetiShow` and `YetiHide`, which load no item file.
 - `ngx-yeti/cover`: `YetiCover`, `YetiCoverChild`, and `yetiCoverToken`.
 - `ngx-yeti/enter`: `NgxYetiEnter`, which plays Yeti's entrance animation on load or when the element scrolls into view.
 - `ngx-yeti/frame`: `YetiFrame`.
 - `ngx-yeti/grid`: `YetiGrid`, `YetiGridChild`, and `yetiGridToken`.
+- `ngx-yeti/icon`: `YetiIcon`.
 - `ngx-yeti/layer`: `YetiLayer`, `YetiLayerChild`, and `yetiLayerToken`.
 - `ngx-yeti/lift`: `NgxYetiLift`.
 - `ngx-yeti/masonry`: `YetiMasonry`.
@@ -28,6 +31,7 @@ Built against Yeti `7.0.0-alpha.0` at commit `f52d1e8b93de5bbde322480ba77d5be26c
 - `ngx-yeti/sidebar`: `YetiSidebar`, `YetiSidebarChild`, and `yetiSidebarToken`.
 - `ngx-yeti/spinner`: `YetiSpinner`.
 - `ngx-yeti/stack`: `YetiStack`, `YetiStackChild`, and `yetiStackToken`.
+- `ngx-yeti/table`: `YetiTable`, `YetiTableCell`, `YetiTableHead`, `YetiNumeric`, `yetiTableToken`, and the `YetiTableAlign` type. `YetiNumeric` is an any-element marker that loads no item file.
 - `ngx-yeti/timeline`: `YetiTimeline`.
 - `ngx-yeti/visually-hidden`: `YetiVisuallyHidden`.
 - `ngx-yeti/ngx-yeti-globals.css`: the package's global stylesheet, in `@layer ngx-yeti`. Import it after the Yeti imports in the global stylesheet, before your theme and application CSS. Under forced colours it draws a pressed toggle button and a checked toggle label with a border in the highlight colour, which Yeti shows by their fill alone, and it keeps the turning edge of the spinner's ring, and of a busy button's ring, visible. It also carries a workaround that makes Yeti's sizes render in Firefox 145 to 152, which reject the `atan2()` division of relative lengths that Yeti's scale uses. And it withholds a `once` arrival of `enter` with a named arrival, such as `rise`, or a staggered `slide` from the end edge or in a right-to-left page, which with Yeti alone never plays.

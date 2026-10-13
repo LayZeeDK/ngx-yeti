@@ -73,6 +73,10 @@ describe('item root directives', () => {
         'spinner/src/spinner.ts',
         'scroller/src/scroller.ts',
         'frame/src/frame.ts',
+        'button/src/button.ts',
+        'icon/src/icon.ts',
+        'container/src/container.ts',
+        'table/src/table.ts',
       ]),
     );
     expect(
