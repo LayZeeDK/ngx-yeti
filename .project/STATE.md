@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -133,3 +133,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-13 — build — T052 attempt 1 rejected by finish (load flake in tools/playwright-server/container.test.mjs:279, outside the task; 5/5 alone); plan-defect repair of T052 Verify: uncached test and test-storybook with --parallel=1 as ci.yml unit does; attempt 1 saved, retry reapplies it
 - 2026-10-13 — build — history rewritten by the user's rulings ('Spike and rewrite', 'Mapped replay', 'Yes, run it'): old tip a296345 kept as backup/M002-pre-rewrite, new tip bca5490; T044 brief and title fixed, item-names spec fix folded into T020, SHAs mapped in .project; record .project/build/history-rewrite-2026-10-13.md
 - 2026-10-13 — build — plan repair 5 needed: the typed scripts and their CI check (user rulings 2026-10-13), review round 2 survivors (tmp/afk-m002/lars-review/r2/triage.md items 1-16), A11Y-35 focus-ring rule and Y17 usage rule (Claude's calls on the user's delegation, f85e1c7) need new tasks, and plan owns the task inventory; every task is pending or done, no isolate
+- 2026-10-13 — plan — build plan repair requested
+- 2026-10-13 — plan — build recovery: {"base": "c5a8a3203b69d416818ed40ad67a337e10256a7a", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
+- 2026-10-13 — plan — plan approved

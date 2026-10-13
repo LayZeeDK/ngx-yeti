@@ -1,8 +1,8 @@
 ---
 id: T028
 title: Run every CI and floor job locally on the milestone tip and re-time the long jobs
-wave: 5
-deps: [T027]
+wave: 9
+deps: [T027, T053, T054, T055, T056, T057, T058]
 status: pending
 agent: null
 base: null
@@ -32,7 +32,7 @@ SC8 (user ruling 2026-10-10: "The floor job (and all other checks) must pass bot
 
 ## Interface contract
 
-- None
+- The committed scripts are typed (T053): `tsconfig.scripts.json` at the repository root type-checks every committed `.mjs`, `.cjs`, and `.js` file outside `vendor/` and `docs/specs/`, each starting with `// @ts-check` (after a shebang, if any) and typed with JSDoc. `npm exec nx -- run @ngx-yeti/source:typecheck` runs `tsc -p tsconfig.scripts.json && node --test tools/typecheck/scripts-coverage.test.mjs` and exits 0. A task that edits one of these scripts keeps its `// @ts-check` line and its JSDoc types, adds no `any` and no unchecked assertion, and leaves that command at 0 errors.
 
 ## Intent coverage
 
@@ -60,3 +60,4 @@ Heavy: yes
 - 2026-10-11 — planner: build repair before wave 4 (user rulings of 2026-10-11, quoted in T035 to T041). Approach names the absolute Chrome 141 path (user ruling "5: Approve.") and the lane run with no BROWSERS, which the Verify now also runs after T041 (reached through T027). Acceptance criteria, deps, files, and wave are unchanged.
 - 2026-10-12 — planner: build repair #2. T042 changes the `unit` job in `ci.yml` (`VITEST_MAX_WORKERS: 2`, `--parallel=1`) and T043 changes `run-job.mjs` and `references/ci-local.md`, both in wave 4. This task comes in wave 5, after them, so it needs no dependency edge on either. Approach gains one bullet: the shard decision uses one leg's time as CI runs it, not the concurrent local wall clock. Acceptance criteria, deps, files, and Verify are unchanged.
 - 2026-10-12 — planner (build repair #3, review round 1 and the security review): the orchestrator's triage routes item 18b and security finding 2 (the guidepup version steps) to this task, which owns `.github/workflows/ci.yml` in wave 5. Approach gains one bullet with the findings verbatim; criterion 4 is new and criterion 2 allows it; the Verify first checks that the bare `echo "version=$(node -p` form is gone. Files, deps, and wave are unchanged.
+- 2026-10-13 — planner (build repair 5): moved from wave 5 to wave 9, after the new tasks T053 to T058, with an edge to each. Build runs the lowest unfinished wave first (`build_state.py ready`), so in wave 5 this gate would have run before the typed scripts (T053), the review round 2 fixes (T054 to T057), and the painted-band rules (T058), and its "milestone tip" would not be the tip; T053 and T054 also edit `tools/ci-local/run-job.mjs` and T054 edits `references/ci-local.md`, which this task edits. The Interface contract gains the typed-scripts contract, because `run-job.mjs` is a typed script by then. Acceptance criteria, files, and Verify are unchanged; `npm run check` now also runs the root `typecheck` target T053 adds.
