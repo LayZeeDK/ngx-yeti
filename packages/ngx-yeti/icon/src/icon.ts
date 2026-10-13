@@ -78,9 +78,10 @@ export class YetiIcon {
    */
   readonly gap = input<YetiGap>();
   /**
-   * How the icon lines up with the text: centred on the line, or on the
-   * baseline with Yeti's one-eighth-em nudge. Unset, Yeti's `center`
-   * applies. The static form (`align="baseline"`) never aligns the text.
+   * How the icon lines up with the text: `center` on the line, or on the
+   * `baseline` with Yeti's one-eighth-em nudge. `start`, `end`, and `stretch`
+   * set the row's cross-axis alignment like any flex row. Unset, Yeti's
+   * `center` applies. The static form (`align="baseline"`) never aligns the text.
    */
   readonly align = input<YetiAlign>();
 

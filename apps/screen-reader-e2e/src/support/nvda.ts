@@ -195,10 +195,10 @@ async function requireForeground(
  * Whether NVDA's focus report is about this story's document: it holds the
  * start marker, or it is a document and holds the window title token. NVDA
  * puts spaces inside the token
- * (`screen-reader-e 2e-518862816, document, focused, read only`), so spaces
+ * (`screen-reader-e 2e-<n>, document, focused, read only`), so spaces
  * are ignored on both sides. Another application's document, which NVDA
  * also reports as "document", is refused, and so is the story window's frame
- * (`screen-reader-e 2e-947894595 — Nightly, frame, read only`), where
+ * (`<title> — <browser>, frame, read only`), where
  * browse-mode keys say nothing.
  */
 export function acceptsFocusReport(

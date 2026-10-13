@@ -80,8 +80,8 @@ export class NgxYetiEnter {
    * nothing. Before the arrival, `once` set to `false` and then `true` again
    * renders `data-once` again, and the arrival still plays when the element
    * nears the viewport.
-   * A named arrival is withheld through the package's accessibility
-   * stylesheet (ledger row A11Y-33).
+   * A named arrival is withheld through the package's global stylesheet
+   * ("ngx-yeti/ngx-yeti-globals.css", ledger row A11Y-33).
    */
   readonly once = input(false, { transform: booleanAttribute });
 
