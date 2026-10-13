@@ -16,6 +16,8 @@ import {
 } from '@storybook/angular-vite';
 import type { YetiGap, YetiWidth } from 'ngx-yeti';
 import { YetiBorder, YetiBox } from 'ngx-yeti/box';
+import { YetiNumeric, YetiTable } from 'ngx-yeti/table';
+import { YetiVisuallyHidden } from 'ngx-yeti/visually-hidden';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import trail from '../../.storybook/assets/trail.svg?no-inline';
@@ -77,7 +79,15 @@ const meta: Meta<YetiScroller> = {
   component: YetiScroller,
   decorators: [
     moduleMetadata({
-      imports: [YetiScroller, YetiBox, YetiBorder, NgOptimizedImage],
+      imports: [
+        YetiScroller,
+        YetiBox,
+        YetiBorder,
+        NgOptimizedImage,
+        YetiTable,
+        YetiNumeric,
+        YetiVisuallyHidden,
+      ],
     }),
   ],
 };
@@ -366,5 +376,75 @@ export const Rtl: Story = {
       childAt(scroller, 0).getBoundingClientRect().right,
       scroller.getBoundingClientRect().right,
     );
+  },
+};
+
+/**
+ * Yeti's table docs example: a wide table with a caption as the scroller's
+ * one child, the scroller named by the caption, and a header cell holding a
+ * visually hidden span.
+ */
+export const WideTable: Story = {
+  render: () => ({
+    template: `
+      <div style="max-inline-size: 20rem">
+        <div data-testid="scroller" yetiScroller aria-labelledby="quarterly-results">
+          <table yetiTable size="sm" border nowrap>
+            <caption id="quarterly-results">Quarterly results</caption>
+            <thead>
+              <tr>
+                <th scope="col">Region</th>
+                <th scope="col" yetiNumeric>First quarter</th>
+                <th scope="col" yetiNumeric>Second quarter</th>
+                <th scope="col" yetiNumeric>Third quarter</th>
+                <th scope="col" yetiNumeric>Fourth quarter <span data-testid="hidden" yetiVisuallyHidden>in thousands</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><th scope="row">North</th><td yetiNumeric>120</td><td yetiNumeric>132</td><td yetiNumeric>141</td><td yetiNumeric>158</td></tr>
+              <tr><th scope="row">South</th><td yetiNumeric>98</td><td yetiNumeric>104</td><td yetiNumeric>117</td><td yetiNumeric>125</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>`,
+  }),
+  play: async ({ canvas }) => {
+    const scroller = canvas.getByTestId('scroller');
+    const hidden = canvas.getByTestId('hidden');
+    const table = canvas.getByRole('table', { name: 'Quarterly results' });
+
+    await expect(
+      canvas.getByRole('region', { name: 'Quarterly results' }),
+    ).toBe(scroller);
+    await expect(elementChildren(scroller)).toStrictEqual([table]);
+
+    await itemStyled('scroller', scroller, 'display', 'flex');
+    await itemStyled('visually-hidden', hidden, 'position', 'absolute');
+    await itemStyled(
+      'table',
+      table.querySelector('td') ?? table,
+      'vertical-align',
+      'top',
+    );
+
+    await expectOverflowing(scroller);
+    await expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+      document.documentElement.clientWidth,
+    );
+
+    scroller.scrollLeft = scroller.scrollWidth;
+    await waitFor(async () => {
+      await expect(
+        scroller.scrollLeft + scroller.clientWidth,
+      ).toBeGreaterThanOrEqual(scroller.scrollWidth - 1);
+    });
+
+    const box = scroller.getBoundingClientRect();
+    const span = hidden.getBoundingClientRect();
+
+    await expect(span.left).toBeGreaterThanOrEqual(box.left);
+    await expect(span.right).toBeLessThanOrEqual(box.right);
+    await expect(span.top).toBeGreaterThanOrEqual(box.top);
+    await expect(span.bottom).toBeLessThanOrEqual(box.bottom);
   },
 };

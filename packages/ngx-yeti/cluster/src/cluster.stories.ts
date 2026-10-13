@@ -11,6 +11,7 @@ import {
 } from '@storybook/angular-vite';
 import { YetiBorder, YetiBox } from 'ngx-yeti/box';
 import { YetiStack } from 'ngx-yeti/stack';
+import { YetiNumeric } from 'ngx-yeti/table';
 import { expect, waitFor, within } from 'storybook/test';
 import { YetiCluster } from './cluster';
 
@@ -82,7 +83,9 @@ const meta: Meta<YetiCluster> = {
   id: 'cluster',
   component: YetiCluster,
   decorators: [
-    moduleMetadata({ imports: [YetiCluster, YetiBox, YetiBorder, YetiStack] }),
+    moduleMetadata({
+      imports: [YetiCluster, YetiBox, YetiBorder, YetiStack, YetiNumeric],
+    }),
   ],
 };
 export default meta;
@@ -324,15 +327,15 @@ export const Align: Story = {
 
 /**
  * Yeti's legend: a `dl` stack whose rows are clusters with
- * `justify="between"`.
+ * `justify="between"` and a `yetiNumeric` value.
  */
 export const Legend: Story = {
   render: () => ({
     template: `
       <dl data-testid="legend" yetiStack gap="xs" style="inline-size: 20rem">
-        <div yetiCluster justify="between"><dt>Distance</dt><dd>14.2 km</dd></div>
-        <div yetiCluster justify="between"><dt>Ascent</dt><dd>1,120 m</dd></div>
-        <div yetiCluster justify="between"><dt>Time</dt><dd>5 h 30</dd></div>
+        <div yetiCluster justify="between"><dt>Distance</dt><dd yetiNumeric>14.2 km</dd></div>
+        <div yetiCluster justify="between"><dt>Ascent</dt><dd yetiNumeric>1,120 m</dd></div>
+        <div yetiCluster justify="between"><dt>Time</dt><dd yetiNumeric>5 h 30</dd></div>
       </dl>`,
   }),
   play: async ({ canvasElement }) => {
@@ -344,6 +347,10 @@ export const Legend: Story = {
 
     for (const row of legendRows) {
       await expect(row).toHaveAttribute('data-justify', 'between');
+      await expect(childAt(row, 1)).toHaveAttribute('data-numeric', '');
+      await expect(getComputedStyle(childAt(row, 1)).fontVariantNumeric).toBe(
+        'tabular-nums',
+      );
     }
 
     await itemStyled('cluster', childAt(legend, 0), 'display', 'flex');

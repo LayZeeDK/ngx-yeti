@@ -13,6 +13,7 @@ import {
 import type { YetiWidth } from 'ngx-yeti';
 import { YetiBorder, YetiBox } from 'ngx-yeti/box';
 import { YetiCluster } from 'ngx-yeti/cluster';
+import { YetiNumeric, YetiTable } from 'ngx-yeti/table';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import { YetiContainer } from './container';
@@ -100,6 +101,8 @@ const meta: Meta<YetiContainer> = {
         YetiBox,
         YetiBorder,
         YetiCluster,
+        YetiTable,
+        YetiNumeric,
       ],
     }),
   ],
@@ -249,6 +252,69 @@ export const ShowHide: Story = {
       ]);
     } finally {
       section.style.inlineSize = '';
+    }
+  },
+};
+
+/**
+ * Yeti's table example from its visibility guide: a column marked with
+ * `yetiShow="sm"` on its header and every body cell, in a container.
+ */
+export const TableColumn: Story = {
+  render: () => ({
+    template: `
+      <div data-testid="container" yetiContainer>
+        <table yetiTable>
+          <caption>Summits</caption>
+          <thead>
+            <tr><th scope="col">Peak</th><th scope="col" yetiNumeric>Height (m)</th><th scope="col" yetiShow="sm">Range</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Ben Nevis</td><td yetiNumeric>1,345</td><td yetiShow="sm">Grampians</td></tr>
+            <tr><td>Snowdon</td><td yetiNumeric>1,085</td><td yetiShow="sm">Snowdonia</td></tr>
+            <tr><td>Scafell Pike</td><td yetiNumeric>978</td><td yetiShow="sm">Southern Fells</td></tr>
+          </tbody>
+        </table>
+      </div>`,
+  }),
+  play: async ({ canvas, canvasElement }) => {
+    const container = byTestId(canvasElement, 'container');
+    const table = canvas.getByRole('table', { name: 'Summits' });
+    const marked = [...table.querySelectorAll('[yetishow]')];
+    const kept = [
+      ...table.querySelectorAll(
+        'caption, th:not([yetishow]), td:not([yetishow])',
+      ),
+    ];
+
+    await expect(marked).toHaveLength(4);
+
+    for (const cell of marked) {
+      await expect(cell).toHaveAttribute('data-show', 'sm');
+    }
+
+    await itemStyled('container', container, 'container-type', 'inline-size');
+    await itemStyled(
+      'table',
+      table.querySelector('td') ?? table,
+      'vertical-align',
+      'top',
+    );
+
+    const sm = tokenWidth(canvasElement, 'sm');
+
+    try {
+      await fitContent(container, container, sm);
+      await expect(marked.map(displayed)).toStrictEqual(marked.map(() => true));
+
+      await fitContent(container, container, sm - 1);
+      await expect(marked.map(displayed)).toStrictEqual(
+        marked.map(() => false),
+      );
+      await expect(kept.map(displayed)).toStrictEqual(kept.map(() => true));
+      await expect(within(table).getAllByRole('columnheader')).toHaveLength(2);
+    } finally {
+      container.style.inlineSize = '';
     }
   },
 };
