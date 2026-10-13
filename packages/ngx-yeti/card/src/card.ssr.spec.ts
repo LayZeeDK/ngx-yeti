@@ -11,18 +11,18 @@ import {
   renderServer,
 } from '@ngx-yeti/testing/server';
 import type { YetiRatio } from 'ngx-yeti';
+import { YetiButton } from 'ngx-yeti/button';
 import { YetiCard } from './card';
 import { YetiCardLink } from './card-link';
 
 /**
  * Section 8's markup with a bound `ratio` and a static `raised` (card.md,
- * Testing Decisions, layer 3). Until `badge` and `button` land, a plain
- * `span` and a plain footer link stand in for `yetiBadge` and `yetiButton`,
- * so the order of their head links is asserted with them (M004).
+ * Testing Decisions, layer 3). Until `badge` lands, a plain `span` stands in
+ * for `yetiBadge`, so the place of its head link is asserted with it.
  */
 @Component({
   selector: 'yeti-card-fixture',
-  imports: [NgOptimizedImage, RouterLink, YetiCard, YetiCardLink],
+  imports: [NgOptimizedImage, RouterLink, YetiButton, YetiCard, YetiCardLink],
   // eslint-disable-next-line @angular-eslint/component-max-inline-declarations -- the fixture is section 8's markup in one file, like the Fixture app's card fixture
   template: `<article yetiCard threshold="xs" raised [ratio]="ratio()">
     <img
@@ -37,7 +37,9 @@ import { YetiCardLink } from './card-link';
     <p i18n>Six miles, one summit, and a view worth the early start.</p>
     <footer>
       <span>Open</span>
-      <a routerLink="/hills" tabindex="-1">Read more</a>
+      <a yetiButton emphasis="low" routerLink="/hills" tabindex="-1"
+        >Read more</a
+      >
     </footer>
   </article>`,
 })
@@ -81,17 +83,17 @@ describe(YetiCard, () => {
     );
   });
 
-  it('writes one card item link into the head', async () => {
-    expect.assertions(4);
+  it('writes one card item link into the head, after the button link', async () => {
+    expect.assertions(5);
 
     const html = await render();
     const link = itemLinkOf(html, 'card');
+    const items = headLinks(html).map((tag) =>
+      attributeValue(tag, 'data-ngx-yeti-styles'),
+    );
 
-    expect(
-      headLinks(html).filter(
-        (tag) => attributeValue(tag, 'data-ngx-yeti-styles') !== null,
-      ),
-    ).toHaveLength(1);
+    expect(itemLinkOf(html, 'button').count).toBe(1);
+    expect(items.indexOf('card')).toBeGreaterThan(items.indexOf('button'));
     expect(link.count).toBe(1);
     expect(link.beastiesSkip).toBe(true);
     expect(link.href).toMatch(itemHref('components', 'card'));
@@ -101,15 +103,15 @@ describe(YetiCard, () => {
     expect.assertions(2);
 
     const html = await render();
-    const [stretched, plain] = openingTags(html, 'a');
+    const [stretched, footer] = openingTags(html, 'a');
     assert.exists(stretched);
-    assert.exists(plain);
+    assert.exists(footer);
 
-    // RouterLink's click listener is the only one in the fixture: the
-    // stretched link carries what the plain routerLink link carries, no more.
-    expect(jsactionTags(html)).toStrictEqual([stretched, plain]);
+    // RouterLink's click listener is the only one in the fixture: each link
+    // carries what a plain routerLink link carries, no more.
+    expect(jsactionTags(html)).toStrictEqual([stretched, footer]);
     expect(attributeValue(stretched, 'jsaction')).toBe(
-      attributeValue(plain, 'jsaction'),
+      attributeValue(footer, 'jsaction'),
     );
   });
 });

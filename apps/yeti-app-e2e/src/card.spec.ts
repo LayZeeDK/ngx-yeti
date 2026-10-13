@@ -6,7 +6,7 @@ import {
   rect,
 } from '@ngx-yeti/testing/playwright';
 import { workspaceRoot } from '@nx/devkit';
-import { type Page } from '@playwright/test';
+import { type Locator, type Page } from '@playwright/test';
 import {
   expect,
   expectOnlyClientPreloads,
@@ -32,6 +32,9 @@ const yetiPin = readFileSync(
   'utf8',
 ).trim();
 const cardHref = `yeti-css/components/card/card.css?v=${yetiPin}`;
+const cardAndLift = expect.arrayContaining(['card', 'lift']);
+/** The items whose files the first card's and the grid's geometry needs. */
+const geometryItems = ['card', 'grid', 'button'];
 
 /** The tags of the card's children and the boxes of the card and of each. */
 async function cardGeometry(page: Page): Promise<unknown> {
@@ -43,6 +46,38 @@ async function cardGeometry(page: Page): Promise<unknown> {
     ),
     boxes: [await rect(card), ...(await childRects(card))],
   };
+}
+
+/**
+ * Expects the lifted cards side by side in one row of a grid, and the first
+ * card's footer link to be a button.
+ */
+async function expectGridOfCards(page: Page, grid: Locator): Promise<void> {
+  const footerLink = page.getByRole('link', { name: 'Read more' });
+
+  await expectItemSheetsApplied(page, geometryItems);
+  await expect(grid).toHaveCSS('display', 'grid');
+  await expect(grid.locator('> li[data-ngx-yeti-item-card]')).toHaveCount(3);
+  await expect(footerLink).toHaveClass('button');
+  await expect(footerLink).toHaveAttribute('data-ngx-yeti-item-button', '');
+
+  const cards = await childRects(grid);
+  const [first] = cards;
+
+  if (first === undefined) {
+    throw new Error('The grid has no card');
+  }
+
+  for (const [index, card] of cards.entries()) {
+    expect(
+      Math.abs(card.top - first.top),
+      'every card starts in the first row',
+    ).toBeLessThanOrEqual(1);
+    expect(
+      card.left,
+      'each card starts after the one before it',
+    ).toBeGreaterThanOrEqual(cards[index - 1]?.right ?? 0);
+  }
 }
 
 /**
@@ -126,7 +161,7 @@ for (const { kind, prefix } of routeKinds) {
         await hostAttributes(),
         'hydration changes no attribute on the card hosts',
       ).toEqual([]);
-      expect(await itemLinks(page)).toEqual(['card', 'lift']);
+      expect(await itemLinks(page)).toEqual(cardAndLift);
 
       const link = page.locator('head link[data-ngx-yeti-styles="card"]');
 
@@ -165,7 +200,7 @@ for (const { kind, prefix } of routeKinds) {
       expect(
         await itemLinks(page),
         'the hydrate never host keeps both links',
-      ).toEqual(['card', 'lift']);
+      ).toEqual(cardAndLift);
 
       await expectHoverLifts(page, card);
       await expect(card, 'the card keeps its border').toHaveCSS(
@@ -173,6 +208,18 @@ for (const { kind, prefix } of routeKinds) {
         'solid',
       );
       await expect(card).not.toHaveCSS('border-top-width', '0px');
+    });
+
+    test('lays the lifted cards out in the columns of a grid, with a button for the footer link', async ({
+      page,
+    }) => {
+      await page.goto(`${prefix}card`);
+      await waitForHydration(page);
+
+      const grid = page.locator('ul[data-ngx-yeti-item-grid]');
+
+      await expect(grid).toHaveClass('grid');
+      await expectGridOfCards(page, grid);
     });
 
     // The server hosts keep the card link in <head>, so the client-only card
@@ -200,7 +247,7 @@ for (const { kind, prefix } of routeKinds) {
 
       await expect(card).toBeVisible();
       await expect(card).not.toHaveCSS('padding-top', '0px');
-      expect(await itemLinks(page)).toEqual(['card', 'lift']);
+      expect(await itemLinks(page)).toEqual(cardAndLift);
 
       expectStyledFrames(await cardPadding(), {
         styled: (value) => value !== '0px',
@@ -230,7 +277,8 @@ for (const { kind, prefix } of routeKinds) {
       const card = page.locator('#client-card');
 
       await expect(card).not.toHaveCSS('padding-top', '0px');
-      expect(await itemLinks(page)).toEqual(['card']);
+      expect(await itemLinks(page, 'card')).toEqual(['card']);
+      expect(await itemLinks(page, 'lift')).toEqual([]);
 
       // The server's card link used the preload at load, and routing turns
       // the HTTP cache off, so the re-inserted link refetches: recorded, not
@@ -270,7 +318,7 @@ for (const { kind, prefix } of routeKinds) {
       await expect(
         page.getByRole('link', { name: 'Weekend in the hills' }),
       ).toBeVisible();
-      await expect.poll(() => itemLinks(page)).toEqual(['card', 'lift']);
+      await expect.poll(() => itemLinks(page)).toEqual(cardAndLift);
       await nextFrames(page);
 
       expect(
@@ -279,7 +327,7 @@ for (const { kind, prefix } of routeKinds) {
         ),
         'returning inserts the card link once',
       ).toEqual(['add link[data-ngx-yeti-styles="card"]']);
-      expect(await itemLinks(page)).toEqual(['card', 'lift']);
+      expect(await itemLinks(page)).toEqual(cardAndLift);
     });
 
     test("records NgOptimizedImage's development-mode messages for the cropped picture and the row form", async ({
@@ -343,7 +391,21 @@ for (const { kind, prefix } of routeKinds) {
         await expect(
           page.getByRole('link', { name: 'Weekend in the hills' }),
         ).toHaveAttribute('data-stretch', '');
-        expect(await itemLinks(page)).toEqual(['card', 'lift']);
+        expect(
+          await itemLinks(page),
+          "the server writes the route's item links in Yeti's order",
+        ).toEqual(['grid', 'button', 'card', 'spinner', 'lift']);
+      });
+
+      test('lays the lifted cards out in the columns of a grid, with a button for the footer link', async ({
+        page,
+      }) => {
+        await page.goto(`${prefix}card`);
+
+        const grid = page.locator('ul[data-ngx-yeti-item-grid]');
+
+        await expect(grid).toHaveClass('grid');
+        await expectGridOfCards(page, grid);
       });
 
       test('styles the card with the geometry it has with JavaScript on', async ({
@@ -352,7 +414,7 @@ for (const { kind, prefix } of routeKinds) {
         viewport,
       }) => {
         await page.goto(`${prefix}card`);
-        await expectItemSheetsApplied(page, ['card']);
+        await expectItemSheetsApplied(page, geometryItems);
         await expect(page.locator('article')).not.toHaveCSS(
           'padding-top',
           '0px',
@@ -367,7 +429,7 @@ for (const { kind, prefix } of routeKinds) {
 
         await javaScriptPage.goto(page.url());
         await waitForHydration(javaScriptPage);
-        await expectItemSheetsApplied(javaScriptPage, ['card']);
+        await expectItemSheetsApplied(javaScriptPage, geometryItems);
         await expect(javaScriptPage.locator('article')).not.toHaveCSS(
           'padding-top',
           '0px',

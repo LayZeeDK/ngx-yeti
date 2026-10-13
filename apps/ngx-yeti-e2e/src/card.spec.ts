@@ -143,7 +143,7 @@ test.describe('card--stretched-link', () => {
     const button = root.getByRole('button', { name: 'Save' });
     const destination = root.getByText('The hills page');
 
-    await expectItemSheetsApplied(page, ['card']);
+    await expectItemSheetsApplied(page, ['card', 'button']);
     await expect(card).toHaveCSS('display', 'flex');
     await button.click();
 

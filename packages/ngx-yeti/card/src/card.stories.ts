@@ -3,6 +3,7 @@ import { provideLocationMocks } from '@angular/common/testing';
 import { Component, signal, type WritableSignal } from '@angular/core';
 import { RouterLink, RouterOutlet, provideRouter } from '@angular/router';
 import {
+  assertWithin,
   contrastRatio,
   itemStyled,
   manifestValues,
@@ -21,6 +22,9 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 // Kept a URL in the static build too: NgOptimizedImage refuses `data:` URLs.
 import trail from '../../.storybook/assets/trail.svg?no-inline';
+import { YetiButton } from 'ngx-yeti/button';
+import { YetiGrid } from 'ngx-yeti/grid';
+import { YetiLayer, YetiLayerChild } from 'ngx-yeti/layer';
 import { NgxYetiLift } from 'ngx-yeti/lift';
 import { YetiCard } from './card';
 import { YetiCardLink } from './card-link';
@@ -57,8 +61,9 @@ const summary = 'Six miles, one summit, and a view worth the early start.';
 // otherwise reports through console.error.
 const picture = `<img [ngSrc]="trail" width="1600" height="900" priority alt="A mountain trail at dawn" />`;
 const headingLink = `<h3><a yetiCardLink stretch routerLink="/hills">${heading}</a></h3>`;
+const footerLink = `<a yetiButton emphasis="low" routerLink="/hills" tabindex="-1">Read more</a>`;
 
-/** Section 8's markup, with a plain `span` and link for the badge and button. */
+/** Section 8's markup, with a plain `span` for the badge. */
 function defaultCard(dir: 'ltr' | 'rtl'): string {
   return `
     <div data-testid="frame" dir="${dir}" style="inline-size: 40rem; resize: horizontal; overflow: auto">
@@ -68,7 +73,7 @@ function defaultCard(dir: 'ltr' | 'rtl'): string {
         <p>${summary}</p>
         <footer>
           <span>Open</span>
-          <a routerLink="/hills" tabindex="-1">Read more</a>
+          ${footerLink}
         </footer>
       </article>
     </div>`;
@@ -214,6 +219,7 @@ const meta: Meta<YetiCard> = {
       imports: [
         YetiCard,
         YetiCardLink,
+        YetiButton,
         NgOptimizedImage,
         RouterLink,
         RouterOutlet,
@@ -241,7 +247,7 @@ export const Default: Story = {
     const card = canvas.getByRole('article');
     const title = canvas.getByRole('heading', { level: 3 });
     const link = within(title).getByRole('link');
-    const footerLink = canvas.getByRole('link', { name: 'Read more' });
+    const readMore = canvas.getByRole('link', { name: 'Read more' });
     const media = element(canvasElement, 'article > img');
 
     await expect(card).toHaveAttribute('class', 'card');
@@ -262,7 +268,10 @@ export const Default: Story = {
       );
 
     await expect(marked('[role]')).toStrictEqual([]);
-    await expect(marked('[tabindex]')).toStrictEqual([footerLink]);
+    await expect(marked('[tabindex]')).toStrictEqual([readMore]);
+    await expect(readMore).toHaveAttribute('class', 'button');
+    await expect(readMore).toHaveAttribute('data-emphasis', 'low');
+    await expect(readMore).toHaveAttribute('data-ngx-yeti-item-button', '');
 
     await itemStyled('card', card, 'display', 'flex');
     await expectReadable(frame, card, [link, canvas.getByText(summary)]);
@@ -298,7 +307,7 @@ export const StretchedLink: Story = {
         <p>${summary}</p>
         <footer>
           <button type="button" (click)="saved.set(true)">{{ saved() ? 'Saved' : 'Save' }}</button>
-          <a routerLink="/hills" tabindex="-1">Read more</a>
+          ${footerLink}
         </footer>
       </article>
       <router-outlet />`,
@@ -488,6 +497,47 @@ export const Figure: Story = {
   },
 };
 
+/**
+ * Yeti's caption over the picture: the card's first child is a `figure` that
+ * is a layer. The caption's contrast over a picture is the layer stories'.
+ */
+export const LayerCaption: Story = {
+  decorators: [moduleMetadata({ imports: [YetiLayer, YetiLayerChild] })],
+  render: () => ({
+    props: { trail },
+    template: `
+      <div data-testid="frame" style="inline-size: 24rem; max-inline-size: 100%">
+        <article yetiCard>
+          <figure yetiLayer>
+            ${picture}
+            <figcaption yetiLayerChild alignSelf="end">The ridge path at first light.</figcaption>
+          </figure>
+          ${headingLink}
+          <p>${summary}</p>
+        </article>
+      </div>`,
+  }),
+  play: async ({ canvas, canvasElement }) => {
+    const card = canvas.getByRole('article');
+    const layer = element(canvasElement, 'article > figure');
+    const media = element(canvasElement, 'figure > img');
+    const caption = element(canvasElement, 'figcaption');
+
+    await expect(layer).toHaveAttribute('class', 'layer');
+    await itemStyled('card', card, 'display', 'flex');
+    await itemStyled('layer', layer, 'display', 'grid');
+
+    const mediaRect = media.getBoundingClientRect();
+    const captionRect = caption.getBoundingClientRect();
+
+    assertWithin(captionRect.bottom, mediaRect.bottom);
+    await expect(captionRect.top).toBeGreaterThan(mediaRect.top);
+    await expect(
+      parseColor(getComputedStyle(caption).backgroundColor).alpha,
+    ).toBeGreaterThan(0);
+  },
+};
+
 const trails = [
   { name: 'Weekend in the hills', path: '/hills' },
   { name: 'A day by the lake', path: '/lake' },
@@ -520,6 +570,72 @@ export const List: Story = {
         title.textContent,
       );
       await expect(item).toHaveAttribute('data-ngx-yeti-item-card', '');
+    }
+  },
+};
+
+const rankedTrails = [
+  { name: 'Weekend in the hills', path: '/hills', text: summary },
+  { name: 'A day by the lake', path: '/lake', text: 'Flat all the way.' },
+  {
+    name: 'The coast path',
+    path: '/coast',
+    text: 'Two days along the cliffs, with a night in the harbour town between them and the ferry back on the second evening.',
+  },
+];
+
+/**
+ * Yeti's cards in a ranked grid: `rows` counts the parts of a card, so the
+ * footers of cards of different lengths share one row. The list sits in a
+ * `section`: outside sectioning content, an `li` card's `footer` is a
+ * `contentinfo` landmark, one per card.
+ */
+export const GridRows: Story = {
+  decorators: [moduleMetadata({ imports: [YetiGrid] })],
+  render: () => ({
+    props: { rankedTrails, trail },
+    template: `
+      <section style="inline-size: 48rem; max-inline-size: 100%">
+        <ul yetiGrid min="none" columns="3" rows="4" role="list">
+          @for (item of rankedTrails; track item.path) {
+            <li yetiCard>
+              ${picture}
+              <h3><a yetiCardLink stretch [routerLink]="item.path">{{ item.name }}</a></h3>
+              <p>{{ item.text }}</p>
+              <footer>
+                <a yetiButton emphasis="low" [routerLink]="item.path" tabindex="-1">Read more</a>
+              </footer>
+            </li>
+          }
+        </ul>
+      </section>`,
+  }),
+  play: async ({ canvas }) => {
+    const grid = canvas.getByRole('list');
+    const cards = within(grid).getAllByRole('listitem');
+
+    await expect(grid).toHaveAttribute('data-rows', '4');
+    await expect(cards).toHaveLength(rankedTrails.length);
+    await itemStyled('grid', grid, 'display', 'grid');
+
+    for (const card of cards) {
+      await itemStyled('card', card, 'border-top-style', 'solid');
+    }
+
+    const [first, ...rest] = cards.map(
+      (card) => element(card, ':scope > footer').getBoundingClientRect().bottom,
+    );
+
+    if (first === undefined) {
+      throw new Error('No card');
+    }
+
+    for (const bottom of rest) {
+      assertWithin(bottom, first);
+    }
+
+    for (const card of cards) {
+      await expectBleed(card, element(card, ':scope > img'));
     }
   },
 };

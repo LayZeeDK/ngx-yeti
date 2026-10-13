@@ -13,7 +13,7 @@ import {
   holdBackMainBundle,
   mainBundle,
 } from './support/main-bundle';
-import { recordStyleMutations } from './support/style-probe';
+import { itemLinks, recordStyleMutations } from './support/style-probe';
 
 /** Items in the app's preload list (`app.config.ts`); it may hold more. */
 const preloadedItems = [
@@ -121,13 +121,15 @@ test('the style mutation probe sees an item link moved while the main bundle run
   await waitForHydration(page);
 
   const mutations = await styleMutations();
+  const moved = await itemLinks(page);
 
-  expect(withoutClientPreloads(mutations)).toEqual([
-    'remove link[data-ngx-yeti-styles="card"]',
-    'add link[data-ngx-yeti-styles="card"]',
-    'remove link[data-ngx-yeti-styles="lift"]',
-    'add link[data-ngx-yeti-styles="lift"]',
-  ]);
+  expect(moved).toContain('card');
+  expect(withoutClientPreloads(mutations)).toEqual(
+    moved.flatMap((item) => [
+      `remove link[data-ngx-yeti-styles="${item}"]`,
+      `add link[data-ngx-yeti-styles="${item}"]`,
+    ]),
+  );
   expect(mutations).toEqual(
     expect.arrayContaining(preloadedItems.map(clientItemPreload)),
   );

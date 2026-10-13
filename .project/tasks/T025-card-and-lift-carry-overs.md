@@ -3,9 +3,9 @@ id: T025
 title: Land card's grid, layer, and button carry-overs and the card route's grid
 wave: 4
 deps: [T002, T010, T015, T020, T030, T036, T037, T038, T050]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T025
+base: 2f5782801c9854654dc65b1a0cd46a00a8a3bdc5
 worktree: null
 task_branch: null
 files:
@@ -73,3 +73,29 @@ Heavy: yes
 - 2026-10-13 — coder: BLOCKED (verification fails outside allowed paths). At hydration the client removes the server's `spinner` link and inserts a new one (`remove link[data-ngx-yeti-styles="spinner"]`, `add link[data-ngx-yeti-styles="spinner"]`), breaking ADR 0060 point 5's 0 style mutations. Measured with a throwaway probe spec (deleted): the `/sub/button` route at the base does the same, so the defect is T020's, not this task's; the card route shows it only now that it has a `yetiButton`. Inferred cause (read, not instrumented): `YetiStyles` adopts the server links with count 0 and its first render callback runs before the lazy route's component acquires; the check then keeps a link only if a `[data-ngx-yeti-item-<item>]` host is connected, and `yetiButton` acquires `spinner` without a spinner presence attribute, so the `spinner` link is dropped and the button's later acquisition reinserts it. The fix belongs in `packages/ngx-yeti/styles/src/yeti-styles.ts` or `packages/ngx-yeti/button/src/button.ts`, neither in `files`. Excluding `spinner` from the card assertions would hide the defect, so this task does not do it.
 - 2026-10-13 — orchestrator: the block is confirmed as a defect outside this task (T020's `yetiButton` acquires `spinner` with no spinner presence host, so `YetiStyles` drops the server's `spinner` link at hydration); the coder's block report is accepted and its Verify was not run whole. Attempt 1 at base d60b479 (6 product paths) is saved at tmp/afk-m002/tools/T025-attempt1.patch; the isolate is retired and the task returns to pending for plan repair 4, which adds the fix as a task this one depends on. Paused here on the user's ruling of 2026-10-13, "Pause before spawning more subagents so that we may continue using /gsd-path in a fresh session".
 - 2026-10-13 — planner: build repair 4. `deps` gains T050, a prerequisite effect: once T050 lands, `/sub/button` and `/sub/server/button` add and remove no item link at hydration (its yeti-app-e2e case "adopts the server's button and spinner links at hydration"), so the card route keeps the server's `spinner` link once its footer link is a `yetiButton`. Approach gains one line: reapply the attempt-1 patch. Acceptance criteria, files, wave, and Verify are unchanged.
+- 2026-10-13 — coder (build_T025, attempt 2): reapplied tmp/afk-m002/tools/T025-attempt1.patch at base 2f57828 with `git apply` (clean, no conflicts; the same 6 `files` paths, no further product edits). With T050 landed, the three attempt-1 failures pass in development Chromium: "adopts the server's card link at hydration" (prerendered and server-rendered) and "the style mutation probe sees an item link moved while the main bundle runs".
+- 2026-10-13 — coder: Verify run exactly as written through the heavy lock, exit 0. lint and typecheck of ngx-yeti, ngx-yeti-e2e, yeti-app, yeti-app-e2e pass; `nx test ngx-yeti -- card/src` 3 files, 18 tests pass; `nx test-storybook ngx-yeti -- card/src` 10 pass; ngx-yeti-e2e card.spec.ts Chromium 6 pass; yeti-app-e2e card + fixture-app development Chromium 60 pass, 100 skipped; production Chromium 56 pass, 104 skipped; ci e2e Firefox (container): ngx-yeti-e2e 6 pass, yeti-app-e2e 60 pass, 100 skipped; ci e2e WebKit (container): ngx-yeti-e2e 5 pass, 1 skipped (the existing forced-colours case WebKit cannot emulate), yeti-app-e2e 60 pass, 100 skipped. The skips are other routes' and stub-route cases filtered out of these two spec files.
+- 2026-10-13 — coder: last criterion checked in the worktree: `npx prettier --check .` passes (all files); `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (test-storybook through the lock) passes, 16 tasks over 6 projects (ngx-yeti, yeti-app, ngx-yeti-e2e, yeti-app-e2e, screen-reader-e2e, @ngx-yeti/source), 11 from cache.
+- 2026-10-13 — orchestrator Verify (isolate gsd-path-task/T025): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [ci-e2e-firefox-development] [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [ci-e2e-firefox-development] [2m[WebServer] [22m(node:987) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [ci-e2e-firefox-development] [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [ci-e2e-firefox-development] [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [ci-e2e-webkit-development] [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [ci-e2e-webkit-development] [2m[WebServer] [22m(node:988) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [ci-e2e-webkit-development] [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [ci-e2e-webkit-development] [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```
