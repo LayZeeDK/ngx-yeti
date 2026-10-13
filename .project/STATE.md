@@ -5,7 +5,7 @@ milestone: layouts-and-button
 phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: active
+status: blocked
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -132,3 +132,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-13 — build — user ruling 2026-10-13, verbatim: 'Resolve all blocked items that don't require a heavy load.' Orchestrator calls under it: A11Y-35 gets a package focus-ring rule inside painted bands after measuring all 20 paint values (next plan repair); Y17 gets a usage rule and ledger row, no package CSS (next plan repair); no history rewrite of dae9e58, 15ae075, 6c11970 (recover proves landings by subject and SHA; noted for the PR); typing the 27 untyped .mjs scripts deferred to the next milestone (one tooling task, 221 strict errors); one isolate per task kept; GSD Path 1.6.0 update at the milestone boundary. Also: 'Don't run heavy load before 10:00 AM.' (T052 landing waits until 10:00)
 - 2026-10-13 — build — T052 attempt 1 rejected by finish (load flake in tools/playwright-server/container.test.mjs:279, outside the task; 5/5 alone); plan-defect repair of T052 Verify: uncached test and test-storybook with --parallel=1 as ci.yml unit does; attempt 1 saved, retry reapplies it
 - 2026-10-13 — build — history rewritten by the user's rulings ('Spike and rewrite', 'Mapped replay', 'Yes, run it'): old tip a296345 kept as backup/M002-pre-rewrite, new tip bca5490; T044 brief and title fixed, item-names spec fix folded into T020, SHAs mapped in .project; record .project/build/history-rewrite-2026-10-13.md
+- 2026-10-13 — build — plan repair 5 needed: the typed scripts and their CI check (user rulings 2026-10-13), review round 2 survivors (tmp/afk-m002/lars-review/r2/triage.md items 1-16), A11Y-35 focus-ring rule and Y17 usage rule (Claude's calls on the user's delegation, f85e1c7) need new tasks, and plan owns the task inventory; every task is pending or done, no isolate
