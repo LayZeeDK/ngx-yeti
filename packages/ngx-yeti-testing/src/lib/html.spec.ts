@@ -33,6 +33,18 @@ describe(attributeValue, () => {
       attributeValue('<a title="x jsaction y" href="/">', 'jsaction'),
     ).toBeNull();
   });
+
+  it('throws, naming the tag, on a tag the parser drops outside its parent', () => {
+    expect(() => attributeValue('<td data-x="1">', 'data-x')).toThrow(
+      'Not an opening tag the HTML parser keeps: <td data-x="1">',
+    );
+  });
+
+  it('throws, naming the tag, on a tag after leading text', () => {
+    expect(() => attributeValue('x<a data-x="1">', 'data-x')).toThrow(
+      'Not an opening tag the HTML parser keeps: x<a data-x="1">',
+    );
+  });
 });
 
 describe(openingTags, () => {

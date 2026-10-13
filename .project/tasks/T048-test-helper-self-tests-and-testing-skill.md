@@ -3,9 +3,9 @@ id: T048
 title: Prove the html and Playwright test helpers can fail, and bring the testing skill up to date
 wave: 4
 deps: [T024, T049]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T048
+base: 348447a4369a24fcb0a4e0ca16332b7cab33c71f
 worktree: null
 task_branch: null
 files:
@@ -62,3 +62,28 @@ Heavy: yes
 
 - 2026-10-12 — created by planner (build repair #3, review round 1 fixes; the g2 helper self-test minors, triage item 17's two testing-skill lines, and the g3 full re-run's testing-skill cosmetic). At 1747fe0 the self-test file does not exist and the skill does not name `recordPaintedAttributes`, so the Verify fails if this task is skipped. deps: T024 (file overlap, `.claude/skills/ngx-yeti-testing/SKILL.md`; T024 already follows T041, which edits the same file). The Verify ends by stopping the Nx daemon and keeps its own exit code; run it exactly as written and never set NX_DAEMON.
 - 2026-10-12 — planner (build repair #3, the user's ruling to rename the package stylesheet, T049): deps gains T049 for file overlap (.claude/skills/ngx-yeti-testing/SKILL.md). Nothing else changes.
+- 2026-10-13 — coder (build_T048): html.spec.ts gains two `attributeValue` throw cases (`<td data-x="1">` alone, which parse5 drops outside a table, and `x<a data-x="1">` after leading text), each asserting the full error message with the tag. New apps/yeti-app-e2e/src/playwright-helpers.spec.ts (5 tests): `horizontalOverflow` on `page.setContent` at 320 x 640 is > 0 for a 500 px div and 0 for a 100 px one; `expectItemSheetsApplied` runs on a page served from a fulfilled route (`http://playwright-helpers.test/`, page plus `/item.css`), resolves for a sheet with a rule, rejects with `toHaveCount` when a named item has no link, and with `item sheets loaded with rules` for an empty sheet. The helper takes no timeout, so each rejecting case waits the default 5 s expect timeout (the only way shorter would be changing the helper, outside `files`). Testing skill: `recordPaintedAttributes` row added to the support helper table; Gates lists every ci.yml job (static, package, unit, e2e matrix, safari, voiceover, nvda); the `axeViolations` row now says Firefox with JavaScript off runs axe on a script-free snapshot (`axeViolationsOfSnapshot`). T041's NVDA and T024's Tailwind text unchanged.
+- 2026-10-13 — coder (build_T048): Verify run exactly as written through heavy-lock: exit 0. Counts: ngx-yeti-testing tests 85 passed (7 files); playwright-helpers.spec.ts 5 passed in local Chromium, 5 passed in the ci e2e firefox/development container, 5 passed in the ci e2e webkit/development container; prettier check of the skill folder clean. Rule-13 gate: `npx prettier --check .` clean, and `nx affected -t lint typecheck test test-storybook --base=HEAD` passed for 7 projects (test files/tests: 7/85, 81/645, 24/153), exit 0.
+- 2026-10-13 — orchestrator Verify (isolate gsd-path-task/T048): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [ci-e2e-firefox-development] [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [ci-e2e-webkit-development] [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```
