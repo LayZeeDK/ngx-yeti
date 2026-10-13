@@ -1,8 +1,34 @@
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { transform } from 'lightningcss';
+import type { MediaCondition, MediaQuery } from 'lightningcss';
 
 const packageRoot = path.join(import.meta.dirname, '..');
+
+/**
+ * Every class name in a parsed selector, including those in the selector
+ * lists that pseudo-classes such as `:where()` and `:has()` nest.
+ */
+function classNames(node: unknown): string[] {
+  if (Array.isArray(node)) {
+    return node.flatMap(classNames);
+  }
+
+  if (typeof node !== 'object' || node === null) {
+    return [];
+  }
+
+  if (
+    'type' in node &&
+    node.type === 'class' &&
+    'name' in node &&
+    typeof node.name === 'string'
+  ) {
+    return [node.name];
+  }
+
+  return Object.values(node).flatMap(classNames);
+}
 
 function readPackageFile(name: string): string {
   return readFileSync(path.join(packageRoot, name), 'utf8');
@@ -51,14 +77,9 @@ function inspect(css: string): Findings {
         }
       },
       Selector(selector) {
-        for (const component of selector) {
-          if (
-            component.type === 'class' &&
-            component.name.startsWith('ngx-yeti')
-          ) {
-            classSelectors.push(component.name);
-          }
-        }
+        classSelectors.push(
+          ...classNames(selector).filter((name) => name.startsWith('ngx-yeti')),
+        );
       },
     },
   });
@@ -90,24 +111,80 @@ const systemColours = new Set([
   'VisitedText',
 ]);
 
-/** The contents of each `@media (forced-colors: active)` block. */
-function forcedColourBlocks(css: string): string[] {
-  const blocks: string[] = [];
-  const opening = /@media\s*\(\s*forced-colors\s*:\s*active\s*\)\s*\{/g;
+function requiresForcedColours(condition: MediaCondition): boolean {
+  switch (condition.type) {
+    case 'feature': {
+      const feature = condition.value;
 
-  for (const match of css.matchAll(opening)) {
+      return (
+        feature.type === 'plain' &&
+        feature.name === 'forced-colors' &&
+        feature.value.type === 'ident' &&
+        feature.value.value === 'active'
+      );
+    }
+
+    case 'operation': {
+      return condition.conditions.some(requiresForcedColours);
+    }
+
+    default: {
+      return false;
+    }
+  }
+}
+
+function isForcedColoursQuery(query: MediaQuery): boolean {
+  return (
+    query.qualifier !== 'not' &&
+    query.condition !== null &&
+    query.condition !== undefined &&
+    requiresForcedColours(query.condition)
+  );
+}
+
+/**
+ * The contents of each `@media` block whose query asks for forced colours,
+ * whatever its spelling or added conditions.
+ */
+function forcedColourBlocks(css: string): string[] {
+  const lineStarts = [0];
+
+  for (const match of css.matchAll(/\n/g)) {
+    lineStarts.push(match.index + 1);
+  }
+
+  const openings: number[] = [];
+
+  transform({
+    filename: 'ngx-yeti-globals.css',
+    code: Buffer.from(css),
+    visitor: {
+      Rule(rule) {
+        if (
+          rule.type === 'media' &&
+          rule.value.query.mediaQueries.some(isForcedColoursQuery)
+        ) {
+          // Lines count from 0, columns from 1.
+          const start =
+            (lineStarts[rule.value.loc.line] ?? 0) + rule.value.loc.column - 1;
+          openings.push(css.indexOf('{', start) + 1);
+        }
+      },
+    },
+  });
+
+  return openings.map((opening) => {
     let depth = 1;
-    let end = match.index + match[0].length;
+    let end = opening;
 
     while (depth > 0 && end < css.length) {
       depth += css[end] === '{' ? 1 : css[end] === '}' ? -1 : 0;
       end += 1;
     }
 
-    blocks.push(css.slice(match.index + match[0].length, end - 1));
-  }
-
-  return blocks;
+    return css.slice(opening, end - 1);
+  });
 }
 
 /**
@@ -218,6 +295,30 @@ describe('ngx-yeti/ngx-yeti-globals.css', () => {
       `),
     ).toStrictEqual(['color: red', 'outline-color: var(--x)']);
   });
+
+  it('reports a non-system colour in a forced-colours query with another spelling and an added condition', () => {
+    expect(
+      nonSystemColours(`
+        @MEDIA (Forced-Colors:active) and (prefers-contrast: more) {
+          .a { border-color: Canvas; color: red; }
+        }
+        @media not (forced-colors: active) {
+          .b { color: blue; }
+        }
+      `),
+    ).toStrictEqual(['color: red']);
+  });
+
+  it.for([':where', ':is', ':not', ':has'])(
+    'reports a package class nested in %s()',
+    (pseudoClass) => {
+      expect(
+        inspect(
+          `@layer ngx-yeti { a${pseudoClass}(.ngx-yeti-x) { color: red; } }`,
+        ).classSelectors,
+      ).toStrictEqual(['ngx-yeti-x']);
+    },
+  );
 
   it('reports a rule outside the layer, a private token, and a package class', () => {
     const css = `

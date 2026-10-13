@@ -40,11 +40,42 @@ const yetiClasses = new Set(
   Object.values(manifest.components).map((component) => component.class),
 );
 
-// A class selector followed by its rule's `{`, as CSS in a string would read.
+const yetiClassInScript = String.raw`\.(?:${[...yetiClasses].map((name) => RegExp.escape(name)).join('|')})(?![\w-])`;
+
+// Selector text with balanced parentheses, so `host.card) {` is no rule.
+const selectorText = String.raw`(?:[^{};()]|\([^{};()]*\))*`;
+
+// A class selector, bare or inside `:where()`, `:is()`, `:not()`, or `:has()`,
+// followed by its rule's `{`, as CSS in a string would read.
 const yetiSelectorInScript = new RegExp(
-  String.raw`\.(?:${[...yetiClasses].map((name) => RegExp.escape(name)).join('|')})(?![\w-])[^{};()]*\{`,
+  String.raw`(?:${yetiClassInScript}|:(?:where|is|not|has)\(${selectorText}${yetiClassInScript}${selectorText}\))${selectorText}\{`,
   'g',
 );
+
+/**
+ * Every class name in a parsed selector, including those in the selector
+ * lists that pseudo-classes such as `:where()` and `:has()` nest.
+ */
+function classNames(node: unknown): string[] {
+  if (Array.isArray(node)) {
+    return node.flatMap(classNames);
+  }
+
+  if (typeof node !== 'object' || node === null) {
+    return [];
+  }
+
+  if (
+    'type' in node &&
+    node.type === 'class' &&
+    'name' in node &&
+    typeof node.name === 'string'
+  ) {
+    return [node.name];
+  }
+
+  return Object.values(node).flatMap(classNames);
+}
 
 /** Yeti rules in a FESM bundle: an `@layer yeti` block or a Yeti class rule. */
 function yetiRulesInScript(code: string): readonly string[] {
@@ -100,10 +131,8 @@ function yetiRulesInStylesheet(
         }
       },
       Selector(selector) {
-        const classes = selector.flatMap((component) =>
-          component.type === 'class' && yetiClasses.has(component.name)
-            ? [`.${component.name}`]
-            : [],
+        const classes = classNames(selector).flatMap((name) =>
+          yetiClasses.has(name) ? [`.${name}`] : [],
         );
 
         if (
@@ -265,6 +294,19 @@ describe('the published output', () => {
       ).toStrictEqual(['.card', '.spinner']);
     });
 
+    it.for([':where', ':is', ':not', ':has'])(
+      'reports a Yeti class nested in %s() inside @layer ngx-yeti',
+      (pseudoClass) => {
+        expect(
+          yetiRulesInGlobalStylesheet(
+            `${packageRule} @layer ngx-yeti { a${pseudoClass}(.card) { color: red; } }`,
+            table,
+            rowIds,
+          ),
+        ).toStrictEqual(['.card']);
+      },
+    );
+
     it('reports a sanctioned selector outside @layer ngx-yeti, and a Yeti layer', () => {
       expect(
         yetiRulesInGlobalStylesheet(
@@ -314,6 +356,17 @@ describe('the published output', () => {
     expect(yetiRulesInStylesheet(css)).toStrictEqual(['@layer yeti', '.card']);
     expect(
       yetiRulesInScript('if (host.card) { host.card.lift(); }'),
+    ).toStrictEqual([]);
+  });
+
+  it('reports a Yeti class rule in a bundle with a parenthesised part or inside a pseudo-class', () => {
+    expect(
+      yetiRulesInScript(
+        "const styles = ['.card:not([x]) { color: red; } :where(.card) { color: red; }'];",
+      ),
+    ).toStrictEqual(['.card:not([x]) {', ':where(.card) {']);
+    expect(
+      yetiRulesInScript('if (isCard(host.card)) { host.card.lift(); }'),
     ).toStrictEqual([]);
   });
 });

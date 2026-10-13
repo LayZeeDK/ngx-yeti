@@ -1,7 +1,7 @@
 /* The package's global stylesheet: its own rules, all in @layer ngx-yeti.
-   It holds the accessibility rules that close ledger rows, each arriving
-   with the item spec whose row it closes, and the workarounds for upstream
-   bugs: the enter once fix and the Firefox scale workaround below. */
+   Each rule closes a ledger row and arrived with the item spec whose row it
+   closes, except the Firefox scale workaround below, the only rule without
+   a ledger row. */
 @layer ngx-yeti {
   /* A11Y-1a: forced colours drop the fill that is Yeti's only sign of a
      pressed toggle and a checked toggle label, so they look like their

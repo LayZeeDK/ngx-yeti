@@ -3,9 +3,9 @@ id: T044
 title: Walk nested selector lists in the published-output and accessibility gates, and state both once rules in enter's doc comment
 wave: 4
 deps: [T020, T021, T023, T049]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T044
+base: 18129147b1f849b310dd693905c99b07dab969e0
 worktree: null
 task_branch: null
 files:
@@ -77,3 +77,28 @@ Heavy: yes
 - 2026-10-13 — coder (build_T044), preflight, no product path changed: AC4 and AC5 contradict each other. AC4's new case (once true at the first render, then false, then true, below the fold) expects no `data-once` after the second true. The existing case `follows once before the arrival, still arrives, and stays arrived` in packages/ngx-yeti/enter/src/enter.spec.ts runs the same sequence through `setupOnce()` with `fixture.whenStable()` between steps and expects `data-once` to be `''` after the second true; AC5 says it passes unchanged. That case is enter.md:253 (docs/specs/specs/enter.md, a Testing Decision citing ticket 50 decision 20), verbatim: "`once` true, then set to `false` before arrival: the attribute goes; set back to `true`: it returns and the arrival still happens on intersection; after arrival, `true` renders nothing". The triage finding's "second true puts data-once back" is the behaviour the spec asks for, so the latch would need a Departures row in .claude/skills/ngx-yeti-specs/SKILL.md, which is not in this task's files.
 - NEEDS-ORCHESTRATOR: Does T044 change enter so that `once` reading false after the first client render latches the arrival (AC4 and the triage fix), or keep enter.md:253's behaviour that a false-then-true `once` before arrival puts `data-once` back (AC5 and the spec)? — readings: (a) keep enter.md:253 and AC5: drop the enter latch, AC4, and the enter.ts change, and at most reword the `once` doc comment so "once played" reads as "once arrived"; the selector-gate and globals-comment parts proceed as written; (b) latch per AC4: rewrite the existing case's second and later expectations (AC5 relaxed for that case) and add a Departures row for enter.md:253 to .claude/skills/ngx-yeti-specs/SKILL.md, which then needs adding to `files`.
 - 2026-10-13 — Orchestrator answer: reading (a). Keep enter.md:253's behaviour; AC4 and the two enter Approach bullets are repaired as a documented plan defect: enter's behaviour does not change, only the doc comment of `once` states both rules, and the selector-gate, FESM, `nonSystemColours`, and globals-comment parts go ahead as written. — enter.md:138 and :253 (ticket 50 decision 20); the triage finding (item 1) read :138 as covering any later false, which :253 rules out; AC5 already required the existing case to pass unchanged. The orchestrator's call in an AFK run, not a user ruling. Attempt 1 changed no product path; its isolate is retired and the task re-prepared.
+- 2026-10-13 — coder (build_T044), attempt 2, implementation: lightningcss (installed) was probed first. It nests the selector lists of `:where`, `:is`, `:not`, and `:has` under `selectors`, and `:nth-child(... of ...)` under `of`, inside one `pseudo-class` component, and the `Selector` visitor visits only top-level selectors. Both node specs now collect classes with a recursive `classNames` walk of the parsed selector, one per file. That walk catches any nested list, not only those four. published-output: the FESM regex now accepts balanced parentheses between the class and `{`, and also a class inside `:where(`, `:is(`, `:not(`, or `:has(`. `host.card) {` and `isCard(host.card)) {` still do not match. New negative tests: one `it.for` case per pseudo-class reports `.card` under `@layer ngx-yeti`, and one case reports `.card:not([x]) {` and `:where(.card) {`. accessibility: `forcedColourBlocks` now finds `@media` rules through lightningcss's parsed queries. A query qualifies when a `forced-colors: active` feature appears anywhere in its condition, unless the query or that branch is negated. The block is then sliced from the rule's `loc`. New negative tests: one case for `@MEDIA (Forced-Colors:active) and (prefers-contrast: more)`, which reports `color: red` and skips a `not (forced-colors: active)` block, and one `it.for` case per pseudo-class reports `ngx-yeti-x`. ngx-yeti-globals.css: only the header comment changed. enter.ts: only the `once` doc comment changed, now stating both enter.md:138 and :253. No ledger row is needed: the task changes test gates and comments, with no accessibility or parity change.
+- 2026-10-13 — coder (build_T044), Verify run as written through the heavy lock: exit 0. Details: `npm ci` ok; both `rg` checks ok; `nx run-many -t lint typecheck -p ngx-yeti` passed, 3 tasks; `nx test ngx-yeti -- src/published-output src/accessibility enter/src` passed, 9 files and 74 tests; the `ci unit` container ran `enter/src`, 6 files and 105 tests, with `enter.spec.ts` at 27 tests each in Chromium, Firefox, and WebKit, `enter.ssr.spec.ts` included. Rule 13: `npx prettier --check .` passed. `nx affected -t lint typecheck test test-storybook --base=HEAD` (through the lock) passed, 16 tasks across 6 projects. That includes `ngx-yeti:test-storybook`, `ngx-yeti:test`, and `yeti-app:test`.
+- 2026-10-13 — orchestrator Verify (isolate gsd-path-task/T044): pass, exit 0; output tail:
+  ```
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/spinner
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/stack
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/table
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/visually-hidden
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/timeline
+  ```
