@@ -21,6 +21,8 @@ These targets use the Angular compiler with type checking:
 
 `typecheck` runs `angular-typechecker` over the solution `tsconfig.json` of each Angular project. It follows the references to the source, spec, and Storybook configs, so one run checks sources, templates, extended diagnostics, specs, stories, and the Vite and Vitest configs. `nx.json` `targetDefaults` define the executor, options, and configurations once, keyed on the `type:lib`, `type:app`, `type:testing`, and `storybook` tags. A project opts in with `"typecheck": {}` in its `project.json`, and `"typecheck-watch": {}` for the watcher; every project that holds TypeScript has `typecheck`, e2e projects too, but only the served projects (`ngx-yeti`, `yeti-app`, and `yeti-analog`) declare `typecheck-watch`.
 
+The root project is the one exception: `nx typecheck @ngx-yeti/source` runs `tsc -p tsconfig.scripts.json`, which type-checks the committed `.mjs` and `.cjs` scripts. It has no configurations.
+
 Configurations check one tsconfig: `-c src` for the library or application source, `-c spec` for specs, and `-c stories` for stories. The names are the same in every project, so `npm run typecheck -- -c spec` checks the specs of all projects. A project without the requested configuration runs its whole check. `typecheck` without a configuration is the gate for `check`, `affected`, and CI.
 
 `typecheck-watch` reruns `typecheck` through `nx watch` whenever the project or a project it depends on changes. Run it beside `serve` or `storybook`. It takes a configuration as `--args=--configuration=<name>`, and `npm run typecheck-watch` starts it for every project that declares it.

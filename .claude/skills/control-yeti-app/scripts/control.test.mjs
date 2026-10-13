@@ -1,3 +1,4 @@
+// @ts-check
 // Drives control.mjs through one ssr launch with the Nx daemon on: the refused
 // flags and planted state, doctor's build-fresh scan, down's kept state file
 // and its daemon stop. Windows only, like control.mjs. Builds the Fixture app,
@@ -31,9 +32,54 @@ const daemonEntry = join(
   'node_modules/nx/dist/src/daemon/server/start.js',
 ).toLowerCase();
 
+/**
+ * The fields of control.mjs's JSON output these tests read.
+ *
+ * @typedef {object} ControlResult
+ * @property {string} [error]
+ * @property {{ name: string, status: string, detail: string }[]} [checks]
+ * @property {unknown} [build]
+ * @property {string[]} [failed]
+ * @property {unknown} [portFree]
+ * @property {unknown} [survivors]
+ * @property {unknown} [stateFile]
+ * @property {{ outcome: string }[]} [sessions]
+ * @property {{ stopped: boolean }} [daemon]
+ */
+
+/**
+ * @typedef {object} Launch
+ * @property {number} pid
+ * @property {number} port
+ * @property {string} session
+ * @property {unknown} [start]
+ * @property {unknown} [commandLine]
+ */
+
+/** @type {Launch | null} */
 let launch = null;
+/** @type {import('node:net').Server | null} */
 let listener = null;
 
+/**
+ * @param {object} result
+ * @returns {result is Launch}
+ */
+const isLaunch = (result) =>
+  'pid' in result &&
+  typeof result.pid === 'number' &&
+  'port' in result &&
+  typeof result.port === 'number' &&
+  'session' in result &&
+  typeof result.session === 'string';
+
+function started() {
+  assert.ok(launch, 'up did not run');
+
+  return launch;
+}
+
+/** @param {string[]} args */
 function control(...args) {
   const run = spawnSync(process.execPath, [script, ...args, '--json'], {
     cwd: root,
@@ -44,13 +90,19 @@ function control(...args) {
 
   assert.ok(run.stdout, `control.mjs ${args.join(' ')}: ${run.stderr}`);
 
-  return { code: run.status, result: JSON.parse(run.stdout) };
+  /** @type {ControlResult} */
+  const result = JSON.parse(run.stdout);
+
+  return { code: run.status, result };
 }
 
+/** @returns {Record<string, unknown>} */
 const readState = () => JSON.parse(readFileSync(stateFile, 'utf8'));
+/** @param {Record<string, unknown>} state */
 const writeState = (state) =>
   writeFileSync(stateFile, `${JSON.stringify(state, null, 2)}\n`);
 
+/** @param {string} command */
 function pwsh(command) {
   const run = spawnSync(
     'pwsh',
@@ -62,12 +114,15 @@ function pwsh(command) {
   return run.stdout;
 }
 
+/** @param {number} port */
 const listening = (port) =>
   pwsh(
     `Get-NetTCPConnection -State Listen -LocalPort ${String(port)} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess; exit 0`,
   ).trim() !== '';
 
 function daemonRunning() {
+  /** @typedef {{ CommandLine: string | null }} NodeProcess */
+  /** @type {NodeProcess | NodeProcess[]} */
   const processes = JSON.parse(
     pwsh(
       `Get-CimInstance Win32_Process -Filter "Name='node.exe'" | Select-Object CommandLine | ConvertTo-Json -Compress`,
@@ -81,6 +136,7 @@ function daemonRunning() {
     );
 }
 
+/** @param {number} pid */
 function alive(pid) {
   try {
     process.kill(pid, 0);
@@ -92,8 +148,10 @@ function alive(pid) {
 }
 
 async function closeListener() {
-  if (listener) {
-    await new Promise((done) => listener.close(done));
+  const open = listener;
+
+  if (open) {
+    await new Promise((done) => open.close(done));
     listener = null;
   }
 }
@@ -124,7 +182,7 @@ test('refuses unknown flags and values after a space', () => {
   ]) {
     const { code, result } = control(...args);
     assert.equal(code, 2, `${args.join(' ')}: ${JSON.stringify(result)}`);
-    assert.match(result.error, new RegExp(`unknown argument ${args[1]}`));
+    assert.match(result.error ?? '', new RegExp(`unknown argument ${args[1]}`));
   }
 
   assert.equal(existsSync(stateFile), false, 'a refused up wrote state');
@@ -143,6 +201,7 @@ test('a launch with the Nx daemon on', async (t) => {
       '--configuration=production',
     );
     assert.equal(code, 0, JSON.stringify(result));
+    assert.ok(isLaunch(result), JSON.stringify(result));
     launch = result;
   });
 
@@ -162,7 +221,8 @@ test('a launch with the Nx daemon on', async (t) => {
         utimesSync(source, atime, new Date());
         const { code, result } = control('doctor');
         assert.equal(code, 1, source);
-        assert.ok(result.failed.includes('build-fresh'), result.failed.join());
+        const failed = result.failed ?? [];
+        assert.ok(failed.includes('build-fresh'), failed.join());
       } finally {
         utimesSync(source, atime, mtime);
       }
@@ -202,7 +262,7 @@ test('a launch with the Nx daemon on', async (t) => {
       const { code, result } = control('down');
       assert.equal(code, 2, JSON.stringify(result));
       assert.equal(existsSync(plantedFile), false, 'the planted command ran');
-      assert.ok(alive(launch.pid), 'down stopped the launch');
+      assert.ok(alive(started().pid), 'down stopped the launch');
     } finally {
       writeState(state);
     }
@@ -224,9 +284,12 @@ test('a launch with the Nx daemon on', async (t) => {
   await t.test(
     'down exits 1 and keeps the file while the port is busy',
     async () => {
-      listener = createServer();
-      await new Promise((done) => listener.listen(0, done));
-      const busyPort = listener.address().port;
+      const server = createServer();
+      listener = server;
+      await new Promise((done) => server.listen(0, () => done(undefined)));
+      const address = server.address();
+      assert.ok(address !== null && typeof address === 'object');
+      const busyPort = address.port;
       writeState({ ...readState(), port: busyPort });
 
       const first = control('down');
@@ -236,7 +299,7 @@ test('a launch with the Nx daemon on', async (t) => {
       assert.ok(Array.isArray(first.result.survivors));
       assert.equal(first.result.stateFile, stateFile);
       assert.deepEqual(
-        first.result.sessions.map(({ outcome }) =>
+        (first.result.sessions ?? []).map(({ outcome }) =>
           ['closed', 'not-open', 'absent'].includes(outcome),
         ),
         [true, true],
@@ -250,7 +313,7 @@ test('a launch with the Nx daemon on', async (t) => {
       await closeListener();
       const last = control('down');
       assert.equal(last.code, 0, JSON.stringify(last.result));
-      assert.equal(last.result.daemon.stopped, true);
+      assert.equal(last.result.daemon?.stopped, true);
       assert.equal(existsSync(stateFile), false);
     },
   );
@@ -260,8 +323,8 @@ test('a launch with the Nx daemon on', async (t) => {
     async () => {
       await ensureDown();
       assert.equal(existsSync(stateFile), false);
-      assert.equal(alive(launch.pid), false);
-      assert.equal(listening(launch.port), false);
+      assert.equal(alive(started().pid), false);
+      assert.equal(listening(started().port), false);
       assert.equal(daemonRunning(), false, 'the Nx daemon is still running');
     },
   );

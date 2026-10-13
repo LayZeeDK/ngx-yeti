@@ -1,8 +1,8 @@
-import playwright from 'eslint-plugin-playwright';
-import baseConfig from '../../eslint.config.mjs';
+// @ts-check
+import baseConfig, { playwrightConfig } from '../../eslint.config.mjs';
 
 export default [
-  playwright.configs['flat/recommended'],
+  playwrightConfig,
   ...baseConfig,
   {
     files: ['**/*.ts', '**/*.js'],

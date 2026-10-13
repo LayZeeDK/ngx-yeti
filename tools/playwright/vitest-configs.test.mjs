@@ -1,3 +1,4 @@
+// @ts-check
 import assert from 'node:assert/strict';
 import { globSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';

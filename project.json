@@ -1,7 +1,21 @@
 {
   "name": "@ngx-yeti/source",
   "$schema": "node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["*"],
   "targets": {
+    "typecheck": {
+      "command": "tsc -p tsconfig.scripts.json && node --test tools/typecheck/scripts-coverage.test.mjs",
+      "dependsOn": [],
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/tsconfig.scripts.json",
+        "{workspaceRoot}/tsconfig.base.json",
+        "{workspaceRoot}/**/*.{mjs,cjs,js}",
+        "{workspaceRoot}/package-lock.json",
+        "{workspaceRoot}/tools/typecheck/scripts-coverage.test.mjs"
+      ],
+      "outputs": []
+    },
     "test": {
       "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright/playwright-configs.test.mjs tools/playwright-server/container.test.mjs tools/ci-local/run-job.test.mjs",
       "dependsOn": [],

@@ -1,3 +1,4 @@
+// @ts-check
 import path from 'node:path';
 import eslintComments from '@eslint-community/eslint-plugin-eslint-comments/configs';
 import css from '@eslint/css';
@@ -5,6 +6,7 @@ import nx from '@nx/eslint-plugin';
 import vitest from '@vitest/eslint-plugin';
 import angular from 'angular-eslint';
 import baselineJs from 'eslint-plugin-baseline-js';
+import playwrightPlugin from 'eslint-plugin-playwright';
 import storybook from 'eslint-plugin-storybook';
 import tseslint from 'typescript-eslint';
 
@@ -50,6 +52,15 @@ const moduleBoundaries = {
     },
   ],
 };
+
+// The plugin's index.d.ts declares an ES default export in a CommonJS package,
+// so TypeScript nests the plugin one `default` deeper than Node does; at
+// runtime index.mjs default-exports the plugin object itself.
+const playwright = /** @type {typeof playwrightPlugin.default} */ (
+  /** @type {unknown} */ (playwrightPlugin)
+);
+
+export const playwrightConfig = playwright.configs['flat/recommended'];
 
 // Playwright e2e specs share the *.spec.ts suffix, so only Vitest projects
 // spread this.

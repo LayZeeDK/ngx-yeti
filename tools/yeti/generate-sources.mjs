@@ -1,3 +1,4 @@
+// @ts-check
 // Writes the package sources generated from Yeti's build at the pin (setup
 // spec sections 1 and 3; ADR 0060 points 3 and 10): `yeti-types.ts`, a copy
 // of `dist/yeti.d.ts`, and `yeti-rank.ts`, every item in the import order of
@@ -12,7 +13,11 @@ const workspaceRoot = join(import.meta.dirname, '../..');
 const yetiRoot = join(workspaceRoot, 'vendor/yeti');
 const packageRoot = join(workspaceRoot, 'packages/ngx-yeti');
 
-/** Yeti's folder for each kind, as `YetiKind` names the kind. */
+/**
+ * Yeti's folder for each kind, as `YetiKind` names the kind.
+ *
+ * @type {Record<string, string>}
+ */
 const kinds = {
   layouts: 'layout',
   recipes: 'recipe',
@@ -28,7 +33,7 @@ const entryStylesheet = readFileSync(
 const items = [
   ...entryStylesheet.matchAll(/@import "(([\w-]+)\/([\w-]+)\/\3\.css)";/g),
 ].map(([, path, folder, name]) => {
-  const kind = kinds[folder];
+  const kind = kinds[String(folder)];
 
   if (kind === undefined) {
     throw new Error(`Unknown Yeti folder "${folder}" in ${path}`);
@@ -69,6 +74,7 @@ ${items
 } as const satisfies Record<YetiComponentName, YetiRankEntry>;
 `;
 
+/** @type {[path: string, content: string][]} */
 const outputs = [
   [
     join(packageRoot, 'src/yeti-types.ts'),

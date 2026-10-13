@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Launch, health-check, describe and stop one Fixture app (yeti-app)
 // instance per checkout. Driving stays in playwright-cli.
 // Usage: node control.mjs <up|doctor|info|down> [--mode serve|ssr]
@@ -34,8 +35,67 @@ const readyPath = 'card';
 const hydrationSummary =
   /^Angular hydrated \d+ component\(s\) and \d+ node\(s\), \d+ component\(s\) were skipped\./;
 
-const valueFlags = ['mode', 'configuration', 'port', 'url', 'timeout'];
+const valueFlags = /** @type {const} */ ([
+  'mode',
+  'configuration',
+  'port',
+  'url',
+  'timeout',
+]);
 const sessionName = /^[\w-]+$/;
+
+/**
+ * @typedef {(typeof valueFlags)[number]} FlagName
+ */
+
+/**
+ * @typedef {object} Check
+ * @property {string} name
+ * @property {'pass' | 'fail' | 'skip'} status
+ * @property {string} detail
+ */
+
+/**
+ * @typedef {{ error?: string, checks?: Check[] } & Record<string, unknown>} Result
+ */
+
+/**
+ * @typedef {object} ProcessEntry
+ * @property {number} ProcessId
+ * @property {number} ParentProcessId
+ * @property {string | null} CommandLine
+ * @property {string | null} Start
+ */
+
+/**
+ * @typedef {object} Survivor
+ * @property {number} pid
+ * @property {unknown} [start]
+ * @property {unknown} [commandLine]
+ */
+
+/**
+ * The fields of the state file this script reads back; `up` writes more.
+ *
+ * @typedef {object} State
+ * @property {string} session
+ * @property {number} pid
+ * @property {number} port
+ * @property {string} url
+ * @property {string} logFile
+ * @property {string} evidenceDir
+ * @property {Survivor[] | null} [survivors]
+ * @property {unknown} [mode]
+ * @property {unknown} [configuration]
+ * @property {unknown} [start]
+ * @property {unknown} [commandLine]
+ */
+
+/**
+ * @param {string} name
+ * @returns {name is FlagName}
+ */
+const isValueFlag = (name) => valueFlags.some((flag) => flag === name);
 
 const [command, ...rest] = process.argv.slice(2);
 const json = rest.includes('--json');
@@ -43,7 +103,9 @@ const flags = parseFlags(rest);
 
 // Only `--json` and `--<name>=<value>` for the names above: a mistyped name or
 // a value after a space must not fall back to a default.
+/** @param {string[]} args */
 function parseFlags(args) {
+  /** @type {Partial<Record<FlagName, string>>} */
   const result = {};
 
   for (const arg of args) {
@@ -51,23 +113,32 @@ function parseFlags(args) {
       continue;
     }
 
-    const match = /^--([^=]+)=(.+)$/.exec(arg);
+    const [, name, value] = /^--([^=]+)=(.+)$/.exec(arg) ?? [];
 
-    if (!match || !valueFlags.includes(match[1])) {
+    if (name === undefined || value === undefined || !isValueFlag(name)) {
       finish(2, {
         error: `unknown argument ${arg}; flags are --json and ${valueFlags.map((name) => `--${name}=<value>`).join(', ')}`,
       });
     }
 
-    result[match[1]] = match[2];
+    result[name] = value;
   }
 
   return result;
 }
 
-const positiveInteger = (value) => Number.isInteger(value) && value > 0;
-const validPort = (value) => positiveInteger(value) && value <= 65535;
+/** @param {unknown} value */
+const positiveInteger = (value) =>
+  typeof value === 'number' && Number.isInteger(value) && value > 0;
+/** @param {unknown} value */
+const validPort = (value) =>
+  typeof value === 'number' && positiveInteger(value) && value <= 65535;
 
+/**
+ * @param {number} code
+ * @param {Result} result
+ * @returns {never}
+ */
 function finish(code, result) {
   if (json) {
     process.stdout.write(
@@ -99,6 +170,10 @@ function flow() {
   return { worktree, id, session: `control-yeti-app-${id}` };
 }
 
+/**
+ * @param {ReturnType<typeof flow>} currentFlow
+ * @param {keyof typeof mainPorts} mode
+ */
 function derivedPort(currentFlow, mode) {
   if (!currentFlow.worktree) {
     return mainPorts[mode];
@@ -109,6 +184,10 @@ function derivedPort(currentFlow, mode) {
   return worktreeRange.first + (hash.readUInt32BE(0) % worktreeRange.size);
 }
 
+/**
+ * @param {ReturnType<typeof flow>} currentFlow
+ * @param {number} port
+ */
 function refusedPort(currentFlow, port) {
   return currentFlow.worktree && Object.values(mainPorts).includes(port);
 }
@@ -136,11 +215,16 @@ function processTable() {
     finish(2, { error: `process table: ${run.stderr || run.error}` });
   }
 
-  return new Map(
-    JSON.parse(run.stdout).map((entry) => [entry.ProcessId, entry]),
-  );
+  /** @type {ProcessEntry[]} */
+  const entries = JSON.parse(run.stdout);
+
+  return new Map(entries.map((entry) => [entry.ProcessId, entry]));
 }
 
+/**
+ * @param {Map<number, ProcessEntry>} table
+ * @param {number} pid
+ */
 function tree(table, pid) {
   const pids = new Set([pid]);
   let grew = true;
@@ -160,6 +244,7 @@ function tree(table, pid) {
 }
 
 // Get-NetTCPConnection, not netstat: netstat translates its state column.
+/** @param {number} port */
 function listeners(port) {
   const run = spawnSync(
     'pwsh',
@@ -181,22 +266,58 @@ function listeners(port) {
 
 // The recorded session, PIDs and port reach commands, so a state file that
 // holds anything else is refused before any of them runs.
+/**
+ * @param {unknown} value
+ * @returns {value is Survivor}
+ */
+function isSurvivor(value) {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'pid' in value &&
+    positiveInteger(value.pid)
+  );
+}
+
+/**
+ * @param {unknown} value
+ * @returns {value is State}
+ */
+function isState(value) {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'session' in value &&
+    typeof value.session === 'string' &&
+    sessionName.test(value.session) &&
+    'pid' in value &&
+    positiveInteger(value.pid) &&
+    (!('survivors' in value) ||
+      value.survivors === undefined ||
+      value.survivors === null ||
+      (Array.isArray(value.survivors) && value.survivors.every(isSurvivor))) &&
+    'port' in value &&
+    validPort(value.port) &&
+    'url' in value &&
+    typeof value.url === 'string' &&
+    'logFile' in value &&
+    typeof value.logFile === 'string' &&
+    'evidenceDir' in value &&
+    typeof value.evidenceDir === 'string'
+  );
+}
+
 function readState() {
   if (!existsSync(stateFile)) {
     return null;
   }
 
+  /** @type {unknown} */
   const state = JSON.parse(readFileSync(stateFile, 'utf8'));
-  const pids = [state.pid, ...(state.survivors ?? []).map(({ pid }) => pid)];
 
-  if (
-    typeof state.session !== 'string' ||
-    !sessionName.test(state.session) ||
-    !pids.every(positiveInteger) ||
-    !validPort(state.port)
-  ) {
+  if (!isState(state)) {
     finish(2, {
-      error: `refused: ${stateFile} records a session outside [\\w-], a PID that is not a positive integer or an invalid port; nothing was run`,
+      error: `refused: ${stateFile} records a session outside [\\w-], a PID that is not a positive integer, an invalid port, or a url, logFile or evidenceDir that is not a string; nothing was run`,
       stateFile,
     });
   }
@@ -207,7 +328,7 @@ function readState() {
 // The shim's own script under this Node: the session name never passes
 // through a shell.
 function playwrightCli() {
-  for (const dir of (process.env.PATH ?? '').split(delimiter)) {
+  for (const dir of (process.env['PATH'] ?? '').split(delimiter)) {
     const entry = join(
       dir,
       'node_modules',
@@ -224,6 +345,10 @@ function playwrightCli() {
   return null;
 }
 
+/**
+ * @param {string | null} entry
+ * @param {string} session
+ */
 function closeSession(entry, session) {
   if (!entry) {
     return { session, outcome: 'absent', detail: 'no playwright-cli on PATH' };
@@ -237,7 +362,7 @@ function closeSession(entry, session) {
   });
   const output = `${run.stdout ?? ''}${run.stderr ?? ''}`.trim();
 
-  if (run.error?.code === 'ETIMEDOUT') {
+  if (run.error && 'code' in run.error && run.error.code === 'ETIMEDOUT') {
     return { session, outcome: 'timeout', detail: 'no answer within 30 s' };
   }
 
@@ -272,6 +397,7 @@ function stopDaemon() {
       };
 }
 
+/** @param {string} url */
 async function fetchPage(url) {
   try {
     const response = await fetch(url, { signal: AbortSignal.timeout(5000) });
@@ -282,6 +408,10 @@ async function fetchPage(url) {
   }
 }
 
+/**
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 
 async function up() {
@@ -290,7 +420,7 @@ async function up() {
   const configuration = flags.configuration ?? 'development';
 
   if (
-    !['serve', 'ssr'].includes(mode) ||
+    (mode !== 'serve' && mode !== 'ssr') ||
     !['development', 'production'].includes(configuration)
   ) {
     finish(2, {
@@ -366,14 +496,23 @@ async function up() {
     windowsHide: true,
   });
   child.unref();
-  const live = processTable().get(child.pid);
+  const { pid } = child;
+
+  if (pid === undefined) {
+    finish(1, {
+      error: `the launch exited before it was ready; see ${logFile}`,
+      logFile,
+    });
+  }
+
+  const live = processTable().get(pid);
   const url = `http://localhost:${port}/sub/`;
   const state = {
     flow: currentFlow.id,
     worktree: currentFlow.worktree,
     mode,
     configuration,
-    pid: child.pid,
+    pid,
     start: live?.Start ?? null,
     commandLine: live?.CommandLine ?? null,
     port,
@@ -386,7 +525,7 @@ async function up() {
   const timeout = timeoutSeconds * 1000;
 
   while (Date.now() - started < timeout) {
-    if (child.exitCode !== null || !processTable().has(child.pid)) {
+    if (child.exitCode !== null || !processTable().has(pid)) {
       rmSync(stateFile, { force: true });
       finish(1, {
         error: `the launch exited before it was ready; see ${logFile}`,
@@ -397,7 +536,7 @@ async function up() {
     const page = await fetchPage(`${url}${readyPath}`);
 
     if (page.status === 200 && page.body.includes(marker)) {
-      const owned = tree(processTable(), child.pid);
+      const owned = tree(processTable(), pid);
       const listening = listeners(port);
 
       if (!listening.some((pid) => owned.includes(pid))) {
@@ -423,6 +562,7 @@ async function up() {
 }
 
 // Nx colours its output even into a file.
+/** @param {State} state */
 function serverLog(state) {
   return stripVTControlCharacters(readFileSync(state.logFile, 'utf8'));
 }
@@ -431,6 +571,10 @@ function serverLog(state) {
 const notSource = ['node_modules', 'storybook-static', 'dist'];
 const sourceDirs = ['apps/yeti-app', 'packages/ngx-yeti', 'vendor/yeti'];
 
+/**
+ * @param {string} dir
+ * @returns {number}
+ */
 function newestSource(dir) {
   let newest = 0;
 
@@ -454,18 +598,24 @@ function newestSource(dir) {
 async function doctor() {
   const currentFlow = flow();
   const state = readState();
+  /** @type {Check[]} */
   const checks = [];
+  /**
+   * @param {string} name
+   * @param {Check['status']} status
+   * @param {string} detail
+   */
   const check = (name, status, detail) => checks.push({ name, status, detail });
   const fromState = !flags.url;
   let url = flags.url;
 
-  if (!url && !state) {
-    finish(2, {
-      error: `no state file at ${stateFile}; run up, or pass --url to check an instance on purpose`,
-    });
-  }
-
   if (!url) {
+    if (!state) {
+      finish(2, {
+        error: `no state file at ${stateFile}; run up, or pass --url to check an instance on purpose`,
+      });
+    }
+
     url = state.url;
 
     if (refusedPort(currentFlow, state.port)) {
@@ -515,7 +665,7 @@ async function doctor() {
       const sources = Math.max(
         ...sourceDirs.map((dir) => newestSource(join(root, dir))),
       );
-      const fresh = built && sources < Date.parse(state.start);
+      const fresh = built && sources < Date.parse(String(state.start));
       const scanned = `${sourceDirs.join(', ')} (${notSource.join(', ')} skipped)`;
       check(
         'build-fresh',
@@ -532,6 +682,7 @@ async function doctor() {
     check('port-owned', 'skip', '--url names the instance');
   }
 
+  /** @type {typeof import('playwright')} */
   const { chromium } = requireFromRoot('playwright');
   let browser;
 
@@ -539,11 +690,12 @@ async function doctor() {
     browser = await chromium.launch();
   } catch (error) {
     finish(2, {
-      error: `chromium did not launch (npx playwright install chromium): ${error.message}`,
+      error: `chromium did not launch (npx playwright install chromium): ${error instanceof Error ? error.message : String(error)}`,
     });
   }
 
   const page = await browser.newPage();
+  /** @type {{ type: string, text: string }[]} */
   const messages = [];
   page.on('console', (message) =>
     messages.push({ type: message.type(), text: message.text() }),
@@ -570,11 +722,14 @@ async function doctor() {
   );
   // A recorded launch knows its build. An instance named by --url is probed,
   // and a probe that could not run leaves the build unknown, never production.
-  let build = fromState ? state.configuration : null;
+  let build = fromState && state ? state.configuration : null;
 
   if (!fromState && shown) {
     const ng = await page
-      .evaluate(() => typeof globalThis.ng === 'object')
+      .evaluate(
+        () =>
+          typeof (/** @type {{ ng?: unknown }} */ (globalThis).ng) === 'object',
+      )
       .catch(() => null);
     build = ng === null ? null : ng ? 'development' : 'production';
   }
@@ -654,10 +809,16 @@ async function down() {
 
   const table = processTable();
   const live = table.get(state.pid);
+  /**
+   * @param {ProcessEntry | undefined} entry
+   * @param {{ start?: unknown, commandLine?: unknown }} recorded
+   */
   const same = (entry, recorded) =>
     entry?.Start === recorded.start &&
     entry?.CommandLine === recorded.commandLine;
+  /** @type {ProcessEntry[]} */
   let members;
+  /** @type {ReturnType<typeof closeSession>[]} */
   let sessions = [];
 
   if (live) {
@@ -675,7 +836,9 @@ async function down() {
       closeSession(entry, session),
     );
 
-    members = tree(table, state.pid).map((pid) => table.get(pid));
+    members = tree(table, state.pid)
+      .map((pid) => table.get(pid))
+      .filter((member) => member !== undefined);
     spawnSync('taskkill', ['/PID', String(state.pid), '/T', '/F'], {
       encoding: 'utf8',
       windowsHide: true,
@@ -685,7 +848,8 @@ async function down() {
     // earlier down recorded that are still the same processes.
     members = (state.survivors ?? [])
       .filter((recorded) => same(table.get(recorded.pid), recorded))
-      .map((recorded) => table.get(recorded.pid));
+      .map((recorded) => table.get(recorded.pid))
+      .filter((member) => member !== undefined);
 
     for (const member of members) {
       spawnSync('taskkill', ['/PID', String(member.ProcessId), '/T', '/F'], {
@@ -769,13 +933,20 @@ async function down() {
   finish(0, result);
 }
 
-const commands = { up, doctor, info, down };
+/** @type {Map<string, () => unknown>} */
+const commands = new Map([
+  ['up', up],
+  ['doctor', doctor],
+  ['info', info],
+  ['down', down],
+]);
+const run = command === undefined ? undefined : commands.get(command);
 
-if (!commands[command]) {
+if (!run) {
   finish(2, {
     error:
       'usage: control.mjs <up|doctor|info|down> [--mode serve|ssr] [--configuration development|production] [--port N] [--url URL] [--timeout S] [--json]',
   });
 }
 
-await commands[command]();
+await run();

@@ -1,3 +1,4 @@
+// @ts-check
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { globSync } from 'node:fs';
@@ -90,7 +91,10 @@ test('apps/yeti-app-e2e runs tailwind.spec.ts only against the Tailwind builds, 
     assert.equal(config.testMatch, 'tailwind.spec.ts');
     assert.equal(config.testIgnore, undefined);
     assert.deepEqual(
-      config.webServer.map(({ command }) => command.split(' ').at(-1)),
+      config.webServer.map(
+        /** @param {{ command: string }} server */ ({ command }) =>
+          command.split(' ').at(-1),
+      ),
       [`yeti-app:serve-ssr:${configuration}`],
     );
     ports.add(hostPort(config.use.baseURL));

@@ -1,3 +1,4 @@
+// @ts-check
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import { test } from 'node:test';
@@ -5,7 +6,11 @@ import { containerScript, legChecks, quote, resolve } from './run-job.mjs';
 
 const hostile = ["it's", '$(echo injected)', '`echo injected`'];
 
-/** The words bash makes of `line`, read from stdin so no host quoting applies. */
+/**
+ * The words bash makes of `line`, read from stdin so no host quoting applies.
+ *
+ * @param {string} line
+ */
 function words(line) {
   return execFileSync('bash', ['-s'], {
     input: `printf '%s\\0' ${line}`,
@@ -15,11 +20,17 @@ function words(line) {
     .slice(0, -1);
 }
 
-/** The script each `bash -e -c` step of a container script receives. */
+/**
+ * The script each `bash -e -c` step of a container script receives.
+ *
+ * @param {string} container
+ */
 function steps(container) {
   const line = container
     .split('\n')
     .find((text) => text.endsWith(' || status=$?'));
+
+  assert.ok(line !== undefined);
 
   return execFileSync('bash', ['-s'], {
     input: `bash() { printf '%s\\0' "$3"; }\n${line.replace(/ \|\| status=\$\?$/, '')}`,
@@ -29,6 +40,7 @@ function steps(container) {
     .slice(0, -1);
 }
 
+/** @param {string[]} checks */
 const scriptOf = (checks) =>
   containerScript({
     setup: [],
@@ -55,6 +67,8 @@ test('a run text with a quote and a matrix value reaches bash -e -c as written',
 
 test('a replacement command after -- reaches the container as literal words', () => {
   const [step] = steps(scriptOf(legChecks(['true'], {}, ['echo', ...hostile])));
+
+  assert.ok(step !== undefined);
 
   assert.deepEqual(words(step), ['echo', ...hostile]);
 });

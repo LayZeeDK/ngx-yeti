@@ -1,3 +1,4 @@
+// @ts-check
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import http from 'node:http';
@@ -16,7 +17,11 @@ const cli = path.join(
   'cli.js',
 );
 
-/** Two distinct ports the OS hands out on 127.0.0.1 now. */
+/**
+ * Two distinct ports the OS hands out on 127.0.0.1 now.
+ *
+ * @returns {Promise<[number, number]>}
+ */
 async function twoFreePorts() {
   const servers = [net.createServer(), net.createServer()];
 
@@ -38,7 +43,11 @@ async function twoFreePorts() {
     await once(server, 'close');
   }
 
-  return ports;
+  const [first, second] = ports;
+
+  assert.ok(first !== undefined && second !== undefined);
+
+  return [first, second];
 }
 
 /**

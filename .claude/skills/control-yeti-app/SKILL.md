@@ -161,8 +161,11 @@ and no Nx daemon running. It builds the Fixture app, so nothing else may build i
 Flags: `--mode=serve|ssr`, `--configuration=development|production`, `--port=<n>` (up), `--url=<base url>`
 (doctor), `--timeout=<seconds>` (up), `--json` (one JSON object on stdout; otherwise `[OK]`/`[ERROR]`/`[SKIP]`
 lines). Any other flag, a value written after a space (`--mode ssr`) and a bare value flag exit 2 with
-`unknown argument <arg>` before anything runs. Every command refuses (exit 2, nothing run) a state file whose
-`session` is not `[\w-]` only, whose `pid` or a survivor's is not a positive integer, or whose `port` is not 1 to 65535. Windows only: the process table comes from `pwsh` and `Get-CimInstance Win32_Process`, listeners from
+`unknown argument <arg>` before anything runs. A command other than the four, a name every object has such as
+`toString` included, exits 2 with the usage line. Every command refuses (exit 2, nothing run) a state file that is
+not an object, whose `session` is not `[\w-]` only, whose `pid` or a survivor's is not a positive integer, whose
+`survivors` is not a list of objects, whose `port` is not 1 to 65535, or whose `url`, `logFile` or `evidenceDir` is
+not a string. Windows only: the process table comes from `pwsh` and `Get-CimInstance Win32_Process`, listeners from
 `Get-NetTCPConnection -State Listen` (netstat translates its state column).
 
 ## Gotchas

@@ -1,3 +1,4 @@
+// @ts-check
 const postcss = require('postcss');
 const tailwind = require('@tailwindcss/postcss');
 
@@ -26,9 +27,10 @@ function tailwindForms(options) {
       }
 
       // Tailwind rewrites the root it is given in place.
+      const { to } = result.opts;
       const { messages } = await processor.process(root, {
         from: file,
-        to: result.opts.to,
+        ...(to === undefined ? {} : { to }),
         map: false,
       });
 

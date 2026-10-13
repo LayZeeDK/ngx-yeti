@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 // Launch, health-check, describe and stop the ngx-yeti Storybook for agents.
 // Usage: node .claude/skills/control-ngx-yeti-storybook/scripts/control.mjs
 //   <up|doctor|info|down> [--dev] [--url=<origin>] [--json]
@@ -76,6 +77,36 @@ const port = derivedPort();
 const statePath = path.join(SCRATCH, `state-${flowName}.json`);
 const session = `${NAME}-${flowName}-${String(port)}`;
 
+/**
+ * @typedef {object} Check
+ * @property {string} name
+ * @property {'pass' | 'fail' | 'skipped'} status
+ * @property {string} detail
+ */
+
+/**
+ * @typedef {{ message?: string, checks?: Check[] } & Record<string, unknown>} Result
+ */
+
+/**
+ * The fields of the state file this script reads back; `up` writes more.
+ *
+ * @typedef {object} State
+ * @property {string} session
+ * @property {number} pid
+ * @property {number} port
+ * @property {string} url
+ * @property {string} target
+ * @property {string} log
+ * @property {unknown} [startTime]
+ * @property {unknown} [evidenceDir]
+ */
+
+/**
+ * @param {number} code
+ * @param {Result} result
+ * @returns {never}
+ */
 function finish(code, result) {
   const payload = { command, flow: flowName, exitCode: code, ...result };
 
@@ -104,24 +135,46 @@ function finish(code, result) {
 
 // The recorded session, PID and port reach commands, so a state file that
 // holds anything else is refused before any of them runs.
+/**
+ * @param {unknown} value
+ * @returns {value is State}
+ */
+function isState(value) {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'session' in value &&
+    typeof value.session === 'string' &&
+    SESSION_NAME.test(value.session) &&
+    'pid' in value &&
+    typeof value.pid === 'number' &&
+    Number.isInteger(value.pid) &&
+    value.pid > 0 &&
+    'port' in value &&
+    typeof value.port === 'number' &&
+    Number.isInteger(value.port) &&
+    value.port > 0 &&
+    value.port <= 65535 &&
+    'url' in value &&
+    typeof value.url === 'string' &&
+    'target' in value &&
+    typeof value.target === 'string' &&
+    'log' in value &&
+    typeof value.log === 'string'
+  );
+}
+
 function readState() {
   if (!existsSync(statePath)) {
     return null;
   }
 
+  /** @type {unknown} */
   const state = JSON.parse(readFileSync(statePath, 'utf8'));
 
-  if (
-    typeof state.session !== 'string' ||
-    !SESSION_NAME.test(state.session) ||
-    !Number.isInteger(state.pid) ||
-    state.pid <= 0 ||
-    !Number.isInteger(state.port) ||
-    state.port <= 0 ||
-    state.port > 65535
-  ) {
+  if (!isState(state)) {
     finish(2, {
-      message: `refused: ${statePath} records a session outside [\\w-], a PID that is not a positive integer or an invalid port; nothing was run`,
+      message: `refused: ${statePath} records a session outside [\\w-], a PID that is not a positive integer, an invalid port, or a url, target or log that is not a string; nothing was run`,
       statePath,
     });
   }
@@ -135,7 +188,7 @@ function playwrightCli() {
   // npm puts the package beside its Windows shim, and in ../lib elsewhere.
   const modules = IS_WINDOWS ? ['node_modules'] : ['..', 'lib', 'node_modules'];
 
-  for (const dir of (process.env.PATH ?? '').split(path.delimiter)) {
+  for (const dir of (process.env['PATH'] ?? '').split(path.delimiter)) {
     const entry = path.join(
       dir,
       ...modules,
@@ -152,6 +205,7 @@ function playwrightCli() {
   return null;
 }
 
+/** @param {string} name */
 function closeSession(name) {
   const entry = playwrightCli();
 
@@ -171,7 +225,11 @@ function closeSession(name) {
   });
   const output = `${run.stdout ?? ''}${run.stderr ?? ''}`.trim();
 
-  if (run.error?.code === 'ETIMEDOUT') {
+  if (
+    run.error !== undefined &&
+    'code' in run.error &&
+    run.error.code === 'ETIMEDOUT'
+  ) {
     return {
       session: name,
       outcome: 'timeout',
@@ -260,6 +318,10 @@ function processTable() {
     });
 }
 
+/**
+ * @param {ReturnType<typeof processTable>} table
+ * @param {number} pid
+ */
 function descendants(table, pid) {
   const tree = new Set([pid]);
   let grew = true;
@@ -278,6 +340,7 @@ function descendants(table, pid) {
   return tree;
 }
 
+/** @param {number} listenPort */
 function listeningPids(listenPort) {
   try {
     if (IS_WINDOWS) {
@@ -307,6 +370,10 @@ function listeningPids(listenPort) {
   }
 }
 
+/**
+ * @param {number} listenPort
+ * @returns {Promise<boolean>}
+ */
 function portAnswers(listenPort) {
   return new Promise((resolve) => {
     const socket = connect({ host: 'localhost', port: listenPort });
@@ -323,10 +390,15 @@ function portAnswers(listenPort) {
   });
 }
 
+/**
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+/** @param {string} origin */
 async function indexHasStory(origin) {
   try {
     const response = await fetch(`${origin}/index.json`);
@@ -335,9 +407,16 @@ async function indexHasStory(origin) {
       return false;
     }
 
+    /** @type {unknown} */
     const index = await response.json();
+    const entries =
+      typeof index === 'object' && index !== null && 'entries' in index
+        ? index.entries
+        : undefined;
 
-    return KNOWN_STORY in (index.entries ?? {});
+    return (
+      typeof entries === 'object' && entries !== null && KNOWN_STORY in entries
+    );
   } catch {
     return false;
   }
@@ -345,7 +424,20 @@ async function indexHasStory(origin) {
 
 // Opens the known story with embed=true (no play function) in the repo's own
 // Playwright Chromium and reports whether it rendered without console errors.
+/**
+ * What the two page functions of renderCheck read from the page's global.
+ *
+ * @typedef {object} StoryPage
+ * @property {{ currentRender?: { phase?: string } }} [__STORYBOOK_PREVIEW__]
+ * @property {{
+ *   body: { classList: { contains(token: string): boolean } },
+ *   querySelector(selectors: string): { children: { length: number } } | null,
+ * }} document
+ */
+
+/** @param {string} origin */
 async function renderCheck(origin) {
+  /** @type {typeof import('playwright')} */
   const { chromium } = await import(
     pathToFileURL(path.join(ROOT, 'node_modules', 'playwright', 'index.mjs'))
       .href
@@ -354,6 +446,7 @@ async function renderCheck(origin) {
 
   try {
     const page = await browser.newPage();
+    /** @type {string[]} */
     const errors = [];
     page.on('console', (message) => {
       if (message.type() === 'error' && !message.text().includes('favicon')) {
@@ -367,16 +460,26 @@ async function renderCheck(origin) {
     await page.waitForFunction(
       () =>
         ['finished', 'errored', 'aborted'].includes(
-          window.__STORYBOOK_PREVIEW__?.currentRender?.phase ?? '',
+          /** @type {StoryPage} */ (/** @type {unknown} */ (globalThis))
+            .__STORYBOOK_PREVIEW__?.currentRender?.phase ?? '',
         ),
       undefined,
       { timeout: 60_000 },
     );
-    const state = await page.evaluate(() => ({
-      phase: window.__STORYBOOK_PREVIEW__.currentRender.phase,
-      errorDisplay: document.body.classList.contains('sb-show-errordisplay'),
-      rootChildren: document.querySelector('#storybook-root')?.children.length,
-    }));
+    const state = await page.evaluate(() => {
+      const view = /** @type {StoryPage} */ (
+        /** @type {unknown} */ (globalThis)
+      );
+
+      return {
+        phase: view.__STORYBOOK_PREVIEW__?.currentRender?.phase,
+        errorDisplay: view.document.body.classList.contains(
+          'sb-show-errordisplay',
+        ),
+        rootChildren:
+          view.document.querySelector('#storybook-root')?.children.length,
+      };
+    });
 
     return { ...state, consoleErrors: errors };
   } finally {
@@ -392,6 +495,11 @@ const SOURCE_DIRS = [
 ];
 const NOT_SOURCE = ['storybook-static', 'node_modules', 'dist'];
 
+/**
+ * @param {string} dir
+ * @param {string[]} skip
+ * @returns {number}
+ */
 function newestMtime(dir, skip) {
   let newest = 0;
 
@@ -412,6 +520,7 @@ function newestMtime(dir, skip) {
   return newest;
 }
 
+/** @param {string} file */
 function tail(file, lines = 20) {
   if (!existsSync(file)) {
     return [];
@@ -424,6 +533,7 @@ function tail(file, lines = 20) {
     .slice(-lines);
 }
 
+/** @param {string | undefined} target */
 function refuseMainPort(target) {
   const mainPorts = Object.values(FLOWS).map((f) => f.mainPort);
 
@@ -483,6 +593,7 @@ async function up() {
   });
   child.unref();
   closeSync(log);
+  /** @type {number | null} */
   let exited = null;
   child.once('exit', (code) => {
     exited = code;
@@ -545,9 +656,19 @@ async function up() {
 async function doctor() {
   const state = readState();
   const origin = urlArg ?? state?.url;
+  /** @type {Check[]} */
   const checks = [];
+  /**
+   * @param {string} name
+   * @param {boolean} ok
+   * @param {string} detail
+   */
   const add = (name, ok, detail) =>
     checks.push({ name, status: ok ? 'pass' : 'fail', detail });
+  /**
+   * @param {string} name
+   * @param {string} detail
+   */
   const skip = (name, detail) =>
     checks.push({ name, status: 'skipped', detail });
 
@@ -555,23 +676,26 @@ async function doctor() {
     finish(2, { message: `no state file at ${statePath} and no --url` });
   }
 
-  if (urlArg === undefined) {
+  // Without --url the origin came from the state file, so the file exists.
+  const recorded = urlArg === undefined ? state : null;
+
+  if (recorded !== null) {
     refuseMainPort(undefined);
     const table = processTable();
-    const live = table.find((proc) => proc.pid === state.pid);
+    const live = table.find((proc) => proc.pid === recorded.pid);
     add(
       'process alive',
-      live !== undefined && live.start === state.startTime,
+      live !== undefined && live.start === recorded.startTime,
       live === undefined
-        ? `pid ${String(state.pid)} is not running`
-        : `pid ${String(state.pid)} started ${live.start}`,
+        ? `pid ${String(recorded.pid)} is not running`
+        : `pid ${String(recorded.pid)} started ${live.start}`,
     );
-    const owners = listeningPids(state.port);
-    const tree = descendants(table, state.pid);
+    const owners = listeningPids(recorded.port);
+    const tree = descendants(table, recorded.pid);
     add(
       'port owned by run',
       owners.length > 0 && owners.every((pid) => tree.has(pid)),
-      `port ${String(state.port)} listeners ${JSON.stringify(owners)}`,
+      `port ${String(recorded.port)} listeners ${JSON.stringify(owners)}`,
     );
   } else {
     skip('process alive', '--url names an instance this run did not start');
@@ -587,7 +711,7 @@ async function doctor() {
       'known story renders',
       render.phase === 'finished' &&
         !render.errorDisplay &&
-        render.rootChildren > 0,
+        (render.rootChildren ?? 0) > 0,
       `${KNOWN_STORY} phase=${render.phase} rootChildren=${String(render.rootChildren)}`,
     );
     add(
@@ -602,7 +726,7 @@ async function doctor() {
     skip('no console errors', 'index check failed');
   }
 
-  if (urlArg !== undefined) {
+  if (recorded === null) {
     skip('build matches checkout', '--url instance');
   } else if (flowName === 'static') {
     const built = path.join(
@@ -624,7 +748,7 @@ async function doctor() {
         : `a file in ${scanned} changed after the build; run down and up`,
     );
   } else {
-    const errors = tail(state.log, 500).filter((line) =>
+    const errors = tail(recorded.log, 500).filter((line) =>
       /\b(ERROR|Error:)/.test(line),
     );
     add(
@@ -775,7 +899,14 @@ async function down() {
   });
 }
 
-const commands = { up, doctor, info, down };
+/** @type {Map<string, () => unknown>} */
+const commands = new Map([
+  ['up', up],
+  ['doctor', doctor],
+  ['info', info],
+  ['down', down],
+]);
+const run = command === undefined ? undefined : commands.get(command);
 
 if (unknown.length > 0) {
   finish(2, {
@@ -783,11 +914,11 @@ if (unknown.length > 0) {
   });
 }
 
-if (!(command in commands)) {
+if (run === undefined) {
   finish(2, {
     message:
       'usage: control.mjs <up|doctor|info|down> [--dev] [--url=<origin>] [--json]',
   });
 }
 
-await commands[command]();
+await run();

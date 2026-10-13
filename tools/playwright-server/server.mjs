@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 /**
  *   node tools/playwright-server/server.mjs        start, or resume the container
  *   node tools/playwright-server/server.mjs stop
@@ -99,7 +100,9 @@ function start() {
     existing.token !== '' &&
     existing.state !== 'created' &&
     existing.attached;
-  const token = reuse ? existing.token : randomBytes(16).toString('hex');
+  const token = reuse
+    ? String(existing.token)
+    : randomBytes(16).toString('hex');
 
   // A pruned network takes a stopped container's endpoint with it; create it
   // before a resume too, and accept a race with another start.
@@ -228,7 +231,7 @@ function reason(error, token) {
   const text =
     lines.find((line) => /port is already allocated/.test(line)) ??
     lines.at(-1) ??
-    message.split('\n')[0];
+    String(message.split('\n')[0]);
 
   return redact(text, token);
 }

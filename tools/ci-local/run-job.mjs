@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// @ts-check
 /** See references/ci-local.md. */
 import { execFileSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -22,11 +23,43 @@ const defaultLegs = 2;
 /** Playwright workers per e2e leg; 0 leaves the configs' CI count. */
 const defaultE2eWorkers = 3;
 
+/**
+ * A matrix combination, or the `--matrix` filter.
+ *
+ * @typedef {Record<string, unknown>} Matrix
+ */
+
+/**
+ * @typedef {object} Leg
+ * @property {string[]} args
+ * @property {string} name
+ * @property {string} label
+ * @property {string} out
+ * @property {string} log
+ */
+
+/**
+ * @param {string} message
+ * @returns {never}
+ */
 function fail(message) {
   console.error(`run-job: ${message}`);
   process.exit(2);
 }
 
+/**
+ * @param {unknown} value
+ * @returns {value is Record<string, unknown>}
+ */
+function isObject(value) {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * @param {string} option
+ * @param {string | undefined} text
+ * @param {number} min
+ */
 function count(option, text, min) {
   const value = Number(text);
 
@@ -37,11 +70,13 @@ function count(option, text, min) {
   return value;
 }
 
+/** @param {string[]} argv */
 function parseArgs(argv) {
   const dash = argv.indexOf('--');
   const own = dash === -1 ? argv : argv.slice(0, dash);
   const command = dash === -1 ? [] : argv.slice(dash + 1);
   const [workflow, job, ...rest] = own;
+  /** @type {Record<string, string>} */
   const matrix = {};
   let dryRun = false;
   let legs = defaultLegs;
@@ -90,7 +125,12 @@ function parseArgs(argv) {
 
 const token = /'(?:[^']|'')*'|==|&&|\|\||matrix\.\w+/g;
 
-/** GitHub compares strings with `==` case-insensitively. */
+/**
+ * GitHub compares strings with `==` case-insensitively.
+ *
+ * @param {string} expression
+ * @param {Matrix} matrix
+ */
 function evaluate(expression, matrix) {
   if (expression.replace(token, '').trim() !== '') {
     fail(`unsupported expression: ${expression}`);
@@ -162,12 +202,23 @@ function evaluate(expression, matrix) {
   return value;
 }
 
+/**
+ * @param {unknown} text
+ * @param {Matrix} matrix
+ */
 export function resolve(text, matrix) {
-  return String(text).replace(/\$\{\{\s*(.*?)\s*\}\}/g, (_, expression) =>
-    String(evaluate(expression, matrix)),
+  return String(text).replace(
+    /\$\{\{\s*(.*?)\s*\}\}/g,
+    (_, /** @type {string} */ expression) =>
+      String(evaluate(expression, matrix)),
   );
 }
 
+/**
+ * @param {string} where
+ * @param {unknown} object
+ * @param {string[]} allowed
+ */
 function assertKeys(where, object, allowed) {
   const unknown = Object.keys(object ?? {}).filter(
     (key) => !allowed.includes(key),
@@ -180,6 +231,10 @@ function assertKeys(where, object, allowed) {
   }
 }
 
+/**
+ * @param {string} workflowName
+ * @param {string} jobName
+ */
 function loadJob(workflowName, jobName) {
   const file = join(root, '.github/workflows', `${workflowName}.yml`);
 
@@ -188,13 +243,21 @@ function loadJob(workflowName, jobName) {
   }
 
   const workflow = load(readFileSync(file, 'utf8'));
-  const job = workflow.jobs?.[jobName];
 
-  if (!job) {
+  if (!isObject(workflow)) {
+    fail(`${workflowName}.yml is not a mapping`);
+  }
+
+  const jobs = workflow['jobs'];
+  const job = isObject(jobs) ? jobs[jobName] : undefined;
+
+  if (!isObject(job)) {
     fail(`${workflowName}.yml has no job ${jobName}`);
   }
 
-  if (!job.container) {
+  const container = job['container'];
+
+  if (!container) {
     fail(
       `${workflowName}.yml ${jobName} has no container; run it natively (references/ci-local.md)`,
     );
@@ -218,36 +281,57 @@ function loadJob(workflowName, jobName) {
     'env',
     'steps',
   ]);
-  assertKeys(`${where} strategy`, job.strategy, ['fail-fast', 'matrix']);
+  const strategy = job['strategy'];
 
-  if (typeof job.container !== 'string') {
-    assertKeys(`${where} container`, job.container, ['image']);
+  assertKeys(`${where} strategy`, strategy, ['fail-fast', 'matrix']);
+
+  if (typeof container !== 'string') {
+    assertKeys(`${where} container`, container, ['image']);
   }
 
-  const actions = { checkout: [], 'setup-node': ['node-version', 'cache'] };
-  let nodeVersion = null;
+  const image = isObject(container) ? container['image'] : container;
 
-  for (const step of job.steps ?? []) {
-    if (step === null || typeof step !== 'object') {
+  if (typeof image !== 'string') {
+    fail(`${where} container names no image`);
+  }
+
+  /** @type {Record<string, string[]>} */
+  const actions = { checkout: [], 'setup-node': ['node-version', 'cache'] };
+  /** @type {unknown[]} */
+  const steps = listOf(job['steps'] ?? [], where);
+  /** @type {unknown} */
+  let nodeVersion = null;
+  /** @type {string[]} */
+  const runs = [];
+
+  for (const step of steps) {
+    if (!isObject(step)) {
       fail(`${where} has an empty step`);
     }
 
-    const action = /^actions\/([\w-]+)@/.exec(step.uses ?? '')?.[1];
+    const uses = String(step['uses'] ?? '');
+    const action = /^actions\/([\w-]+)@/.exec(uses)?.[1];
 
     if ('run' in step) {
       assertKeys(`a step of ${where}`, step, ['name', 'run']);
+
+      if (typeof step['run'] !== 'string') {
+        fail(`a step of ${where} has a run that is not text`);
+      }
+
+      runs.push(step['run']);
     } else if (action !== undefined && action in actions) {
+      const inputs = step['with'];
+
       assertKeys(`a step of ${where}`, step, ['name', 'uses', 'with']);
-      assertKeys(`${step.uses} in ${where}`, step.with, actions[action]);
-      nodeVersion = step.with?.['node-version'] ?? nodeVersion;
+      assertKeys(`${uses} in ${where}`, inputs, actions[action] ?? []);
+      nodeVersion =
+        (isObject(inputs) ? inputs['node-version'] : undefined) ?? nodeVersion;
     } else {
-      assertKeys(`a step of ${where}`, { [step.uses]: true }, []);
+      assertKeys(`a step of ${where}`, { [String(step['uses'])]: true }, []);
     }
   }
 
-  const runs = (job.steps ?? [])
-    .filter((step) => 'run' in step)
-    .map((step) => step.run);
   const split = runs.findIndex((run) => !isSetup(run));
   const setup = split === -1 ? runs : runs.slice(0, split);
   const checks = split === -1 ? [] : runs.slice(split);
@@ -257,17 +341,51 @@ function loadJob(workflowName, jobName) {
   }
 
   return {
-    env: { ...workflow.env, ...job.env },
-    image:
-      typeof job.container === 'string' ? job.container : job.container.image,
-    matrix: job.strategy?.matrix ?? {},
+    env: {
+      ...mapping(workflow['env'], 'the workflow env'),
+      ...mapping(job['env'], `${where} env`),
+    },
+    image,
+    matrix: mapping(
+      isObject(strategy) ? strategy['matrix'] : undefined,
+      `${where} strategy.matrix`,
+    ),
     nodeVersion,
     setup,
     checks,
   };
 }
 
-/** The matrix combinations the filter keeps, in GitHub's expansion order. */
+/**
+ * @param {unknown} value
+ * @param {string} where
+ * @returns {unknown[]}
+ */
+function listOf(value, where) {
+  return Array.isArray(value) ? value : fail(`${where} steps is not a list`);
+}
+
+/**
+ * @param {unknown} value an optional YAML mapping
+ * @param {string} what
+ * @returns {Record<string, unknown>}
+ */
+function mapping(value, what) {
+  if (value === undefined || value === null) {
+    return {};
+  }
+
+  return isObject(value) && !Array.isArray(value)
+    ? value
+    : fail(`${what} is not a mapping`);
+}
+
+/**
+ * The matrix combinations the filter keeps, in GitHub's expansion order.
+ *
+ * @param {Matrix} matrix
+ * @param {Record<string, string>} filter
+ */
 function combinations(matrix, filter) {
   if ('include' in matrix || 'exclude' in matrix) {
     fail('matrix include and exclude are not supported');
@@ -279,6 +397,7 @@ function combinations(matrix, filter) {
     }
   }
 
+  /** @type {Matrix[]} */
   let result = [{}];
 
   for (const [key, values] of Object.entries(matrix)) {
@@ -287,7 +406,10 @@ function combinations(matrix, filter) {
     }
 
     result = result.flatMap((combo) =>
-      values.map((value) => ({ ...combo, [key]: value })),
+      values.map((/** @type {unknown} */ value) => ({
+        ...combo,
+        [key]: value,
+      })),
     );
   }
 
@@ -298,24 +420,37 @@ function combinations(matrix, filter) {
   );
 }
 
+/** @param {string} run */
 const isSetup = (run) => /^npm (ci|install)\b/.test(run.trim());
 
+/** @param {unknown} argument */
 export function quote(argument) {
   return `'${String(argument).replaceAll("'", "'\\''")}'`;
 }
 
-/** The leg's check steps: the job's, or the command after `--` as literal words. */
+/**
+ * The leg's check steps: the job's, or the command after `--` as literal words.
+ *
+ * @param {string[]} checks
+ * @param {Matrix} combo
+ * @param {string[]} command
+ */
 export function legChecks(checks, combo, command) {
   return command.length > 0
     ? [command.map(quote).join(' ')]
     : checks.map((run) => resolve(run, combo));
 }
 
-/** Each folder gets its own volume, so installs survive the `--rm` container. */
+/**
+ * Each folder gets its own volume, so installs survive the `--rm` container.
+ *
+ * @param {unknown} lockfile
+ */
 function modulesFolders(lockfile) {
   const folders = new Set(['node_modules']);
+  const packages = isObject(lockfile) ? lockfile['packages'] : undefined;
 
-  for (const path of Object.keys(lockfile.packages ?? {})) {
+  for (const path of Object.keys(packages ?? {})) {
     const nested = path.indexOf('/node_modules/');
 
     if (nested > 0 && !path.startsWith('node_modules/')) {
@@ -337,6 +472,11 @@ function sourceFiles() {
     .filter((path) => path && existsSync(join(root, path)));
 }
 
+/**
+ * @param {{ image: string }} job
+ * @param {string[]} setup
+ * @param {string[]} files
+ */
 function setupKey(job, setup, files) {
   const hash = createHash('sha256').update(job.image).update(setup.join('\n'));
 
@@ -349,8 +489,16 @@ function setupKey(job, setup, files) {
   return hash.digest('hex');
 }
 
+/**
+ * @param {object} options
+ * @param {string[]} options.setup
+ * @param {string[]} options.checks
+ * @param {string} options.key
+ * @param {string[]} options.folders
+ * @param {unknown} options.nodeVersion
+ */
 export function containerScript({ setup, checks, key, folders, nodeVersion }) {
-  const step = (run) => `bash -e -c ${quote(run)}`;
+  const step = (/** @type {string} */ run) => `bash -e -c ${quote(run)}`;
   const keyFiles = folders.map((folder) => `${folder}/.run-job-key`);
   const current = keyFiles
     .map((file) => `[ "$(cat ${file} 2>/dev/null)" = ${quote(key)} ]`)
@@ -387,9 +535,14 @@ export function containerScript({ setup, checks, key, folders, nodeVersion }) {
   ].join('\n');
 }
 
-/** Containers this run started, removed on an interrupt. */
+/**
+ * Containers this run started, removed on an interrupt.
+ *
+ * @type {Set<string>}
+ */
 const running = new Set();
 
+/** @param {number} code */
 function stop(code) {
   if (running.size > 0) {
     try {
@@ -402,7 +555,14 @@ function stop(code) {
   process.exit(code);
 }
 
-/** Prints each line with its leg's label and keeps the leg's own copy in `log`. */
+/**
+ * Prints each line with its leg's label and keeps the leg's own copy in `log`.
+ *
+ * @param {NodeJS.ReadableStream} stream
+ * @param {string} label
+ * @param {NodeJS.WritableStream} log
+ * @param {NodeJS.WritableStream} sink
+ */
 function relay(stream, label, log, sink) {
   createInterface({ input: stream, crlfDelay: Infinity }).on('line', (line) => {
     log.write(`${line}\n`);
@@ -410,6 +570,11 @@ function relay(stream, label, log, sink) {
   });
 }
 
+/**
+ * @param {Leg} leg
+ * @param {string[]} files
+ * @returns {Promise<number>} The leg's exit status.
+ */
 function runContainer({ args, name, label, log }, files) {
   return new Promise((done) => {
     const tar = spawn('tar', ['-cf', '-', '--null', '-T', '-'], {
@@ -420,12 +585,13 @@ function runContainer({ args, name, label, log }, files) {
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     const output = createWriteStream(log);
+    /** @type {number | null} */
     let tarStatus = null;
 
     running.add(name);
 
     for (const stream of [tar, docker, tar.stdin, docker.stdin]) {
-      stream.on('error', (error) => {
+      stream.on('error', (/** @type {NodeJS.ErrnoException} */ error) => {
         if (error.code !== 'EPIPE') {
           console.error(`run-job: ${error.message}`);
         }
@@ -456,12 +622,14 @@ function runContainer({ args, name, label, log }, files) {
   });
 }
 
+/** @param {number} ms */
 function seconds(ms) {
   const total = Math.round(ms / 1000);
 
   return `${String(Math.floor(total / 60))} m ${String(total % 60)} s`;
 }
 
+/** @param {ReturnType<typeof parseArgs>} options */
 async function run({
   workflow,
   job: jobName,
@@ -486,7 +654,12 @@ async function run({
   const volume = `ngx-yeti-run-job-${checkout}-${workflow}-${jobName}`;
   const legs = Math.min(cap, combos.length);
 
-  /** Slot 0 keeps the job's volumes; each other concurrent slot has its own, so legs never share a writable node_modules. */
+  /**
+   * Slot 0 keeps the job's volumes; each other concurrent slot has its own, so legs never share a writable node_modules.
+   *
+   * @param {Matrix} combo
+   * @param {number} slot
+   */
   function leg(combo, slot) {
     const setup = job.setup.map((run) => resolve(run, combo));
     const checks = legChecks(job.checks, combo, command);
@@ -556,6 +729,7 @@ async function run({
   process.on('SIGTERM', () => stop(143));
 
   const queue = combos.map((combo, index) => ({ combo, index }));
+  /** @type {(Leg & { status: number, ms: number })[]} */
   const results = [];
 
   console.log(

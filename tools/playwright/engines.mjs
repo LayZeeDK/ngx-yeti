@@ -1,3 +1,4 @@
+// @ts-check
 import { once } from 'node:events';
 import { readFileSync } from 'node:fs';
 import net from 'node:net';

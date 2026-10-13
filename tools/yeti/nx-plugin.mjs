@@ -1,3 +1,4 @@
+// @ts-check
 import { dirname } from 'node:path';
 
 export const name = 'yeti-plugin';
@@ -5,6 +6,7 @@ export const name = 'yeti-plugin';
 // vendor-yeti.mjs rewrites COMMIT on every pin move, so `default` hashes
 // the pin even when the move changes only Yeti's package.json, which
 // .nxignore hides from Nx and bin/build.js stamps into dist.
+/** @type {import('@nx/devkit').CreateNodesV2} */
 export const createNodes = [
   'vendor/yeti/COMMIT',
   (files) =>

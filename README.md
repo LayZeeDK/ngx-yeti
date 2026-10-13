@@ -57,7 +57,7 @@ Every script runs an Nx target. Run them with `npm run <script>`.
 | `test`           | Unit and server-render tests                                                                             |
 | `test-storybook` | Every story's play function and its accessibility check                                                  |
 | `e2e`            | All Playwright projects                                                                                  |
-| `typecheck`      | The full Angular compiler without emitting                                                               |
+| `typecheck`      | The full Angular compiler without emitting, and `tsc` over the committed `.mjs` and `.cjs` scripts       |
 | `storybook`      | Storybook for `ngx-yeti` on port 4400                                                                    |
 | `start`          | The Fixture app's dev server                                                                             |
 | `build`          | Every build                                                                                              |

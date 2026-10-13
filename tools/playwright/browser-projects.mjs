@@ -1,3 +1,4 @@
+// @ts-check
 import { fileURLToPath } from 'node:url';
 import { devices } from '@playwright/test';
 import { engines, localEnv } from './engines.mjs';

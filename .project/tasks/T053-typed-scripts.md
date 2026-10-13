@@ -3,9 +3,9 @@ id: T053
 title: Land the typed scripts and their type check in CI
 wave: 9
 deps: []
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T053
+base: 1580f84eba8c4b8018f6e3e80a01bd524d964700
 worktree: null
 task_branch: null
 files:
@@ -106,3 +106,32 @@ Heavy: yes
 ## Log
 
 - 2026-10-13 — created by planner (build repair 5), from the patch tmp/afk-m002/tools/mjs-typing.patch and its review tmp/afk-m002/mjs-typing-review.md.
+- 2026-10-14 — coder build_T053: applied tmp/afk-m002/tools/mjs-typing.final.patch at base 1580f84 with plain `git apply` (check and apply clean, no 3-way, no hand-merged hunk; index untouched). T059's `args: ['--disable-stack-profiler']` in tools/playwright/browser-projects.mjs, its test case in browser-projects.test.mjs, and the `args?: string[]` LaunchOptions field in engines.mjs all survive; the patch only adds `// @ts-check` to those files. 39 paths changed, all from the patch (38 tracked + tsconfig.scripts.json and tools/typecheck/scripts-coverage.test.mjs untracked new files).
+- 2026-10-14 — coder build_T053: one edit beyond the patch, inside a patch path: tsconfig.scripts.json `exclude` gains `**/out-tsc`, `**/storybook-static`, `**/vitest.config.*.timestamp*`, `coverage` (git-ignored output folders). Measured cause: the first full Verify exited 134 because the control-ngx-yeti-storybook suite builds packages/ngx-yeti/storybook-static/, and the later `nx run @ngx-yeti/source:typecheck` then type-checked its bundled assets (thousands of TS errors, e.g. storybook-static/assets/angular-platform-*.js). With the exclude, the typecheck passes with storybook-static present. The patch's review missed this because nobody had run the control suites before the typecheck.
+- 2026-10-14 — coder build_T053: AC2 coverage probe. The guard refuses `GIT_INDEX_FILE` and rule 12 forbids `git add -N`, so the probe put a committed script outside the tsconfig instead of adding a new one: temporarily excluded `tools/yeti/vendor-yeti.mjs` in tsconfig.scripts.json -> `node --test tools/typecheck/scripts-coverage.test.mjs` pass 0, fail 1, `actual: [ 'tools/yeti/vendor-yeti.mjs' ]`; restored the file from a backup -> pass 1, fail 0.
+- 2026-10-14 — coder build_T053: control-skill suites through the heavy lock: control-yeti-app 9 tests, 9 pass, 0 fail; control-ngx-yeti-storybook 6 tests, 6 pass, 0 fail. No remote-browser run started; tools/playwright-server/server.mjs not run. Landing note (review M4): the first `node tools/playwright-server/server.mjs` after this lands force-recreates the shared `ngx-yeti-playwright-server` container with a new token, dropping any live `remote-*` run in another checkout; the first lint, typecheck, e2e, test-storybook and yeti-build run after landing are cold.
+- 2026-10-14 — coder build_T053: rule 13 check through the heavy lock: `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` exit 0 (9 projects, 25 tasks, incl. ngx-yeti:test-storybook); `npx prettier --check .` passes.
+- 2026-10-14 — coder build_T053: Verify run exactly as written through the heavy lock, exit 0: @ngx-yeti/source:typecheck (coverage test 1 pass, 0 fail); @ngx-yeti/source:test 41 tests, 41 pass, 0 fail; run-many lint typecheck succeeded for 9 projects + 1 dependency task; run-job ci e2e --dry-run exit 0; control-yeti-app 9/9 pass; control-ngx-yeti-storybook 6/6 pass; prettier clean; Nx daemon stopped.
+- 2026-10-13 — orchestrator Verify (isolate gsd-path-task/T053): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```
