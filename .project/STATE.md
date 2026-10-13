@@ -126,3 +126,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-13 — plan — plan approved
 - 2026-10-13 — build — build started
 - 2026-10-13 — build — plan repair 4 (T050 loader keeps server links until the hydrating application settles; T051 AGENTS.md Scripts section; T025 after T050) approved by the orchestrator acting as owner under the user's /goal of 2026-10-13 ('You are running in AFK mode. Use lars-mode and other lars-* skills to keep going and make decisions without a HITL.'), after its own gate-plan rerun exited 0
+- 2026-10-13 — build — plan defect repaired: T044 AC4 and its two enter Approach bullets contradicted enter.md:253 (ticket 50 decision 20) and AC5; enter keeps its behaviour and only the once doc comment changes (coder NEEDS-ORCHESTRATOR answered from the spec)
