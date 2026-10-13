@@ -3,9 +3,9 @@ id: T051
 title: Add the Scripts section to AGENTS.md
 wave: 4
 deps: [T041]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T051
+base: bbd0d7d357da9b9def51a8c4a3e4f389b6c5f1ef
 worktree: null
 task_branch: null
 files:
@@ -65,3 +65,27 @@ Heavy: no
 ## Log
 
 - 2026-10-13 — created by planner (build repair 4), from the draft tmp/afk-m002/agents-scripts-rule.md.
+- 2026-10-13 - build_T051: inserted the `# Scripts` section verbatim between `# Run CI locally` and `# Specs and skills` in AGENTS.md (diff: +6 lines, AGENTS.md only). Verify exact command: exit 0 (npm ci 1941 packages, 3 rg checks, awk order check, prettier --check AGENTS.md pass, daemon stopped). Rule 13: `npx prettier --check .` pass; `nx affected -t lint typecheck test --base=HEAD` ran 1 task, 1/1 cache hit, 0 failures (no test-storybook target affected).
+- 2026-10-13 — orchestrator Verify (isolate gsd-path-task/T051): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

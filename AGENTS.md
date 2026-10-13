@@ -252,6 +252,12 @@ Every job in `.github/workflows/ci.yml` and `floor.yml` passes locally and in CI
 
 Read `references/ci-local.md` before you run a CI or floor job locally. After `npm install --no-save playwright@<release>`, run `npm ci` before anything else, and then `npx playwright install chromium firefox webkit`.
 
+# Scripts
+
+Write every script in this repository as a typed `.mjs` module: `// @ts-check` with JSDoc types, checked by a `tsconfig` that includes it or by an Nx `typecheck` target. This covers committed scripts and temporary ones under `tmp/` or a scratchpad that run more than once. A `.py` or `.sh` script needs a human's approval of a compelling reason first; record that approval beside the script. GSD Path's Python helpers in `.gsd-path/` and its runtime belong to GSD Path: they stay, agents use them, and their code is left to GSD Path. `vendor/` and `docs/specs/` hold verbatim copies and keep their scripts as they are.
+
+A script gets a code review before it runs a second time, committed or not. Add a security review when it handles credentials, network access, CI permissions, Git history, or deletes files.
+
 # Specs and skills
 
 `docs/specs/` holds the specs, ADRs, and records `ngx-yeti` is built from. Start with `docs/specs/README.md`. The folder is a verbatim copy of the planning bundle: never edit it, except its two living ledgers. Add and update rows in `docs/specs/ledger.md` for every accessibility, standards, parity, or compatibility change the package adds over Yeti, and in `docs/specs/upstream-bugs.md` for every upstream bug found.
