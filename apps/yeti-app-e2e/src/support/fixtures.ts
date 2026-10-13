@@ -6,8 +6,8 @@ export { expect };
 export const isProduction =
   process.env['FIXTURE_CONFIGURATION'] === 'production';
 
-const clientPreloadEntry =
-  /^add link yeti-css\/\w+\/[\w-]+\/[\w-]+\.css\?v=\w+$/;
+/** An item file's preload: its folder and its file carry the item's name. */
+const clientPreloadEntry = /^add link yeti-css\/\w+\/([\w-]+)\/\1\.css\?v=\w+$/;
 
 /**
  * The `recordStyleMutations` entry of the client's style preload for `item`,

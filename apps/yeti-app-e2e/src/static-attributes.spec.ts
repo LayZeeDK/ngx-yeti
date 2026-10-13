@@ -67,7 +67,7 @@ for (const { kind, prefix } of routeKinds) {
       await expectCleanHydration();
     });
 
-    test('paints no written-back static attribute from first paint through hydration (E8)', async ({
+    test('paints no written-back static attribute from first paint through hydration', async ({
       browserName,
       page,
     }) => {
@@ -85,7 +85,7 @@ for (const { kind, prefix } of routeKinds) {
       const sampled = await frames();
 
       test.info().annotations.push({
-        type: 'e8-frames',
+        type: 'painted-attribute-frames',
         description: `${browserName}, ${isProduction ? 'production' : 'development'}, ${kind}: ${String(entries.length)} painted attribute entries in ${String(sampled.length)} frames${entries.length > 0 ? ` (${[...new Set(entries)].join(', ')})` : ''}`,
       });
       expect(sampled.length, 'the hosts were sampled').toBeGreaterThan(0);

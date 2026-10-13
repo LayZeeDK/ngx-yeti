@@ -1,13 +1,15 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { workspaceRoot } from '@nx/devkit';
 import { type Page, type Response } from '@playwright/test';
 import {
   clientItemPreload,
   expect,
-  isProduction,
   routeKinds,
   test,
   withoutClientPreloads,
 } from './support/fixtures';
-import { waitForHydration, watchHydration } from './support/hydration';
+import { waitForHydration } from './support/hydration';
 import {
   clickWhileHeld,
   holdBackMainBundle,
@@ -41,37 +43,30 @@ const preloadedItems = [
   'visually-hidden',
 ];
 
-/** The M002 routes registered behind stub components (`fixtures.ts`). */
-const stubRoutes = [
-  'box',
-  'box-markers',
-  'breakout',
-  'button',
-  'center',
-  'center-anti-pattern',
-  'cluster',
-  'columns',
-  'container',
-  'cover',
-  'enter',
-  'frame',
-  'grid',
-  'icon',
-  'layer',
-  'masonry',
-  'overlay',
-  'scroller',
-  'setup-order',
-  'sidebar',
-  'spinner',
-  'stack',
-  'static-attributes',
-  'table',
-  'table-numeric',
-  'table-without-tbody',
-  'timeline',
-  'visually-hidden',
-];
+/**
+ * The keys of the Fixture app's registry (`fixtures.ts`), read from the
+ * build's list of prerendered routes, which holds `/sub/<key>` for each.
+ */
+function registeredKeys(): string[] {
+  const list: unknown = JSON.parse(
+    readFileSync(
+      join(workspaceRoot, 'dist/apps/yeti-app/prerendered-routes.json'),
+      'utf8',
+    ),
+  );
+
+  if (
+    typeof list !== 'object' ||
+    list === null ||
+    !('routes' in list) ||
+    typeof list.routes !== 'object' ||
+    list.routes === null
+  ) {
+    throw new Error('The build wrote no list of prerendered routes');
+  }
+
+  return Object.keys(list.routes).map((route) => route.replace(/^\/sub\//, ''));
+}
 
 // The card route's hydration and JavaScript-off tests live in card.spec.ts,
 // the global stylesheet's in setup.spec.ts.
@@ -149,7 +144,7 @@ async function hintedItems(page: Page, selector: string): Promise<string[]> {
     );
 }
 
-// E9: the one preload list grows with the items, so every check is by
+// The one preload list grows with the items, so every check is by
 // containment and a later addition breaks none.
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} route's preload hints`, () => {
@@ -193,84 +188,51 @@ for (const { kind, prefix } of routeKinds) {
 
 const statusMessage = 'the route document has status 200';
 const routedComponentMessage = 'the route renders its routed component';
-const stubHeadingMessage = "the stub's h2 shows its key";
+const stubMarkerMessage = 'the route renders its fixture, not a stub';
 
 /**
  * Expects a Fixture route's document to have status 200 and to render its
- * routed component, the element after `router-outlet` in `app.html`, and
- * returns whether the route still renders a stub, whose `h2` must show its
- * key. A 404, a 500, an empty app root, or a key without a route fails here
- * instead of skipping.
+ * routed component, the element after `router-outlet` in `app.html`, with no
+ * stub marker. A 404, a 500, an empty app root, a key without a route, or a
+ * route that falls back to a stub fails here.
  */
 async function expectFixtureRoute(
   page: Page,
   response: Response | null,
-  key: string,
-): Promise<boolean> {
+): Promise<void> {
   expect(response?.status(), statusMessage).toBe(200);
   await expect(
     page.locator('main > router-outlet + *'),
     routedComponentMessage,
   ).toHaveCount(1);
-
-  if ((await page.locator('[data-fixture-stub]').count()) === 0) {
-    return false;
-  }
-
   await expect(
-    page.getByRole('heading', { level: 2 }),
-    stubHeadingMessage,
-  ).toHaveText(key);
-
-  return true;
+    page.locator('[data-fixture-stub]'),
+    stubMarkerMessage,
+  ).toHaveCount(0);
 }
 
-// Each item task replaces its stub and covers its route in its own spec, so a
-// route counts here only while it still renders the stub's marker.
+// Each item covers its route in its own spec; this check covers every key of
+// the registry, so a route that falls back to a stub fails.
 for (const { kind, prefix } of routeKinds) {
-  for (const key of stubRoutes) {
-    test.describe(`the ${kind} ${key} stub route`, () => {
-      test('hydrates cleanly and passes axe', async ({
-        axeViolations,
-        page,
-      }) => {
-        const expectCleanHydration = watchHydration(page);
-        const response = await page.goto(`${prefix}${key}`);
-        const isStub = await expectFixtureRoute(page, response, key);
+  test.describe(`every ${kind} route of the registry`, () => {
+    test.use({ javaScriptEnabled: false });
 
-        await waitForHydration(page);
-        test.skip(!isStub, 'the item task has replaced the stub');
+    test('serves its fixture, not a stub', async ({ page }) => {
+      const keys = registeredKeys();
 
-        if (!isProduction) {
-          await expectCleanHydration();
-        }
+      expect(keys, 'the registry holds the card route').toContain('card');
 
-        expect(await axeViolations()).toEqual([]);
-      });
-
-      test.describe('with JavaScript off', () => {
-        test.use({ javaScriptEnabled: false });
-
-        test('serves visible server HTML that axe passes', async ({
-          axeViolations,
-          page,
-        }) => {
-          const response = await page.goto(`${prefix}${key}`);
-
-          test.skip(
-            !(await expectFixtureRoute(page, response, key)),
-            'the item task has replaced the stub',
-          );
-          await expect(page.locator('[data-fixture-stub]')).toBeVisible();
-          expect(await axeViolations()).toEqual([]);
+      for (const key of keys) {
+        await test.step(key, async () => {
+          await expectFixtureRoute(page, await page.goto(`${prefix}${key}`));
         });
-      });
+      }
     });
-  }
+  });
 }
 
-// The negative control of the stub route check: each state it must reject.
-test.describe('the stub route check', { tag: '@stub-route-control' }, () => {
+// The negative control of the route check: each state it must reject.
+test.describe('the route check', { tag: '@stub-route-control' }, () => {
   for (const javaScriptEnabled of [true, false]) {
     test.describe(`with JavaScript ${javaScriptEnabled ? 'on' : 'off'}`, () => {
       test.use({ javaScriptEnabled });
@@ -281,24 +243,22 @@ test.describe('the stub route check', { tag: '@stub-route-control' }, () => {
         }) => {
           const response = await page.goto(`${prefix}no-such-fixture`);
 
-          await expect(
-            expectFixtureRoute(page, response, 'no-such-fixture'),
-          ).rejects.toThrow(statusMessage);
+          await expect(expectFixtureRoute(page, response)).rejects.toThrow(
+            statusMessage,
+          );
         });
       }
 
-      test('rejects a stub route answered with status 500', async ({
-        page,
-      }) => {
+      test('rejects a route answered with status 500', async ({ page }) => {
         await page.route('**/sub/breakout', async (route) => {
           await route.fulfill({ response: await route.fetch(), status: 500 });
         });
 
         const response = await page.goto('breakout');
 
-        await expect(
-          expectFixtureRoute(page, response, 'breakout'),
-        ).rejects.toThrow(statusMessage);
+        await expect(expectFixtureRoute(page, response)).rejects.toThrow(
+          statusMessage,
+        );
       });
 
       test('rejects a status-200 document with no routed component', async ({
@@ -313,14 +273,12 @@ test.describe('the stub route check', { tag: '@stub-route-control' }, () => {
 
         const response = await page.goto('breakout');
 
-        await expect(
-          expectFixtureRoute(page, response, 'breakout'),
-        ).rejects.toThrow(routedComponentMessage);
+        await expect(expectFixtureRoute(page, response)).rejects.toThrow(
+          routedComponentMessage,
+        );
       });
 
-      test("rejects a stub route that shows another key's h2", async ({
-        page,
-      }) => {
+      test('rejects a route that renders a stub', async ({ page }) => {
         await page.route('**/sub/breakout', async (route) => {
           await route.fulfill({
             contentType: 'text/html',
@@ -330,9 +288,9 @@ test.describe('the stub route check', { tag: '@stub-route-control' }, () => {
 
         const response = await page.goto('breakout');
 
-        await expect(
-          expectFixtureRoute(page, response, 'breakout'),
-        ).rejects.toThrow(stubHeadingMessage);
+        await expect(expectFixtureRoute(page, response)).rejects.toThrow(
+          stubMarkerMessage,
+        );
       });
     });
   }

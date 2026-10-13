@@ -136,51 +136,62 @@ test.describe('scroller--rtl', () => {
   });
 });
 
+// An item wider than the track may snap anywhere it covers the track (CSS
+// Scroll Snap 1), so at 320 px the items take the `xs` width, which fits.
+const centringCases = [
+  { viewport: viewports[0], width: 'sm' },
+  { viewport: viewports[1], width: 'xs' },
+] as const;
+
 test.describe('scroller--settings', () => {
-  test('settles the third item at the centre of the track with snap and justify="center"', async ({
-    page,
-  }) => {
-    const root = await openStory(page, 'scroller--settings', {
-      args: { snap: true, justify: 'center', width: 'sm' },
+  for (const { viewport, width } of centringCases) {
+    test(`settles the third item at the centre of the track with snap and justify="center" at ${String(viewport.width)} x ${String(viewport.height)}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+
+      const root = await openStory(page, 'scroller--settings', {
+        args: { snap: true, justify: 'center', width },
+      });
+      const scroller = root.getByTestId('scroller');
+
+      await expect(scroller).toHaveAttribute('data-justify', 'center');
+      await expectItemSheetsApplied(page, ['scroller']);
+      await expect(scroller).toHaveCSS('display', 'flex');
+
+      await scroller.evaluate((element) => {
+        const third = element.children[2];
+
+        if (!(third instanceof HTMLElement)) {
+          throw new Error('The scroller has a third item');
+        }
+
+        element.scrollLeft = third.offsetLeft;
+      });
+      // Snapping settles within the spec's 400 ms (scroller.md, layer 4).
+      await page.evaluate(
+        () =>
+          new Promise((resolve) => {
+            setTimeout(resolve, 400);
+          }),
+      );
+
+      const offset = await scroller.evaluate((element) => {
+        const third = element.children[2];
+
+        if (third === undefined) {
+          throw new Error('The scroller has a third item');
+        }
+
+        const track = element.getBoundingClientRect();
+        const item = third.getBoundingClientRect();
+
+        return (item.left + item.right) / 2 - (track.left + track.right) / 2;
+      });
+
+      expect(Math.abs(offset)).toBeLessThanOrEqual(1);
     });
-    const scroller = root.getByTestId('scroller');
-
-    await expect(scroller).toHaveAttribute('data-justify', 'center');
-    await expectItemSheetsApplied(page, ['scroller']);
-    await expect(scroller).toHaveCSS('display', 'flex');
-
-    await scroller.evaluate((element) => {
-      const third = element.children[2];
-
-      if (!(third instanceof HTMLElement)) {
-        throw new Error('The scroller has a third item');
-      }
-
-      element.scrollLeft = third.offsetLeft;
-    });
-    // Snapping settles within the spec's 400 ms (scroller.md, layer 4).
-    await page.evaluate(
-      () =>
-        new Promise((resolve) => {
-          setTimeout(resolve, 400);
-        }),
-    );
-
-    const offset = await scroller.evaluate((element) => {
-      const third = element.children[2];
-
-      if (third === undefined) {
-        throw new Error('The scroller has a third item');
-      }
-
-      const track = element.getBoundingClientRect();
-      const item = third.getBoundingClientRect();
-
-      return (item.left + item.right) / 2 - (track.left + track.right) / 2;
-    });
-
-    expect(Math.abs(offset)).toBeLessThanOrEqual(1);
-  });
+  }
 });
 
 test.describe('at a 320 x 640 viewport', () => {

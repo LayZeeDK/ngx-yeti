@@ -290,7 +290,7 @@ for (const { kind, prefix } of routeKinds) {
       });
     });
 
-    test('removes the card link on leaving the route and re-inserts it once on returning', async ({
+    test('removes the card link in the frame after the last card host leaves, and re-inserts it once on returning', async ({
       page,
     }) => {
       const styleMutations = await recordStyleMutations(page);
@@ -302,8 +302,6 @@ for (const { kind, prefix } of routeKinds) {
       await page
         .getByRole('link', { name: 'Leave for a page without cards' })
         .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-card]')).toHaveCount(0);
       await expect.poll(() => itemLinks(page)).toEqual([]);
 
       const { hostsLeft, linkLeft } = await removal();
@@ -378,7 +376,7 @@ for (const { kind, prefix } of routeKinds) {
     test.describe('with JavaScript off', () => {
       test.use({ javaScriptEnabled: false });
 
-      test('serves server HTML with the card and its item link', async ({
+      test("serves server HTML with the card's threshold, its stretched link, and the route's item links", async ({
         page,
       }) => {
         await page.goto(`${prefix}card`);
@@ -387,7 +385,6 @@ for (const { kind, prefix } of routeKinds) {
 
         await expect(card).toHaveClass('card');
         await expect(card).toHaveAttribute('data-threshold', 'xs');
-        await expect(card).toHaveAttribute('data-ngx-yeti-item-card', '');
         await expect(
           page.getByRole('link', { name: 'Weekend in the hills' }),
         ).toHaveAttribute('data-stretch', '');

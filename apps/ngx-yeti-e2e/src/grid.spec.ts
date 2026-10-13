@@ -171,18 +171,10 @@ test.describe('grid--tracks', () => {
     const cells = await childRects(grid);
     const track = (box.width - 11 * gap) / 12;
     const line = (n: number): number => box.left + (n - 1) * (track + gap);
-    const [first, second, spanned, plain] = [0, 1, 2, 3].map((index) =>
-      boxAt(cells, index),
-    );
-
-    if (
-      first === undefined ||
-      second === undefined ||
-      spanned === undefined ||
-      plain === undefined
-    ) {
-      throw new Error('The wall has four cells');
-    }
+    const first = boxAt(cells, 0);
+    const second = boxAt(cells, 1);
+    const spanned = boxAt(cells, 2);
+    const plain = boxAt(cells, 3);
 
     expect(first.left).toBeCloseTo(line(2), 0);
     expect(first.width).toBeCloseTo(6 * track + 5 * gap, 0);

@@ -130,10 +130,12 @@ for (const { kind, prefix } of routeKinds) {
     // The server hosts keep the overlay link in <head>, so the client-only
     // overlay reuses it. The box's `position` comes from its static class and
     // the overlay sheet, so it shows whether Yeti's rules were there in every
-    // frame. The held child's own samples are only recorded: its `data-over`
-    // is a binding, and the probe's frame callback can run before Angular's
-    // change detection in the same frame, so it may sample a frame that is
-    // never painted.
+    // frame. The held child's own samples are recorded as
+    // `client-held-frames`, not asserted: its `data-over` is a binding, and
+    // the probe's frame callback can run before Angular's change detection in
+    // the frame that inserts it, so it samples a state that frame never
+    // paints (the `client-held-frames` row of the ngx-yeti-specs Departures
+    // table).
     test('never shows the client-only overlay without Yeti while the server hosts hold the overlay link', async ({
       browserName,
       page,

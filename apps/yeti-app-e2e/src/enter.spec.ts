@@ -183,6 +183,55 @@ async function scrollToTop(page: Page): Promise<void> {
   await nextFrames(page);
 }
 
+/**
+ * Whether Angular has created any directive on the element, through its
+ * development-mode debugging API `ng.getDirectives`, which finds none on the
+ * server DOM of a block that has not hydrated.
+ */
+async function hasDirectives(element: Locator): Promise<boolean> {
+  return element.evaluate((node) => {
+    const ng: unknown = Reflect.get(window, 'ng');
+    const getDirectives: unknown =
+      typeof ng === 'object' && ng !== null
+        ? Reflect.get(ng, 'getDirectives')
+        : undefined;
+
+    if (typeof getDirectives !== 'function') {
+      throw new Error('Angular exposes no ng.getDirectives');
+    }
+
+    const directives: unknown = Reflect.apply(getDirectives, ng, [node]);
+
+    return Array.isArray(directives) && directives.length > 0;
+  });
+}
+
+/**
+ * A computed time such as `0.6s` in seconds, compared as a number: Firefox
+ * writes 0.01 ms as 0.00001s and Chromium as 1e-05s.
+ */
+function seconds(time: string): number {
+  return time.endsWith('ms') ? parseFloat(time) / 1000 : parseFloat(time);
+}
+
+/** The used value of a public time token on the page, in seconds. */
+async function tokenSeconds(page: Page, token: string): Promise<number> {
+  return seconds(
+    await page.evaluate((name) => {
+      const probe = document.createElement('div');
+
+      probe.style.transitionDuration = `var(${name})`;
+      document.body.append(probe);
+
+      const time = getComputedStyle(probe).transitionDuration;
+
+      probe.remove();
+
+      return time;
+    }, token),
+  );
+}
+
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} enter route`, () => {
     describeStandardRouteCases({
@@ -394,9 +443,24 @@ for (const { kind, prefix } of routeKinds) {
       await expect(section).toHaveCSS('animation-name', 'none');
       await expect(section).toHaveCSS('opacity', '1');
 
+      // Angular's debugging API exists in development builds only.
+      if (!isProduction) {
+        expect(
+          await hasDirectives(section),
+          'the block is still dehydrated before the scroll',
+        ).toBe(false);
+      }
+
       await section.scrollIntoViewIfNeeded();
 
       await expectArrived(section, arrivals, 'yeti-enter-fade');
+
+      if (!isProduction) {
+        expect(
+          await hasDirectives(section),
+          'the block has hydrated after the scroll',
+        ).toBe(true);
+      }
     });
 
     test('keeps the hydrate-never section still and visible, and its link, after the live hosts leave', async ({
@@ -523,10 +587,10 @@ for (const { kind, prefix } of routeKinds) {
       await expect(page.locator(belowStagger)).toHaveAttribute('data-once', '');
     });
 
-    // Seconds, compared as numbers: Firefox writes 0.01 ms as 0.00001s and
-    // Chromium as 1e-05s. The floor job's WebKit ignores emulated reduced
-    // motion, so the duration follows what the page reports, and a run where
-    // the emulation did not reach the page is annotated.
+    // The floor job's WebKit ignores emulated reduced motion, so in WebKit the
+    // duration follows what the page reports, and a run where the emulation
+    // did not reach the page is annotated; Chromium and Firefox must report
+    // it.
     for (const motion of ['no-preference', 'reduce'] as const) {
       test.describe(`with ${motion} motion`, () => {
         test.use({ reducedMotion: motion });
@@ -548,20 +612,39 @@ for (const { kind, prefix } of routeKinds) {
             () => matchMedia('(prefers-reduced-motion: reduce)').matches,
           );
 
-          if (reduced !== (motion === 'reduce')) {
+          if (browserName !== 'webkit') {
+            expect(reduced, `emulated ${motion} motion reaches the page`).toBe(
+              motion === 'reduce',
+            );
+          } else if (reduced !== (motion === 'reduce')) {
             test.info().annotations.push({
               type: 'reduced-motion',
               description: `${browserName}: emulated ${motion} motion did not reach the page`,
             });
           }
 
+          const duration = await tokenSeconds(page, '--yeti-enter-duration');
+
+          if (reduced) {
+            await page.emulateMedia({ reducedMotion: 'no-preference' });
+
+            expect(
+              duration,
+              'the reduced duration is shorter than the full one',
+            ).toBeLessThan(await tokenSeconds(page, '--yeti-enter-duration'));
+
+            await page.emulateMedia({ reducedMotion: 'reduce' });
+          }
+
           await expect
-            .poll(() =>
-              host.evaluate((element) =>
-                parseFloat(getComputedStyle(element).animationDuration),
+            .poll(async () =>
+              seconds(
+                await host.evaluate(
+                  (element) => getComputedStyle(element).animationDuration,
+                ),
               ),
             )
-            .toBe(reduced ? 0.00001 : 0.6);
+            .toBe(duration);
         });
       });
     }

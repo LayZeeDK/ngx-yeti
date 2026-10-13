@@ -36,10 +36,10 @@ export class StaticAttributeProbe {
 }
 
 /**
- * The E8 measurement route: whether hydration, which writes static
- * attributes again before a binding wins (building-blocks.md:347), lets a
- * frame paint with a removed-kind attribute on its host. Nothing is hidden
- * until hydration.
+ * The static attribute measurement route: whether hydration, which writes
+ * static attributes again before a binding wins (building-blocks.md:347),
+ * lets a frame paint with a removed-kind attribute on its host. Nothing is
+ * hidden until hydration.
  */
 @Component({
   selector: 'app-static-attributes-fixture',
