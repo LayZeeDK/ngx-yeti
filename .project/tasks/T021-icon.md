@@ -3,9 +3,9 @@ id: T021
 title: Ship icon and complete button's icon cases
 wave: 4
 deps: [T001, T002, T003, T020, T036, T037, T038, T039, T049]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T021
+base: d60b47984ecd00d6ee19f73a679012cd75747c11
 worktree: null
 task_branch: null
 files:
@@ -105,3 +105,29 @@ Heavy: yes
 - 2026-10-13 — coder (build_T021): Verify run exactly as written, through the heavy lock: exit 0. lint and typecheck of 4 projects passed; `nx test ngx-yeti -- icon/src button/src src/accessibility src/published-output` 9 files, 70 tests passed; `test-storybook -- icon/src button/src` 2 files, 16 stories passed; `ngx-yeti-e2e icon.spec.ts` Chromium 5 passed; `yeti-app-e2e icon.spec.ts button.spec.ts` Chromium development 56 passed, production 52 passed and 4 skipped (the development-only hydration summary); Firefox (run-job): 5 passed, then 56 passed; WebKit (run-job): 4 passed and 1 skipped (forced colours), then 56 passed. The two Chromium development e2e stages inside the Verify printed the same durations as my earlier runs of the same commands on the same inputs, so Nx most likely replayed them from its cache; those earlier runs were real.
 - 2026-10-13 — coder (build_T021): NEEDS-ORCHESTRATOR (criterion 6, not the Verify): `npx prettier --check .` passes, but `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` fails on one test this task cannot touch: `packages/ngx-yeti/src/item-names.node.spec.ts` rejects `button/src/button.ts` (presence `button`, styles `button` and `spinner`), as T020 landed it at the base dae9e58; `button.ts` is unchanged here and that spec is the registry task's file. Every other affected task passed (`ngx-yeti:test` 643 of 644, `test-storybook`, lint, and typecheck of all 6 affected projects). `icon/src/icon.ts` itself satisfies that spec's rule; the registry task should also add it to the spec's positive list.
 - 2026-10-13 — Orchestrator answer and plan-defect repair (`files` and Verify), the orchestrator's call in an AFK run, not a user ruling. Measured at 15ae075: `npm exec nx -- test ngx-yeti -- src/item-names` fails (1 of 1), because `button/src/button.ts`, landed by T020 at dae9e58, loads `button` and `spinner` (ticket 50 decision 109: button acquires spinner) and `item-names.node.spec.ts` allows one styles call per file. T020's Verify did not run that spec, so commits dae9e58 and 15ae075 fail `nx test ngx-yeti`; the pipeline cannot rewrite a landed commit, so this task restores green as the next landing. `files` gains `packages/ngx-yeti/src/item-names.node.spec.ts`: the spec's rule changes so that a root directive's first styles call names its presence item and any further call names an item its spec says it acquires (button: `spinner`), and a file that breaks the rule still fails; for this one spec the repair outranks the Approach's shared-files sentence. The positive list of that spec stays the registry task's (T026). Verify gains `src/item-names`. Deps, wave, and the acceptance criteria are unchanged; criterion 6 is now reachable. Attempt 1 at base dae9e58 (14 product paths) is saved at tmp/afk-m002/tools/T021-attempt1.patch; the retry reapplies it.
+- 2026-10-13 — coder (build_T021, retry at base d60b479): reapplied the attempt-1 patch to the working tree (14 product paths, `git apply`, nothing staged) and repaired `packages/ngx-yeti/src/item-names.node.spec.ts`: a root directive file still carries exactly one presence attribute and its first `injectYetiItemStyles` call names that item; every further call must equal, in order, the items the table `acquired` lists for that item, which holds one entry, `button: ['spinner']` (ticket 50 decision 109). No other extra name is accepted and the positive file list is unchanged. Proof that a breach still fails: with a temporary second call `injectYetiItemStyles('spinner')` in `icon/src/icon.ts`, `nx test ngx-yeti -- src/item-names` failed 1 of 1 and listed `icon/src/icon.ts`; the mutation was reverted and the spec passes 1 of 1.
+- 2026-10-13 — coder (build_T021, retry): criterion 6 at the working tree against HEAD d60b479, through the heavy lock: `npx prettier --check .` passed and `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` exited 0 (6 affected projects; Nx hid the per-task counts of successful tasks).
+- 2026-10-13 — coder (build_T021, retry): Verify run exactly as written through the heavy lock with `HEAVY_DOCKER=1`: exit 0. lint and typecheck of 4 projects passed; `nx test ngx-yeti -- icon/src button/src src/accessibility src/published-output src/item-names` 10 files, 71 tests passed; `test-storybook -- icon/src button/src` 2 files, 16 stories passed; `ngx-yeti-e2e icon.spec.ts` Chromium 5 passed; `yeti-app-e2e icon.spec.ts button.spec.ts` Chromium development 56 passed, production 52 passed and 4 skipped (the development-only hydration summary); Firefox (run-job): 5 passed, then 56 passed; WebKit (run-job): 4 passed and 1 skipped (forced colours), then 56 passed. The three Chromium e2e stages printed the durations of the run before it, so Nx replayed them from its cache; that run, at this same tree, executed them and then stopped at the first `run-job.mjs` leg because Docker was down (two such runs; not a product failure). E7 is unchanged: nothing added. No upstream defect found.
+- 2026-10-13 — orchestrator Verify (isolate gsd-path-task/T021): pass, exit 0; output tail:
+  ```
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [ci-e2e-firefox-development] [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [ci-e2e-firefox-development] [2m[WebServer] [22m(node:991) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [ci-e2e-firefox-development] [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [ci-e2e-firefox-development] [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  [ci-e2e-webkit-development] [2m[WebServer] [22m[7m[1m[33m NX [39m[22m[27m  [33mNx Daemon is not enabled. Static server is not watching for changes.[39m
+  [ci-e2e-webkit-development] [2m[WebServer] [22m(node:988) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [ci-e2e-webkit-development] [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  [ci-e2e-webkit-development] [2m[WebServer] [22m[1m[33mPrebundling has been configured but will not be used because caching has been disabled.[39m[22m
+  ```

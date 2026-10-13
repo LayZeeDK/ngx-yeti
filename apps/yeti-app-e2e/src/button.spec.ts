@@ -1,4 +1,4 @@
-import { expectItemSheetsApplied } from '@ngx-yeti/testing/playwright';
+import { expectItemSheetsApplied, rect } from '@ngx-yeti/testing/playwright';
 import { type Locator, type Page } from '@playwright/test';
 import { expect, isProduction, routeKinds, test } from './support/fixtures';
 import { nextFrames, waitForHydration } from './support/hydration';
@@ -273,6 +273,44 @@ for (const { kind, prefix } of routeKinds) {
         type: 'hydrate-never-busy-ring',
         description: `${browserName}, ${isProduction ? 'production' : 'development'}, ${kind}: ::after content ${ring.content}, border ${String(ring.width)}px, animation ${ring.animation}`,
       });
+    });
+
+    test('keeps the button and icon links of the hydrate-never host that is both, after every live button and icon leaves', async ({
+      page,
+    }) => {
+      await page.goto(`${prefix}button`);
+      await waitForHydration(page);
+
+      const shared = page.locator('#never-icon-button');
+
+      await expect(page.locator('#icon-save')).toHaveAttribute(
+        'data-ngx-yeti-item-icon',
+        '',
+      );
+      await page
+        .getByRole('button', { name: 'Remove the live buttons' })
+        .click();
+      await expect(page.locator('#button-form')).toHaveCount(0);
+      await expect(page.locator('[data-ngx-yeti-item-icon]')).toHaveCount(1);
+      await nextFrames(page);
+
+      await expect(shared).toContainClass('button icon');
+      await expect(shared).toHaveAttribute('data-ngx-yeti-item-button', '');
+      await expect(shared).toHaveAttribute('data-ngx-yeti-item-icon', '');
+      expect(
+        await itemLinks(page),
+        'each presence attribute of the shared host keeps its own link',
+      ).toEqual(expect.arrayContaining(['button', 'icon']));
+      await expectItemSheetsApplied(page, ['button', 'icon']);
+      await expect(shared).toHaveCSS('display', 'inline-flex');
+
+      const svg = await rect(shared.locator('> svg'));
+      const em = await shared.evaluate((element) =>
+        parseFloat(getComputedStyle(element).fontSize),
+      );
+
+      expect(svg.width).toBeCloseTo(em, 1);
+      expect(svg.height).toBeCloseTo(em, 1);
     });
 
     test('passes axe with JavaScript on', async ({ axeViolations, page }) => {

@@ -1,19 +1,21 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { YetiButton, YetiButtonDisabledLink } from 'ngx-yeti/button';
+import { YetiIcon } from 'ngx-yeti/icon';
 
 /**
  * The button spec's Fixture-app route (button.md:348-356): section 8's
  * markup in a form that submits by GET to its own URL, a static disabled
  * link, a button the server renders busy, and a plain button where a later
- * item's dialog opener will stand; a busy button in a `hydrate never` block;
- * and a button in a client-only `@defer` (the app preloads `button` and
- * `spinner`). One control removes the live buttons. The route has no
- * spinner, so its `spinner` link is the buttons' own.
+ * item's dialog opener will stand, and a button that is also an icon; a busy
+ * button and a button that is also an icon in a `hydrate never` block; and a
+ * button in a client-only `@defer` (the app preloads `button` and
+ * `spinner`). One control removes the live buttons, the live icon among
+ * them. The route has no spinner, so its `spinner` link is the buttons' own.
  */
 @Component({
   selector: 'app-button-fixture',
-  imports: [RouterLink, YetiButton, YetiButtonDisabledLink],
+  imports: [RouterLink, YetiButton, YetiButtonDisabledLink, YetiIcon],
   template: `<h2 i18n>Buttons</h2>
     <button type="button" [disabled]="!live()" (click)="live.set(false)">
       Remove the live buttons
@@ -75,6 +77,17 @@ import { YetiButton, YetiButtonDisabledLink } from 'ngx-yeti/button';
         <button id="opener" yetiButton type="button" emphasis="low">
           Open the dialog
         </button>
+        <button id="icon-save" yetiIcon yetiButton type="button">
+          <svg aria-hidden="true" viewBox="0 0 24 24">
+            <path
+              d="M5 12l5 5L20 7"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            />
+          </svg>
+          Save the route
+        </button>
       </form>
     }
     @defer (hydrate never) {
@@ -86,6 +99,17 @@ import { YetiButton, YetiButtonDisabledLink } from 'ngx-yeti/button';
         aria-disabled="true"
       >
         Archiving
+      </button>
+      <button id="never-icon-button" yetiIcon yetiButton type="button">
+        <svg aria-hidden="true" viewBox="0 0 24 24">
+          <path
+            d="M5 12l5 5L20 7"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+        </svg>
+        Saved on the server
       </button>
     }
     @defer (on interaction) {

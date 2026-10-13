@@ -1,1 +1,1 @@
-export {};
+export { YetiIcon } from './icon';

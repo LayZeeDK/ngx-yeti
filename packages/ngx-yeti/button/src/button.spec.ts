@@ -23,6 +23,7 @@ import {
 import { createDirectiveHost } from '@ngx-yeti/testing/test-bed';
 import type { YetiEmphasis, YetiSizeControl, YetiVariant } from 'ngx-yeti';
 import { NgxYetiPaint } from 'ngx-yeti/box';
+import { YetiIcon } from 'ngx-yeti/icon';
 import { YetiSpinner } from 'ngx-yeti/spinner';
 import { provideYetiStyles } from 'ngx-yeti/styles';
 import { page, server } from 'vitest/browser';
@@ -64,7 +65,7 @@ const constantSwatches = (variant: 'black' | 'white'): readonly Swatch[] =>
 
 @Component({
   selector: 'yeti-button-test-host',
-  imports: [RouterLink, YetiButton, YetiButtonDisabledLink],
+  imports: [RouterLink, YetiButton, YetiButtonDisabledLink, YetiIcon],
   // eslint-disable-next-line @angular-eslint/component-max-inline-declarations -- the host holds every template case of the spec in one file
   template: `
     <button
@@ -98,6 +99,12 @@ const constantSwatches = (variant: 'black' | 'white'): readonly Swatch[] =>
       [attr.aria-disabled]="busy()"
     >
       Bold
+    </button>
+    <button data-testid="icon" yetiIcon yetiButton type="button">
+      <svg aria-hidden="true" viewBox="0 0 24 24">
+        <path d="M5 12l5 5L20 7" fill="none" stroke="currentColor" />
+      </svg>
+      Save
     </button>
   `,
 })
@@ -602,6 +609,17 @@ describe(YetiButton, () => {
       expect(button.getAttribute('aria-busy')).toBe('false');
       expect(button.getAttribute('aria-disabled')).toBe('false');
     });
+  });
+
+  it('renders both classes and both presence attributes on a host shared with yetiIcon', async () => {
+    expect.assertions(3);
+
+    const { byTestId } = await setupHost();
+    const shared = byTestId('icon');
+
+    expect([...shared.classList].toSorted()).toStrictEqual(['button', 'icon']);
+    expect(shared.getAttribute('data-ngx-yeti-item-button')).toBe('');
+    expect(shared.getAttribute('data-ngx-yeti-item-icon')).toBe('');
   });
 
   // button.md:315, :317, and :320 put these in the stories; Storybook's

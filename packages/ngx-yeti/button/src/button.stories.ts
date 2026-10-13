@@ -21,6 +21,7 @@ import {
 } from '@storybook/angular-vite';
 import { NgxYetiPaint, YetiBox } from 'ngx-yeti/box';
 import { YetiCluster } from 'ngx-yeti/cluster';
+import { YetiIcon } from 'ngx-yeti/icon';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 import { YetiButton } from './button';
@@ -166,6 +167,7 @@ const meta: Meta<YetiButton> = {
         YetiButton,
         YetiButtonDisabledLink,
         YetiCluster,
+        YetiIcon,
         YetiBox,
         NgxYetiPaint,
         RouterLink,
@@ -321,6 +323,19 @@ export const Variants: Story = {
 
 const closeIcon =
   '<svg role="img" aria-label="Close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" /></svg>';
+
+const saveIcon =
+  '<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" fill="none" stroke="currentColor" stroke-width="2" /></svg>';
+
+function svgOf(button: Element): SVGSVGElement {
+  const svg = button.querySelector(':scope > svg');
+
+  if (!(svg instanceof SVGSVGElement)) {
+    throw new Error('The button holds no SVG as a direct child');
+  }
+
+  return svg;
+}
 
 /** `sm`, `md`, and `lg`, each with text and icon-only. */
 export const Sizes: Story = {
@@ -827,26 +842,97 @@ export const Busy: Story = {
   },
 };
 
-/** Buttons and a link in a right-to-left row: Tab follows the DOM order. */
+/**
+ * `yetiIcon` beside `yetiButton` on one element, as Yeti's
+ * `class="icon button"`: a decorative SVG beside the text, and an icon-only
+ * button named through its SVG (usage rule 8).
+ */
+export const Icon: Story = {
+  render: () => ({
+    template: `
+      <div yetiCluster gap="sm">
+        <button yetiIcon yetiButton type="button">${saveIcon}Save</button>
+        <button yetiIcon yetiButton type="button">${closeIcon}</button>
+      </div>`,
+  }),
+  play: async ({ canvas }) => {
+    const save = canvas.getByRole('button', { name: 'Save' });
+    const close = canvas.getByRole('button', { name: 'Close' });
+
+    await expect(save).toHaveAccessibleName('Save');
+    await expect(close).toHaveAccessibleName('Close');
+    await expect(svgOf(save)).toHaveAttribute('aria-hidden', 'true');
+    await expect(svgOf(close)).toHaveAttribute('role', 'img');
+
+    await buttonStyled(save);
+    await itemStyled('icon', save, 'align-items', 'center');
+
+    for (const button of [save, close]) {
+      await expect([...button.classList].toSorted()).toStrictEqual([
+        'button',
+        'icon',
+      ]);
+      await expect(button).toHaveAttribute('data-ngx-yeti-item-button', '');
+      await expect(button).toHaveAttribute('data-ngx-yeti-item-icon', '');
+      await expectNoPackageSemantics(button);
+
+      const { width, height } = svgOf(button).getBoundingClientRect();
+      const em = parseFloat(getComputedStyle(button).fontSize);
+
+      assertWithin(width, em, 0.5);
+      assertWithin(height, em, 0.5);
+    }
+
+    await expectTargetSize(close);
+    // WCAG 1.4.11: the glyph draws in `currentColor` on the button's fill.
+    await expect(
+      contrastRatio(
+        settledStyle(svgOf(close)).color,
+        effectiveBackground(close),
+      ),
+    ).toBeGreaterThanOrEqual(3);
+  },
+};
+
+/**
+ * The buttons of the icon story and a link in a right-to-left row: the icon
+ * sits at the inline start, and Tab follows the DOM order.
+ */
 export const Rtl: Story = {
   render: () => ({
     template: `
       <div dir="rtl" yetiCluster gap="sm">
-        <button yetiButton type="button">Save</button>
+        <button yetiIcon yetiButton type="button">${saveIcon}<span>Save</span></button>
+        <button yetiIcon yetiButton type="button">${closeIcon}</button>
         <button yetiButton type="button" emphasis="medium">Preview</button>
         <a yetiButton emphasis="low" href="#docs">Read the docs</a>
       </div>`,
   }),
   play: async ({ canvas }) => {
     const save = canvas.getByRole('button', { name: 'Save' });
+    const close = canvas.getByRole('button', { name: 'Close' });
     const preview = canvas.getByRole('button', { name: 'Preview' });
     const link = canvas.getByRole('link', { name: 'Read the docs' });
+    const label = save.querySelector('span');
+
+    if (label === null) {
+      throw new Error('The save button holds its label in a span');
+    }
 
     await buttonStyled(save);
+    await itemStyled('icon', save, 'align-items', 'center');
     await itemStyled('cluster', save.parentElement ?? save, 'display', 'flex');
 
-    // The first button sits at the inline start, which is the right.
+    // The icon sits at its button's inline start, which is the right.
+    await expect(svgOf(save).getBoundingClientRect().left).toBeGreaterThan(
+      label.getBoundingClientRect().right,
+    );
+
+    // The first button sits at the inline start too.
     await expect(save.getBoundingClientRect().left).toBeGreaterThan(
+      close.getBoundingClientRect().right,
+    );
+    await expect(close.getBoundingClientRect().left).toBeGreaterThan(
       preview.getBoundingClientRect().right,
     );
     await expect(preview.getBoundingClientRect().left).toBeGreaterThan(
@@ -855,7 +941,7 @@ export const Rtl: Story = {
 
     blur();
 
-    for (const stop of [save, preview, link]) {
+    for (const stop of [save, close, preview, link]) {
       await userEvent.tab();
       await expect(stop).toHaveFocus();
     }
