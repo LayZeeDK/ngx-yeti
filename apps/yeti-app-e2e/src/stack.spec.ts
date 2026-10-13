@@ -58,6 +58,9 @@ for (const { kind, prefix } of routeKinds) {
       liveHost: '#live-stack',
       leaveLink: 'Leave for a page without stacks',
       styled: { property: 'display', value: 'flex' },
+      afterLeave: async (page) => {
+        await expect.poll(() => stackAndCenterLinks(page)).toEqual([]);
+      },
       afterReturn: async (page) => {
         await expect
           .poll(() => stackAndCenterLinks(page))

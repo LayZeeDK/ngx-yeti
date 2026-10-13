@@ -601,6 +601,8 @@ for (const { kind, prefix } of routeKinds) {
         }) => {
           const arrivals = await recordArrivals(page);
 
+          // The context option alone does not reach the floor job's Firefox.
+          await page.emulateMedia({ reducedMotion: motion });
           await page.goto(`${prefix}enter`);
           await waitForHydration(page);
 

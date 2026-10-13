@@ -26,6 +26,8 @@ export function describeStandardRouteCases(cases: {
   };
   /** The URL `leaveLink` leaves for, the replay page by default. */
   readonly leaveUrl?: RegExp;
+  /** More to expect of the page left for, once the item's link is gone. */
+  readonly afterLeave?: (page: Page) => Promise<void>;
   /**
    * More to expect of the page after going back to the route, once the
    * item's sheet has applied.
@@ -48,6 +50,7 @@ export function describeStandardRouteCases(cases: {
     leaveLink,
     styled,
     leaveUrl = /\/replay$/,
+    afterLeave,
     afterReturn,
     arrivals,
   } = cases;
@@ -81,6 +84,7 @@ export function describeStandardRouteCases(cases: {
     await expect(page).toHaveURL(leaveUrl);
     await expect(page.locator(`[${presence}]`)).toHaveCount(0);
     await expect.poll(() => itemLinks(page, item)).toEqual([]);
+    await afterLeave?.(page);
 
     await page.goBack();
     await expect(page.locator(liveHost)).toBeVisible();

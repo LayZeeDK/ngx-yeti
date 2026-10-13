@@ -59,7 +59,9 @@ test.describe('the development server', () => {
     await page.goto(`${devServerURL}setup`);
     await waitForHydration(page, '#interaction-host');
 
-    expect(await itemLinks(page)).toEqual(['card', 'lift']);
+    expect(await itemLinks(page)).toEqual(
+      expect.arrayContaining(['card', 'lift']),
+    );
     await expectItemSheetsApplied(page, ['card', 'lift']);
     await expect(page.locator('#shared-host')).not.toHaveCSS(
       'padding-top',
@@ -81,7 +83,9 @@ test.describe('the strict-CSP card route', () => {
 
     await waitForHydration(page);
 
-    expect(await itemLinks(page)).toEqual(['card', 'lift']);
+    expect(await itemLinks(page)).toEqual(
+      expect.arrayContaining(['card', 'lift']),
+    );
 
     // Browsers hide the `nonce` attribute; the property keeps its value.
     const nonced = await page

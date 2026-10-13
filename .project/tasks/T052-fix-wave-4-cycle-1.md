@@ -3,9 +3,9 @@ id: T052
 title: Fix wave 4 cycle 1 review findings in T020, T021, T022, T023, T024, T025, T036, T037, T041, T042, T046
 wave: 8
 deps: [T020, T021, T022, T023, T024, T025, T036, T037, T041, T042, T046]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T052
+base: e87bd1865c70155e63c3b570a18b08db6fea4f86
 worktree: null
 task_branch: null
 files:
@@ -292,3 +292,27 @@ Criterion: The enter reduced-motion case asserts in Chromium and Firefox that th
   Flaky tasks can disrupt your CI pipeline. Automatically retry them with Nx Cloud. Learn more at https://nx.dev/ci/features/flaky-tasks
   ```
 - 2026-10-13 — orchestrator: attempt 1 rejected by finish (Verify failed in the isolate): the only failure was tools/playwright-server/container.test.mjs:279 ('run-server did not answer' at 25.5 s) in the uncached run-many, a file outside this task; it passes 5/5 alone at ~6.3 s (measured). Plan-defect repair (Verify only): the uncached test and test-storybook run takes --parallel=1, as ci.yml's unit job does (T042's measured fix for a runner overloading itself). Attempt 1 saved at tmp/afk-m002/tools/T052-attempt1.patch (8 product files); retry reapplies it.
+- 2026-10-13 — coder (retry): npm ci done; attempt 1 patch reapplied cleanly with git apply (no --index, nothing staged); git status lists the 8 product files plus this task file. Checks: prettier --check . passed; nx affected -t lint typecheck test --base=HEAD passed (15 tasks, 6 projects + 2 dependencies, 1 cache hit, exit 0); nx daemon stopped. Full Verify not run, left to the orchestrator landing.
+- 2026-10-13 — orchestrator Verify (isolate gsd-path-task/T052): pass, exit 0; output tail:
+  ```
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/spinner
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/stack
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/table
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/timeline
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/visually-hidden
+  ```

@@ -278,9 +278,13 @@ export const Standalone: Story = {
       await expect(height).toBeGreaterThanOrEqual(24);
 
       // WCAG 1.4.11: the glyph draws in `currentColor`.
+      // The fill is read first: it settles the ancestors' colour
+      // transitions, which the glyph inherits.
       for (const svg of [svgOf(button), image]) {
+        const fill = effectiveBackground(svg);
+
         await expect(
-          contrastRatio(getComputedStyle(svg).color, effectiveBackground(svg)),
+          contrastRatio(getComputedStyle(svg).color, fill),
         ).toBeGreaterThanOrEqual(3);
       }
     }

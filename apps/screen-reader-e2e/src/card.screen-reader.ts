@@ -8,10 +8,9 @@ const titles = ['Weekend in the hills', 'A day by the lake', 'The coast path'];
  * times the test moves the reader on through the list after it arrives.
  */
 const lanes = {
-  // NVDA 2026.2 in Edge 154 and Playwright's Chromium 153 and Firefox 155,
-  // recorded 2026-10-10. Down from the start marker enters the list at the
-  // first card; NVDA's list item key reaches the two other cards, then
-  // finds no fourth.
+  // NVDA 2026.2 in Edge 154 and Playwright's Chromium 153 and Firefox 155.
+  // Down from the start marker enters the list at the first card; NVDA's
+  // list item key reaches the two other cards, then finds no fourth.
   nvda: {
     steps: 3,
     heard: ['list, with 3 items', ...titles, 'no next list item'],

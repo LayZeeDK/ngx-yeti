@@ -885,12 +885,12 @@ export const Icon: Story = {
 
     await expectTargetSize(close);
     // WCAG 1.4.11: the glyph draws in `currentColor` on the button's fill.
-    await expect(
-      contrastRatio(
-        settledStyle(svgOf(close)).color,
-        effectiveBackground(close),
-      ),
-    ).toBeGreaterThanOrEqual(3);
+    // The fill is read first: it settles the button's colour transition,
+    // which the glyph inherits.
+    const fill = effectiveBackground(close);
+    const glyph = settledStyle(svgOf(close)).color;
+
+    await expect(contrastRatio(glyph, fill)).toBeGreaterThanOrEqual(3);
   },
 };
 
