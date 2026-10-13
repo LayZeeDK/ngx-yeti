@@ -106,6 +106,15 @@ Review depth: full
 Goal: Fifth build repair (2026-10-13). First the typed scripts (Lars, 2026-10-13, verbatim: "Use subagents to type the .mjs scripts" and "Committed scripts must be type-checked as part of CI"): the reviewed patch that adds `// @ts-check` and JSDoc to all 29 committed scripts, `tsconfig.scripts.json`, and the root `typecheck` target that CI's `static` job and `npm run check` run (T053). On it, the survivors of review round 2 (triage items 1 to 16; every seat of the round ended complete, and g3-test-analyzer found nothing): `run-job.mjs` keys its output by checkout, ends a leg when the host tar fails, and accepts only decimal counts, and the Playwright server test survives load (T054); both control scripts fail loudly on a failed listener query, prove the session close, and close sessions on a dead recorded PID (T055); the loader's stable gate and the press-ratio move get Departures rows, and stale docs and doc comments are corrected (T056, which needs no typed script and starts with T053); and the tests the round found unable to fail can fail, with their comments corrected (T057). Then the two box calls Claude made on 2026-10-13 under Lars's ruling "Resolve all blocked items that don't require a heavy load.": one `@layer ngx-yeti` rule that draws the focus ring inside a painted band in the band's text colour, asserted at least 3:1 on all 20 paint values in both schemes (A11Y-35, upstream Y16), and usage rule 8 with ledger row A11Y-36 for a plain button in a band, with no package CSS (upstream Y17) (T058). Last, the milestone gate (T028, moved from wave 5) on the tip after all of them. The six new tasks own no INTENT success criterion; T028 keeps SC8.
 Review depth: full
 
+## Wave 10 — fix the floor Chromium 141 hang
+
+Goal: Repair the blocking finding of the wave 4 review (record after plan repair 5, cycle 1; the wave 8 review blocks on the same item) without changing source task contracts.
+Review depth: full
+
+| Task | Title | Deps | Files |
+|------|-------|------|-------|
+| T059 | Start the floor Chromium without its stack profiler so the Chromium 141 floor run exits | T024 | docs/specs/upstream-bugs.md, packages/ngx-yeti/vitest.unit.config.mts, references/ci-local.md, tools/playwright/browser-projects.mjs, tools/playwright/browser-projects.test.mjs, tools/playwright/engines.mjs |
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |
