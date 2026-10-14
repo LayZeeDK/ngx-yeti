@@ -46,15 +46,15 @@ Without `--matrix`, every combination runs, up to `--legs` at a time. The `e2e` 
 
 ## Jobs without a container: run them natively
 
-| Job                        | Command                                                                                                                                                                                  |
-| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ci.yml` `static`          | `npx prettier --check .`, then `npm exec nx -- run-many -t lint typecheck`                                                                                                               |
-| `ci.yml` `package`         | `npm exec nx -- run-many -t build pack-check`                                                                                                                                            |
-| `floor.yml` `firefox-145`  | `FLOOR_FIREFOX=true npm exec nx -- test ngx-yeti -- --project=browser`; WebdriverIO downloads stock Firefox 145 and geckodriver                                                          |
-| `floor.yml` `chromium-141` | `npx --no-install @puppeteer/browsers install chrome@<CHROME_FLOOR_VERSION> --path <dir>` prints `chrome@<version> <path>`; set `FLOOR_CHROMIUM_PATH=<path>` and run the job's two steps |
-| `ci.yml` `nvda`            | `npm exec nx -- run screen-reader-e2e:nvda` on Windows (Playwright's Chromium, then Firefox); see [The NVDA lane](#the-nvda-lane)                                                        |
+| Job                        | Command                                                                                                                                                                                           |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml` `static`          | `npx prettier --check .`, then `npm exec nx -- run-many -t lint typecheck`                                                                                                                        |
+| `ci.yml` `package`         | `npm exec nx -- run-many -t build pack-check`                                                                                                                                                     |
+| `floor.yml` `firefox-145`  | `FLOOR_FIREFOX=true npm exec nx -- test ngx-yeti -- --project=browser`; WebdriverIO downloads stock Firefox 145 and geckodriver                                                                   |
+| `floor.yml` `chromium-141` | `npx --no-install @puppeteer/browsers install chrome@<CHROME_FLOOR_VERSION> --path <absolute dir>` prints `chrome@<version> <path>`; set `FLOOR_CHROMIUM_PATH=<path>` and run the job's two steps |
+| `ci.yml` `nvda`            | `npm exec nx -- run screen-reader-e2e:nvda` on Windows (Playwright's Chromium, then Firefox); see [The NVDA lane](#the-nvda-lane)                                                                 |
 
-`CHROME_FLOOR_VERSION` is in `floor.yml`'s `env`. Add `--skip-nx-cache` to measure real work instead of a cache hit.
+`CHROME_FLOOR_VERSION` is in `floor.yml`'s `env`. Give `--path` an absolute folder, such as `--path "$(pwd)/tmp/floor-chrome"`: with a relative one the printed path is relative too, and Vitest does not find the browser. Add `--skip-nx-cache` to measure real work instead of a cache hit.
 
 With `FLOOR_CHROMIUM_PATH` set, both steps start Chromium with `--disable-stack-profiler`. Chrome for Testing is an x64 build, and under emulation on Windows on Arm a renderer started with the stack profiler can end as a process Windows can neither open nor kill; `browser.close()` then never returns and the e2e step never exits (upstream bugs O18 and O19).
 
@@ -144,6 +144,26 @@ Measured on 2026-10-05 on Windows 11 on ARM64 with Docker Desktop (linux/arm64),
 | `ci.yml` `package`                      | native                                       | 26 s     | build and pack-check pass                                                              |
 
 The development e2e runs also pass `yeti-analog-e2e` (1) and `ngx-yeti-e2e` (16 in Chromium and Firefox, 12 passed and 4 skipped in WebKit, 14 and 2 since `fe50220`).
+
+### Re-timed after the layouts and button items
+
+Measured on 2026-10-14 on Windows 11 on ARM64 with Docker Desktop (linux/arm64), at `4d63e28`, one job at a time and each leg alone (`--legs 1`). Container times include the leg's setup. Every job passed with no retry.
+
+| Job                                     | Run                                                         | Time                  | Counts (passed/skipped)                                                         |
+| --------------------------------------- | ----------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------- |
+| `ci.yml` `static` and the other checks  | native, `npm run check -- --skip-nx-cache`                  | 1 m 31 s              | lint, typecheck, test and test-storybook pass                                   |
+| `ci.yml` `package`                      | native                                                      | 24 s                  | build and pack-check pass                                                       |
+| `ci.yml` `unit`                         | `run-job.mjs`                                               | 2 m 29 s              | 126, 504, 1713, 1 and 1 passed                                                  |
+| `ci.yml` `e2e`, 12 legs                 | `run-job.mjs --legs 1`, 3 local workers                     | 20 m 8 s              | below                                                                           |
+| `ci.yml` `e2e` (firefox, development)   | `run-job.mjs --legs 1 --e2e-workers 0`, as CI runs the leg  | 10 m 10 s             | `yeti-analog-e2e` 1; `ngx-yeti-e2e` 152/1; `yeti-app-e2e` 616/4                 |
+| `floor.yml` `webkit-26-4`               | `run-job.mjs`                                               | 7 m 3 s               | unit 507; `ngx-yeti-e2e` 136/17; `yeti-app-e2e` 608/12                          |
+| `floor.yml` `firefox-146-e2e`, 2 shards | `run-job.mjs --legs 1`                                      | 3 m 46 s and 2 m 53 s | shard 1: 76/1, then 308/2; shard 2: 76, then 308/2                              |
+| `floor.yml` `firefox-145`               | native, Firefox 145.0                                       | 1 m 17 s              | unit 507                                                                        |
+| `floor.yml` `chromium-141`              | native, `CI=true`, Chrome for Testing 141.0.7390.54         | 32 s and 11 m 51 s    | unit 507; `ngx-yeti-e2e` 152/1; `yeti-app-e2e` 618/2; Chromium exited by itself |
+| `ci.yml` `nvda`                         | native, no `BROWSERS` (Playwright's Chromium, then Firefox) | 6 m 27 s              | 22 passed, no retry                                                             |
+| `ci.yml` `nvda` with `BROWSERS=msedge`  | native arm64 Edge, not evidence for the job                 | 3 m 3 s               | 11 passed                                                                       |
+
+`e2e` legs at 3 local workers: development 3 m 7 s, 4 m 26 s and 4 m 8 s in Chromium, Firefox and WebKit (`yeti-analog-e2e` 1; `ngx-yeti-e2e` 152/1, 152/1 and 144/9; `yeti-app-e2e` 618/2, 616/4 and 612/8); production 1 m 40 s, 2 m 51 s and 2 m 27 s (559/61, 557/63 and 553/67); `tailwind-c1` and `tailwind-c2` 13 to 17 s each, 8 passed. The longest leg takes 10 m 10 s locally with one worker, under the 15 minutes at which a job gets a Playwright `--shard` axis, so `e2e` keeps one leg per engine and configuration.
 
 ### Concurrent legs and local workers
 

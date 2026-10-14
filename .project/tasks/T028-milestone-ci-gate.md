@@ -3,9 +3,9 @@ id: T028
 title: Run every CI and floor job locally on the milestone tip and re-time the long jobs
 wave: 9
 deps: [T027, T053, T054, T055, T056, T057, T058]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T028
+base: 330742b630db9c29aade74725e825b10e58c204d
 worktree: null
 task_branch: null
 files:
@@ -95,3 +95,27 @@ Heavy: yes
   [2mHint: run the command with[22m --verbose [2mfor more details.[22m
   ```
 - 2026-10-14 — orchestrator: landing attempt rejected (finish: Verify failed in the isolate at its last step, `BROWSERS=msedge npm exec nx -- run screen-reader-e2e:nvda`: "Process from config.webServer was not able to start. Exit code: 1" 6.8 s in, right after the no-BROWSERS lane passed 22/22; every earlier step passed). The same lane alone in the isolate passed 11/11 (measured), so the failure is a collision between the two consecutive lane runs, not this patch. Rejected diff paths: .github/workflows/ci.yml, references/ci-local.md; patch sha256 0354c3ccbf62417f2a5462c503c830ebafca626c48c10b781f938b35f6149cda (saved as tmp/afk-m002/tools/T028-attempt1.patch). Retry: same patch on a fresh isolate.
+- 2026-10-14 — coder (retry): reapplied the earlier attempt's patch tmp/afk-m002/tools/T028-attempt1.patch unchanged (ci.yml, references/ci-local.md); prettier on both files passes. The full Verify runs in the orchestrator's landing.
+- 2026-10-14 — orchestrator Verify (isolate gsd-path-task/T028): pass, exit 0; output tail:
+  ```
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/table
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/timeline
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/visually-hidden
+  [2m[WebServer] [22m(node:20172) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:37628) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:3424) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  [2m[WebServer] [22m(node:25688) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:6964) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  ```

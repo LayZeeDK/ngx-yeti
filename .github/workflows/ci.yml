@@ -136,7 +136,12 @@ jobs:
       - run: npm ci
       - run: sudo safaridriver --enable
       - id: guidepup
-        run: echo "version=$(node -p "require('@guidepup/guidepup/package.json').version")" >> "$GITHUB_OUTPUT"
+        # A failed lookup or an empty version fails the step, so the cache key
+        # always names a guidepup version.
+        run: |
+          version=$(node -p "require('@guidepup/guidepup/package.json').version")
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v6
         with:
           path: ~/Library/Caches/guidepup/
@@ -169,7 +174,12 @@ jobs:
       - run: npm ci
       - id: guidepup
         shell: bash
-        run: echo "version=$(node -p "require('@guidepup/guidepup/package.json').version")" >> "$GITHUB_OUTPUT"
+        # A failed lookup or an empty version fails the step, so the cache key
+        # always names a guidepup version.
+        run: |
+          version=$(node -p "require('@guidepup/guidepup/package.json').version")
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v6
         with:
           path: ~\AppData\Local\guidepup
