@@ -143,3 +143,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-13 — build — wave 4 cycle 2, wave 8 cycle 2 and wave 10 cycle 1 reviews pass at 1ce351b (floor Chromium 141 exits with T059; gate wave4-c3 8 of 8 steps exit 0)
 - 2026-10-14 — build — paused for Lars: T027 and T053-T058 landed (wave 9 all but T028); T028 isolate retained, blocked on the locked desktop (nvda lane); wave 9 gate wave9-c2 killed by the low-memory reaper after run-many, prettier and ci-unit passed; hand-off tmp/afk-m002/NEXT-SESSION.md
 - 2026-10-14 — build — all 59 tasks done (T028 landed c99718a); wave 9 gate wave9-c3 at 13af1fd: 8 of 8 steps exit 0; paused before the wave 9 review on Lars's ruling
+- 2026-10-14 — build — wave 9 cycle 1 review passes at 8d34e8c (7 of 7 tasks, SC8 local half; gate wave9-c3 8 of 8); thermos warnings (bugs H1 H2 M1, quality H1 M1 M2) go to the review round
