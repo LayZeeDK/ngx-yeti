@@ -3,9 +3,9 @@ id: T055
 title: Make both control scripts fail loudly on a failed listener query, prove the session close, and close sessions on a dead recorded PID
 wave: 9
 deps: [T053]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T055
+base: ccce8ddd273a6b29f2a709850b0d3ad94f0ffd69
 worktree: null
 task_branch: null
 files:
@@ -65,3 +65,28 @@ Heavy: yes
 ## Log
 
 - 2026-10-13 — created by planner (build repair 5), from review round 2 triage items 4, 5, and 6 (tmp/afk-m002/lars-review/r2/triage.md).
+- 2026-10-14 — build_T055 implementation: (1) control-yeti-app `queryListeners`/`listeners` and both test helpers `listening()` run `Get-NetTCPConnection ... -ErrorAction Stop` in try/catch; only `ObjectNotFound` whose `CategoryInfo.Activity` is `Get-NetTCPConnection` reads as no listener, everything else writes stderr and exits 1. The activity check is needed because a misspelled cmdlet is also `ObjectNotFound` (measured: no match -> `CmdletizationQuery_NotFound,Get-NetTCPConnection | Get-NetTCPConnection | ObjectNotFound`; port 70000 -> `ParameterArgumentTransformationError | InvalidData`; `Get-NetTCPConnectionX` -> `CommandNotFoundException | (empty activity) | ObjectNotFound`). `up`/`doctor` exit 2 with the error; `down` keeps `portFree: false`, adds `listenerError`, keeps the state file and exits 1. Failure path measured on a scratch copy with the cmdlet misspelled (tmp/, removed after): `up --port=4999` -> exit 2 "listener query on 4999 failed: The term 'Get-NetTCPConnectionX' is not recognized ..."; `down` on a planted dead-PID state -> exit 1 "teardown incomplete; listener query on 4999 failed: ...", portFree false. Storybook's `listeningPids` left unchanged (its callers already fail loudly; the coder's call per Approach). (2) Both `closeSession`s are async; on `absent` they read playwright-cli's own session registry (`<cache>/ms-playwright/daemon/*/<session>.session`, socket answers = open, the same check `playwright-cli list` makes) and report `listedOpen`; `absent` with `listedOpen: true` is an incomplete teardown (exit 1 naming the session and its close command). (3) yeti-app `down` closes `<session>` and `<session>-jsoff` before branching on live/dead PID (the mismatch refusal still runs first). Storybook's dead-PID path now goes through a shared `endTeardown` (session close, state removal, daemon stop, same report and exit rules). Tests: both suites open the run's session(s) with playwright-cli before `down` and assert `closed` (yeti-app both `closed`); new tests cover `absent` + listed open (PATH stripped of playwright-cli dirs; exit 1) and a second launch whose tree is killed with taskkill outside the script (`down` exit 0, sessions `closed`, daemon stopped). Both SKILL.md files say what `absent` means and describe the dead-PID path and the new exit-1 cases. The dead-root lockout is not touched.
+- 2026-10-14 — build_T055 Verify (as written, through the heavy lock): run 1 exit 1. Typecheck passed and yeti-app passed 11/11; the Storybook suite went 6/8, with the live-path `down` exiting 1 "teardown incomplete", `remaining: [48028, 15872]`, `portBusy: false`, `sessionClose.outcome: closed`, two tree PIDs still listed 15 s after `taskkill /T /F`. This path is unchanged apart from awaiting the session close. The Storybook suite then passed 8/8 standalone (it was 8/8 in an earlier standalone run too). Run 2 exit 0: rg guards pass, `@ngx-yeti/source:typecheck --skip-nx-cache` passes (0 TS errors), yeti-app suite 11/11, Storybook suite 8/8, prettier check passes on both skill folders. Rule 13: `npx prettier --check .` passes; `nx affected -t lint typecheck test test-storybook --base=HEAD` affects only @ngx-yeti/source, typecheck and test pass, and it has no lint or test-storybook target. Watch item for the orchestrator: the 15 s tree-gone wait in Storybook's live `down` flaked once in 3 suite runs (it tracks PIDs without start times).
+- 2026-10-14 — orchestrator Verify (isolate gsd-path-task/T055): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

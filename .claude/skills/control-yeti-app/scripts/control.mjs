@@ -17,6 +17,8 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { createRequire } from 'node:module';
+import { connect } from 'node:net';
+import { homedir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
@@ -243,25 +245,45 @@ function tree(table, pid) {
   return [...pids].filter((member) => table.has(member));
 }
 
-// Get-NetTCPConnection, not netstat: netstat translates its state column.
+// Get-NetTCPConnection, not netstat: netstat translates its state column. Only
+// the cmdlet's own no-match error means no listener; a misspelled command is
+// ObjectNotFound too, so the activity is checked as well. Every other error
+// exits 1.
 /** @param {number} port */
-function listeners(port) {
+function queryListeners(port) {
   const run = spawnSync(
     'pwsh',
     [
       '-NoProfile',
       '-NonInteractive',
       '-Command',
-      `Get-NetTCPConnection -State Listen -LocalPort ${String(port)} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess; exit 0`,
+      `try { Get-NetTCPConnection -State Listen -LocalPort ${String(port)} -ErrorAction Stop | Select-Object -ExpandProperty OwningProcess } catch { if ($_.CategoryInfo.Category -eq 'ObjectNotFound' -and $_.CategoryInfo.Activity -eq 'Get-NetTCPConnection') { exit 0 }; [Console]::Error.WriteLine($_); exit 1 }`,
     ],
     { encoding: 'utf8', windowsHide: true },
   );
 
   if (run.status !== 0) {
-    finish(2, { error: `listeners on ${port}: ${run.stderr || run.error}` });
+    return {
+      pids: null,
+      error: `listener query on ${port} failed: ${run.stderr.trim() || run.error}`,
+    };
   }
 
-  return [...new Set(run.stdout.split(/\r?\n/).filter(Boolean).map(Number))];
+  return {
+    pids: [...new Set(run.stdout.split(/\r?\n/).filter(Boolean).map(Number))],
+    error: null,
+  };
+}
+
+/** @param {number} port */
+function listeners(port) {
+  const { pids, error } = queryListeners(port);
+
+  if (pids === null) {
+    finish(2, { error });
+  }
+
+  return pids;
 }
 
 // The recorded session, PIDs and port reach commands, so a state file that
@@ -345,13 +367,74 @@ function playwrightCli() {
   return null;
 }
 
+// playwright-cli's own registry, which its `list` reads: a session is open
+// while the socket in its `<name>.session` file answers.
+/** @param {string} session */
+async function listedOpen(session) {
+  const base = join(
+    process.env['LOCALAPPDATA'] ?? join(homedir(), 'AppData', 'Local'),
+    'ms-playwright',
+    'daemon',
+  );
+
+  for (const dir of existsSync(base) ? readdirSync(base) : []) {
+    const file = join(base, dir, `${session}.session`);
+
+    if (!existsSync(file)) {
+      continue;
+    }
+
+    /** @type {unknown} */
+    const config = JSON.parse(readFileSync(file, 'utf8'));
+    const socketPath =
+      typeof config === 'object' && config !== null && 'socketPath' in config
+        ? config.socketPath
+        : undefined;
+
+    if (typeof socketPath === 'string' && (await answers(socketPath))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * @param {string} socketPath
+ * @returns {Promise<boolean>}
+ */
+function answers(socketPath) {
+  return new Promise((done) => {
+    const socket = connect({ path: socketPath });
+    socket.setTimeout(1000);
+    socket.once('connect', () => {
+      socket.destroy();
+      done(true);
+    });
+    socket.once('timeout', () => {
+      socket.destroy();
+      done(false);
+    });
+    socket.once('error', () => done(false));
+  });
+}
+
 /**
  * @param {string | null} entry
  * @param {string} session
  */
-function closeSession(entry, session) {
+async function closeSession(entry, session) {
   if (!entry) {
-    return { session, outcome: 'absent', detail: 'no playwright-cli on PATH' };
+    const open = await listedOpen(session);
+
+    return {
+      session,
+      outcome: 'absent',
+      listedOpen: open,
+      detail: open
+        ? 'no playwright-cli on PATH, and the session is listed as open'
+        : 'no playwright-cli on PATH',
+    };
   }
 
   const run = spawnSync(process.execPath, [entry, `-s=${session}`, 'close'], {
@@ -818,24 +901,24 @@ async function down() {
     entry?.CommandLine === recorded.commandLine;
   /** @type {ProcessEntry[]} */
   let members;
-  /** @type {ReturnType<typeof closeSession>[]} */
-  let sessions = [];
+
+  if (live && !same(live, state)) {
+    finish(2, {
+      error: `pid ${state.pid} does not match the recorded start time or command; refusing to stop it`,
+      recorded: { start: state.start, commandLine: state.commandLine },
+      live: { start: live.Start, commandLine: live.CommandLine },
+    });
+  }
+
+  // Never close-all: it reaches every playwright-cli session on the machine.
+  const entry = playwrightCli();
+  const sessions = [];
+
+  for (const session of [state.session, `${state.session}-jsoff`]) {
+    sessions.push(await closeSession(entry, session));
+  }
 
   if (live) {
-    if (!same(live, state)) {
-      finish(2, {
-        error: `pid ${state.pid} does not match the recorded start time or command; refusing to stop it`,
-        recorded: { start: state.start, commandLine: state.commandLine },
-        live: { start: live.Start, commandLine: live.CommandLine },
-      });
-    }
-
-    // Never close-all: it reaches every playwright-cli session on the machine.
-    const entry = playwrightCli();
-    sessions = [state.session, `${state.session}-jsoff`].map((session) =>
-      closeSession(entry, session),
-    );
-
     members = tree(table, state.pid)
       .map((pid) => table.get(pid))
       .filter((member) => member !== undefined);
@@ -860,6 +943,8 @@ async function down() {
   }
 
   let portFree = false;
+  /** @type {string | null} */
+  let listenerError = null;
   let survivors = members;
 
   for (let attempt = 0; attempt < 20; attempt += 1) {
@@ -868,7 +953,9 @@ async function down() {
     survivors = members.filter(
       (member) => after.get(member.ProcessId)?.Start === member.Start,
     );
-    portFree = listeners(state.port).length === 0;
+    const query = queryListeners(state.port);
+    listenerError = query.error;
+    portFree = query.pids !== null && query.pids.length === 0;
 
     if (portFree && survivors.length === 0) {
       break;
@@ -882,6 +969,7 @@ async function down() {
     survivors: survivors.map((member) => member.ProcessId),
     port: state.port,
     portFree,
+    ...(listenerError === null ? {} : { listenerError }),
     session: state.session,
     sessions,
     daemon,
@@ -906,15 +994,17 @@ async function down() {
       )}\n`,
     );
     finish(1, {
-      error: `teardown incomplete; state kept at ${stateFile}; run down again`,
+      error: `teardown incomplete; ${listenerError ? `${listenerError}; ` : ''}state kept at ${stateFile}; run down again`,
       ...result,
       stateFile,
     });
   }
 
   rmSync(stateFile, { force: true });
-  const unclosed = sessions.filter(({ outcome }) =>
-    ['timeout', 'failed'].includes(outcome),
+  const unclosed = sessions.filter(
+    ({ outcome, listedOpen }) =>
+      ['timeout', 'failed'].includes(outcome) ||
+      (outcome === 'absent' && listedOpen),
   );
 
   if (unclosed.length > 0 || !daemon.stopped) {

@@ -127,36 +127,46 @@ node .claude/skills/control-yeti-app/scripts/control.mjs down --json
 
 Closes the run's playwright-cli sessions (`-s=<session> close` and `-s=<session>-jsoff close`), stops the recorded PID's process tree with
 `taskkill /PID <pid> /T /F`, waits until the port is free and every PID of the tree is gone, stops the checkout's
-Nx daemon (`nx daemon --stop`), removes `state.json`, and keeps the evidence directory.
+Nx daemon (`nx daemon --stop`), removes `state.json`, and keeps the evidence directory. When the recorded PID is no
+longer running (the server died on its own), `down` still closes both sessions and stops the daemon, and reports
+them the same way.
 
 It runs playwright-cli's own script (`<shim dir>/node_modules/@playwright/cli/playwright-cli.js`) under this Node,
 with the session as an argument, so the name never reaches a shell. `sessions` reports each close: `closed`,
-`not-open`, `absent` (no playwright-cli on `PATH`), `timeout` (no answer in 30 s) or `failed` (a non-zero exit,
-with its output). A `timeout` or `failed` close, or a failed daemon stop (`daemon.stopped: false`), makes `down`
-exit 1 with `teardown incomplete` naming the session and the command that closes it. It never runs `close-all` or `kill-all`: those reach every
+`not-open`, `absent`, `timeout` (no answer in 30 s) or `failed` (a non-zero exit, with its output). `absent` means
+the lookup found no `node_modules/@playwright/cli/playwright-cli.js` beside a `PATH` directory (npm's Windows global
+layout; a Volta, pnpm or scoop install, or `npx`, misses it), so `down` closed nothing. `down` then reads
+playwright-cli's session registry (`%LOCALAPPDATA%\ms-playwright\daemon\*\<session>.session`, whose socket answers
+while the session is open) and sets `listedOpen`. A `timeout` or `failed` close, an `absent` close with
+`listedOpen: true`, or a failed daemon stop (`daemon.stopped: false`), makes `down` exit 1 with
+`teardown incomplete` naming the session and the command that closes it. It never runs `close-all` or `kill-all`: those reach every
 playwright-cli session on the machine, including other agents'.
 
 When the wait ends with a PID of the tree alive or the port still listening, `down` exits 1 with
 `teardown incomplete`, keeps `state.json` with the surviving PIDs recorded in it, and names `survivors`, `portFree`
-and `stateFile`. Run `down` again: it stops a recorded survivor only when its start time and command line still
+and `stateFile`. A failed listener query counts as a busy port: `portFree` stays `false` and `listenerError` names
+the query's error. Run `down` again: it stops a recorded survivor only when its start time and command line still
 match, and it keeps the file and exits 1 until the port is free and no survivor is left. `up` refuses while the file
 exists.
 
-Test: `node --test .claude/skills/control-yeti-app/scripts/control.test.mjs` proves the refused flags, launches
+Test: `node --test .claude/skills/control-yeti-app/scripts/control.test.mjs` proves the refused flags and an
+`absent` close of a session listed as open (exit 1, with playwright-cli taken off `PATH`), launches
 `--mode=ssr --configuration=production` on the checkout's port with the Nx daemon on, proves the `build-fresh` scan,
-the refused planted state file and the kept state file, and ends with a complete `down` that leaves the port free
-and no Nx daemon running. It builds the Fixture app, so nothing else may build in the checkout while it runs.
+the refused planted state file, the kept state file and both sessions `closed`, and ends with a complete `down` that
+leaves the port free and no Nx daemon running. A second launch opens both sessions, kills the server's tree outside
+the script, and proves `down` closes both sessions and stops the daemon. It builds the Fixture app, so nothing else
+may build in the checkout while it runs.
 
 ## Helpers
 
 `node .claude/skills/control-yeti-app/scripts/control.mjs <command> [flags]`
 
-| Command  | Does                                                                                                                                                                                                                                                                 | Exit codes                                                                                                                                                                       |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `up`     | refuses when a state file exists, when the port is a main-checkout port in a worktree, or when anything listens on the port (names the owning PID); starts the target; writes `tmp/control-yeti-app/state.json`; writes `<evidenceDir>/js-off.json`; polls readiness | 0 ready, 1 launch exited or not ready (state removed on exit), 2 refused                                                                                                         |
-| `doctor` | the checks above                                                                                                                                                                                                                                                     | 0, 1, 2                                                                                                                                                                          |
-| `info`   | prints the state: `flow`, `mode`, `configuration`, `pid`, `start`, `commandLine`, `port`, `url`, `session`, `evidenceDir`, `logFile`                                                                                                                                 | 0, 2 no state file                                                                                                                                                               |
-| `down`   | stops only a PID whose start time and command line match the state file, then recorded survivors that still match; removes the state file only when the port is free and no recorded PID survives, else keeps it with the survivors; stops the Nx daemon             | 0 stopped, 1 port or a tree PID survived (state kept), a session close timed out or failed, or the daemon stop failed, 2 refused (mismatch, invalid state file) or no state file |
+| Command  | Does                                                                                                                                                                                                                                                                                                        | Exit codes                                                                                                                                                                                                                                           |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `up`     | refuses when a state file exists, when the port is a main-checkout port in a worktree, or when anything listens on the port (names the owning PID); starts the target; writes `tmp/control-yeti-app/state.json`; writes `<evidenceDir>/js-off.json`; polls readiness                                        | 0 ready, 1 launch exited or not ready (state removed on exit), 2 refused                                                                                                                                                                             |
+| `doctor` | the checks above                                                                                                                                                                                                                                                                                            | 0, 1, 2                                                                                                                                                                                                                                              |
+| `info`   | prints the state: `flow`, `mode`, `configuration`, `pid`, `start`, `commandLine`, `port`, `url`, `session`, `evidenceDir`, `logFile`                                                                                                                                                                        | 0, 2 no state file                                                                                                                                                                                                                                   |
+| `down`   | stops only a PID whose start time and command line match the state file, then recorded survivors that still match; removes the state file only when the port is free and no recorded PID survives, else keeps it with the survivors; closes the sessions and stops the Nx daemon on a dead recorded PID too | 0 stopped, 1 port or a tree PID survived or the listener query failed (state kept), a session close timed out or failed, a session `absent` but listed as open, or the daemon stop failed, 2 refused (mismatch, invalid state file) or no state file |
 
 Flags: `--mode=serve|ssr`, `--configuration=development|production`, `--port=<n>` (up), `--url=<base url>`
 (doctor), `--timeout=<seconds>` (up), `--json` (one JSON object on stdout; otherwise `[OK]`/`[ERROR]`/`[SKIP]`
@@ -166,7 +176,9 @@ lines). Any other flag, a value written after a space (`--mode ssr`) and a bare 
 not an object, whose `session` is not `[\w-]` only, whose `pid` or a survivor's is not a positive integer, whose
 `survivors` is not a list of objects, whose `port` is not 1 to 65535, or whose `url`, `logFile` or `evidenceDir` is
 not a string. Windows only: the process table comes from `pwsh` and `Get-CimInstance Win32_Process`, listeners from
-`Get-NetTCPConnection -State Listen` (netstat translates its state column).
+`Get-NetTCPConnection -State Listen -ErrorAction Stop` (netstat translates its state column). Only the cmdlet's own
+no-match error (category `ObjectNotFound` from `Get-NetTCPConnection`) means no listener; any other error makes `up`
+and `doctor` exit 2 with the error, and `down` exit 1 as above.
 
 ## Gotchas
 

@@ -17,6 +17,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { connect } from 'node:net';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -205,15 +206,57 @@ function playwrightCli() {
   return null;
 }
 
+// playwright-cli's own registry, which its `list` reads: a session is open
+// while the socket in its `<name>.session` file answers.
 /** @param {string} name */
-function closeSession(name) {
+async function listedOpen(name) {
+  const home = os.homedir();
+  const cache = IS_WINDOWS
+    ? (process.env['LOCALAPPDATA'] ?? path.join(home, 'AppData', 'Local'))
+    : process.platform === 'darwin'
+      ? path.join(home, 'Library', 'Caches')
+      : (process.env['XDG_CACHE_HOME'] ?? path.join(home, '.cache'));
+  const base = path.join(cache, 'ms-playwright', 'daemon');
+
+  for (const dir of existsSync(base) ? readdirSync(base) : []) {
+    const file = path.join(base, dir, `${name}.session`);
+
+    if (!existsSync(file)) {
+      continue;
+    }
+
+    /** @type {unknown} */
+    const config = JSON.parse(readFileSync(file, 'utf8'));
+    const socketPath =
+      typeof config === 'object' && config !== null && 'socketPath' in config
+        ? config.socketPath
+        : undefined;
+
+    if (
+      typeof socketPath === 'string' &&
+      (await answers({ path: socketPath }))
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/** @param {string} name */
+async function closeSession(name) {
   const entry = playwrightCli();
 
   if (entry === null) {
+    const open = await listedOpen(name);
+
     return {
       session: name,
       outcome: 'absent',
-      detail: 'no playwright-cli on PATH',
+      listedOpen: open,
+      detail: open
+        ? 'no playwright-cli on PATH, and the session is listed as open'
+        : 'no playwright-cli on PATH',
     };
   }
 
@@ -375,8 +418,16 @@ function listeningPids(listenPort) {
  * @returns {Promise<boolean>}
  */
 function portAnswers(listenPort) {
+  return answers({ host: 'localhost', port: listenPort });
+}
+
+/**
+ * @param {import('node:net').NetConnectOpts} target
+ * @returns {Promise<boolean>}
+ */
+function answers(target) {
   return new Promise((resolve) => {
-    const socket = connect({ host: 'localhost', port: listenPort });
+    const socket = connect(target);
     socket.setTimeout(1000);
     socket.once('connect', () => {
       socket.destroy();
@@ -797,11 +848,12 @@ async function down() {
   const live = table.find((proc) => proc.pid === state.pid);
 
   if (live === undefined) {
-    rmSync(statePath);
-    finish(0, {
-      message: `pid ${String(state.pid)} is not running; removed the state file`,
-      evidenceDir: state.evidenceDir,
-    });
+    endTeardown(
+      state,
+      await closeSession(state.session),
+      `pid ${String(state.pid)} is not running; removed the state file`,
+      { stoppedPids: [] },
+    );
   }
 
   if (live.start !== state.startTime) {
@@ -819,7 +871,7 @@ async function down() {
     });
   }
 
-  const sessionClose = closeSession(state.session);
+  const sessionClose = await closeSession(state.session);
 
   const tree = [...descendants(table, state.pid)];
 
@@ -866,18 +918,38 @@ async function down() {
     });
   }
 
+  endTeardown(
+    state,
+    sessionClose,
+    `stopped pid ${String(state.pid)} and ${String(tree.length - 1)} descendants`,
+    { stoppedPids: tree, portFree: true },
+  );
+}
+
+/**
+ * Removes the state file, stops the daemon and reports, on both the live and
+ * the dead recorded PID path.
+ *
+ * @param {State} state
+ * @param {Awaited<ReturnType<typeof closeSession>>} sessionClose
+ * @param {string} message
+ * @param {Record<string, unknown>} fields
+ * @returns {never}
+ */
+function endTeardown(state, sessionClose, message, fields) {
   rmSync(statePath);
   const daemon = stopDaemon();
   const result = {
-    stoppedPids: tree,
+    ...fields,
     port: state.port,
-    portFree: true,
     session: state.session,
     sessionClose,
     daemon,
     evidenceDir: state.evidenceDir,
   };
-  const closeFailed = ['timeout', 'failed'].includes(sessionClose.outcome);
+  const closeFailed =
+    ['timeout', 'failed'].includes(sessionClose.outcome) ||
+    (sessionClose.outcome === 'absent' && sessionClose.listedOpen === true);
 
   if (closeFailed || !daemon.stopped) {
     finish(1, {
@@ -893,10 +965,7 @@ async function down() {
     });
   }
 
-  finish(0, {
-    message: `stopped pid ${String(state.pid)} and ${String(tree.length - 1)} descendants`,
-    ...result,
-  });
+  finish(0, { message, ...result });
 }
 
 /** @type {Map<string, () => unknown>} */
