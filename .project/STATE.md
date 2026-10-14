@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -145,3 +145,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-14 — build — all 59 tasks done (T028 landed c99718a); wave 9 gate wave9-c3 at 13af1fd: 8 of 8 steps exit 0; paused before the wave 9 review on Lars's ruling
 - 2026-10-14 — build — wave 9 cycle 1 review passes at 8d34e8c (7 of 7 tasks, SC8 local half; gate wave9-c3 8 of 8); thermos warnings (bugs H1 H2 M1, quality H1 M1 M2) go to the review round
 - 2026-10-14 — build — review round 3 (tmp/afk-m002/lars-review/r3/triage.md): 2 major and 13 minor survivors (T058 band ring on nested surfaces and toggle labels; run-job test needs git; control-script teardown; spinner and VoiceOver checks) need fix tasks; plan repair 6 appends wave 11
+- 2026-10-14 — plan — build plan repair requested
+- 2026-10-14 — plan — build recovery: {"base": "58ee2599d033875745fa6a8110171cbd8739bfb4", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
+- 2026-10-15 — plan — plan approved
