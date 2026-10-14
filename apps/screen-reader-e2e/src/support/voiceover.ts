@@ -1,3 +1,5 @@
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { macOSActivate, voiceOver } from '@guidepup/guidepup';
 import { remote } from 'webdriverio';
 import {
@@ -11,6 +13,17 @@ import {
 } from './screen-reader';
 
 type Safari = Awaited<ReturnType<typeof remote>>;
+
+const execFileAsync = promisify(execFile);
+
+async function frontmostApplication(): Promise<string> {
+  const { stdout } = await execFileAsync('osascript', [
+    '-e',
+    'tell application "System Events" to get name of first application process whose frontmost is true',
+  ]);
+
+  return stdout.trim();
+}
 
 /**
  * VoiceOver and one real Safari window per worker. Playwright's `webkit` is
@@ -92,6 +105,17 @@ function voiceOverLane(): Lane {
         await voiceOver.capture(async () => {
           await browser.execute(script, argument);
           await browser.pause(settle);
+
+          // VoiceOver announces a page change only while Safari is in front,
+          // so a lost front window fails the test instead of passing for
+          // silence.
+          const front = await frontmostApplication();
+
+          if (front !== 'Safari') {
+            throw new Error(
+              `Safari lost the foreground to ${front}: what VoiceOver spoke is not the page.`,
+            );
+          }
         });
       }),
     heard: () => log,

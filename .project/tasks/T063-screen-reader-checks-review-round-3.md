@@ -3,9 +3,9 @@ id: T063
 title: Make the spinner screen-reader check able to fail, guard the VoiceOver foreground, assert the decorative icon's role words, and share inOrder with card
 wave: 11
 deps: [T027, T052]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T063
+base: 3ec57a6562acaf2dc706b32351aa126287336fb4
 worktree: null
 task_branch: null
 files:
@@ -67,3 +67,29 @@ Heavy: yes
 ## Log
 
 - 2026-10-15 — created by planner (build repair 6), from tmp/afk-m002/lars-review/r3/triage.md group D items 12 to 15.
+- 2026-10-15 — coder build_T063: spinner.screen-reader.ts drops the hollow `Loaded 12 posts` line, counts `Loading` after stripping the visible paragraph "Loading the latest posts", keeps the annotation, asserts `announced <= 1`, test title renamed; voiceover.ts `change` queries the frontmost process through `osascript` (System Events; Guidepup's `runAppleScript` is not public) after the settle and throws "Safari lost the foreground to <app>: what VoiceOver spoke is not the page." unless it is Safari; icon.screen-reader.ts VoiceOver `decorative` row is `['Download', 'link', 'Save', 'button']` (VoiceOver says "Download, link"; the first CI run confirms the order); card.screen-reader.ts imports the shared `inOrder`, deletes its copy and drops the version sentence. VoiceOver changes checked statically only (lint, typecheck).
+- Verify (exact, through the heavy lock): passed, exit 0. lint and typecheck of screen-reader-e2e green; `nvda` lane 22 passed (Chromium then Firefox, no BROWSERS; the spinner test passed in both); prettier --check on the four files clean.
+- Rule 13: `npx prettier --check .` clean; `nx affected -t lint typecheck test test-storybook --base=HEAD` exit 0 (2 projects, 5 tasks, all cache hits of identical inputs; no Storybook project affected).
+- 2026-10-14 — orchestrator Verify (isolate gsd-path-task/T063): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  [2m[WebServer] [22m(node:21344) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  [2m[WebServer] [22m(Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:50180) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  (node:3172) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+  (Use `node --trace-deprecation ...` to show where the warning was created)
+  ```

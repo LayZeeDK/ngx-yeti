@@ -21,7 +21,7 @@ const lanes = {
   voiceover: {
     image: 'image',
     steps: 4,
-    decorative: ['Download', 'Save'],
+    decorative: ['Download', 'link', 'Save', 'button'],
     standalone: ['Close', 'Warning', 'image'],
   },
 } satisfies Record<
