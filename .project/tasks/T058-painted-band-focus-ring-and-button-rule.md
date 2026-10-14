@@ -3,9 +3,9 @@ id: T058
 title: Give the focus ring inside a painted band a colour that reads (A11Y-35) and add the plain-button usage rule for painted bands (Y17)
 wave: 9
 deps: [T056, T057]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T058
+base: 0287445e264fc9160dbbd21408e3eb720521e517
 worktree: null
 task_branch: null
 files:
@@ -75,3 +75,76 @@ Heavy: yes
 ## Log
 
 - 2026-10-13 — created by planner (build repair 5), from Claude's calls of 2026-10-13 on A11Y-35 and Y17 under Lars's ruling "Resolve all blocked items that don't require a heavy load." Assumption (planner): the new ledger row takes the next unused id, A11Y-36, and the new usage rule takes the next box number, 8.
+
+- 2026-10-14 — build_T058 implementation note. Criterion 1, measured before the rule, taken from the orchestrator's spike (tmp/afk-m002/t058-spike/table.md, measure.mjs, results.json; Playwright Chromium, Firefox, WebKit, identical in all three; a plain button with data-text="primary" focused by Tab in a band of each paint value in a light and a dark color-scheme wrapper; ring = outline-color, band = background-color, ink = the band's text colour). 28 of the 40 values are under 3:1 without the rule (lowest 1.00 on primary in both schemes). "Before" is the ring-to-band ratio with Yeti alone, "after" with the rule (lowest 3.81, grey-50 dark):
+
+| Case (scheme, paint, control) | Band | Band ink | Ring before | Before (Cr/Fx/Wk) | Ring after | After (Cr/Fx/Wk) |
+|---|---|---|---|---|---|---|
+| light, primary, plain | oklch(0.52 0.15 250) | oklch(0.99 0 0) | oklch(0.52 0.15 250) | 1 / 1 / 1 | oklch(0.99 0 0) | 5.36 / 5.36 / 5.36 |
+| light, secondary, plain | oklch(0.52 0.15 300) | oklch(0.99 0 0) | oklch(0.52 0.15 250) | 1.07 / 1.07 / 1.07 | oklch(0.99 0 0) | 5.74 / 5.74 / 5.74 |
+| light, success, plain | oklch(0.52 0.15 145) | oklch(0.99 0 0) | oklch(0.52 0.15 250) | 1.06 / 1.06 / 1.06 | oklch(0.99 0 0) | 5.04 / 5.04 / 5.04 |
+| light, warning, plain | oklch(0.52 0.15 80) | oklch(0.99 0 0) | oklch(0.52 0.15 250) | 1.01 / 1.01 / 1.01 | oklch(0.99 0 0) | 5.42 / 5.42 / 5.42 |
+| light, alert, plain | oklch(0.52 0.15 25) | oklch(0.99 0 0) | oklch(0.52 0.15 250) | 1.08 / 1.08 / 1.08 | oklch(0.99 0 0) | 5.8 / 5.8 / 5.8 |
+| light, neutral, plain | oklch(0.52 0.02 250) | oklch(0.99 0 0) | oklch(0.52 0.15 250) | 1 / 1 / 1 | oklch(0.99 0 0) | 5.37 / 5.37 / 5.37 |
+| light, white, plain | oklch(1 0 0) | oklch(0 0 0) | oklch(0.52 0.15 250) | 5.5 / 5.5 / 5.5 | oklch(0 0 0) | 21 / 21 / 21 |
+| light, black, plain | oklch(0 0 0) | oklch(1 0 0) | oklch(0.52 0.15 250) | 3.82 / 3.82 / 3.82 | oklch(1 0 0) | 21 / 21 / 21 |
+| light, grey, plain | oklch(0.565 0 0) | oklch(0 0 0) | oklch(0.52 0.15 250) | 1.21 / 1.21 / 1.21 | oklch(0 0 0) | 4.62 / 4.62 / 4.62 |
+| light, grey-0, plain | oklch(0.99 0.02 250) | oklch(0.15 0.02 250) | oklch(0.52 0.15 250) | 5.31 / 5.31 / 5.31 | oklch(0.15 0.02 250) | 18.97 / 18.97 / 18.97 |
+| light, grey-10, plain | oklch(0.906 0.02 250) | oklch(0.15 0.02 250) | oklch(0.52 0.15 250) | 4.15 / 4.15 / 4.15 | oklch(0.15 0.02 250) | 14.84 / 14.84 / 14.84 |
+| light, grey-20, plain | oklch(0.822 0.02 250) | oklch(0.15 0.02 250) | oklch(0.52 0.15 250) | 3.17 / 3.17 / 3.17 | oklch(0.15 0.02 250) | 11.34 / 11.34 / 11.34 |
+| light, grey-30, plain | oklch(0.738 0.02 250) | oklch(0.15 0.02 250) | oklch(0.52 0.15 250) | 2.36 / 2.36 / 2.36 | oklch(0.15 0.02 250) | 8.45 / 8.45 / 8.45 |
+| light, grey-40, plain | oklch(0.654 0.02 250) | oklch(0.15 0.02 250) | oklch(0.52 0.15 250) | 1.73 / 1.73 / 1.73 | oklch(0.15 0.02 250) | 6.2 / 6.2 / 6.2 |
+| light, grey-50, plain | oklch(0.57 0.02 250) | oklch(0.99 0.02 250) | oklch(0.52 0.15 250) | 1.24 / 1.24 / 1.24 | oklch(0.99 0.02 250) | 4.28 / 4.28 / 4.28 |
+| light, grey-60, plain | oklch(0.486 0.02 250) | oklch(0.99 0.02 250) | oklch(0.52 0.15 250) | 1.16 / 1.16 / 1.16 | oklch(0.99 0.02 250) | 6.17 / 6.17 / 6.17 |
+| light, grey-70, plain | oklch(0.402 0.02 250) | oklch(0.99 0.02 250) | oklch(0.52 0.15 250) | 1.66 / 1.66 / 1.66 | oklch(0.99 0.02 250) | 8.83 / 8.83 / 8.83 |
+| light, grey-80, plain | oklch(0.318 0.02 250) | oklch(0.99 0.02 250) | oklch(0.52 0.15 250) | 2.33 / 2.33 / 2.33 | oklch(0.99 0.02 250) | 12.35 / 12.35 / 12.35 |
+| light, grey-90, plain | oklch(0.234 0.02 250) | oklch(0.99 0.02 250) | oklch(0.52 0.15 250) | 3.03 / 3.03 / 3.03 | oklch(0.99 0.02 250) | 16.06 / 16.06 / 16.06 |
+| light, grey-100, plain | oklch(0.15 0.02 250) | oklch(0.99 0.02 250) | oklch(0.52 0.15 250) | 3.58 / 3.58 / 3.58 | oklch(0.99 0.02 250) | 18.97 / 18.97 / 18.97 |
+| dark, primary, plain | oklch(0.7 0.15 250) | oklch(0.15 0 0) | oklch(0.7 0.15 250) | 1 / 1 / 1 | oklch(0.15 0 0) | 7.39 / 7.39 / 7.39 |
+| dark, secondary, plain | oklch(0.7 0.15 300) | oklch(0.15 0 0) | oklch(0.7 0.15 250) | 1.06 / 1.06 / 1.06 | oklch(0.15 0 0) | 7 / 7 / 7 |
+| dark, success, plain | oklch(0.7 0.15 145) | oklch(0.15 0 0) | oklch(0.7 0.15 250) | 1.05 / 1.05 / 1.05 | oklch(0.15 0 0) | 7.79 / 7.79 / 7.79 |
+| dark, warning, plain | oklch(0.7 0.15 80) | oklch(0.15 0 0) | oklch(0.7 0.15 250) | 1.02 / 1.02 / 1.02 | oklch(0.15 0 0) | 7.25 / 7.25 / 7.25 |
+| dark, alert, plain | oklch(0.7 0.15 25) | oklch(0.15 0 0) | oklch(0.7 0.15 250) | 1.07 / 1.07 / 1.07 | oklch(0.15 0 0) | 6.91 / 6.91 / 6.91 |
+| dark, neutral, plain | oklch(0.7 0.02 250) | oklch(0.15 0 0) | oklch(0.7 0.15 250) | 1 / 1 / 1 | oklch(0.15 0 0) | 7.4 / 7.4 / 7.4 |
+| dark, white, plain | oklch(1 0 0) | oklch(0 0 0) | oklch(0.7 0.15 250) | 2.66 / 2.66 / 2.66 | oklch(0 0 0) | 21 / 21 / 21 |
+| dark, black, plain | oklch(0 0 0) | oklch(1 0 0) | oklch(0.7 0.15 250) | 7.88 / 7.88 / 7.88 | oklch(1 0 0) | 21 / 21 / 21 |
+| dark, grey, plain | oklch(0.565 0 0) | oklch(0 0 0) | oklch(0.7 0.15 250) | 1.7 / 1.7 / 1.7 | oklch(0 0 0) | 4.62 / 4.62 / 4.62 |
+| dark, grey-0, plain | oklch(0.13 0.02 250) | oklch(0.93 0.02 250) | oklch(0.7 0.15 250) | 7.54 / 7.54 / 7.54 | oklch(0.93 0.02 250) | 16.34 / 16.34 / 16.34 |
+| dark, grey-10, plain | oklch(0.21 0.02 250) | oklch(0.93 0.02 250) | oklch(0.7 0.15 250) | 6.65 / 6.65 / 6.65 | oklch(0.93 0.02 250) | 14.42 / 14.42 / 14.42 |
+| dark, grey-20, plain | oklch(0.29 0.02 250) | oklch(0.93 0.02 250) | oklch(0.7 0.15 250) | 5.3 / 5.3 / 5.3 | oklch(0.93 0.02 250) | 11.49 / 11.49 / 11.49 |
+| dark, grey-30, plain | oklch(0.37 0.02 250) | oklch(0.93 0.02 250) | oklch(0.7 0.15 250) | 3.9 / 3.9 / 3.9 | oklch(0.93 0.02 250) | 8.44 / 8.44 / 8.44 |
+| dark, grey-40, plain | oklch(0.45 0.02 250) | oklch(0.93 0.02 250) | oklch(0.7 0.15 250) | 2.8 / 2.8 / 2.8 | oklch(0.93 0.02 250) | 6.07 / 6.07 / 6.07 |
+| dark, grey-50, plain | oklch(0.53 0.02 250) | oklch(0.13 0.02 250) | oklch(0.7 0.15 250) | 1.98 / 1.98 / 1.98 | oklch(0.13 0.02 250) | 3.81 / 3.81 / 3.81 |
+| dark, grey-60, plain | oklch(0.61 0.02 250) | oklch(0.13 0.02 250) | oklch(0.7 0.15 250) | 1.43 / 1.43 / 1.43 | oklch(0.13 0.02 250) | 5.28 / 5.28 / 5.28 |
+| dark, grey-70, plain | oklch(0.69 0.02 250) | oklch(0.13 0.02 250) | oklch(0.7 0.15 250) | 1.04 / 1.04 / 1.04 | oklch(0.13 0.02 250) | 7.28 / 7.28 / 7.28 |
+| dark, grey-80, plain | oklch(0.77 0.02 250) | oklch(0.13 0.02 250) | oklch(0.7 0.15 250) | 1.29 / 1.29 / 1.29 | oklch(0.13 0.02 250) | 9.75 / 9.75 / 9.75 |
+| dark, grey-90, plain | oklch(0.85 0.02 250) | oklch(0.13 0.02 250) | oklch(0.7 0.15 250) | 1.69 / 1.69 / 1.69 | oklch(0.13 0.02 250) | 12.72 / 12.72 / 12.72 |
+| dark, grey-100, plain | oklch(0.93 0.02 250) | oklch(0.13 0.02 250) | oklch(0.7 0.15 250) | 2.17 / 2.17 / 2.17 | oklch(0.13 0.02 250) | 16.34 / 16.34 / 16.34 |
+
+  Also measured in the spike with the rule: a white band nested in a primary band (ring oklch(0 0 0), 21:1 light and dark) and a .button in a primary band (5.36 light, 7.39 dark). A registered <color> property set to currentColor fails the same 28 values (currentColor resolves at the focused control), so the rule maps each paint to its ink instead.
+- Implementation: packages/ngx-yeti/ngx-yeti-globals.css holds, in @layer ngx-yeti, one --_ngx-yeti-band-ink line per paint value copied from Yeti's [data-paint] rules (vendor/yeti/src/layouts/attributes.css:404-423) and [data-paint] :focus-visible { outline-color: var(--_ngx-yeti-band-ink); }. published-output.node.spec.ts: 'A11Y-35' entry in sanctionedSelectors for '[data-paint] :focus-visible'; yetiRulesInStylesheet now asks isSanctioned for every selector (not only those naming a Yeti class) so an entry that names no class is matched and a vanished rule is reported ("matches no selector"), with one new unit test. accessibility.node.spec.ts: drift guard that parses the 20 [data-paint] colors of Yeti's attributes.css and asserts the globals mapping equals them, plus the ring rule. box--paint: 20 ring bands (a button with an aria-label and no text, so axe color-contrast has no text to judge) per scheme, each tabbed to, asserting the ring is drawn and at least 3:1 against the band; with the ring declaration removed the story failed at that assertion (checked, then restored). Usage rule 8 added to YetiBox and NgxYetiPaint JSDoc. Ledger A11Y-35 rewritten, A11Y-36 added; upstream Y16 and Y17 updated; Departures row for box.md:207, the globals paragraph and the accessibility skill bullet in the skills; CHANGELOG entry.
+- UPSTREAM: yeti-css draws the focus ring in var(--yeti-color-primary) on every painted band, so the ring is under 3:1 against the band for 28 of 40 paint-and-scheme values (lowest 1.00 on primary), not only primary (row Y16 updated with this).
+- Verify (exact command through the heavy lock with HEAVY_DOCKER=1, exit 0): lint and typecheck of ngx-yeti passed; node + unit run: 6 files, 55 tests passed; test-storybook box/src in Chromium: 1 file, 8 tests passed; ci unit container job (Chromium, Firefox, WebKit): 3 files, 24 tests passed; prettier --check on the changed paths passed. Criterion 6 extras (rule 13): npx prettier --check . passed; npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD passed for 6 projects and 2 dependency tasks, exit 0.
+- 2026-10-14 — orchestrator Verify (isolate gsd-path-task/T058): pass, exit 0; output tail:
+  ```
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/spinner
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/stack
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/table
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/timeline
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/visually-hidden
+  ```

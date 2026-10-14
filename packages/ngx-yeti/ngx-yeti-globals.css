@@ -38,6 +38,96 @@
     animation-name: none;
   }
 
+  /* A11Y-35: Yeti draws the focus ring in the primary colour, so inside a
+     painted band it has the band's own colour or one close to it. The ring
+     takes the band's text colour, copied from Yeti's own data-paint rules,
+     because currentColor on the focused control is the control's colour, not
+     the band's. Only the colour changes; forced colours keep the user
+     agent's. */
+  [data-paint='primary'] {
+    --_ngx-yeti-band-ink: var(--yeti-on-primary);
+  }
+
+  [data-paint='secondary'] {
+    --_ngx-yeti-band-ink: var(--yeti-on-secondary);
+  }
+
+  [data-paint='success'] {
+    --_ngx-yeti-band-ink: var(--yeti-on-success);
+  }
+
+  [data-paint='warning'] {
+    --_ngx-yeti-band-ink: var(--yeti-on-warning);
+  }
+
+  [data-paint='alert'] {
+    --_ngx-yeti-band-ink: var(--yeti-on-alert);
+  }
+
+  [data-paint='neutral'] {
+    --_ngx-yeti-band-ink: var(--yeti-on-neutral);
+  }
+
+  [data-paint='white'] {
+    --_ngx-yeti-band-ink: var(--yeti-black);
+  }
+
+  [data-paint='black'] {
+    --_ngx-yeti-band-ink: var(--yeti-white);
+  }
+
+  [data-paint='grey'] {
+    --_ngx-yeti-band-ink: var(--yeti-black);
+  }
+
+  [data-paint='grey-0'] {
+    --_ngx-yeti-band-ink: var(--yeti-color-text);
+  }
+
+  [data-paint='grey-10'] {
+    --_ngx-yeti-band-ink: var(--yeti-color-text);
+  }
+
+  [data-paint='grey-20'] {
+    --_ngx-yeti-band-ink: var(--yeti-color-text);
+  }
+
+  [data-paint='grey-30'] {
+    --_ngx-yeti-band-ink: var(--yeti-color-text);
+  }
+
+  [data-paint='grey-40'] {
+    --_ngx-yeti-band-ink: var(--yeti-color-text);
+  }
+
+  [data-paint='grey-50'] {
+    --_ngx-yeti-band-ink: var(--yeti-color-surface);
+  }
+
+  [data-paint='grey-60'] {
+    --_ngx-yeti-band-ink: var(--yeti-color-surface);
+  }
+
+  [data-paint='grey-70'] {
+    --_ngx-yeti-band-ink: var(--yeti-color-surface);
+  }
+
+  [data-paint='grey-80'] {
+    --_ngx-yeti-band-ink: var(--yeti-color-surface);
+  }
+
+  [data-paint='grey-90'] {
+    --_ngx-yeti-band-ink: var(--yeti-color-surface);
+  }
+
+  [data-paint='grey-100'] {
+    --_ngx-yeti-band-ink: var(--yeti-color-surface);
+  }
+
+  [data-paint] :focus-visible {
+    outline-color: var(--_ngx-yeti-band-ink);
+  }
+
   /* Firefox 145 to 152 reject atan2() with a relative length, so Yeti's
      --_yeti-t, tan(atan2(100vw - ..., ...)), is invalid there and every Yeti
      size with it (measured 2026-10-04; 153 accepts it). A registered <length>

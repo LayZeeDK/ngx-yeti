@@ -21,6 +21,7 @@ const sanctionedSelectors: Readonly<Record<string, readonly string[]>> = {
     '.enter[data-once]:not([data-stagger])',
     '.enter[data-once][data-stagger] > *',
   ],
+  'A11Y-35': ['[data-paint] :focus-visible'],
 };
 
 function ledgerRowIds(): ReadonlySet<string> {
@@ -134,11 +135,12 @@ function yetiRulesInStylesheet(
         const classes = classNames(selector).flatMap((name) =>
           yetiClasses.has(name) ? [`.${name}`] : [],
         );
+        const sanctioned = isSanctioned(
+          JSON.stringify(selector),
+          packageLayers > 0,
+        );
 
-        if (
-          classes.length > 0 &&
-          !isSanctioned(JSON.stringify(selector), packageLayers > 0)
-        ) {
+        if (classes.length > 0 && !sanctioned) {
           found.push(...classes);
         }
       },
@@ -315,6 +317,28 @@ describe('the published output', () => {
           rowIds,
         ),
       ).toStrictEqual(['.spinner', '@layer yeti']);
+    });
+
+    it('matches a table entry that names no Yeti class, and reports it when the rule is gone', () => {
+      const classless = { 'A11Y-35': ['[data-paint] :focus-visible'] };
+      const ids = new Set(['A11Y-35']);
+
+      expect(
+        yetiRulesInGlobalStylesheet(
+          '@layer ngx-yeti { [data-paint] :focus-visible { outline-color: red; } }',
+          classless,
+          ids,
+        ),
+      ).toStrictEqual([]);
+      expect(
+        yetiRulesInGlobalStylesheet(
+          '@layer ngx-yeti { a { color: red; } }',
+          classless,
+          ids,
+        ),
+      ).toStrictEqual([
+        'A11Y-35: [data-paint] :focus-visible matches no selector',
+      ]);
     });
 
     it('reports a table entry that matches no selector', () => {

@@ -225,6 +225,27 @@ function nonSystemColours(css: string): string[] {
   return findings;
 }
 
+/**
+ * Each `[data-paint=...]` rule's paint value and the value of `property` it
+ * sets, in the order the rules appear. `quote` is the quote the stylesheet
+ * writes the attribute value in.
+ */
+function paintValues(
+  css: string,
+  property: string,
+  quote: string,
+): (string | undefined)[][] {
+  const rule = new RegExp(
+    String.raw`\[data-paint=${quote}([^${quote}]+)${quote}\]\s*\{[^}]*?(?<![-\w])${property}:\s*([^;}]+)`,
+    'g',
+  );
+
+  return [...css.matchAll(rule)].map(([, paint, value]) => [
+    paint,
+    value?.trim(),
+  ]);
+}
+
 describe('ngx-yeti/ngx-yeti-globals.css', () => {
   // The Firefox scale workaround writes --_yeti-t and nothing else of Yeti's
   // (ngx-yeti-specs, Departures).
@@ -235,6 +256,25 @@ describe('ngx-yeti/ngx-yeti-globals.css', () => {
       privateWrites: ['--_yeti-t'],
       classSelectors: [],
     });
+  });
+
+  // A11Y-35: the band-ink mapping copies Yeti's data-paint text colours, so a
+  // moved pin that changes one of them fails here.
+  it("gives each painted band the text colour Yeti's data-paint rule gives it, and draws only the ring's colour with it", () => {
+    const yeti = readFileSync(
+      path.join(packageRoot, '../../vendor/yeti/src/layouts/attributes.css'),
+      'utf8',
+    );
+    const globals = readPackageFile('ngx-yeti-globals.css');
+    const yetiInks = paintValues(yeti, 'color', '"');
+
+    expect(yetiInks).toHaveLength(20);
+    expect(paintValues(globals, '--_ngx-yeti-band-ink', "'")).toStrictEqual(
+      yetiInks,
+    );
+    expect(globals).toMatch(
+      /\[data-paint\] :focus-visible\s*\{\s*outline-color: var\(--_ngx-yeti-band-ink\);\s*\}/,
+    );
   });
 
   it('sets only system colour keywords in its forced-colours rules', () => {

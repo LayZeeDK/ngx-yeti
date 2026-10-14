@@ -375,6 +375,12 @@ export const Paint: Story = {
               .join('')}
             <p data-testid="link-band" yetiPaint="primary">News: dark mode. <a href="#paint">Read the changelog</a>.</p>
             <div data-testid="button-band" yetiPaint="primary"><button type="button" yetiText="primary">Dismiss the news</button></div>
+            ${[...textPaints, ...fillPaints]
+              .map(
+                (paint) =>
+                  `<div data-ring="${paint}" yetiPaint="${paint}"><button type="button" aria-label="Focus on ${paint}" style="inline-size: 2rem; block-size: 2rem"></button></div>`,
+              )
+              .join('')}
             ${fillPaints
               .map(
                 (paint) =>
@@ -422,8 +428,8 @@ export const Paint: Story = {
       );
       await expectReadableOn(link, linkBand);
 
-      // A button in the band keeps the page's focus ring. Whether the ring
-      // stands out from the band is the ledger's, not asserted here.
+      // A button in the band draws a focus ring, and the ring reads against
+      // the band (WCAG 1.4.11, ledger A11Y-35).
       const buttonBand = byTestId(wrapper, 'button-band');
       const button = buttonBand.querySelector('button');
 
@@ -441,6 +447,33 @@ export const Paint: Story = {
 
       await expect(outlineStyle).not.toBe('none');
       await expect(parseFloat(outlineWidth)).toBeGreaterThan(0);
+
+      const rings = [...wrapper.querySelectorAll<HTMLElement>('[data-ring]')];
+
+      await expect(rings.map((ring) => ring.dataset['ring'])).toStrictEqual([
+        ...textPaints,
+        ...fillPaints,
+      ]);
+
+      for (const ring of rings) {
+        const control = ring.querySelector('button');
+
+        if (control === null) {
+          throw new Error('No button in the ring band');
+        }
+
+        await userEvent.tab();
+
+        await expect(control).toHaveFocus();
+        await expect(control.matches(':focus-visible')).toBe(true);
+        await expect(getComputedStyle(control).outlineStyle).not.toBe('none');
+        await expect(
+          contrastRatio(
+            getComputedStyle(control).outlineColor,
+            getComputedStyle(ring).backgroundColor,
+          ),
+        ).toBeGreaterThanOrEqual(3);
+      }
     }
   },
 };

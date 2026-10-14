@@ -37,6 +37,9 @@ import { injectYetiItemStyles } from 'ngx-yeti/styles';
  *    bound input renders the bare element with no error; a bound input, or
  *    `yetiPaint` and `yetiText` with their required input, makes the
  *    compiler report it.
+ * 8. Inside a painted element, use `yetiButton` for a button, or set a plain
+ *    `button`'s text with `yetiText`. A plain `button` keeps Yeti's raised
+ *    fill and inherits the band's text colour, so its words do not read.
  *
  * For a box first rendered on the client, add `box` to
  * `provideYetiStyles({ preload })` from `ngx-yeti/styles`.

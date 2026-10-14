@@ -20,6 +20,9 @@ import type { YetiPaint } from 'ngx-yeti';
  * 7. Import `NgxYetiPaint` in every component whose template writes
  *    `yetiPaint`; its required input makes the compiler report a forgotten
  *    import.
+ * 8. Inside a painted element, use `yetiButton` for a button, or set a plain
+ *    `button`'s text with `yetiText`. A plain `button` keeps Yeti's raised
+ *    fill and inherits the band's text colour, so its words do not read.
  */
 @Directive({
   selector: '[yetiPaint]',
