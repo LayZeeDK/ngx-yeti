@@ -61,17 +61,15 @@ function isObject(value) {
  * @param {number} min
  */
 function count(option, text, min) {
-  const value = Number(text);
-
-  if (!Number.isInteger(value) || value < min) {
+  if (text === undefined || !/^\d+$/.test(text) || Number(text) < min) {
     fail(`${option} takes a whole number from ${String(min)}`);
   }
 
-  return value;
+  return Number(text);
 }
 
 /** @param {string[]} argv */
-function parseArgs(argv) {
+export function parseArgs(argv) {
   const dash = argv.indexOf('--');
   const own = dash === -1 ? argv : argv.slice(0, dash);
   const command = dash === -1 ? [] : argv.slice(dash + 1);
@@ -585,8 +583,16 @@ function runContainer({ args, name, label, log }, files) {
       stdio: ['pipe', 'pipe', 'pipe'],
     });
     const output = createWriteStream(log);
-    /** @type {number | null} */
-    let tarStatus = null;
+    /** @type {string | null} */
+    let tarFailure = null;
+    // The container's stdin stays open on success (its watchdog reads it), so
+    // a failed tar has to end it, or `tar -xf -` in the container waits on it
+    // for ever.
+    const endInput = (/** @type {string} */ reason) => {
+      tarFailure ??= reason;
+      tar.stdout.unpipe(docker.stdin);
+      docker.stdin.end();
+    };
 
     running.add(name);
 
@@ -601,15 +607,20 @@ function runContainer({ args, name, label, log }, files) {
     relay(tar.stderr, label, output, process.stderr);
     relay(docker.stdout, label, output, process.stdout);
     relay(docker.stderr, label, output, process.stderr);
-    tar.on('close', (code) => {
-      tarStatus = code;
+    tar.on('error', (error) => {
+      endInput(`tar failed: ${error.message}`);
+    });
+    tar.on('close', (code, signal) => {
+      if (code !== 0) {
+        endInput(`tar exited with ${String(code ?? signal)}`);
+      }
     });
     docker.on('close', (code) => {
       running.delete(name);
       output.end();
 
-      if (tarStatus !== null && tarStatus !== 0) {
-        console.error(`run-job: [${label}] tar exited with ${tarStatus}`);
+      if (tarFailure !== null) {
+        console.error(`run-job: [${label}] ${tarFailure}`);
         done(1);
 
         return;
@@ -665,7 +676,7 @@ async function run({
     const checks = legChecks(job.checks, combo, command);
     const key = setupKey(job, setup, files);
     const label = [workflow, jobName, ...Object.values(combo)].join('-');
-    const out = join(tmpdir(), 'ngx-yeti-run-job', label);
+    const out = join(tmpdir(), 'ngx-yeti-run-job', checkout, label);
     const name =
       `ngx-yeti-run-job-${checkout}-${label}-${String(process.pid)}`.replace(
         /[^\w.-]/g,

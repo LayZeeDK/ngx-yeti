@@ -18,7 +18,8 @@ The script reads the job's `container` image, `env`, matrix and `run` steps from
 - sets `CI=true` and `HOME=/github/home` as GitHub does, before the job's own `env`;
 - fails if the image's Node major differs from `actions/setup-node`'s `node-version`;
 - runs each step as `bash -e -c '<run>'`, as GitHub's default shell does, or the one command after `--` instead of the steps after setup;
-- copies `dist/.playwright` (reports and traces) to the folder it prints, under the system temp folder, and writes the leg's output to `run-job.log` there.
+- copies `dist/.playwright` (reports and traces) to the folder it prints, `ngx-yeti-run-job/<checkout>/<leg label>` under the system temp folder, and writes the leg's output to `run-job.log` there. `<checkout>` is the hash the volume names carry, so two checkouts running the same leg keep separate folders; the next run of that leg in the same checkout empties its folder first;
+- ends a leg as failed, naming tar's exit status, when the host `tar` that streams the tree fails.
 
 ### How a local run differs from CI
 

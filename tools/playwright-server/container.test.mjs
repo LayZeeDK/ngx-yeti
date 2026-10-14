@@ -294,7 +294,10 @@ test('stops once no admitted connection has been open for the idle time', async 
     port: outer,
     token: idleToken,
     listenHost: '127.0.0.1',
-    idleMs: 500,
+    // The idle timer runs while run-server starts, and only the readiness
+    // polls reset it; a stall of this process longer than idleMs between two
+    // polls would stop the server before it ever answers.
+    idleMs: 5000,
   });
   // A tokenless peer every 300 ms must not keep the server up.
   const peer = setInterval(() => {
