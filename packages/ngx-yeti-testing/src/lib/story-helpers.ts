@@ -22,7 +22,6 @@ export async function itemStyled(
   options: { readonly timeout?: number } = {},
 ): Promise<void> {
   const timeout = options.timeout ?? 5000;
-  const deadline = performance.now() + timeout;
   const matches =
     typeof expected === 'string'
       ? (value: string): boolean => value === expected
@@ -31,6 +30,8 @@ export async function itemStyled(
     getComputedStyle(element).getPropertyValue(property);
 
   await itemStylesLoaded(item);
+
+  const deadline = performance.now() + timeout;
 
   for (let value = read(); !matches(value); value = read()) {
     if (performance.now() >= deadline) {

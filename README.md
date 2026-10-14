@@ -50,18 +50,18 @@ Nx builds Yeti before any task that needs it, e2e runs included, so you never ru
 
 Every script runs an Nx target. Run them with `npm run <script>`.
 
-| Script           | What it does                                                                                             |
-| ---------------- | -------------------------------------------------------------------------------------------------------- |
-| `check`          | Lint, type-check, unit tests, and story tests for every project                                          |
-| `affected`       | The same plus builds and the packed consuming build (`pack-check`), for the projects your changes affect |
-| `test`           | Unit and server-render tests                                                                             |
-| `test-storybook` | Every story's play function and its accessibility check                                                  |
-| `e2e`            | All Playwright projects                                                                                  |
-| `typecheck`      | The full Angular compiler without emitting, and `tsc` over the committed `.mjs` and `.cjs` scripts       |
-| `storybook`      | Storybook for `ngx-yeti` on port 4400                                                                    |
-| `start`          | The Fixture app's dev server                                                                             |
-| `build`          | Every build                                                                                              |
-| `format:check`   | Prettier over the workspace                                                                              |
+| Script           | What it does                                                                                               |
+| ---------------- | ---------------------------------------------------------------------------------------------------------- |
+| `check`          | Lint, type-check, unit tests, and story tests for every project                                            |
+| `affected`       | The same plus builds and the packed consuming build (`pack-check`), for the projects your changes affect   |
+| `test`           | Unit and server-render tests                                                                               |
+| `test-storybook` | Every story's play function and its accessibility check                                                    |
+| `e2e`            | All Playwright projects                                                                                    |
+| `typecheck`      | The full Angular compiler without emitting, and `tsc` over the committed `.mjs`, `.cjs`, and `.js` scripts |
+| `storybook`      | Storybook for `ngx-yeti` on port 4400                                                                      |
+| `start`          | The Fixture app's dev server                                                                               |
+| `build`          | Every build                                                                                                |
+| `format:check`   | Prettier over the workspace                                                                                |
 
 Most compiles use Analog `fastCompile`, which never type-checks; Storybook uses it only in the `-fast` scripts, such as `npm run storybook-fast`, and compiles stories in JIT mode otherwise. A green `test`, `test-storybook`, or `build-fast` says nothing about types, so run `typecheck` beside them. [`references/fast-compile.md`](references/fast-compile.md) says which target compiles how.
 

@@ -26,8 +26,11 @@ export function describeStandardRouteCases(cases: {
   };
   /** The URL `leaveLink` leaves for, the replay page by default. */
   readonly leaveUrl?: RegExp;
-  /** More to expect of the page left for, once the item's link is gone. */
-  readonly afterLeave?: (page: Page) => Promise<void>;
+  /**
+   * The item links the route holds, in document order; `[item]` by default.
+   * All of them leave with the route and return with it.
+   */
+  readonly links?: readonly string[];
   /**
    * More to expect of the page after going back to the route, once the
    * item's sheet has applied.
@@ -50,7 +53,7 @@ export function describeStandardRouteCases(cases: {
     leaveLink,
     styled,
     leaveUrl = /\/replay$/,
-    afterLeave,
+    links = [item],
     afterReturn,
     arrivals,
   } = cases;
@@ -78,17 +81,19 @@ export function describeStandardRouteCases(cases: {
     await page.goto(`${prefix}${route}`);
     await waitForHydration(page);
 
-    expect(await itemLinks(page, item)).toEqual([item]);
+    const routeLinks = async (): Promise<readonly string[]> =>
+      (await itemLinks(page)).filter((name) => links.includes(name));
+
+    expect(await routeLinks()).toEqual(links);
 
     await page.getByRole('link', { name: leaveLink }).click();
     await expect(page).toHaveURL(leaveUrl);
     await expect(page.locator(`[${presence}]`)).toHaveCount(0);
-    await expect.poll(() => itemLinks(page, item)).toEqual([]);
-    await afterLeave?.(page);
+    await expect.poll(routeLinks).toEqual([]);
 
     await page.goBack();
     await expect(page.locator(liveHost)).toBeVisible();
-    await expect.poll(() => itemLinks(page, item)).toEqual([item]);
+    await expect.poll(routeLinks).toEqual(links);
     await expectItemSheetsApplied(page, [item]);
     await expect(page.locator(liveHost)).toHaveCSS(
       styled.property,

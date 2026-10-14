@@ -256,7 +256,7 @@ Read `references/ci-local.md` before you run a CI or floor job locally. After `n
 
 Write every script in this repository as a typed `.mjs` module: `// @ts-check` with JSDoc types, checked by a `tsconfig` that includes it or by an Nx `typecheck` target. This covers committed scripts and temporary ones under `tmp/` or a scratchpad that run more than once. A `.py` or `.sh` script needs a human's approval of a compelling reason first; record that approval beside the script. GSD Path's Python helpers in `.gsd-path/` and its runtime belong to GSD Path: they stay, agents use them, and their code is left to GSD Path. `vendor/` and `docs/specs/` hold verbatim copies and keep their scripts as they are.
 
-`tsconfig.scripts.json` includes every committed `.mjs` and `.cjs` script outside `vendor/` and `docs/specs/`. `npm exec nx -- typecheck @ngx-yeti/source` checks them, and the `static` job of `ci.yml` runs it with every other `typecheck` target.
+`tsconfig.scripts.json` includes every committed `.mjs`, `.cjs`, and `.js` script outside `vendor/` and `docs/specs/`. `npm exec nx -- typecheck @ngx-yeti/source` checks them, and the `static` job of `ci.yml` runs it with every other `typecheck` target.
 
 A script gets a code review before it runs a second time, committed or not. Add a security review when it handles credentials, network access, CI permissions, Git history, or deletes files.
 

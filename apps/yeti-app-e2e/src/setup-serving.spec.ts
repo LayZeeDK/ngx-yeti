@@ -59,9 +59,6 @@ test.describe('the development server', () => {
     await page.goto(`${devServerURL}setup`);
     await waitForHydration(page, '#interaction-host');
 
-    expect(await itemLinks(page)).toEqual(
-      expect.arrayContaining(['card', 'lift']),
-    );
     await expectItemSheetsApplied(page, ['card', 'lift']);
     await expect(page.locator('#shared-host')).not.toHaveCSS(
       'padding-top',

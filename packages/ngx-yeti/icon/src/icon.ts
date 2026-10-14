@@ -81,7 +81,9 @@ export class YetiIcon {
    * How the icon lines up with the text: `center` on the line, or on the
    * `baseline` with Yeti's one-eighth-em nudge. `start`, `end`, and `stretch`
    * set the row's cross-axis alignment like any flex row. Unset, Yeti's
-   * `center` applies. The static form (`align="baseline"`) never aligns the text.
+   * `center` applies. A static `align="baseline"` leaves no HTML `align`
+   * attribute on the host, so the browser's presentational hint cannot align
+   * the text.
    */
   readonly align = input<YetiAlign>();
 

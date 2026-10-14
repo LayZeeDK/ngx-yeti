@@ -92,13 +92,8 @@ for (const { kind, prefix } of routeKinds) {
       liveHost: '#live-center',
       leaveLink: 'Leave for a page without centers',
       styled: { property: 'box-sizing', value: 'content-box' },
-      afterLeave: async (page) => {
-        await expect.poll(() => stackAndCenterLinks(page)).toEqual([]);
-      },
+      links: ['stack', 'center'],
       afterReturn: async (page) => {
-        await expect
-          .poll(() => stackAndCenterLinks(page))
-          .toEqual(['stack', 'center']);
         await expectCentred(page, page.locator('#live-center'));
       },
     });
