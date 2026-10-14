@@ -206,8 +206,8 @@ function forcedColourRules(
 }
 
 /**
- * Each declaration inside an `@media (forced-colors: active)` block whose
- * value is not one system colour keyword, as `property: value`.
+ * Each declaration inside a forced-colours block whose value is not one
+ * system colour keyword, as `property: value`.
  */
 function nonSystemColours(css: string): string[] {
   const findings: string[] = [];
@@ -227,7 +227,7 @@ function nonSystemColours(css: string): string[] {
 
 describe('ngx-yeti/ngx-yeti-globals.css', () => {
   // The Firefox scale workaround writes --_yeti-t and nothing else of Yeti's
-  // (the departures table of the ngx-yeti-specs skill, user ruling 2026-10-04).
+  // (ngx-yeti-specs, Departures).
   it('keeps every rule inside @layer ngx-yeti, reads no --_yeti-* token, writes only --_yeti-t, and names no package class', () => {
     expect(inspect(readPackageFile('ngx-yeti-globals.css'))).toStrictEqual({
       outsideLayer: [],

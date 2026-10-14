@@ -143,7 +143,7 @@ const summits = `
     <tr><td>Scafell Pike</td><td yetiNumeric>978</td></tr>
   </tbody>`;
 
-/** Rows of a long or a narrow table. */
+/** `count` rows, each a row header and a numeric cell. */
 function stageRows(count: number): string {
   return Array.from(
     { length: count },
@@ -439,7 +439,11 @@ export const Align: Story = {
     const align = (id: string): string =>
       getComputedStyle(byTestId(canvasElement, id)).textAlign;
 
-    for (const host of all(table, '[yetitablecell]')) {
+    const hosts = all(table, '[yetitablecell]');
+
+    await expect(hosts).toHaveLength(4);
+
+    for (const host of hosts) {
       await expect(host).toHaveAttribute('data-align');
       await expect(host).not.toHaveAttribute('align');
     }

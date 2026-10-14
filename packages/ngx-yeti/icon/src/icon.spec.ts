@@ -176,15 +176,14 @@ describe(YetiIcon, () => {
       expect(component.icon()).toBeInstanceOf(YetiIcon);
     });
 
-    it('renders a static align on data-align only, and leaves the text start-aligned', async () => {
-      expect.assertions(3);
+    it('renders a static align on data-align only', async () => {
+      expect.assertions(2);
 
       const { hostOf } = await setupHost();
       const { host } = hostOf('meaningful');
 
       expect(host.getAttribute('data-align')).toBe('baseline');
       expect(host.hasAttribute('align')).toBe(false);
-      expect(getComputedStyle(host).textAlign).toBe('start');
     });
 
     it("keeps the consumer's own class and href", async () => {

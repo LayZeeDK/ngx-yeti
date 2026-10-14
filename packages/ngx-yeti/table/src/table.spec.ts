@@ -412,20 +412,22 @@ describe(YetiTable, () => {
     it("keeps the hovered row's text at 4.5:1 or more against its tint in both schemes", async () => {
       expect.assertions(4);
 
-      const { frame, hovered } = await setupHover();
+      const { away, frame, hovered } = await setupHover();
       const cell = hovered.querySelector('td');
       assert.instanceOf(cell, HTMLElement);
-
-      await page.elementLocator(hovered).hover();
 
       try {
         for (const scheme of ['light', 'dark']) {
           frame.style.colorScheme = scheme;
+          await page.elementLocator(away).hover();
+          const resting = getComputedStyle(hovered).backgroundColor;
           const surface = getComputedStyle(frame).backgroundColor;
+
+          await page.elementLocator(hovered).hover();
 
           await expect
             .poll(() => getComputedStyle(hovered).backgroundColor)
-            .not.toBe(surface);
+            .not.toBe(resting);
 
           const tint = composite(
             getComputedStyle(hovered).backgroundColor,

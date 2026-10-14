@@ -59,7 +59,6 @@ const huedSwatches: readonly Swatch[] = huedVariants.flatMap((variant) =>
   emphases.map((emphasis) => ({ variant, emphasis })),
 );
 
-/** `black` sits on Yeti's white paint and `white` on its black paint. */
 const constantSwatches = (variant: 'black' | 'white'): readonly Swatch[] =>
   emphases.map((emphasis) => ({ variant, emphasis }));
 

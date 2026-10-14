@@ -17,8 +17,8 @@ import { YetiCardLink } from './card-link';
 
 /**
  * Section 8's markup with a bound `ratio` and a static `raised` (card.md,
- * Testing Decisions, layer 3). Until `badge` lands, a plain `span` stands in
- * for `yetiBadge`, so the place of its head link is asserted with it.
+ * Testing Decisions, layer 3). A plain `span` stands in for the badge, so the
+ * test asserts the card link after the button link only.
  */
 @Component({
   selector: 'yeti-card-fixture',

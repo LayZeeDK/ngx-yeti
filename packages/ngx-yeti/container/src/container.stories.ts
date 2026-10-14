@@ -424,10 +424,10 @@ export const Bound: StoryObj<YetiShow> = {
 };
 
 /**
- * The `nav` spec's case with a plain `nav` in the nav item's place, which a
- * later milestone lands: `yetiShow` renders on links inside it with no
- * `yetiContainer`. A plain `nav` is not a size container, so whether the
- * marker follows the nav's width is not asserted here.
+ * The `nav` spec's case, where a plain `nav` stands in for `yetiNav`:
+ * `yetiShow` renders on links inside it with no `yetiContainer`. A plain
+ * `nav` is not a size container, so whether the marker follows the nav's
+ * width is not asserted here.
  */
 export const InNav: Story = {
   render: () => ({

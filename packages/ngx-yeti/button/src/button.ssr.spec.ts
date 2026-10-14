@@ -94,11 +94,20 @@ function tagById(html: string, id: string): string {
 
 describe(YetiButton, () => {
   it('renders every host with its class and presence attribute, and no data-* for an unset input', async () => {
-    expect.assertions(16);
+    expect.assertions(24);
 
     const html = await render();
 
-    for (const id of ['save', 'bold', 'saving', 'offline']) {
+    for (const id of [
+      'save',
+      'bold',
+      'saving',
+      'offline',
+      'docs',
+      'next',
+      'previous',
+      'close',
+    ]) {
       const tag = tagById(html, id);
 
       expect(attributeValue(tag, 'class')).toBe('button');

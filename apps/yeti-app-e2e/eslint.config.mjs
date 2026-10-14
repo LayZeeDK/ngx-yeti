@@ -10,7 +10,7 @@ export default [
       'playwright/no-skipped-test': ['warn', { allowConditional: true }],
       'playwright/expect-expect': [
         'warn',
-        { assertFunctionNames: ['expectHoverLifts', 'expectHydrationFrames'] },
+        { assertFunctionNames: ['expectHoverLifts', 'expectStyledFrames'] },
       ],
       // A test narrows a nullable box or attribute before it uses it, and
       // asserts a production-only claim (inlined critical CSS) or records it

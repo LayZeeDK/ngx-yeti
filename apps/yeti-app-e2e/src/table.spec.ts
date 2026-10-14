@@ -590,7 +590,7 @@ for (const { kind, prefix } of routeKinds) {
       const hydrationErrors = (): string[] =>
         messages.filter((text) => /NG05\d\d/.test(text));
 
-      // ponytail: a bounded wait of up to 60 frame pairs, not an assertion;
+      // A bounded wait of up to 60 frame pairs, not an assertion;
       // the count is recorded whatever it is.
       for (let pair = 0; pair < 60 && hydrationErrors().length === 0; pair++) {
         await nextFrames(page);

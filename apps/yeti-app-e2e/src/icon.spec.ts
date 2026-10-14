@@ -97,7 +97,6 @@ for (const { kind, prefix } of routeKinds) {
       expect(entries, 'no painted frame shows align on the icon').toEqual([]);
       await expect(aligned).toHaveAttribute('data-align', 'baseline');
       await expect(aligned).not.toHaveAttribute('align');
-      await expect(aligned).toHaveCSS('text-align', 'start');
     });
 
     test('keeps the hydrate-never icon sized, and the icon link, after every live icon leaves', async ({

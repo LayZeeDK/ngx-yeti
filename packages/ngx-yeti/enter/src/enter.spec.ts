@@ -69,8 +69,9 @@ const yetiCss: `${string}/` = `/@fs/${server.config.root.replaceAll('\\', '/')}/
 const globalHref = `/@fs/${server.config.root.replaceAll('\\', '/')}/.storybook/styles.css`;
 
 /**
- * Adds the global stylesheet, which ends with the package's accessibility
- * stylesheet, once per test file, as an application does.
+ * Adds the global stylesheet, which ends with the package's global stylesheet
+ * ("ngx-yeti/ngx-yeti-globals.css"), once per test file, as an application
+ * does.
  */
 async function globalStylesheet(): Promise<void> {
   let link = document.head.querySelector<HTMLLinkElement>(
@@ -579,8 +580,9 @@ describe(NgxYetiEnter, () => {
     expect(paragraph.getAttribute('data-once')).toBe('');
   });
 
-  // Real Safari reports reduced motion, where the arrival lasts 0.01 ms, so
-  // no duration or play state is asserted.
+  // A browser may report reduced motion, as the Safari of the CI runner does;
+  // Yeti then collapses the arrival's duration, so no duration or play state
+  // is asserted.
   describe('with the global stylesheet (ledger row A11Y-33)', () => {
     it.for(arrivals)(
       'withholds $form below the viewport, then arrives once when scrolled to',

@@ -5,7 +5,9 @@ import { itemStylesLoaded } from './item-links';
  * Resolves once `item`'s file has loaded with rules and `element`'s computed
  * `property` equals `expected` or satisfies it, checking every animation
  * frame. Rejects after `timeout` ms (5000 unless given) with an Error naming
- * the item, the property, and the last value read.
+ * the item, the property, and the last value read. It rejects at once when
+ * the item has no link or its file fails to load, and `timeout` bounds only
+ * the wait for the computed value.
  *
  * A loaded file is not an applied one: Chromium and WebKit can keep stale
  * computed styles right after a stylesheet is inserted (upstream bug O2). So

@@ -108,8 +108,10 @@ function textRatio(button: HTMLElement): number {
 }
 
 /**
- * Waits until the button's file styles `button`. A flex item's `display`
- * computes to `flex` whatever the file says, so this reads the centring.
+ * Waits until the button's file styles `button`. The computed `display` of
+ * a styled button depends on its parent (`inline-flex` in flow, `flex` as a
+ * flex item), so no one value fits every story; `justify-content: center` is
+ * the same everywhere.
  */
 async function buttonStyled(button: Element): Promise<void> {
   await itemStyled('button', button, 'justify-content', 'center');
@@ -820,7 +822,7 @@ export const Busy: Story = {
     await expect(getComputedStyle(button).opacity).toBe(
       mutedOpacity(canvasElement),
     );
-    // Yeti means `progress` here (button.css:131), but its disabled rule is
+    // Yeti means `progress` here (upstream Y15), but its disabled rule is
     // the more specific one and wins the cursor. This fails when Yeti fixes
     // it; assert `progress` then.
     await expect(getComputedStyle(button).cursor).toBe('not-allowed');

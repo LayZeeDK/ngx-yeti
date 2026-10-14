@@ -3,9 +3,9 @@ id: T057
 title: Make the review round 2 tests able to fail and correct their comments
 wave: 9
 deps: [T053]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T057
+base: ccce8ddd273a6b29f2a709850b0d3ad94f0ffd69
 worktree: null
 task_branch: null
 files:
@@ -105,3 +105,29 @@ Heavy: yes
 ## Log
 
 - 2026-10-13 — created by planner (build repair 5), from review round 2 triage items 10 to 14 and the enter.spec.ts site of item 7 (tmp/afk-m002/lars-review/r2/triage.md).
+- 2026-10-14 — build_T057 implementation: item 10, the table.spec.ts two-scheme hover case now, per scheme, moves the pointer to `away`, reads the row's resting background, hovers the row, and polls `not.toBe(resting)` before the ratio (still 4 assertions). Item 11, story-helpers.browser.spec.ts adds `assertWithin` (inside and at the edge, outside naming both numbers, `NaN` on either side and with an infinite tolerance), `usedLength` (a literal `37px` and a custom-property token `var(--length)` = 1.5rem on the inline and block axes, plus no probe left behind), and `storyStates.get` (tracked value, untracked throw); `createDirectiveHost` stays untested (test-bed.ts is outside files). Item 12: all seven comments rewritten as directed (button.stories.ts centring reason; playwright.ts "loaded with rules" plus the poll the caller owes; story-helpers.ts rejects-at-once sentence; accessibility.node.spec.ts "(ngx-yeti-specs, Departures)"; card.ssr.spec.ts stand-in sentence; container.stories.ts drops "which a later milestone lands"; enter.spec.ts reduced-motion sentence). Item 7: enter.spec.ts says "the package's global stylesheet (\"ngx-yeti/ngx-yeti-globals.css\")". Item 13: yeti-app-e2e card.spec.ts filters `itemLinks` to the five named items, then compares order exactly. Item 14: both `text-align: start` lines deleted (icon.spec.ts test retitled "renders a static align on data-align only", assertions 3 -> 2); `table--align` asserts `toHaveLength(4)` on its hosts before the loop; button.ssr.spec.ts loops all eight ids (assertions 16 -> 24); eslint.config.mjs names `expectStyledFrames` (`// @ts-check` kept); table.spec.ts e2e drops the `ponytail:` prefix; button.stories.ts cites "upstream Y15"; `stageRows` reads "`count` rows, each a row header and a numeric cell."; accessibility.node.spec.ts reads "inside a forced-colours block"; button.spec.ts `constantSwatches` comment deleted.
+- 2026-10-14 — build_T057 can-fail pairs (Chromium, layer 2): (a) table hover, with a temporary `<style>` in `setupHover` setting `tbody > tr:hover { background-color: light-dark(var(--yeti-color-surface-sunken), transparent) !important }` (no tint in the dark scheme): FAILED, "expected 'rgba(0, 0, 0, 0)' not to be 'rgba(0, 0, 0, 0)' ... Matcher did not succeed in time" (1 failed | 38 skipped); restored, `nx test ngx-yeti -- table/src ...` passed. (b) `assertWithin` broken to `if (Math.abs(actual - expected) > tolerance)`: FAILED, "throws when either number is NaN, whatever the tolerance" (1 failed | 11 passed of story-helpers.browser.spec.ts); restored, `nx test ngx-yeti-testing` 7 files / 94 tests passed. Both temporary breaks removed (checked by rg and git diff).
+- 2026-10-14 — build_T057 Verify (as written, through the heavy lock): exit 0. Counts: lint+typecheck ngx-yeti, ngx-yeti-testing, yeti-app-e2e (+ @ngx-yeti/source:typecheck dependency) succeeded; ngx-yeti-testing 7 files / 94 tests; ngx-yeti named layer-2/node 23 files / 188 tests; test-storybook button/table/container 3 files / 33 tests; ci unit container layer 2 table/src in chromium, firefox, webkit 3 files / 87 tests (29 each); ci unit container test-storybook table/src 3 engines 3 files / 33 tests (11 each); yeti-app-e2e card, icon, table 84 passed; prettier check passed. Rule-13 check: `npx prettier --check .` all files pass; `nx affected -t lint typecheck test test-storybook --base=HEAD` (through the lock) succeeded for 7 projects and 2 dependency tasks (ngx-yeti, ngx-yeti-testing, yeti-app, yeti-app-e2e, ngx-yeti-e2e, screen-reader-e2e, @ngx-yeti/source), 0 failures. `npm exec nx -- run @ngx-yeti/source:typecheck` 0 errors. No ledger row needed.
+- 2026-10-14 — orchestrator Verify (isolate gsd-path-task/T057): pass, exit 0; output tail:
+  ```
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/sidebar
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/stack
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/timeline
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/visually-hidden
+  [ci-unit] - Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [ci-unit] [32m✔[39m Generating FESM and DTS bundles
+  [ci-unit] [32m✔[39m Built ngx-yeti/table
+  ```

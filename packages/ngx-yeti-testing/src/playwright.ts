@@ -88,11 +88,13 @@ export async function resize(element: Locator, width: number): Promise<void> {
 }
 
 /**
- * Upstream bug O2 leaves computed styles stale after a stylesheet insertion,
- * so read geometry only once the item files of `items` have loaded and
- * applied. Expects one item link per item in `<head>`, then waits until each
- * has a stylesheet with at least one rule: a failed load leaves an empty sheet
- * in `document.styleSheets`, and an aborted one a sheet whose rules throw.
+ * Read geometry only once the item files of `items` have loaded with rules.
+ * Expects one item link per item in `<head>`, then waits until each has a
+ * stylesheet with at least one rule: a failed load leaves an empty sheet in
+ * `document.styleSheets`, and an aborted one a sheet whose rules throw.
+ * Upstream bug O2 can leave computed styles stale after a stylesheet
+ * insertion, so a read that depends on a computed value still owes a poll on
+ * a property the item file sets.
  */
 export async function expectItemSheetsApplied(
   page: Page,
