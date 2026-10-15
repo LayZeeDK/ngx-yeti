@@ -5,7 +5,7 @@ milestone: layouts-and-button
 phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: active
+status: blocked
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -156,3 +156,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-15 — plan — plan approved
 - 2026-10-15 — build — build started
 - 2026-10-15 — build — T066 attempt 1 rejected at finish (Verify's fixed-content .d.ts cache probe replays in a tree that already ran it); patch saved tmp/afk-m002/tools/T066-attempt1.patch; Verify repaired as a plan defect (probe appends unique content); retry reapplies the patch
+- 2026-10-15 — build — review round 5 (tmp/afk-m002/lars-review/r5/triage.md): alert rings in painted bands depend on variant and emphasis (regression from T060) need one exhaustive fix task; control-script minors deferred to M003; plan repair 8 appends wave 13
