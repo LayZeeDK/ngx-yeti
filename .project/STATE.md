@@ -149,3 +149,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-14 — plan — build recovery: {"base": "58ee2599d033875745fa6a8110171cbd8739bfb4", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-15 — plan — plan approved
 - 2026-10-15 — build — build started
+- 2026-10-15 — build — waves 1, 2, 3, 5, 6, 7 and 11 cycle 1 reviews pass at b1a3897; every wave 1-11 now has a passing latest review; gate wave11-c1 left floor-webkit and floor-chromium-141 flaky (rerun under way)
