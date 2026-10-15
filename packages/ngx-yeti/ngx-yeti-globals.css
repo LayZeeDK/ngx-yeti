@@ -43,7 +43,31 @@
      takes the band's text colour, copied from Yeti's own data-paint rules,
      because currentColor on the focused control is the control's colour, not
      the band's. Only the colour changes; forced colours keep the user
-     agent's. */
+     agent's. A toggle label draws the ring of its hidden input, so it takes
+     the band's text colour too.
+
+     A Yeti surface or a top-layer box inside a band paints its own fill, so
+     a ring inside it sits on that fill and not on the band: the surface
+     gives its contents Yeti's ring colour back. The reset has no specificity
+     and comes first, so a surface that is itself a band keeps its band's
+     colour, and a band inside a surface sets its own again. */
+  :where(
+    .card,
+    .dialog,
+    .dropdown > [popover],
+    .nav,
+    .nav > ul[popover],
+    .alert,
+    .accordion,
+    .accordion > details > summary,
+    .box[data-surface],
+    .table > thead[data-sticky] th,
+    dialog,
+    [popover]
+  ) {
+    --_ngx-yeti-band-ink: var(--yeti-color-focus);
+  }
+
   [data-paint='primary'] {
     --_ngx-yeti-band-ink: var(--yeti-on-primary);
   }
@@ -124,7 +148,8 @@
     --_ngx-yeti-band-ink: var(--yeti-color-surface);
   }
 
-  [data-paint] :focus-visible {
+  [data-paint] :focus-visible,
+  [data-paint] .button:has(> input:focus-visible) {
     outline-color: var(--_ngx-yeti-band-ink);
   }
 

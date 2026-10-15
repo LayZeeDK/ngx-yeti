@@ -3,9 +3,9 @@ id: T060
 title: Keep the painted-band focus ring readable on Yeti surfaces and toggle labels inside a band, and make box--paint able to catch both
 wave: 11
 deps: [T027, T058]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T060
+base: 3ec57a6562acaf2dc706b32351aa126287336fb4
 worktree: null
 task_branch: null
 files:
@@ -82,3 +82,30 @@ Heavy: yes
 ## Log
 
 - 2026-10-15 — created by planner (build repair 6), from tmp/afk-m002/lars-review/r3/triage.md group A items 1 to 4, with items 18 and 19 moved here from group E so that the accessibility skill and the yeti-pin skill each have one owner in wave 11.
+- 2026-10-15 — build_T060 implementation: `ngx-yeti-globals.css` (A11Y-35 block) gains one reset rule before the 20 paint lines, `:where(.card, .dialog, .dropdown > [popover], .nav, .nav > ul[popover], .alert, .accordion, .accordion > details > summary, .box[data-surface], .table > thead[data-sticky] th, dialog, [popover]) { --_ngx-yeti-band-ink: var(--yeti-color-focus); }`. `:where()` gives it no specificity, so a painted surface keeps its paint's ink, and `.box[data-surface]` and the compound selectors do not outrank the paint lines. The ring rule is now `[data-paint] :focus-visible, [data-paint] .button:has(> input:focus-visible) { outline-color: var(--_ngx-yeti-band-ink); }`. No forced-colours block, no `--_yeti-*` token, no `@scope`. The comment says why the surfaces reset and why the toggle label is selected. `published-output.node.spec.ts`: the `A11Y-35` entry lists the `:where(...)` reset selector (one parsed selector that names each surface), `[data-paint] :focus-visible`, and the toggle-label selector. `accessibility.node.spec.ts`: the ring-rule regex covers both selectors. A new test pins the reset's list to `yetiSurfaces` (10 Yeti selectors) plus `browserSurfaces` (`dialog`, `[popover]`), in order, and checks each Yeti selector still matches Yeti's source CSS (`vendor/yeti/src/**/*.css`, attribute values dropped), so a pin move that renames one fails. A unit test covers the reset parser. `box--paint`: every ring band, the `button-band`, and the new card and toggle bands carry `padding: 4px`. The `button-band` button's ring is asserted at least 3:1 against its band. A `yetiCard` holding a link sits in a `primary` band, and the link's ring is asserted at least 3:1 against the card's computed fill after `itemStyled('card', …)`. A `label[yetiButton]` checkbox toggle sits in a `primary` band; the play tabs to its input and asserts the label's ring at least 3:1 against the band after `itemStyled('button', …)`. Both schemes. Every existing assertion is kept. The new bands use `data-testid`, not `data-ring`, so the existing band order checks keep their exact lists. Records: ledger A11Y-35 (package column: both selectors, the reset, the 4px padding rule; Verified: the measurements below; Tested-by: the new cases and node checks), the specs skill (`box.md:207` Departures row, globals paragraph), the accessibility skill (line 48 surface reset; spinner row names the `nvda` job's Playwright Chromium and Firefox lanes, with Edge as the extra lane), yeti-pin step 5 (now four specs, with `accessibility.node.spec.ts`: its 20 `[data-paint]` rules and its list of 10 Yeti surface selectors), and one CHANGELOG addition to the globals bullet.
+- 2026-10-15 — build_T060 measurements, Chromium natively, `box--paint` (from a temporary instrumented run, since reverted): `button-band` 5.35:1 light (`oklch(0.99 0 0)` on `oklch(0.52 0.15 250)`) and 7.39:1 dark. Card link 5.04:1 light (`oklch(0.52 0.15 250)` on `oklch(0.97 0.02 250)`) and 7.18:1 dark (`oklch(0.7 0.15 250)` on `oklch(0.17 0.02 250)`), equal to thermos H2's pre-T058 values. Toggle label 5.35:1 light and 7.39:1 dark. The 20 ring bands are unchanged from T058; the lowest is `grey-50` dark at 3.82:1. The toggle's 1.00:1 before the fix is thermos M1's measurement, cited and not re-run here.
+- 2026-10-15 — build_T060 failure demonstrations (criterion 4), each run once with `npm exec nx -- test-storybook ngx-yeti --skip-nx-cache -- box/src` and the stylesheet restored from a backup afterwards (no `currentColor;` and no `--_ngx-yeti-removed` left; checked with rg). (a) With the ring rule set to `outline-color: currentColor`, `box--paint` failed with "expected 1 to be greater than or equal to 3" at `box.stories.ts:477`, `expectRingOn(button, buttonBand)`, the `button-band` button. 1 failed, 7 passed. (b) With the surface reset removed (renamed to an unused property), it failed with "expected 1.0605820832251678 to be greater than or equal to 3" at `box.stories.ts:518`, `expectRingOn(cardLink, card)`, the card link. 1 failed, 7 passed.
+- 2026-10-15 — build_T060 Verify, run exactly as written through the heavy lock: exit 0. The rg checks passed. lint and typecheck for ngx-yeti passed. `nx test ngx-yeti -- src/published-output src/accessibility box/src`: 6 files, 57 tests passed. Native `test-storybook -- box/src` (Chromium): 1 file, 8 tests passed. `run-job.mjs ci unit` `test-storybook -- box/src`: 3 files passed, with `box.stories.ts` 8 of 8 in each of Chromium, Firefox, and WebKit. Prettier check on the listed paths passed. The Nx daemon was stopped. Rule 13: `npx prettier --check .` passed. `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (through the lock) exit 0: lint, typecheck, test, and test-storybook succeeded for 6 projects (ngx-yeti, yeti-app, @ngx-yeti/source, ngx-yeti-e2e, yeti-app-e2e, screen-reader-e2e) and 2 dependency tasks. No upstream defect found.
+- 2026-10-15 — orchestrator Verify (isolate gsd-path-task/T060): pass, exit 0; output tail:
+  ```
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/spinner
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/stack
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/table
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/timeline
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/visually-hidden
+  ```

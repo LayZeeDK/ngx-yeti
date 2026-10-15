@@ -21,7 +21,11 @@ const sanctionedSelectors: Readonly<Record<string, readonly string[]>> = {
     '.enter[data-once]:not([data-stagger])',
     '.enter[data-once][data-stagger] > *',
   ],
-  'A11Y-35': ['[data-paint] :focus-visible'],
+  'A11Y-35': [
+    ':where(.card, .dialog, .dropdown > [popover], .nav, .nav > ul[popover], .alert, .accordion, .accordion > details > summary, .box[data-surface], .table > thead[data-sticky] th, dialog, [popover])',
+    '[data-paint] :focus-visible',
+    '[data-paint] .button:has(> input:focus-visible)',
+  ],
 };
 
 function ledgerRowIds(): ReadonlySet<string> {

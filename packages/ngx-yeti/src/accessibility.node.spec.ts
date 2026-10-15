@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { transform } from 'lightningcss';
 import type { MediaCondition, MediaQuery } from 'lightningcss';
@@ -246,6 +246,47 @@ function paintValues(
   ]);
 }
 
+/**
+ * Yeti's rules that paint a fill of their own behind focusable contents, so
+ * a ring inside them sits on that fill and not on a band around them.
+ */
+const yetiSurfaces = [
+  '.card',
+  '.dialog',
+  '.dropdown > [popover]',
+  '.nav',
+  '.nav > ul[popover]',
+  '.alert',
+  '.accordion',
+  '.accordion > details > summary',
+  '.box[data-surface]',
+  '.table > thead[data-sticky] th',
+];
+
+/** The browser's top-layer boxes, which paint the canvas colour. */
+const browserSurfaces = ['dialog', '[popover]'];
+
+/** The selectors of the rule that gives a surface Yeti's ring colour back. */
+function inkResets(css: string): string[] {
+  const reset =
+    /:where\(([^{]*)\)\s*\{\s*--_ngx-yeti-band-ink: var\(--yeti-color-focus\);\s*\}/.exec(
+      css,
+    );
+
+  return (reset?.[1] ?? '').split(',').map((selector) => selector.trim());
+}
+
+/** Every stylesheet of Yeti's source, with attribute values dropped. */
+function yetiSourceSelectors(): string {
+  const source = path.join(packageRoot, '../../vendor/yeti/src');
+
+  return readdirSync(source, { recursive: true, encoding: 'utf8' })
+    .filter((file) => file.endsWith('.css'))
+    .map((file) => readFileSync(path.join(source, file), 'utf8'))
+    .join('\n')
+    .replaceAll(/\[([\w-]+)=[^\]]*\]/g, '[$1]');
+}
+
 describe('ngx-yeti/ngx-yeti-globals.css', () => {
   // The Firefox scale workaround writes --_yeti-t and nothing else of Yeti's
   // (ngx-yeti-specs, Departures).
@@ -273,8 +314,37 @@ describe('ngx-yeti/ngx-yeti-globals.css', () => {
       yetiInks,
     );
     expect(globals).toMatch(
-      /\[data-paint\] :focus-visible\s*\{\s*outline-color: var\(--_ngx-yeti-band-ink\);\s*\}/,
+      /\[data-paint\] :focus-visible,\s*\[data-paint\] \.button:has\(> input:focus-visible\)\s*\{\s*outline-color: var\(--_ngx-yeti-band-ink\);\s*\}/,
     );
+  });
+
+  // A11Y-35: a surface inside a band gives its contents Yeti's ring again, so
+  // the list of surfaces is pinned here and each Yeti one checked against
+  // Yeti's source, so a moved pin that renames one fails.
+  it("gives Yeti's ring colour back on every surface that paints its own fill inside a band", () => {
+    const yeti = yetiSourceSelectors();
+
+    expect(inkResets(readPackageFile('ngx-yeti-globals.css'))).toStrictEqual([
+      ...yetiSurfaces,
+      ...browserSurfaces,
+    ]);
+    expect(
+      yetiSurfaces.filter(
+        (selector) =>
+          !new RegExp(`${RegExp.escape(selector)}(?![\\w-])`).test(yeti),
+      ),
+    ).toStrictEqual([]);
+  });
+
+  it('reads the selectors of the ink reset, and reports one it leaves out', () => {
+    expect(
+      inkResets(
+        '@layer ngx-yeti { :where(.card, dialog) { --_ngx-yeti-band-ink: var(--yeti-color-focus); } }',
+      ),
+    ).toStrictEqual(['.card', 'dialog']);
+    expect(inkResets('@layer ngx-yeti { a { color: red; } }')).toStrictEqual([
+      '',
+    ]);
   });
 
   it('sets only system colour keywords in its forced-colours rules', () => {

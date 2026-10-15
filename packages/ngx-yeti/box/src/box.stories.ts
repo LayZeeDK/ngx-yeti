@@ -11,6 +11,8 @@ import {
   type StoryObj,
 } from '@storybook/angular-vite';
 import type { YetiGap, YetiPaint } from 'ngx-yeti';
+import { YetiButton } from 'ngx-yeti/button';
+import { YetiCard } from 'ngx-yeti/card';
 import { YetiCenter } from 'ngx-yeti/center';
 import { YetiStack } from 'ngx-yeti/stack';
 import { expect, userEvent, waitFor } from 'storybook/test';
@@ -356,11 +358,31 @@ export const BorderAnywhere: Story = {
   },
 };
 
+/** The WCAG ratio of an element's focus ring against a background. */
+async function expectRingOn(
+  ringed: HTMLElement,
+  background: HTMLElement,
+): Promise<void> {
+  await expect(getComputedStyle(ringed).outlineStyle).not.toBe('none');
+  await expect(
+    contrastRatio(
+      getComputedStyle(ringed).outlineColor,
+      getComputedStyle(background).backgroundColor,
+    ),
+  ).toBeGreaterThanOrEqual(3);
+}
+
+/** The ring's reach, 2px wide at a 2px offset, so it lies on the band. */
+const ringRoom = 'padding: 4px';
+
 /**
  * Every text-bearing paint as a band with words, and the middle greys as
  * fills without text (usage rule 4), in both schemes (ledger A11Y-21).
+ * Focus rings in bands, on a card inside a band, and on a toggle label in a
+ * band read at least 3:1 (ledger A11Y-35).
  */
 export const Paint: Story = {
+  decorators: [moduleMetadata({ imports: [YetiButton, YetiCard] })],
   render: () => ({
     template: schemes
       .map((scheme) =>
@@ -374,13 +396,19 @@ export const Paint: Story = {
               )
               .join('')}
             <p data-testid="link-band" yetiPaint="primary">News: dark mode. <a href="#paint">Read the changelog</a>.</p>
-            <div data-testid="button-band" yetiPaint="primary"><button type="button" yetiText="primary">Dismiss the news</button></div>
+            <div data-testid="button-band" yetiPaint="primary" style="${ringRoom}"><button type="button" yetiText="primary">Dismiss the news</button></div>
             ${[...textPaints, ...fillPaints]
               .map(
                 (paint) =>
-                  `<div data-ring="${paint}" yetiPaint="${paint}"><button type="button" aria-label="Focus on ${paint}" style="inline-size: 2rem; block-size: 2rem"></button></div>`,
+                  `<div data-ring="${paint}" yetiPaint="${paint}" style="${ringRoom}"><button type="button" aria-label="Focus on ${paint}" style="inline-size: 2rem; block-size: 2rem"></button></div>`,
               )
               .join('')}
+            <div data-testid="card-band" yetiPaint="primary" style="${ringRoom}">
+              <article data-testid="card" yetiCard><p><a href="#card">Read the card</a></p></article>
+            </div>
+            <div data-testid="toggle-band" yetiPaint="primary" style="${ringRoom}">
+              <label data-testid="toggle" yetiButton><input type="checkbox" name="bold" /> Bold</label>
+            </div>
             ${fillPaints
               .map(
                 (paint) =>
@@ -429,7 +457,8 @@ export const Paint: Story = {
       await expectReadableOn(link, linkBand);
 
       // A button in the band draws a focus ring, and the ring reads against
-      // the band (WCAG 1.4.11, ledger A11Y-35).
+      // the band (WCAG 1.4.11, ledger A11Y-35). Its text is the band's own
+      // colour, so a ring in currentColor would not read here.
       const buttonBand = byTestId(wrapper, 'button-band');
       const button = buttonBand.querySelector('button');
 
@@ -442,11 +471,10 @@ export const Paint: Story = {
 
       await expect(button).toHaveFocus();
       await expect(button.matches(':focus-visible')).toBe(true);
-
-      const { outlineStyle, outlineWidth } = getComputedStyle(button);
-
-      await expect(outlineStyle).not.toBe('none');
-      await expect(parseFloat(outlineWidth)).toBeGreaterThan(0);
+      await expect(
+        parseFloat(getComputedStyle(button).outlineWidth),
+      ).toBeGreaterThan(0);
+      await expectRingOn(button, buttonBand);
 
       const rings = [...wrapper.querySelectorAll<HTMLElement>('[data-ring]')];
 
@@ -466,14 +494,45 @@ export const Paint: Story = {
 
         await expect(control).toHaveFocus();
         await expect(control.matches(':focus-visible')).toBe(true);
-        await expect(getComputedStyle(control).outlineStyle).not.toBe('none');
-        await expect(
-          contrastRatio(
-            getComputedStyle(control).outlineColor,
-            getComputedStyle(ring).backgroundColor,
-          ),
-        ).toBeGreaterThanOrEqual(3);
+        await expectRingOn(control, ring);
       }
+
+      // A card repaints inside the band, so a ring inside it reads against
+      // the card's fill, not the band's.
+      const card = byTestId(wrapper, 'card');
+      const cardLink = card.querySelector('a');
+
+      if (cardLink === null) {
+        throw new Error('No link in the card');
+      }
+
+      await expect(byTestId(wrapper, 'card-band')).toHaveAttribute(
+        'data-paint',
+        'primary',
+      );
+      await itemStyled('card', card, 'display', 'flex');
+      await userEvent.tab();
+
+      await expect(cardLink).toHaveFocus();
+      await expect(cardLink.matches(':focus-visible')).toBe(true);
+      await expectRingOn(cardLink, card);
+
+      // A toggle label draws the ring of its hidden input on itself.
+      const toggleBand = byTestId(wrapper, 'toggle-band');
+      const toggle = byTestId(wrapper, 'toggle');
+      const input = toggle.querySelector('input');
+
+      if (input === null) {
+        throw new Error('No input in the toggle');
+      }
+
+      await expect(toggleBand).toHaveAttribute('data-paint', 'primary');
+      await itemStyled('button', toggle, 'position', 'relative');
+      await userEvent.tab();
+
+      await expect(input).toHaveFocus();
+      await expect(input.matches(':focus-visible')).toBe(true);
+      await expectRingOn(toggle, toggleBand);
     }
   },
 };
