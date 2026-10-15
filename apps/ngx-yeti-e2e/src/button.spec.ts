@@ -241,45 +241,49 @@ test.describe('button--default', () => {
 // not set `:active`, so a real pointer holds each button down here
 // (ngx-yeti-specs, Departures).
 test.describe('button--variants', () => {
-  test('keeps every variant and emphasis at least 4.5:1 while pressed, in both schemes', async ({
-    page,
-  }) => {
-    const root = await openButtonStory(page, 'button--variants');
-    const buttons = await root.locator('[yetibutton]').all();
-    const failures: string[] = [];
+  for (const scheme of ['light', 'dark'] as const) {
+    test(`keeps every variant and emphasis at least 4.5:1 while pressed, in the ${scheme} scheme`, async ({
+      page,
+    }) => {
+      const root = await openButtonStory(page, 'button--variants');
+      const buttons = await root
+        .locator(`[data-scheme="${scheme}"] [yetibutton]`)
+        .all();
+      const failures: string[] = [];
 
-    expect(buttons.length).toBeGreaterThan(0);
+      expect(buttons.length).toBeGreaterThan(0);
 
-    for (const button of buttons) {
-      await button.hover();
-      await page.mouse.down();
+      for (const button of buttons) {
+        await button.hover();
+        await page.mouse.down();
 
-      const pressed = await button.evaluate((element) => {
-        for (const transition of element.getAnimations()) {
-          transition.finish();
-        }
+        const pressed = await button.evaluate((element) => {
+          for (const transition of element.getAnimations()) {
+            transition.finish();
+          }
 
-        return {
-          active: element.matches(':active'),
-          color: getComputedStyle(element).color,
-        };
-      });
-      const ratio = contrastRatio(
-        pressed.color,
-        effectiveBackground(await backgroundsOf(button)),
-      );
-
-      await page.mouse.up();
-
-      if (!pressed.active || ratio < 4.5) {
-        failures.push(
-          `${(await button.textContent()) ?? ''} in ${(await button.evaluate((element) => element.closest('[data-scheme]')?.getAttribute('data-scheme'))) ?? ''}: active ${String(pressed.active)}, ${ratio.toFixed(2)}`,
+          return {
+            active: element.matches(':active'),
+            color: getComputedStyle(element).color,
+          };
+        });
+        const ratio = contrastRatio(
+          pressed.color,
+          effectiveBackground(await backgroundsOf(button)),
         );
-      }
-    }
 
-    expect(failures).toStrictEqual([]);
-  });
+        await page.mouse.up();
+
+        if (!pressed.active || ratio < 4.5) {
+          failures.push(
+            `${(await button.textContent()) ?? ''}: active ${String(pressed.active)}, ${ratio.toFixed(2)}`,
+          );
+        }
+      }
+
+      expect(failures).toStrictEqual([]);
+    });
+  }
 });
 
 test.describe('button--toggle', () => {

@@ -3,9 +3,9 @@ id: T068
 title: Split the pressed-contrast check of button--variants by colour scheme so it holds in the floor WebKit job with every assertion kept
 wave: 12
 deps: [T020]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T068
+base: 131cf8e920681d3fe01528a6f2df874ee3b386e1
 worktree: null
 task_branch: null
 files:
@@ -58,3 +58,30 @@ Heavy: yes
 ## Log
 
 - 2026-10-15 — created by planner (build repair 7), from tmp/afk-m002/lars-review/r4/triage.md group D, item 8, and the wave 11 gate log.
+- 2026-10-15 — build_T068: split the single pressed-contrast test of `button--variants` into one test per scheme (`for (const scheme of ['light','dark'])`), each locating `[data-scheme="<scheme>"] [yetibutton]`, asserting a non-empty set, same hover/press/`:active`/4.5:1 steps and `expect(failures).toStrictEqual([])`. The failure text dropped its now-constant scheme suffix. Only `apps/ngx-yeti-e2e/src/button.spec.ts` changed.
+- Verify (exact, via heavy lock) exit 0: lint+typecheck ngx-yeti-e2e pass; ci e2e button.spec.ts chromium 13 passed, firefox 13 passed, webkit 9 passed / 4 skipped; floor webkit-26-4 pass (8 m 4 s): ngx-yeti-e2e 137 passed / 17 skipped, yeti-app-e2e 608 passed / 12 skipped, no flaky; prettier check clean.
+- Durations in the floor webkit-26-4 job container (a separate run of the job with the spec only, `--reporter=list`; the full-job dot reporter prints none): light 14.7 s, dark 13.4 s, each under half of the 30 s timeout (15 s), but light is close to the line. If it flakes again, split by variant within the scheme.
+- Rule 13 checks: prettier --check . clean; nx affected -t lint typecheck test test-storybook --base=HEAD succeeded (5 tasks, 4 cached; no storybook project affected).
+- 2026-10-15 — orchestrator Verify (isolate gsd-path-task/T068): pass, exit 0; output tail:
+  ```
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/spinner
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/stack
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/table
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/timeline
+  [floor-webkit-26-4] - Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [floor-webkit-26-4] [32m✔[39m Generating FESM and DTS bundles
+  [floor-webkit-26-4] [32m✔[39m Built ngx-yeti/visually-hidden
+  ```
