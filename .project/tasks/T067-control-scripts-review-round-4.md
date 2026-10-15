@@ -3,9 +3,9 @@ id: T067
 title: Make both control scripts refuse a malformed state file and write it atomically, keep only run members on Storybook's dead-PID path, scan Git's sources for Storybook freshness, and bound yeti-app's listener wait
 wave: 12
 deps: [T062]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T067
+base: 131cf8e920681d3fe01528a6f2df874ee3b386e1
 worktree: null
 task_branch: null
 files:
@@ -82,3 +82,28 @@ Heavy: yes
 ## Log
 
 - 2026-10-15 — created by planner (build repair 7), from tmp/afk-m002/lars-review/r4/triage.md group C, items 4 to 7 with their folded cosmetics.
+- 2026-10-15 — coder (build_T067) implementation. Item 4, both scripts: `readState` catches the read/parse and refuses with exit 2 (`refused: <path> could not be read as JSON (<error>); nothing was run`, one JSON object under `--json`); every state write (`up`, and yeti-app's survivor-keeping `down`) goes through `writeState`, which writes `<state>.<pid>.tmp` in the same folder and `renameSync`s it over the state file. Item 5, Storybook: `treeMembers(table, pid, rootStart)` drops processes whose `Date.parse(start)` is earlier than the recorded `startTime`, on both the live and the dead path; a process whose start, or a root whose recorded `startTime`, cannot be parsed stays a member and is listed in a new `uncheckedPids` field of the teardown result. Item 6, Storybook: `newestSource()` reads `git ls-files -co --exclude-standard -z -- packages/ngx-yeti packages/ngx-yeti-testing vendor/yeti` (stat with `throwIfNoEntry: false`, so listed files that are gone are skipped) and returns the newest file. The detail names that file and its time on a pass and on a fail, and a failed git call fails the check with its error. Item 7, yeti-app: the 20-attempt wait in `down` breaks at the first query with `pids === null`, so `listenerError` comes back after one query; a timed-out query reads `listener query on <port> gave no answer in <ms> ms`. Test-only seam `CONTROL_LISTENER_TIMEOUT_MS` (both scripts, named in both SKILL.md). Cosmetics: Storybook doctor takes the launch time from `startedAt`, with its own `the state file records no usable launch time` detail; the yeti-app comment now reads "A spawn that failed has no stderr; a timed-out one may have none, and its status is null."; on the Storybook live-path failure, once the root is no longer among the survivors, the message ends `pid <root> is gone, so another down stops nothing; stop pid <survivors and listeners> yourself` (otherwise `run down again`); Storybook `listeningPids` now returns `{ pids, error }` through the same `-ErrorAction Stop` / ObjectNotFound query as yeti-app (checked by a one-off probe under powershell.exe 5.1: no match exits 0, a misspelled cmdlet exits 1, and a 1 ms timeout gives ETIMEDOUT with stderr ""). `up`, doctor's `port owned by run` and the teardown message show the query error instead of `listeners []`. In both scripts, a parsed `.session` entry with no string `socketPath` gives `left-open` with a reason. New tests. Both suites: every command refuses a non-JSON state file; registry entry `{"version":2}` and `CONTROL_SESSION_REGISTRY` pointing at a file both give `left-open`. yeti-app: a 1 ms listener timeout gives exit 1, `listenerError` and `portFree: false` within 12 s, with the state file kept. Storybook: a dead parent's detached child, with the recorded `startTime` set 1 ms after the child's start, is not named and is left running (exit 0). A live root is killed while the test process holds the port: the message names the test process's PID to stop, then a second `down` with a 1 ms listener timeout shows the query error and removes the state file. Inside the launch: the changed-helper detail names `packages/ngx-yeti-testing/src/index.ts`; a file in the git-ignored `packages/ngx-yeti/.vitest-attachments` written after launch leaves doctor at 0; `startTime: null` still passes the freshness check, and a bad `startedAt` gives the no-usable-launch-time fail. Measured negative check: with the yeti-app break reverted, the timeout test fails (`down took 24978 ms`) against 2.7 to 3.1 s with it. The other new tests fail without their change by construction (inferred, not run reverted). ESLint over the two script folders reports 3 errors in lines this task did not touch (triple-slash reference, the `\x1b` regex, and the `.d.ts` outside the project service); Nx has no lint target for them.
+- 2026-10-15 — coder Verify, run as written through the heavy lock: exit 0. npm ci, playwright install and the three rg checks pass. `@ngx-yeti/source:typecheck --skip-nx-cache` passes. control-yeti-app suite: 15/15 tests pass (8 top-level). control-ngx-yeti-storybook suite: 18/18 pass (10 top-level). prettier: "All matched files use Prettier code style!". Rule 13: `npx prettier --check .` passes; `nx affected -t lint typecheck test test-storybook --base=HEAD` (through the lock) affects only @ngx-yeti/source and passes typecheck and test. Changed paths: the six declared files plus this Log. Git index untouched.
+- 2026-10-15 — orchestrator Verify (isolate gsd-path-task/T067): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

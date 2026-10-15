@@ -134,36 +134,42 @@ them the same way.
 It runs playwright-cli's own script (`<shim dir>/node_modules/@playwright/cli/playwright-cli.js`) under this Node,
 with the session as an argument, so the name never reaches a shell. `sessions` reports each close with one outcome:
 
-| Outcome     | Means                                                                                                                                                    | `down` exit |
-| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
-| `closed`    | playwright-cli closed the session                                                                                                                        | 0           |
-| `not-open`  | playwright-cli answered that the session was not open                                                                                                    | 0           |
-| `absent`    | no playwright-cli on `PATH`, and the session registry lists no open session of that name                                                                 | 0           |
-| `left-open` | no playwright-cli on `PATH`, and the registry lists the session as open, or holds a `<session>.session` entry that could not be read (`detail` names it) | 1           |
-| `timeout`   | playwright-cli gave no answer in 30 s                                                                                                                    | 1           |
-| `failed`    | playwright-cli exited non-zero (`detail` holds its output)                                                                                               | 1           |
+| Outcome     | Means                                                                                                                                                                                                                                       | `down` exit |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| `closed`    | playwright-cli closed the session                                                                                                                                                                                                           | 0           |
+| `not-open`  | playwright-cli answered that the session was not open                                                                                                                                                                                       | 0           |
+| `absent`    | no playwright-cli on `PATH`, and the session registry lists no open session of that name                                                                                                                                                    | 0           |
+| `left-open` | no playwright-cli on `PATH`, and the registry lists the session as open, holds a `<session>.session` entry that could not be read or parsed or that has no string `socketPath`, or its folder could not be listed (`detail` names the path) | 1           |
+| `timeout`   | playwright-cli gave no answer in 30 s                                                                                                                                                                                                       | 1           |
+| `failed`    | playwright-cli exited non-zero (`detail` holds its output)                                                                                                                                                                                  | 1           |
 
 No playwright-cli on `PATH` means the lookup found no `node_modules/@playwright/cli/playwright-cli.js` beside a
 `PATH` directory (npm's Windows global layout; a Volta, pnpm or scoop install, or `npx`, misses it), so `down`
 closed nothing. `down` then reads playwright-cli's session registry
 (`%LOCALAPPDATA%\ms-playwright\daemon\*\<session>.session`, whose socket answers while the session is open). An
-entry that cannot be read or parsed counts as possibly open; `down` still stops the tree and prints its result. The
-tests point `CONTROL_SESSION_REGISTRY` at a registry folder of their own; nothing else sets it. A `left-open`,
+entry that cannot be read or parsed, or that has no string `socketPath` (a format the script does not know), counts
+as possibly open; `down` still stops the tree and prints its result. The tests point `CONTROL_SESSION_REGISTRY` at a
+registry folder of their own, or at a file to make the folder unreadable, and set `CONTROL_LISTENER_TIMEOUT_MS` to
+make the listener query time out; nothing else sets either. A `left-open`,
 `timeout` or `failed` close, or a failed daemon stop (`daemon.stopped: false`), makes `down` exit 1 with
 `teardown incomplete` naming the session and the command that closes it. It never runs `close-all` or `kill-all`:
 those reach every playwright-cli session on the machine, including other agents'.
 
 When the wait ends with a PID of the tree alive or the port still listening, `down` exits 1 with
 `teardown incomplete`, keeps `state.json` with the surviving PIDs recorded in it, and names `survivors`, `portFree`
-and `stateFile`. A failed listener query, a `pwsh` that does not start or one that gives no answer in 30 s included,
-counts as a busy port: `portFree` stays `false` and `listenerError` names
-the query's error. Run `down` again: it stops a recorded survivor only when its start time and command line still
+and `stateFile`. The wait polls up to 20 times, 500 ms apart. A failed listener query, a `pwsh` that does not start
+or one that gives no answer in 30 s included, counts as a busy port and ends the wait at once: `portFree` stays
+`false`, `listenerError` names the query's error (`gave no answer in 30000 ms` for a timeout), and `down` exits 1, so
+a hung `pwsh` holds `down` for one 30 s query, not one per attempt. Run `down` again: it stops a recorded survivor only when its start time and command line still
 match, and it keeps the file and exits 1 until the port is free and no survivor is left. `up` refuses while the file
 exists.
 
-Test: `node --test .claude/skills/control-yeti-app/scripts/control.test.mjs` proves the refused flags, a
-`left-open` close of a session listed as open (exit 1, with playwright-cli taken off `PATH`), and a `down` that
-stops a stand-in server and frees its port while an empty registry entry makes the close `left-open`. It launches
+Test: `node --test .claude/skills/control-yeti-app/scripts/control.test.mjs` proves the refused flags, every
+command's exit-2 refusal of a state file that is not JSON, a `left-open` close for a registry entry with no
+`socketPath` and for a registry folder that cannot be listed, a `down` whose first listener query times out and that
+exits 1 with `listenerError` within 12 s, a `left-open` close of a session listed as open (exit 1, with
+playwright-cli taken off `PATH`), and a `down` that stops a stand-in server and frees its port while an empty
+registry entry makes the close `left-open`. It launches
 `--mode=ssr --configuration=production` on the checkout's port with the Nx daemon on, proves the `build-fresh` scan,
 the refused planted state file, the kept state file and both sessions `closed`, and ends with a complete `down` that
 leaves the port free and no Nx daemon running. A second launch opens both sessions, kills the server's tree outside
@@ -185,10 +191,11 @@ Flags: `--mode=serve|ssr`, `--configuration=development|production`, `--port=<n>
 (doctor), `--timeout=<seconds>` (up), `--json` (one JSON object on stdout; otherwise `[OK]`/`[ERROR]`/`[SKIP]`
 lines). Any other flag, a value written after a space (`--mode ssr`) and a bare value flag exit 2 with
 `unknown argument <arg>` before anything runs. A command other than the four, a name every object has such as
-`toString` included, exits 2 with the usage line. Every command refuses (exit 2, nothing run) a state file that is
-not an object, whose `session` is not `[\w-]` only, whose `pid` or a survivor's is not a positive integer, whose
+`toString` included, exits 2 with the usage line. Every command refuses (exit 2, nothing run) a state file that
+cannot be read or is not JSON (a truncated write, for example: `could not be read as JSON`), that is not an object, whose `session` is not `[\w-]` only, whose `pid` or a survivor's is not a positive integer, whose
 `survivors` is not a list of objects, whose `port` is not 1 to 65535, or whose `url`, `logFile` or `evidenceDir` is
-not a string. Windows only: the process table comes from `pwsh` and `Get-CimInstance Win32_Process`, listeners from
+not a string. `up`, and a `down` that keeps the file, write `state.json` to a temporary file in the same folder and
+rename it over the old one, so a reader sees the old file or the new one. Windows only: the process table comes from `pwsh` and `Get-CimInstance Win32_Process`, listeners from
 `Get-NetTCPConnection -State Listen -ErrorAction Stop` (netstat translates its state column). Only the cmdlet's own
 no-match error (category `ObjectNotFound` from `Get-NetTCPConnection`) means no listener; any other error makes `up`
 and `doctor` exit 2 with the error, and `down` exit 1 as above.

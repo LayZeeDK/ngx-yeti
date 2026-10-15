@@ -43,6 +43,7 @@ const daemonEntry = join(
  * @property {unknown} [build]
  * @property {string[]} [failed]
  * @property {unknown} [portFree]
+ * @property {unknown} [listenerError]
  * @property {unknown} [survivors]
  * @property {unknown} [stateFile]
  * @property {{ session: string, outcome: string, detail: string }[]} [sessions]
@@ -269,6 +270,111 @@ test('refuses unknown flags and values after a space', () => {
   }
 
   assert.equal(existsSync(stateFile), false, 'a refused up wrote state');
+});
+
+test('every command refuses a state file that is not JSON', (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  mkdirSync(dirname(stateFile), { recursive: true });
+  writeFileSync(stateFile, '{"pid":');
+  t.after(() => rmSync(stateFile, { force: true }));
+
+  for (const command of ['up', 'doctor', 'info', 'down']) {
+    const { code, result } = control(command);
+    assert.equal(code, 2, `${command}: ${JSON.stringify(result)}`);
+    assert.match(result.error ?? '', /could not be read as JSON/, command);
+  }
+});
+
+/** @param {string} name */
+async function deadRun(name) {
+  const gone = spawnSync(process.execPath, ['-e', '']).pid;
+  const server = createServer();
+  await new Promise((done) => server.listen(0, () => done(undefined)));
+  const address = server.address();
+  assert.ok(address !== null && typeof address === 'object');
+  await new Promise((done) => server.close(done));
+  const evidenceDir = join(root, 'tmp', 'control-yeti-app', name);
+  mkdirSync(evidenceDir, { recursive: true });
+
+  return {
+    session: `control-yeti-app-${name}`,
+    pid: gone,
+    port: address.port,
+    url: `http://localhost:${String(address.port)}/sub/`,
+    logFile: join(evidenceDir, 'server.log'),
+    evidenceDir,
+  };
+}
+
+test('down counts a session entry without a socketPath, or a registry it cannot list, as left open', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const state = await deadRun('test-shape');
+  const registry = mkdtempSync(join(tmpdir(), 'control-yeti-app-registry-'));
+  mkdirSync(join(registry, 'daemon-a'));
+  const entry = join(registry, 'daemon-a', `${state.session}.session`);
+  writeFileSync(entry, '{"version":2}');
+  const notFolder = join(registry, 'not-a-folder');
+  writeFileSync(notFolder, '');
+  t.after(() => {
+    rmSync(stateFile, { force: true });
+    rmSync(state.evidenceDir, { recursive: true, force: true });
+    rmSync(registry, { recursive: true, force: true });
+  });
+
+  for (const { base, named, outcomes } of [
+    { base: registry, named: entry, outcomes: ['left-open', 'absent'] },
+    { base: notFolder, named: notFolder, outcomes: ['left-open', 'left-open'] },
+  ]) {
+    writeState(state);
+    const { code, result } = controlWith(
+      { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: base },
+      'down',
+    );
+    assert.equal(code, 1, JSON.stringify(result));
+    assert.deepEqual(
+      (result.sessions ?? []).map(({ outcome }) => outcome),
+      outcomes,
+      JSON.stringify(result.sessions),
+    );
+    assert.ok(
+      result.sessions?.[0]?.detail.includes(named),
+      result.sessions?.[0]?.detail,
+    );
+  }
+});
+
+test('down stops waiting at the first listener query that times out', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const state = await deadRun('test-hung-query');
+  const registry = mkdtempSync(join(tmpdir(), 'control-yeti-app-registry-'));
+  t.after(() => {
+    rmSync(stateFile, { force: true });
+    rmSync(state.evidenceDir, { recursive: true, force: true });
+    rmSync(registry, { recursive: true, force: true });
+  });
+  writeState(state);
+
+  const before = Date.now();
+  const { code, result } = controlWith(
+    {
+      ...envWithoutCli(),
+      CONTROL_SESSION_REGISTRY: registry,
+      CONTROL_LISTENER_TIMEOUT_MS: '1',
+    },
+    'down',
+  );
+  const took = Date.now() - before;
+  assert.equal(code, 1, JSON.stringify(result));
+  assert.match(
+    String(result.listenerError),
+    new RegExp(
+      `listener query on ${String(state.port)} gave no answer in 1 ms`,
+    ),
+  );
+  assert.equal(result.portFree, false);
+  assert.ok(existsSync(stateFile), 'down removed the state file');
+  // Twenty attempts would sleep 10 s between them alone.
+  assert.ok(took < 12000, `down took ${String(took)} ms`);
 });
 
 test('down without playwright-cli exits 1 while the session is listed as open', async (t) => {

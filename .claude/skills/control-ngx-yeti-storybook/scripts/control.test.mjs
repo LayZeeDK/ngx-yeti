@@ -30,6 +30,7 @@ const scratch = join(root, 'tmp', 'control-ngx-yeti-storybook');
 const stateFile = join(scratch, 'state-static.json');
 const testingSource = join(root, 'packages/ngx-yeti-testing/src/index.ts');
 const plantedFile = join(scratch, 'planted.txt');
+const attachments = join(root, 'packages/ngx-yeti/.vitest-attachments');
 const builtIndex = join(root, 'packages/ngx-yeti/storybook-static/index.json');
 const daemonEntry = join(
   root,
@@ -309,6 +310,61 @@ test('refuses unknown flags and values after a space', () => {
   assert.equal(existsSync(stateFile), false, 'a refused up wrote state');
 });
 
+test('every command refuses a state file that is not JSON', (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  mkdirSync(scratch, { recursive: true });
+  writeFileSync(stateFile, '{"pid":');
+  t.after(() => rmSync(stateFile, { force: true }));
+
+  for (const command of ['up', 'doctor', 'info', 'down']) {
+    const { code, result } = control(command);
+    assert.equal(code, 2, `${command}: ${JSON.stringify(result)}`);
+    assert.match(result.message ?? '', /could not be read as JSON/, command);
+  }
+});
+
+test('down counts a session entry without a socketPath, or a registry it cannot list, as left open', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const session = 'control-ngx-yeti-storybook-test-shape';
+  const gone = spawnSync(process.execPath, ['-e', '']).pid;
+  const port = await freePort();
+  const registry = mkdtempSync(join(tmpdir(), 'control-storybook-registry-'));
+  mkdirSync(join(registry, 'daemon-a'));
+  const entry = join(registry, 'daemon-a', `${session}.session`);
+  writeFileSync(entry, '{"version":2}');
+  const notFolder = join(registry, 'not-a-folder');
+  writeFileSync(notFolder, '');
+  mkdirSync(scratch, { recursive: true });
+  t.after(() => {
+    rmSync(stateFile, { force: true });
+    rmSync(registry, { recursive: true, force: true });
+  });
+
+  for (const { base, named } of [
+    { base: registry, named: entry },
+    { base: notFolder, named: notFolder },
+  ]) {
+    writeState({
+      session,
+      pid: gone,
+      port,
+      url: `http://localhost:${String(port)}`,
+      target: 'ngx-yeti:static-storybook',
+      log: join(scratch, 'test-shape.log'),
+    });
+    const { code, result } = controlWith(
+      { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: base },
+      'down',
+    );
+    assert.equal(code, 1, JSON.stringify(result));
+    assert.equal(result.sessionClose?.outcome, 'left-open', base);
+    assert.ok(
+      result.sessionClose?.detail.includes(named),
+      result.sessionClose?.detail,
+    );
+  }
+});
+
 test('down without playwright-cli exits 1 while the session is listed as open', async (t) => {
   assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
   const session = 'control-ngx-yeti-storybook-test-absent';
@@ -448,6 +504,122 @@ test('down on a dead recorded pid exits 1 while a child of it keeps the port', a
   assert.ok(alive(child), 'down stopped a process of a dead root');
 });
 
+test('down on a dead recorded pid leaves out a process that started before the recorded root', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const session = 'control-ngx-yeti-storybook-test-stale';
+  const port = await freePort();
+  mkdirSync(scratch, { recursive: true });
+  const childFile = join(scratch, 'test-stale-child.txt');
+  rmSync(childFile, { force: true });
+  const parent = spawn(
+    process.execPath,
+    [
+      '-e',
+      `const child = require('node:child_process').spawn(process.execPath, ['-e', 'setInterval(() => {}, 1 << 30)'], { detached: true, stdio: 'ignore' }); require('node:fs').writeFileSync(${JSON.stringify(childFile)}, String(child.pid)); child.unref();`,
+    ],
+    { detached: true, stdio: 'ignore', windowsHide: true },
+  );
+  parent.unref();
+  const { pid } = parent;
+  assert.ok(pid !== undefined);
+  const registry = mkdtempSync(join(tmpdir(), 'control-storybook-registry-'));
+  /** @type {number[]} */
+  const toKill = [];
+  t.after(() => {
+    killAll(toKill);
+    rmSync(stateFile, { force: true });
+    rmSync(childFile, { force: true });
+    rmSync(registry, { recursive: true, force: true });
+  });
+  await waitGone(pid);
+  const child = Number(readFileSync(childFile, 'utf8'));
+  toKill.push(child);
+  assert.ok(alive(child), 'the child did not outlive its parent');
+  // The recorded root started after the child, as a later holder of the
+  // dead root's PID would have.
+  writeState({
+    session,
+    pid,
+    port,
+    url: `http://localhost:${String(port)}`,
+    target: 'ngx-yeti:static-storybook',
+    log: join(scratch, 'test-stale.log'),
+    startTime: new Date(Date.parse(startOf(child)) + 1).toISOString(),
+  });
+
+  const { code, result } = controlWith(
+    { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: registry },
+    'down',
+  );
+  assert.equal(code, 0, JSON.stringify(result));
+  assert.deepEqual(result.survivors, []);
+  assert.doesNotMatch(
+    result.message ?? '',
+    new RegExp(`\\b${String(child)}\\b`),
+  );
+  assert.ok(alive(child), 'down stopped a process outside the run');
+});
+
+test('down names the listener to stop once the root is gone, and then shows a failed listener query', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const session = 'control-ngx-yeti-storybook-test-held';
+  const server = createServer();
+  await new Promise((done) => server.listen(0, () => done(undefined)));
+  const address = server.address();
+  assert.ok(address !== null && typeof address === 'object');
+  const { port } = address;
+  const target = 'ngx-yeti:static-storybook';
+  const root = spawn(
+    process.execPath,
+    ['-e', 'setInterval(() => {}, 1 << 30)', target, `--port=${String(port)}`],
+    { detached: true, stdio: 'ignore', windowsHide: true },
+  );
+  root.unref();
+  const { pid } = root;
+  assert.ok(pid !== undefined);
+  const registry = mkdtempSync(join(tmpdir(), 'control-storybook-registry-'));
+  t.after(async () => {
+    killAll([pid]);
+    await new Promise((done) => server.close(done));
+    rmSync(stateFile, { force: true });
+    rmSync(registry, { recursive: true, force: true });
+  });
+  mkdirSync(scratch, { recursive: true });
+  writeState({
+    session,
+    pid,
+    port,
+    url: `http://localhost:${String(port)}`,
+    target,
+    log: join(scratch, 'test-held.log'),
+    startTime: startOf(pid),
+  });
+  const env = { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: registry };
+
+  const first = controlWith(env, 'down');
+  assert.equal(first.code, 1, JSON.stringify(first.result));
+  assert.match(
+    first.result.message ?? '',
+    new RegExp(
+      `pid ${String(pid)} is gone, so another down stops nothing; stop pid ${String(process.pid)} yourself$`,
+    ),
+  );
+  assert.equal(existsSync(stateFile), true, 'the state file was removed');
+
+  const second = controlWith(
+    { ...env, CONTROL_LISTENER_TIMEOUT_MS: '1' },
+    'down',
+  );
+  assert.equal(second.code, 1, JSON.stringify(second.result));
+  assert.match(
+    second.result.message ?? '',
+    new RegExp(
+      `port ${String(port)} still answers \\(listener query on ${String(port)} gave no answer in 1 ms\\)`,
+    ),
+  );
+  assert.equal(existsSync(stateFile), false, 'the state file was kept');
+});
+
 test('a static launch with the Nx daemon on', async (t) => {
   t.before(() => {
     assert.equal(
@@ -479,10 +651,54 @@ test('a static launch with the Nx daemon on', async (t) => {
         ({ name }) => name === 'build matches checkout',
       );
       assert.equal(fresh?.status, 'fail', fresh?.detail);
+      assert.match(
+        fresh?.detail ?? '',
+        /^packages\/ngx-yeti-testing\/src\/index\.ts changed at /,
+      );
     } finally {
       utimesSync(testingSource, atime, mtime);
     }
   });
+
+  await t.test('doctor passes after test output Git ignores is written', () => {
+    const made = !existsSync(attachments);
+    mkdirSync(attachments, { recursive: true });
+    const file = join(attachments, 'control-storybook-test.txt');
+    writeFileSync(file, 'newer than the launch\n');
+
+    try {
+      const { code, result } = control('doctor');
+      assert.equal(code, 0, JSON.stringify(result.checks));
+    } finally {
+      rmSync(made ? attachments : file, { recursive: true, force: true });
+    }
+  });
+
+  await t.test(
+    'doctor takes the launch time from startedAt and names a missing one',
+    () => {
+      const state = readState();
+      /** @param {Record<string, unknown>} planted */
+      const freshness = (planted) => {
+        writeState(planted);
+        const { result } = control('doctor');
+
+        return result.checks?.find(
+          ({ name }) => name === 'build matches checkout',
+        );
+      };
+
+      try {
+        const lookupMissed = freshness({ ...state, startTime: null });
+        assert.equal(lookupMissed?.status, 'pass', lookupMissed?.detail);
+        const noLaunch = freshness({ ...state, startedAt: 'not a time' });
+        assert.equal(noLaunch?.status, 'fail', noLaunch?.detail);
+        assert.match(noLaunch?.detail ?? '', /records no usable launch time/);
+      } finally {
+        writeState(state);
+      }
+    },
+  );
 
   await t.test(
     'doctor passes on a build the Nx cache restored with older file times',

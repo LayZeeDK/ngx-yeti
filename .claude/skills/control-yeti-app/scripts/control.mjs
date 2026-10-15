@@ -12,6 +12,7 @@ import {
   openSync,
   readFileSync,
   readdirSync,
+  renameSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -245,6 +246,11 @@ function tree(table, pid) {
   return [...pids].filter((member) => table.has(member));
 }
 
+// The tests set CONTROL_LISTENER_TIMEOUT_MS to make the query time out;
+// nothing else sets it.
+const listenerTimeout =
+  Number(process.env['CONTROL_LISTENER_TIMEOUT_MS']) || 30000;
+
 // Get-NetTCPConnection, not netstat: netstat translates its state column. Only
 // the cmdlet's own no-match error means no listener; a misspelled command is
 // ObjectNotFound too, so the activity is checked as well. Every other error
@@ -259,14 +265,22 @@ function queryListeners(port) {
       '-Command',
       `try { Get-NetTCPConnection -State Listen -LocalPort ${String(port)} -ErrorAction Stop | Select-Object -ExpandProperty OwningProcess } catch { if ($_.CategoryInfo.Category -eq 'ObjectNotFound' -and $_.CategoryInfo.Activity -eq 'Get-NetTCPConnection') { exit 0 }; [Console]::Error.WriteLine($_); exit 1 }`,
     ],
-    { encoding: 'utf8', timeout: 30000, windowsHide: true },
+    { encoding: 'utf8', timeout: listenerTimeout, windowsHide: true },
   );
 
-  // A spawn that failed or timed out has no stderr and a null status.
+  // A spawn that failed has no stderr; a timed-out one may have none, and its
+  // status is null.
   if (run.status !== 0) {
+    const timedOut =
+      run.error !== undefined &&
+      'code' in run.error &&
+      run.error.code === 'ETIMEDOUT';
+
     return {
       pids: null,
-      error: `listener query on ${port} failed: ${(run.stderr ?? '').trim() || String(run.error)}`,
+      error: timedOut
+        ? `listener query on ${port} gave no answer in ${listenerTimeout} ms`
+        : `listener query on ${port} failed: ${(run.stderr ?? '').trim() || String(run.error)}`,
     };
   }
 
@@ -336,7 +350,16 @@ function readState() {
   }
 
   /** @type {unknown} */
-  const state = JSON.parse(readFileSync(stateFile, 'utf8'));
+  let state;
+
+  try {
+    state = JSON.parse(readFileSync(stateFile, 'utf8'));
+  } catch (error) {
+    finish(2, {
+      error: `refused: ${stateFile} could not be read as JSON (${String(error)}); nothing was run`,
+      stateFile,
+    });
+  }
 
   if (!isState(state)) {
     finish(2, {
@@ -346,6 +369,14 @@ function readState() {
   }
 
   return state;
+}
+
+// A reader sees the old file or the new one, never a partial write.
+/** @param {Record<string, unknown>} state */
+function writeState(state) {
+  const temporary = `${stateFile}.${process.pid}.tmp`;
+  writeFileSync(temporary, `${JSON.stringify(state, null, 2)}\n`);
+  renameSync(temporary, stateFile);
 }
 
 // The shim's own script under this Node: the session name never passes
@@ -442,7 +473,11 @@ async function registryOpenReason(session) {
         ? config.socketPath
         : undefined;
 
-    if (typeof socketPath === 'string' && (await answers(socketPath))) {
+    if (typeof socketPath !== 'string') {
+      return `${file} holds no socketPath string, so the session may be open`;
+    }
+
+    if (await answers(socketPath)) {
       return `the session is listed as open in ${file}`;
     }
   }
@@ -655,7 +690,7 @@ async function up() {
     evidenceDir,
     logFile,
   };
-  writeFileSync(stateFile, `${JSON.stringify(state, null, 2)}\n`);
+  writeState(state);
   const timeout = timeoutSeconds * 1000;
 
   while (Date.now() - started < timeout) {
@@ -1008,7 +1043,9 @@ async function down() {
     listenerError = query.error;
     portFree = query.pids !== null && query.pids.length === 0;
 
-    if (portFree && survivors.length === 0) {
+    // A query that failed or timed out ends the wait: a hung pwsh would
+    // otherwise hold every attempt for the full timeout.
+    if ((portFree && survivors.length === 0) || query.pids === null) {
       break;
     }
   }
@@ -1029,21 +1066,14 @@ async function down() {
   };
 
   if (!portFree || survivors.length > 0) {
-    writeFileSync(
-      stateFile,
-      `${JSON.stringify(
-        {
-          ...state,
-          survivors: survivors.map((member) => ({
-            pid: member.ProcessId,
-            start: member.Start,
-            commandLine: member.CommandLine,
-          })),
-        },
-        null,
-        2,
-      )}\n`,
-    );
+    writeState({
+      ...state,
+      survivors: survivors.map((member) => ({
+        pid: member.ProcessId,
+        start: member.Start,
+        commandLine: member.CommandLine,
+      })),
+    });
     finish(1, {
       error: `teardown incomplete; ${listenerError ? `${listenerError}; ` : ''}state kept at ${stateFile}; run down again`,
       ...result,

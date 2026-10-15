@@ -13,6 +13,7 @@ import {
   openSync,
   readdirSync,
   readFileSync,
+  renameSync,
   rmSync,
   statSync,
   writeFileSync,
@@ -101,6 +102,7 @@ const session = `${NAME}-${flowName}-${String(port)}`;
  * @property {string} target
  * @property {string} log
  * @property {unknown} [startTime]
+ * @property {unknown} [startedAt]
  * @property {unknown} [evidenceDir]
  */
 
@@ -179,7 +181,17 @@ function readState() {
     return null;
   }
 
-  const state = parseJson(readFileSync(statePath, 'utf8'));
+  /** @type {unknown} */
+  let state;
+
+  try {
+    state = parseJson(readFileSync(statePath, 'utf8'));
+  } catch (error) {
+    finish(2, {
+      message: `refused: ${statePath} could not be read as JSON (${String(error)}); nothing was run`,
+      statePath,
+    });
+  }
 
   if (!isState(state)) {
     finish(2, {
@@ -189,6 +201,14 @@ function readState() {
   }
 
   return state;
+}
+
+// A reader sees the old file or the new one, never a partial write.
+/** @param {Record<string, unknown>} state */
+function writeState(state) {
+  const temporary = `${statePath}.${String(process.pid)}.tmp`;
+  writeFileSync(temporary, `${JSON.stringify(state, null, 2)}\n`);
+  renameSync(temporary, statePath);
 }
 
 // The shim's own script under this Node: the session name never passes
@@ -295,10 +315,11 @@ async function registryOpenReason(name) {
         ? config.socketPath
         : undefined;
 
-    if (
-      typeof socketPath === 'string' &&
-      (await answers({ path: socketPath }))
-    ) {
+    if (typeof socketPath !== 'string') {
+      return `${file} holds no socketPath string, so the session may be open`;
+    }
+
+    if (await answers({ path: socketPath })) {
       return `the session is listed as open in ${file}`;
     }
   }
@@ -452,35 +473,62 @@ function descendants(table, pid) {
   return tree;
 }
 
-/** @param {number} listenPort */
+// The tests set CONTROL_LISTENER_TIMEOUT_MS to make the query time out;
+// nothing else sets it.
+const LISTENER_TIMEOUT_MS =
+  Number(process.env['CONTROL_LISTENER_TIMEOUT_MS']) || 30_000;
+
+// Only Get-NetTCPConnection's own no-match error, or lsof's silent exit 1,
+// means no listener; every other failure keeps its error.
+/**
+ * @param {number} listenPort
+ * @returns {{ pids: number[], error: null } | { pids: null, error: string }}
+ */
 function listeningPids(listenPort) {
-  try {
-    if (IS_WINDOWS) {
-      const out = execFileSync(
+  const run = IS_WINDOWS
+    ? spawnSync(
         'powershell.exe',
         [
           '-NoProfile',
           '-NonInteractive',
           '-Command',
-          `Get-NetTCPConnection -State Listen -LocalPort ${String(listenPort)} -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess`,
+          `try { Get-NetTCPConnection -State Listen -LocalPort ${String(listenPort)} -ErrorAction Stop | Select-Object -ExpandProperty OwningProcess } catch { if ($_.CategoryInfo.Category -eq 'ObjectNotFound' -and $_.CategoryInfo.Activity -eq 'Get-NetTCPConnection') { exit 0 }; [Console]::Error.WriteLine($_); exit 1 }`,
         ],
-        { encoding: 'utf8', windowsHide: true },
+        { encoding: 'utf8', timeout: LISTENER_TIMEOUT_MS, windowsHide: true },
+      )
+    : spawnSync(
+        'lsof',
+        ['-nP', `-iTCP:${String(listenPort)}`, '-sTCP:LISTEN', '-t'],
+        { encoding: 'utf8', timeout: LISTENER_TIMEOUT_MS },
       );
+  const stdout = run.stdout ?? '';
+  const stderr = (run.stderr ?? '').trim();
+  const noMatch =
+    !IS_WINDOWS && run.status === 1 && stdout === '' && stderr === '';
 
-      return [...new Set(out.split(/\r?\n/).filter(Boolean).map(Number))];
-    }
+  if (run.status !== 0 && !noMatch) {
+    const timedOut =
+      run.error !== undefined &&
+      'code' in run.error &&
+      run.error.code === 'ETIMEDOUT';
 
-    const out = execFileSync(
-      'lsof',
-      ['-nP', `-iTCP:${String(listenPort)}`, '-sTCP:LISTEN', '-t'],
-      { encoding: 'utf8' },
-    );
-
-    return [...new Set(out.split('\n').filter(Boolean).map(Number))];
-  } catch {
-    return [];
+    return {
+      pids: null,
+      error: timedOut
+        ? `listener query on ${String(listenPort)} gave no answer in ${String(LISTENER_TIMEOUT_MS)} ms`
+        : `listener query on ${String(listenPort)} failed: ${stderr || String(run.error)}`,
+    };
   }
+
+  return {
+    pids: [...new Set(stdout.split(/\r?\n/).filter(Boolean).map(Number))],
+    error: null,
+  };
 }
+
+/** @param {ReturnType<typeof listeningPids>} query */
+const listenersText = (query) =>
+  query.pids === null ? query.error : `listeners ${JSON.stringify(query.pids)}`;
 
 /**
  * @param {number} listenPort
@@ -592,27 +640,27 @@ const SOURCE_DIRS = [
   'packages/ngx-yeti-testing',
   'vendor/yeti',
 ];
-const NOT_SOURCE = ['storybook-static', 'node_modules', 'dist'];
 
-/**
- * @param {string} dir
- * @param {string[]} skip
- * @returns {number}
- */
-function newestMtime(dir, skip) {
-  let newest = 0;
+// Git's tracked and untracked files under SOURCE_DIRS, not the ignored ones:
+// test output such as .vitest-attachments is not a source of the build.
+/** @returns {{ file: string | null, mtimeMs: number }} */
+function newestSource() {
+  const listed = execFileSync(
+    'git',
+    ['ls-files', '-co', '--exclude-standard', '-z', '--', ...SOURCE_DIRS],
+    { cwd: ROOT, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 },
+  );
+  /** @type {{ file: string | null, mtimeMs: number }} */
+  let newest = { file: null, mtimeMs: 0 };
 
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (skip.includes(entry.name)) {
-      continue;
-    }
+  for (const file of listed.split('\0')) {
+    const stat =
+      file === ''
+        ? undefined
+        : statSync(path.join(ROOT, file), { throwIfNoEntry: false });
 
-    const full = path.join(dir, entry.name);
-
-    if (entry.isDirectory()) {
-      newest = Math.max(newest, newestMtime(full, skip));
-    } else {
-      newest = Math.max(newest, statSync(full).mtimeMs);
+    if (stat !== undefined && stat.mtimeMs > newest.mtimeMs) {
+      newest = { file, mtimeMs: stat.mtimeMs };
     }
   }
 
@@ -660,9 +708,10 @@ async function up() {
   }
 
   if (await portAnswers(port)) {
+    const query = listeningPids(port);
     finish(2, {
-      message: `refused: port ${String(port)} is in use`,
-      owner: listeningPids(port),
+      message: `refused: port ${String(port)} is in use (${listenersText(query)})`,
+      owner: query.pids,
     });
   }
 
@@ -713,7 +762,7 @@ async function up() {
     evidenceDir,
     log: logPath,
   };
-  writeFileSync(statePath, `${JSON.stringify(state, null, 2)}\n`);
+  writeState(state);
 
   while (Date.now() - started < READY_TIMEOUT_MS) {
     if (exited !== null) {
@@ -789,12 +838,14 @@ async function doctor() {
         ? `pid ${String(recorded.pid)} is not running`
         : `pid ${String(recorded.pid)} started ${live.start}`,
     );
-    const owners = listeningPids(recorded.port);
+    const query = listeningPids(recorded.port);
     const tree = descendants(table, recorded.pid);
     add(
       'port owned by run',
-      owners.length > 0 && owners.every((pid) => tree.has(pid)),
-      `port ${String(recorded.port)} listeners ${JSON.stringify(owners)}`,
+      query.pids !== null &&
+        query.pids.length > 0 &&
+        query.pids.every((pid) => tree.has(pid)),
+      `port ${String(recorded.port)} ${listenersText(query)}`,
     );
   } else {
     skip('process alive', '--url names an instance this run did not start');
@@ -835,25 +886,43 @@ async function doctor() {
       line.includes('nx run ngx-yeti:build-storybook'),
     );
     const launchedAt =
-      typeof recorded.startTime === 'string'
-        ? Date.parse(recorded.startTime)
+      typeof recorded.startedAt === 'string'
+        ? Date.parse(recorded.startedAt)
         : Number.NaN;
-    const sourceAt = Math.max(
-      ...SOURCE_DIRS.map((dir) =>
-        newestMtime(path.join(ROOT, dir), NOT_SOURCE),
-      ),
-    );
-    const fresh = built && sourceAt < launchedAt;
-    const scanned = `${SOURCE_DIRS.join(', ')} (${NOT_SOURCE.join(', ')} skipped)`;
-    add(
-      'build matches checkout',
-      fresh,
-      fresh
-        ? `ngx-yeti:build-storybook ran at launch and no file in ${scanned} changed since`
-        : built
-          ? `a file in ${scanned} changed after launch; run down and up`
-          : `no ngx-yeti:build-storybook run in ${recorded.log}`,
-    );
+    /** @type {ReturnType<typeof newestSource> | string} */
+    let newest;
+
+    try {
+      newest = newestSource();
+    } catch (error) {
+      newest = `git ls-files failed (${String(error)})`;
+    }
+
+    if (!built) {
+      add(
+        'build matches checkout',
+        false,
+        `no ngx-yeti:build-storybook run in ${recorded.log}`,
+      );
+    } else if (Number.isNaN(launchedAt)) {
+      add(
+        'build matches checkout',
+        false,
+        `the state file records no usable launch time (startedAt ${JSON.stringify(recorded.startedAt)}); run down and up`,
+      );
+    } else if (typeof newest === 'string') {
+      add('build matches checkout', false, newest);
+    } else {
+      const fresh = newest.mtimeMs < launchedAt;
+      const changed = `${String(newest.file)} changed at ${new Date(newest.mtimeMs).toISOString()}`;
+      add(
+        'build matches checkout',
+        fresh,
+        fresh
+          ? `ngx-yeti:build-storybook ran at launch and no file Git lists under ${SOURCE_DIRS.join(', ')} changed since (newest: ${changed})`
+          : `${changed}, after the launch at ${new Date(launchedAt).toISOString()}; run down and up`,
+      );
+    }
   } else {
     const errors = tail(recorded.log, 500).filter((line) =>
       /\b(ERROR|Error:)/.test(line),
@@ -906,15 +975,17 @@ async function down() {
   if (live === undefined) {
     // A child of the dead root can outlive it and keep the port.
     const sessionClose = await closeSession(state.session);
-    const { survivors, portFree } = await awaitTeardown(
-      treeMembers(table, state.pid),
-      state.port,
+    const { members, uncheckedPids } = treeMembers(
+      table,
+      state.pid,
+      state.startTime,
     );
+    const { survivors, portFree } = await awaitTeardown(members, state.port);
     endTeardown(
       state,
       sessionClose,
       `pid ${String(state.pid)} is not running; removed the state file`,
-      { stoppedPids: [], survivors, portFree },
+      { stoppedPids: [], survivors, portFree, uncheckedPids },
     );
   }
 
@@ -934,7 +1005,11 @@ async function down() {
   }
 
   const sessionClose = await closeSession(state.session);
-  const members = treeMembers(table, state.pid);
+  const { members, uncheckedPids } = treeMembers(
+    table,
+    state.pid,
+    state.startTime,
+  );
 
   if (IS_WINDOWS) {
     try {
@@ -959,12 +1034,18 @@ async function down() {
     stoppedPids: members.map((member) => member.pid),
     survivors,
     portFree,
+    uncheckedPids,
   };
-  const problems = teardownProblems(state, teardown);
+  const { problems, toStop } = teardownProblems(state, teardown);
 
   if (problems.length > 0) {
+    // With the root gone, another down takes the dead-PID path, which stops
+    // nothing.
+    const next = survivors.includes(state.pid)
+      ? 'run down again'
+      : `pid ${String(state.pid)} is gone, so another down stops nothing; stop ${toStop.length > 0 ? `pid ${toStop.join(', ')}` : "the port's listener"} yourself`;
     finish(1, {
-      message: `teardown incomplete: ${problems.join('; ')}; state kept at ${statePath}; run down again`,
+      message: `teardown incomplete: ${problems.join('; ')}; state kept at ${statePath}; ${next}`,
       ...teardown,
       port: state.port,
       sessionClose,
@@ -985,27 +1066,45 @@ async function down() {
  * @property {number[]} stoppedPids
  * @property {number[]} survivors
  * @property {boolean} portFree
+ * @property {number[]} uncheckedPids
  */
 
 /**
- * The recorded PID's tree in one process table. Each member keeps its start
- * time, so a PID that Windows hands out again is not taken for a survivor.
+ * The recorded PID's tree in one process table, without the processes that
+ * started before the recorded root: Windows leaves a dead parent's PID on its
+ * children and hands that PID out again, so the children of an earlier holder
+ * match by parent PID alone. Each member keeps its start time, so a PID that
+ * Windows hands out again after the snapshot is not taken for a survivor. A
+ * process whose start time, or a root whose recorded start time, cannot be
+ * read stays a member and is listed in `uncheckedPids`.
  *
  * @param {ReturnType<typeof processTable>} table
  * @param {number} pid
+ * @param {unknown} rootStart
  */
-function treeMembers(table, pid) {
+function treeMembers(table, pid, rootStart) {
   const tree = descendants(table, pid);
+  const since =
+    typeof rootStart === 'string' ? Date.parse(rootStart) : Number.NaN;
+  const inTree = table.filter((proc) => tree.has(proc.pid));
 
-  return table
-    .filter((proc) => tree.has(proc.pid))
-    .map((proc) => ({ pid: proc.pid, start: proc.start }));
+  return {
+    members: inTree
+      .filter((proc) => !(Date.parse(proc.start ?? '') < since))
+      .map((proc) => ({ pid: proc.pid, start: proc.start })),
+    uncheckedPids: inTree
+      .filter(
+        (proc) =>
+          Number.isNaN(since) || Number.isNaN(Date.parse(proc.start ?? '')),
+      )
+      .map((proc) => proc.pid),
+  };
 }
 
 /**
  * Waits up to 15 s until no member runs and the port stops answering.
  *
- * @param {ReturnType<typeof treeMembers>} members
+ * @param {ReturnType<typeof treeMembers>['members']} members
  * @param {number} listenPort
  */
 async function awaitTeardown(members, listenPort) {
@@ -1031,16 +1130,21 @@ async function awaitTeardown(members, listenPort) {
  * @param {Teardown} teardown
  */
 function teardownProblems(state, teardown) {
-  return [
-    ...(teardown.survivors.length > 0
-      ? [`pid ${teardown.survivors.join(', ')} still running`]
-      : []),
-    ...(teardown.portFree
-      ? []
-      : [
-          `port ${String(state.port)} still answers (listeners ${JSON.stringify(listeningPids(state.port))})`,
-        ]),
-  ];
+  const query = teardown.portFree ? null : listeningPids(state.port);
+
+  return {
+    problems: [
+      ...(teardown.survivors.length > 0
+        ? [`pid ${teardown.survivors.join(', ')} still running`]
+        : []),
+      ...(query === null
+        ? []
+        : [
+            `port ${String(state.port)} still answers (${listenersText(query)})`,
+          ]),
+    ],
+    toStop: [...new Set([...teardown.survivors, ...(query?.pids ?? [])])],
+  };
 }
 
 /**
@@ -1065,7 +1169,7 @@ function endTeardown(state, sessionClose, message, teardown) {
     evidenceDir: state.evidenceDir,
   };
   const problems = [
-    ...teardownProblems(state, teardown),
+    ...teardownProblems(state, teardown).problems,
     ...(sessionLeftOpen(sessionClose.outcome)
       ? [
           `playwright-cli session ${state.session} ${sessionClose.outcome}; close it with playwright-cli -s=${state.session} close`,
