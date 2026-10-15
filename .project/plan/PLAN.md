@@ -149,6 +149,15 @@ Review depth: full
 |------|-------|------|-------|
 | T069 | Derive the alert ring inside painted bands from an exhaustive variant, emphasis, band, and scheme matrix in box--paint, and reset the band ink per variant with public tokens | T065 | .claude/skills/ngx-yeti-accessibility/SKILL.md, .claude/skills/ngx-yeti-specs/SKILL.md, .claude/skills/yeti-pin/SKILL.md, docs/specs/ledger.md, docs/specs/upstream-bugs.md, packages/ngx-yeti/CHANGELOG.md, packages/ngx-yeti/box/src/box.stories.ts, packages/ngx-yeti/ngx-yeti-globals.css, packages/ngx-yeti/src/accessibility.node.spec.ts, packages/ngx-yeti/src/published-output.node.spec.ts |
 
+## Wave 14 — refuse unsafe names in run-job before they reach a host path
+
+Goal: Ninth build repair (2026-10-15): finding 1 of security review round 2 (Medium, A01/CWE-22; range fb1a8c6..bc55b9e, the local record tmp/afk-m002/lars-review/security-r2.md; its Informational findings 2 to 5 are accepted as written and not planned). A matrix value from a workflow file reaches the host report folder of `tools/ci-local/run-job.mjs` unchecked, which the run then removes recursively and mounts writable into the container. T070 makes the script refuse a workflow name, job id, or matrix value that is not a safe name before anything is created or removed, refuses a report folder outside its checkout folder, proves every real job of `ci.yml` and `floor.yml` still passes, and documents the accepted names in `references/ci-local.md`. One task; it owns no INTENT success criterion.
+Review depth: full
+
+| Task | Title | Deps | Files |
+|------|-------|------|-------|
+| T070 | Make run-job refuse a workflow name, job id, or matrix value that is not a safe name, and refuse a leg report folder outside its checkout folder | T053, T066 | tools/ci-local/run-job.mjs, tools/ci-local/run-job.test.mjs, references/ci-local.md |
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |

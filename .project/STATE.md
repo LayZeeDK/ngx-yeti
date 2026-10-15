@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -163,3 +163,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-15 — build — build started
 - 2026-10-15 — build — waves 12 and 13 cycle 1 reviews pass at bc55b9e; gate wave13-c2 at bc55b9e 7 of 8 plus a passing run-many rerun after an out-of-memory crash; security review r2 found one Medium (run-job host path traversal) that needs a fix task
 - 2026-10-15 — build — security review r2 (tmp/afk-m002/lars-review/security-r2.md): one Medium, run-job leg label reaches the host output path unsanitised before a recursive delete and a writable mount (CWE-22); plan repair 9 appends wave 14
+- 2026-10-15 — plan — build plan repair requested
+- 2026-10-15 — plan — build recovery: {"base": "6ef32da7b8b2693c690d1fca9b92ae396d418245", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
+- 2026-10-15 — plan — plan approved
