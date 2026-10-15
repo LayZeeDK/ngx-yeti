@@ -155,3 +155,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-15 — plan — build recovery: {"base": "4b9d846bd662c5393efee84ac556d33c89ac064b", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-15 — plan — plan approved
 - 2026-10-15 — build — build started
+- 2026-10-15 — build — T066 attempt 1 rejected at finish (Verify's fixed-content .d.ts cache probe replays in a tree that already ran it); patch saved tmp/afk-m002/tools/T066-attempt1.patch; Verify repaired as a plan defect (probe appends unique content); retry reapplies the patch
