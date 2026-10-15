@@ -2,7 +2,7 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: ship
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
 status: active
@@ -168,3 +168,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-15 — plan — plan approved
 - 2026-10-15 — build — build started
 - 2026-10-15 — build — wave 14 cycle 1 review passes at 08323f5; security re-check r3 verdict closed for the run-job path traversal (0 above Informational)
+- 2026-10-15 — ship — build done; final review pending

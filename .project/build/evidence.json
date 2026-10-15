@@ -1,0 +1,1688 @@
+{
+  "canonical_project_dir": ".project",
+  "command": "verify-landed",
+  "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+  "project_dir": ".project",
+  "tasks": [
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "c289e6cec5ae081ed8fb227cb37f7951f5ca622d",
+            "commit": "5a74a07518bbb5ffc9d650293e5b3e4f70d0b4c7",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T001: Generate the 22 M002 secondary entry points before any item task"
+      },
+      "landed_commit": "5a74a07518bbb5ffc9d650293e5b3e4f70d0b4c7",
+      "reasons": [],
+      "task": {
+        "base": "c289e6cec5ae081ed8fb227cb37f7951f5ca622d",
+        "id": "T001",
+        "status": "done",
+        "task_file": ".project/tasks/T001-generate-entry-points.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "0632a4324daa1a6c0d20aa12732b1c64fb203568",
+            "commit": "c289e6cec5ae081ed8fb227cb37f7951f5ca622d",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T002: Register every M002 Fixture route, grow the preload list, and make preload assertions containment checks"
+      },
+      "landed_commit": "c289e6cec5ae081ed8fb227cb37f7951f5ca622d",
+      "reasons": [],
+      "task": {
+        "base": "0632a4324daa1a6c0d20aa12732b1c64fb203568",
+        "id": "T002",
+        "status": "done",
+        "task_file": ".project/tasks/T002-fixture-registry-and-preload-list.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "c289e6cec5ae081ed8fb227cb37f7951f5ca622d",
+            "commit": "5b5ad6c768a3bca26e8d9de59d515e5a1206f5c1",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T003: Measure whether a written-back static attribute ever paints, in three engines"
+      },
+      "landed_commit": "5b5ad6c768a3bca26e8d9de59d515e5a1206f5c1",
+      "reasons": [],
+      "task": {
+        "base": "c289e6cec5ae081ed8fb227cb37f7951f5ca622d",
+        "id": "T003",
+        "status": "done",
+        "task_file": ".project/tasks/T003-static-attribute-painted-frames.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "9a42af686801a5fc10f1475f23b9faf610fe128f",
+            "commit": "7ad619ff51731dfc9ba3b5caa70c77d35ac15ad4",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T004: Prove Guidepup with NVDA locally and add the voiceover and nvda CI jobs with the card list check"
+      },
+      "landed_commit": "7ad619ff51731dfc9ba3b5caa70c77d35ac15ad4",
+      "reasons": [],
+      "task": {
+        "base": "9a42af686801a5fc10f1475f23b9faf610fe128f",
+        "id": "T004",
+        "status": "done",
+        "task_file": ".project/tasks/T004-screen-reader-harness-and-jobs.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "7bc4fb560dc526e0b76355c9943a30ece0bda5a2",
+            "commit": "8802d372cb8b55687e48ba732c8d0abb8b763729",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T005: Generate and prove the control-yeti-app skill for the Fixture app"
+      },
+      "landed_commit": "8802d372cb8b55687e48ba732c8d0abb8b763729",
+      "reasons": [],
+      "task": {
+        "base": "7bc4fb560dc526e0b76355c9943a30ece0bda5a2",
+        "id": "T005",
+        "status": "done",
+        "task_file": ".project/tasks/T005-control-yeti-app-skill.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "0632a4324daa1a6c0d20aa12732b1c64fb203568",
+            "commit": "310ac375abacf21390f5454844a0da415a01ae34",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T006: Generate and prove the control-ngx-yeti-storybook skill"
+      },
+      "landed_commit": "310ac375abacf21390f5454844a0da415a01ae34",
+      "reasons": [],
+      "task": {
+        "base": "0632a4324daa1a6c0d20aa12732b1c64fb203568",
+        "id": "T006",
+        "status": "done",
+        "task_file": ".project/tasks/T006-control-ngx-yeti-storybook-skill.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "ee7397e3c2a32a98c7cb1308560f608356fa6158",
+            "commit": "bc655329b05e475b7d9237aafd24c2d692d6d0f3",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T007: Ship stack and center end to end with setup's item-links story and order case"
+      },
+      "landed_commit": "bc655329b05e475b7d9237aafd24c2d692d6d0f3",
+      "reasons": [],
+      "task": {
+        "base": "ee7397e3c2a32a98c7cb1308560f608356fa6158",
+        "id": "T007",
+        "status": "done",
+        "task_file": ".project/tasks/T007-stack-center-walking-skeleton.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "6e7a7b2ac47d3c9f2b81f49cb0f3e30cdca5dfe0",
+            "commit": "c81f317c579d5d3f5b9af71c14bd3b1e9eb5e05f",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T008: Ship box with its three markers and complete the box compositions of stack and center"
+      },
+      "landed_commit": "c81f317c579d5d3f5b9af71c14bd3b1e9eb5e05f",
+      "reasons": [],
+      "task": {
+        "base": "6e7a7b2ac47d3c9f2b81f49cb0f3e30cdca5dfe0",
+        "id": "T008",
+        "status": "done",
+        "task_file": ".project/tasks/T008-box-and-markers.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "4978c46b77a3e3e632542bd8279a71f56d04c86c",
+            "commit": "07f9f3742564ed08fc54c409a8fc2348cebd3812",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T009: Ship breakout and timeline with the A11Y-10c and A11Y-10a contrast assertions"
+      },
+      "landed_commit": "07f9f3742564ed08fc54c409a8fc2348cebd3812",
+      "reasons": [],
+      "task": {
+        "base": "4978c46b77a3e3e632542bd8279a71f56d04c86c",
+        "id": "T009",
+        "status": "done",
+        "task_file": ".project/tasks/T009-breakout-and-timeline.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "4978c46b77a3e3e632542bd8279a71f56d04c86c",
+            "commit": "df9bfbc3c9087eb8aa862a91e682eed39ecc6b6b",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T010: Ship grid and masonry with A11Y-23's order story"
+      },
+      "landed_commit": "df9bfbc3c9087eb8aa862a91e682eed39ecc6b6b",
+      "reasons": [],
+      "task": {
+        "base": "4978c46b77a3e3e632542bd8279a71f56d04c86c",
+        "id": "T010",
+        "status": "done",
+        "task_file": ".project/tasks/T010-grid-and-masonry.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "4978c46b77a3e3e632542bd8279a71f56d04c86c",
+            "commit": "15eaa62d2e12e10de813cecfe8094c7d780290da",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T011: Ship enter and visually-hidden with enter's held-bundle and preload cases"
+      },
+      "landed_commit": "15eaa62d2e12e10de813cecfe8094c7d780290da",
+      "reasons": [],
+      "task": {
+        "base": "4978c46b77a3e3e632542bd8279a71f56d04c86c",
+        "id": "T011",
+        "status": "done",
+        "task_file": ".project/tasks/T011-enter-and-visually-hidden.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "15eaa62d2e12e10de813cecfe8094c7d780290da",
+            "commit": "3fffc5f19f415901824a096a80abb460af0a32ca",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T012: Ship cluster with its enter shared host, the lift carry-over, and timeline's cluster measurement"
+      },
+      "landed_commit": "3fffc5f19f415901824a096a80abb460af0a32ca",
+      "reasons": [],
+      "task": {
+        "base": "15eaa62d2e12e10de813cecfe8094c7d780290da",
+        "id": "T012",
+        "status": "done",
+        "task_file": ".project/tasks/T012-cluster.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "2fff62c0266b90957eb071b86ab9d2a4c2d0b852",
+            "commit": "375a8c53b93eeef9230bfb0e1b17536247359ef4",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T013: Ship sidebar with A11Y-22's Shift+Tab walk and the sidebar-with-center order case"
+      },
+      "landed_commit": "375a8c53b93eeef9230bfb0e1b17536247359ef4",
+      "reasons": [],
+      "task": {
+        "base": "2fff62c0266b90957eb071b86ab9d2a4c2d0b852",
+        "id": "T013",
+        "status": "done",
+        "task_file": ".project/tasks/T013-sidebar.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "375a8c53b93eeef9230bfb0e1b17536247359ef4",
+            "commit": "176dceea4a18d7fef6f81bcf7f6ca49c73a6aea7",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T014: Ship cover and columns with the cover-with-center order case"
+      },
+      "landed_commit": "176dceea4a18d7fef6f81bcf7f6ca49c73a6aea7",
+      "reasons": [],
+      "task": {
+        "base": "375a8c53b93eeef9230bfb0e1b17536247359ef4",
+        "id": "T014",
+        "status": "done",
+        "task_file": ".project/tasks/T014-cover-and-columns.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "df9bfbc3c9087eb8aa862a91e682eed39ecc6b6b",
+            "commit": "7640ff7951fa6c54f35483f2c84622737c6ae5f9",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T015: Ship layer and overlay with A11Y-10b's scrim contrast"
+      },
+      "landed_commit": "7640ff7951fa6c54f35483f2c84622737c6ae5f9",
+      "reasons": [],
+      "task": {
+        "base": "df9bfbc3c9087eb8aa862a91e682eed39ecc6b6b",
+        "id": "T015",
+        "status": "done",
+        "task_file": ".project/tasks/T015-layer-and-overlay.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "f00197b11cb9e9afd4c1276d9d84b3851c28dcb4",
+            "commit": "4806542da5796f1cfdeee0ae2666f210dc62ae47",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T016: Ship spinner with A11Y-13 and its forced-colours measurement"
+      },
+      "landed_commit": "4806542da5796f1cfdeee0ae2666f210dc62ae47",
+      "reasons": [],
+      "task": {
+        "base": "f00197b11cb9e9afd4c1276d9d84b3851c28dcb4",
+        "id": "T016",
+        "status": "done",
+        "task_file": ".project/tasks/T016-spinner.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "176dceea4a18d7fef6f81bcf7f6ca49c73a6aea7",
+            "commit": "2f0d74c234dce88a8a0ff327e455ac37a755ab65",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T017: Ship scroller with its keyboard cases and focus surviving hydration"
+      },
+      "landed_commit": "2f0d74c234dce88a8a0ff327e455ac37a755ab65",
+      "reasons": [],
+      "task": {
+        "base": "176dceea4a18d7fef6f81bcf7f6ca49c73a6aea7",
+        "id": "T017",
+        "status": "done",
+        "task_file": ".project/tasks/T017-scroller.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "638be817c7a0c5b737be6d81d150fb52600178e8",
+            "commit": "426f4abf836be78594b9cfa5553111dae1c32928",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T018: Ship frame with its zero layout shift and the iframe reload ledger row"
+      },
+      "landed_commit": "426f4abf836be78594b9cfa5553111dae1c32928",
+      "reasons": [],
+      "task": {
+        "base": "638be817c7a0c5b737be6d81d150fb52600178e8",
+        "id": "T018",
+        "status": "done",
+        "task_file": ".project/tasks/T018-frame.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "76afeecea955413289f6a31f38ea939d1ded3144",
+            "commit": "ce3685d2e0e66c6536a20655ae97da4b869e49ad",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T019: Add the wave-3 items to the consumer build, name-collision list, README, and changelog"
+      },
+      "landed_commit": "ce3685d2e0e66c6536a20655ae97da4b869e49ad",
+      "reasons": [],
+      "task": {
+        "base": "76afeecea955413289f6a31f38ea939d1ded3144",
+        "id": "T019",
+        "status": "done",
+        "task_file": ".project/tasks/T019-wave-3-registries.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "89e30eaafa7e5d2d6c18329122b9114945d36f5d",
+            "commit": "dae9e585b07dfa848d9201607ab3f58692b9da25",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T020: Ship button and YetiButtonDisabledLink with A11Y-1a, event replay, and the NG8002 check"
+      },
+      "landed_commit": "dae9e585b07dfa848d9201607ab3f58692b9da25",
+      "reasons": [],
+      "task": {
+        "base": "89e30eaafa7e5d2d6c18329122b9114945d36f5d",
+        "id": "T020",
+        "status": "done",
+        "task_file": ".project/tasks/T020-button-and-disabled-link.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "d60b47984ecd00d6ee19f73a679012cd75747c11",
+            "commit": "3d85ae11b3e4670e2a76c4b3fdf005b50640598b",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T021: Ship icon and complete button's icon cases"
+      },
+      "landed_commit": "3d85ae11b3e4670e2a76c4b3fdf005b50640598b",
+      "reasons": [],
+      "task": {
+        "base": "d60b47984ecd00d6ee19f73a679012cd75747c11",
+        "id": "T021",
+        "status": "done",
+        "task_file": ".project/tasks/T021-icon.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "89e30eaafa7e5d2d6c18329122b9114945d36f5d",
+            "commit": "4dee4ddd80fb5a73fa056ac7275eb743affa0e49",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T022: Ship container with yetiShow and yetiHide"
+      },
+      "landed_commit": "4dee4ddd80fb5a73fa056ac7275eb743affa0e49",
+      "reasons": [],
+      "task": {
+        "base": "89e30eaafa7e5d2d6c18329122b9114945d36f5d",
+        "id": "T022",
+        "status": "done",
+        "task_file": ".project/tasks/T022-container.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "bbd0d7d357da9b9def51a8c4a3e4f389b6c5f1ef",
+            "commit": "e3a0a767ad006bb835d647e1ae7fdc5cfb33d492",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T023: Ship table with its cell, head, and numeric directives and the table compositions of earlier items"
+      },
+      "landed_commit": "e3a0a767ad006bb835d647e1ae7fdc5cfb33d492",
+      "reasons": [],
+      "task": {
+        "base": "bbd0d7d357da9b9def51a8c4a3e4f389b6c5f1ef",
+        "id": "T023",
+        "status": "done",
+        "task_file": ".project/tasks/T023-table.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "8a72864918dfaafd44c4249716603d3a79ecbfeb",
+            "commit": "15ae0759aab7e0c05e179b7a25da5a47bce07c34",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T024: Add the Tailwind C1 and C2 Fixture build configurations with their cases"
+      },
+      "landed_commit": "15ae0759aab7e0c05e179b7a25da5a47bce07c34",
+      "reasons": [],
+      "task": {
+        "base": "8a72864918dfaafd44c4249716603d3a79ecbfeb",
+        "id": "T024",
+        "status": "done",
+        "task_file": ".project/tasks/T024-tailwind-builds.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "2f5782801c9854654dc65b1a0cd46a00a8a3bdc5",
+            "commit": "9d6d57abe3f40eba4b8518fac99dc83d2a929d1a",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T025: Land card's grid, layer, and button carry-overs and the card route's grid"
+      },
+      "landed_commit": "9d6d57abe3f40eba4b8518fac99dc83d2a929d1a",
+      "reasons": [],
+      "task": {
+        "base": "2f5782801c9854654dc65b1a0cd46a00a8a3bdc5",
+        "id": "T025",
+        "status": "done",
+        "task_file": ".project/tasks/T025-card-and-lift-carry-overs.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "e3a0a767ad006bb835d647e1ae7fdc5cfb33d492",
+            "commit": "b217decea8ffe45e2066bc6df32761de15f12079",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T026: Add the wave-4 items to the registries and prove one exported type per shared input name"
+      },
+      "landed_commit": "b217decea8ffe45e2066bc6df32761de15f12079",
+      "reasons": [],
+      "task": {
+        "base": "e3a0a767ad006bb835d647e1ae7fdc5cfb33d492",
+        "id": "T026",
+        "status": "done",
+        "task_file": ".project/tasks/T026-wave-4-registries-and-shared-inputs.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "d229acf7e1e11fa7b8eb1da43fcee1a9bace1e53",
+            "commit": "04a6af3f5f4ba46a47bdcb73196aaf57be5983be",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T027: Add the timeline, icon, spinner, grid, and cluster screen-reader checks and retire the manual tests"
+      },
+      "landed_commit": "04a6af3f5f4ba46a47bdcb73196aaf57be5983be",
+      "reasons": [],
+      "task": {
+        "base": "d229acf7e1e11fa7b8eb1da43fcee1a9bace1e53",
+        "id": "T027",
+        "status": "done",
+        "task_file": ".project/tasks/T027-screen-reader-checks.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "330742b630db9c29aade74725e825b10e58c204d",
+            "commit": "c99718ab10a5e32c11fa1307a1b919b5266eedcf",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T028: Run every CI and floor job locally on the milestone tip and re-time the long jobs"
+      },
+      "landed_commit": "c99718ab10a5e32c11fa1307a1b919b5266eedcf",
+      "reasons": [],
+      "task": {
+        "base": "330742b630db9c29aade74725e825b10e58c204d",
+        "id": "T028",
+        "status": "done",
+        "task_file": ".project/tasks/T028-milestone-ci-gate.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "6e7a7b2ac47d3c9f2b81f49cb0f3e30cdca5dfe0",
+            "commit": "8fa60a6b314ca79e92bad71fe65e2bee47ef136c",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T029: Make control-yeti-app's doctor see library edits and its down keep the record of an incomplete teardown"
+      },
+      "landed_commit": "8fa60a6b314ca79e92bad71fe65e2bee47ef136c",
+      "reasons": [],
+      "task": {
+        "base": "6e7a7b2ac47d3c9f2b81f49cb0f3e30cdca5dfe0",
+        "id": "T029",
+        "status": "done",
+        "task_file": ".project/tasks/T029-control-yeti-app-doctor-and-down.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "c81f317c579d5d3f5b9af71c14bd3b1e9eb5e05f",
+            "commit": "d9792886b83f23b9c5ba47a4f10fa0341882e030",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T030: Make the stub-route tests fail for a missing or broken route instead of skipping"
+      },
+      "landed_commit": "d9792886b83f23b9c5ba47a4f10fa0341882e030",
+      "reasons": [],
+      "task": {
+        "base": "c81f317c579d5d3f5b9af71c14bd3b1e9eb5e05f",
+        "id": "T030",
+        "status": "done",
+        "task_file": ".project/tasks/T030-stub-route-tests.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "3c65638f70b81f54fecec7b45f9004f3acc76354",
+            "commit": "6700f9fb2097cb628022afda616d6d556e5d278f",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T031: Check the foreground window before every NVDA key and prove the guard refuses a wrong window"
+      },
+      "landed_commit": "6700f9fb2097cb628022afda616d6d556e5d278f",
+      "reasons": [],
+      "task": {
+        "base": "3c65638f70b81f54fecec7b45f9004f3acc76354",
+        "id": "T031",
+        "status": "done",
+        "task_file": ".project/tasks/T031-nvda-foreground-guard.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "958acdff276cad929a0bcc8b481fe314bf8c43a2",
+            "commit": "54eb1197fbdd19cbc466d1b135540791f1a5d324",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T032: Fix wave 2 cycle 1 review findings in T007, T008"
+      },
+      "landed_commit": "54eb1197fbdd19cbc466d1b135540791f1a5d324",
+      "reasons": [],
+      "task": {
+        "base": "958acdff276cad929a0bcc8b481fe314bf8c43a2",
+        "id": "T032",
+        "status": "done",
+        "task_file": ".project/tasks/T032-fix-wave-2-cycle-1.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "7dc237d9053268726cd9c37d88a75605e5abfcea",
+            "commit": "7ba7c0b8150232128b16b28f5c6811c23b00a781",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T033: Fix wave 2 cycle 1 review findings in T030"
+      },
+      "landed_commit": "7ba7c0b8150232128b16b28f5c6811c23b00a781",
+      "reasons": [],
+      "task": {
+        "base": "7dc237d9053268726cd9c37d88a75605e5abfcea",
+        "id": "T033",
+        "status": "done",
+        "task_file": ".project/tasks/T033-fix-wave-2-cycle-1.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "8ace78f9e107a5d3d53d3e0e160fe878248371f8",
+            "commit": "e387da9786f3e26c5d32f05ec7aefa0f86352b78",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T034: Fix wave 3 cycle 1 review findings in T009, T010, T011, T012, T013, T014, T015, T016, T017, T018"
+      },
+      "landed_commit": "e387da9786f3e26c5d32f05ec7aefa0f86352b78",
+      "reasons": [],
+      "task": {
+        "base": "8ace78f9e107a5d3d53d3e0e160fe878248371f8",
+        "id": "T034",
+        "status": "done",
+        "task_file": ".project/tasks/T034-fix-wave-3-cycle-1.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "e1ac081bc47057025c5db3098001e57755ea7c02",
+            "commit": "c983d4c0e49594d7194b2bbf65d692f4109a2329",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T035: Record WebKit's pending-sheet frames in the setup-boundaries reset case and add upstream row O17"
+      },
+      "landed_commit": "c983d4c0e49594d7194b2bbf65d692f4109a2329",
+      "reasons": [],
+      "task": {
+        "base": "e1ac081bc47057025c5db3098001e57755ea7c02",
+        "id": "T035",
+        "status": "done",
+        "task_file": ".project/tasks/T035-setup-boundaries-webkit-frames.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "2e703719aa0b3e6f0fd8df20ff64e80021886694",
+            "commit": "ca510a2d7bd13c8cba9bc33adb147cf2534ef965",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T036: Share the layer-4 geometry, sheet-applied, standard-route, and styled-frame helpers across both e2e apps"
+      },
+      "landed_commit": "ca510a2d7bd13c8cba9bc33adb147cf2534ef965",
+      "reasons": [],
+      "task": {
+        "base": "2e703719aa0b3e6f0fd8df20ff64e80021886694",
+        "id": "T036",
+        "status": "done",
+        "task_file": ".project/tasks/T036-layer-4-shared-helpers.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "8286cc59ae9d892643ea0e2adf221ca5e36e8814",
+            "commit": "0ead13c31975d8ae7639a6fb70c53efeffdea259",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T037: Share the story helpers, wait for applied item styles with a longer poll, and migrate every story"
+      },
+      "landed_commit": "0ead13c31975d8ae7639a6fb70c53efeffdea259",
+      "reasons": [],
+      "task": {
+        "base": "8286cc59ae9d892643ea0e2adf221ca5e36e8814",
+        "id": "T037",
+        "status": "done",
+        "task_file": ".project/tasks/T037-story-helpers.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "45fc056579b3e0bf53cd4291c5b309738aab4793",
+            "commit": "9885336e1a19ed1ce52b8846febbf1fa10a23fbe",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T038: Share the directive host, the server-render readers, and Yeti's gap and width lists, and migrate the layer-2 and layer-3 specs"
+      },
+      "landed_commit": "9885336e1a19ed1ce52b8846febbf1fa10a23fbe",
+      "reasons": [],
+      "task": {
+        "base": "45fc056579b3e0bf53cd4291c5b309738aab4793",
+        "id": "T038",
+        "status": "done",
+        "task_file": ".project/tasks/T038-layer-2-and-3-helpers.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "2e703719aa0b3e6f0fd8df20ff64e80021886694",
+            "commit": "9e8c9fd99e8d4711b44433373b7bfa315931afe4",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T039: Record the entry-point export rule and the audited departures, and bound the accessibility stylesheet's Yeti selectors by ledger row"
+      },
+      "landed_commit": "9e8c9fd99e8d4711b44433373b7bfa315931afe4",
+      "reasons": [],
+      "task": {
+        "base": "2e703719aa0b3e6f0fd8df20ff64e80021886694",
+        "id": "T039",
+        "status": "done",
+        "task_file": ".project/tasks/T039-export-rule-departures-and-selector-table.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "311f351fd9c7fd03b07021c88679593a68fb4323",
+            "commit": "ab65119a3e553a9847079070e300b6c374cbcd23",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T040: Withhold a named once arrival with one package rule, and fail when Yeti fixes its once bug"
+      },
+      "landed_commit": "ab65119a3e553a9847079070e300b6c374cbcd23",
+      "reasons": [],
+      "task": {
+        "base": "311f351fd9c7fd03b07021c88679593a68fb4323",
+        "id": "T040",
+        "status": "done",
+        "task_file": ".project/tasks/T040-enter-once-fix-and-tripwire.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "d5085278b3cb41f82ac0fc7dc92c3ce84ce843ba",
+            "commit": "eedd136adc39cf0a8a710ecb7fd831443dcc162a",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T041: Make the NVDA lane pass in Firefox after Chromium and with several tests in one worker"
+      },
+      "landed_commit": "eedd136adc39cf0a8a710ecb7fd831443dcc162a",
+      "reasons": [],
+      "task": {
+        "base": "d5085278b3cb41f82ac0fc7dc92c3ce84ce843ba",
+        "id": "T041",
+        "status": "done",
+        "task_file": ".project/tasks/T041-nvda-firefox-after-chromium.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "93ddcb27cd6954aa578dadc89e26b07f89392602",
+            "commit": "18710cfe9dc62a3a1b56287339b469cd215c024f",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T042: Run the ci unit job's tasks one at a time with two Vitest pages per engine"
+      },
+      "landed_commit": "18710cfe9dc62a3a1b56287339b469cd215c024f",
+      "reasons": [],
+      "task": {
+        "base": "93ddcb27cd6954aa578dadc89e26b07f89392602",
+        "id": "T042",
+        "status": "done",
+        "task_file": ".project/tasks/T042-ci-unit-job-load.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "0bde5164654937c4fe12330811e3b06f6891b895",
+            "commit": "d5085278b3cb41f82ac0fc7dc92c3ce84ce843ba",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T043: Run a job's matrix legs concurrently in run-job.mjs, with a local e2e worker count and a build-only Nx cache, capped by measured memory"
+      },
+      "landed_commit": "d5085278b3cb41f82ac0fc7dc92c3ce84ce843ba",
+      "reasons": [],
+      "task": {
+        "base": "0bde5164654937c4fe12330811e3b06f6891b895",
+        "id": "T043",
+        "status": "done",
+        "task_file": ".project/tasks/T043-faster-local-ci-runs.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "18129147b1f849b310dd693905c99b07dab969e0",
+            "commit": "6c119707996f18c9dd26f12436cf20be8c61183f",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T044: Walk nested selector lists in the published-output and accessibility gates, and state both once rules in enter's doc comment"
+      },
+      "landed_commit": "6c119707996f18c9dd26f12436cf20be8c61183f",
+      "reasons": [],
+      "task": {
+        "base": "18129147b1f849b310dd693905c99b07dab969e0",
+        "id": "T044",
+        "status": "done",
+        "task_file": ".project/tasks/T044-nested-selector-gates-and-enter-once-latch.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "d60b47984ecd00d6ee19f73a679012cd75747c11",
+            "commit": "0ee0b70457a7190970add819ca871bc1f58c67e7",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T045: Make the story and layer-2 checks the review found unable to fail assert what their specs ask"
+      },
+      "landed_commit": "0ee0b70457a7190970add819ca871bc1f58c67e7",
+      "reasons": [],
+      "task": {
+        "base": "d60b47984ecd00d6ee19f73a679012cd75747c11",
+        "id": "T045",
+        "status": "done",
+        "task_file": ".project/tasks/T045-story-and-layer-2-checks-that-can-fail.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "e3a0a767ad006bb835d647e1ae7fdc5cfb33d492",
+            "commit": "e50f98e7832ed80c239f27df9cda1e8e7e5569ae",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T046: Make the stub-route, reduced-motion, held-frame, and Storybook e2e checks fail when they should, and record the client-only preload cases"
+      },
+      "landed_commit": "e50f98e7832ed80c239f27df9cda1e8e7e5569ae",
+      "reasons": [],
+      "task": {
+        "base": "e3a0a767ad006bb835d647e1ae7fdc5cfb33d492",
+        "id": "T046",
+        "status": "done",
+        "task_file": ".project/tasks/T046-fixture-and-e2e-review-fixes.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "93ddcb27cd6954aa578dadc89e26b07f89392602",
+            "commit": "0bde5164654937c4fe12330811e3b06f6891b895",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T047: Harden both control scripts (checked session names, refused unknown flags, reported close failures, full freshness scans) and run them with the Nx daemon on"
+      },
+      "landed_commit": "0bde5164654937c4fe12330811e3b06f6891b895",
+      "reasons": [],
+      "task": {
+        "base": "93ddcb27cd6954aa578dadc89e26b07f89392602",
+        "id": "T047",
+        "status": "done",
+        "task_file": ".project/tasks/T047-control-skills-review-and-security-fixes.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "348447a4369a24fcb0a4e0ca16332b7cab33c71f",
+            "commit": "9a92e85c7f510a959ab5abe74a5c7112b9a1f2b5",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T048: Prove the html and Playwright test helpers can fail, and bring the testing skill up to date"
+      },
+      "landed_commit": "9a92e85c7f510a959ab5abe74a5c7112b9a1f2b5",
+      "reasons": [],
+      "task": {
+        "base": "348447a4369a24fcb0a4e0ca16332b7cab33c71f",
+        "id": "T048",
+        "status": "done",
+        "task_file": ".project/tasks/T048-test-helper-self-tests-and-testing-skill.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "d6e325f247733a1aa59ed782d4ea25c8101a17c7",
+            "commit": "470aba7cd04395e4e3c64575c0ed5e68212355f1",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T049: Rename the package stylesheet accessibility.css to ngx-yeti-globals.css and update every reference"
+      },
+      "landed_commit": "470aba7cd04395e4e3c64575c0ed5e68212355f1",
+      "reasons": [],
+      "task": {
+        "base": "d6e325f247733a1aa59ed782d4ea25c8101a17c7",
+        "id": "T049",
+        "status": "done",
+        "task_file": ".project/tasks/T049-rename-accessibility-stylesheet-to-globals.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "bbd0d7d357da9b9def51a8c4a3e4f389b6c5f1ef",
+            "commit": "2f5782801c9854654dc65b1a0cd46a00a8a3bdc5",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T050: Keep the server's spinner link through hydration on the button route, so hydration adds and removes no item link"
+      },
+      "landed_commit": "2f5782801c9854654dc65b1a0cd46a00a8a3bdc5",
+      "reasons": [],
+      "task": {
+        "base": "bbd0d7d357da9b9def51a8c4a3e4f389b6c5f1ef",
+        "id": "T050",
+        "status": "done",
+        "task_file": ".project/tasks/T050-adopt-server-links-until-hydration-settles.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "bbd0d7d357da9b9def51a8c4a3e4f389b6c5f1ef",
+            "commit": "94937a9b429e50153111ce4c337dd6478bedbaf0",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T051: Add the Scripts section to AGENTS.md"
+      },
+      "landed_commit": "94937a9b429e50153111ce4c337dd6478bedbaf0",
+      "reasons": [],
+      "task": {
+        "base": "bbd0d7d357da9b9def51a8c4a3e4f389b6c5f1ef",
+        "id": "T051",
+        "status": "done",
+        "task_file": ".project/tasks/T051-agents-scripts-rule.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "e87bd1865c70155e63c3b570a18b08db6fea4f86",
+            "commit": "2224e29fd8c0eeaaf1dc0d42f46c75aaa17700f1",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T052: Fix wave 4 cycle 1 review findings in T020, T021, T022, T023, T024, T025, T036, T037, T041, T042, T046"
+      },
+      "landed_commit": "2224e29fd8c0eeaaf1dc0d42f46c75aaa17700f1",
+      "reasons": [],
+      "task": {
+        "base": "e87bd1865c70155e63c3b570a18b08db6fea4f86",
+        "id": "T052",
+        "status": "done",
+        "task_file": ".project/tasks/T052-fix-wave-4-cycle-1.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "1580f84eba8c4b8018f6e3e80a01bd524d964700",
+            "commit": "ccce8ddd273a6b29f2a709850b0d3ad94f0ffd69",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T053: Land the typed scripts and their type check in CI"
+      },
+      "landed_commit": "ccce8ddd273a6b29f2a709850b0d3ad94f0ffd69",
+      "reasons": [],
+      "task": {
+        "base": "1580f84eba8c4b8018f6e3e80a01bd524d964700",
+        "id": "T053",
+        "status": "done",
+        "task_file": ".project/tasks/T053-typed-scripts.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "ccce8ddd273a6b29f2a709850b0d3ad94f0ffd69",
+            "commit": "1fc227674f45ae6611e7b5b0a2e4470a7046671e",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T054: Key run-job.mjs output by checkout, end a leg when the host tar fails, accept only decimal counts, and make the Playwright server test survive load"
+      },
+      "landed_commit": "1fc227674f45ae6611e7b5b0a2e4470a7046671e",
+      "reasons": [],
+      "task": {
+        "base": "ccce8ddd273a6b29f2a709850b0d3ad94f0ffd69",
+        "id": "T054",
+        "status": "done",
+        "task_file": ".project/tasks/T054-run-job-and-playwright-server-test-fixes.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "ccce8ddd273a6b29f2a709850b0d3ad94f0ffd69",
+            "commit": "2428b7859c8a2c6d30a5e0ab17c31877a2901fd9",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T055: Make both control scripts fail loudly on a failed listener query, prove the session close, and close sessions on a dead recorded PID"
+      },
+      "landed_commit": "2428b7859c8a2c6d30a5e0ab17c31877a2901fd9",
+      "reasons": [],
+      "task": {
+        "base": "ccce8ddd273a6b29f2a709850b0d3ad94f0ffd69",
+        "id": "T055",
+        "status": "done",
+        "task_file": ".project/tasks/T055-control-scripts-listener-and-teardown-fixes.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "1580f84eba8c4b8018f6e3e80a01bd524d964700",
+            "commit": "74f94279e23cfd2b5853fbda1ed22e707a0b755d",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T056: Record the loader's stable gate and the press-ratio departure, and bring stale docs and doc comments up to date"
+      },
+      "landed_commit": "74f94279e23cfd2b5853fbda1ed22e707a0b755d",
+      "reasons": [],
+      "task": {
+        "base": "1580f84eba8c4b8018f6e3e80a01bd524d964700",
+        "id": "T056",
+        "status": "done",
+        "task_file": ".project/tasks/T056-records-and-docs-review-round-2.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "ccce8ddd273a6b29f2a709850b0d3ad94f0ffd69",
+            "commit": "22cd46a9f9e4b5cba56549d51c1a4ccf60402d81",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T057: Make the review round 2 tests able to fail and correct their comments"
+      },
+      "landed_commit": "22cd46a9f9e4b5cba56549d51c1a4ccf60402d81",
+      "reasons": [],
+      "task": {
+        "base": "ccce8ddd273a6b29f2a709850b0d3ad94f0ffd69",
+        "id": "T057",
+        "status": "done",
+        "task_file": ".project/tasks/T057-tests-that-can-fail-and-comments-review-round-2.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "0287445e264fc9160dbbd21408e3eb720521e517",
+            "commit": "4d63e28bc5a31e951d0764918f653845fe89e07e",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T058: Give the focus ring inside a painted band a colour that reads (A11Y-35) and add the plain-button usage rule for painted bands (Y17)"
+      },
+      "landed_commit": "4d63e28bc5a31e951d0764918f653845fe89e07e",
+      "reasons": [],
+      "task": {
+        "base": "0287445e264fc9160dbbd21408e3eb720521e517",
+        "id": "T058",
+        "status": "done",
+        "task_file": ".project/tasks/T058-painted-band-focus-ring-and-button-rule.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "770eeb20235843ab1360c0f6983bdd5381d270a0",
+            "commit": "8d92f28c48846617d353ce1f79cb6dd74a57e437",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T059: Start the floor Chromium without its stack profiler so the Chromium 141 floor run exits"
+      },
+      "landed_commit": "8d92f28c48846617d353ce1f79cb6dd74a57e437",
+      "reasons": [],
+      "task": {
+        "base": "770eeb20235843ab1360c0f6983bdd5381d270a0",
+        "id": "T059",
+        "status": "done",
+        "task_file": ".project/tasks/T059-floor-chromium-stack-profiler.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "3ec57a6562acaf2dc706b32351aa126287336fb4",
+            "commit": "d2fc096d7da7885ccad86078494ec5bf00d56850",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T060: Keep the painted-band focus ring readable on Yeti surfaces and toggle labels inside a band, and make box--paint able to catch both"
+      },
+      "landed_commit": "d2fc096d7da7885ccad86078494ec5bf00d56850",
+      "reasons": [],
+      "task": {
+        "base": "3ec57a6562acaf2dc706b32351aa126287336fb4",
+        "id": "T060",
+        "status": "done",
+        "task_file": ".project/tasks/T060-painted-band-ring-on-surfaces-and-toggles.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "3ec57a6562acaf2dc706b32351aa126287336fb4",
+            "commit": "e753cd76069646c6e52d2919370cfbdcf9c95f8b",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T061: Test the run-job output folder without Git, record the unit job's skipped count, and give the floor Chromium one launch-options value"
+      },
+      "landed_commit": "e753cd76069646c6e52d2919370cfbdcf9c95f8b",
+      "reasons": [],
+      "task": {
+        "base": "3ec57a6562acaf2dc706b32351aa126287336fb4",
+        "id": "T061",
+        "status": "done",
+        "task_file": ".project/tasks/T061-run-job-test-without-git-and-floor-launch-options.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "3ec57a6562acaf2dc706b32351aa126287336fb4",
+            "commit": "b1a3897de43ca00657ee8a0219234ef074127832",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T062: Make Storybook down check the port on a dead recorded PID, survive a malformed session file, and give a left-open session its own outcome in both control scripts"
+      },
+      "landed_commit": "b1a3897de43ca00657ee8a0219234ef074127832",
+      "reasons": [],
+      "task": {
+        "base": "3ec57a6562acaf2dc706b32351aa126287336fb4",
+        "id": "T062",
+        "status": "done",
+        "task_file": ".project/tasks/T062-control-scripts-teardown-review-round-3.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "3ec57a6562acaf2dc706b32351aa126287336fb4",
+            "commit": "94717e2329be8d3f142a9592b50ccf26f18f4f35",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T063: Make the spinner screen-reader check able to fail, guard the VoiceOver foreground, assert the decorative icon's role words, and share inOrder with card"
+      },
+      "landed_commit": "94717e2329be8d3f142a9592b50ccf26f18f4f35",
+      "reasons": [],
+      "task": {
+        "base": "3ec57a6562acaf2dc706b32351aa126287336fb4",
+        "id": "T063",
+        "status": "done",
+        "task_file": ".project/tasks/T063-screen-reader-checks-review-round-3.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "3ec57a6562acaf2dc706b32351aa126287336fb4",
+            "commit": "3775a39b15e0a7eb32a127a895e580f4832c6718",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T064: Start the itemStyled deadline after the load, name .js in the typed-scripts docs, clarify the icon align doc, and drop the duplicated e2e checks"
+      },
+      "landed_commit": "3775a39b15e0a7eb32a127a895e580f4832c6718",
+      "reasons": [],
+      "task": {
+        "base": "3ec57a6562acaf2dc706b32351aa126287336fb4",
+        "id": "T064",
+        "status": "done",
+        "task_file": ".project/tasks/T064-cosmetic-fixes-review-round-3.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "131cf8e920681d3fe01528a6f2df874ee3b386e1",
+            "commit": "9e5f58223269d6284defed8fd662872d48ee64b0",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T065: Limit the painted-band ink reset to the alert emphasis that paints a fill the ring reads on, test low- and high-emphasis alerts in a band, and record Yeti's ring on a high-emphasis alert"
+      },
+      "landed_commit": "9e5f58223269d6284defed8fd662872d48ee64b0",
+      "reasons": [],
+      "task": {
+        "base": "131cf8e920681d3fe01528a6f2df874ee3b386e1",
+        "id": "T065",
+        "status": "done",
+        "task_file": ".project/tasks/T065-painted-band-alert-emphasis-reset.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "d22e9f6fc751b748f5f468e450f177c4e54cbb8c",
+            "commit": "b871f0c175e61e0b286a2227aeee5ab492df25e6",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T066: Make the run-job output-folder test able to fail, let a .d.ts edit miss the scripts typecheck cache, clear every floor variable in the unit-config test, fix the ci-local unit row, and bound the VoiceOver foreground query"
+      },
+      "landed_commit": "b871f0c175e61e0b286a2227aeee5ab492df25e6",
+      "reasons": [],
+      "task": {
+        "base": "d22e9f6fc751b748f5f468e450f177c4e54cbb8c",
+        "id": "T066",
+        "status": "done",
+        "task_file": ".project/tasks/T066-run-job-leg-paths-typecheck-inputs-review-round-4.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "131cf8e920681d3fe01528a6f2df874ee3b386e1",
+            "commit": "3f6f2ce2f69c1715899d9c16e251863532863bff",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T067: Make both control scripts refuse a malformed state file and write it atomically, keep only run members on Storybook's dead-PID path, scan Git's sources for Storybook freshness, and bound yeti-app's listener wait"
+      },
+      "landed_commit": "3f6f2ce2f69c1715899d9c16e251863532863bff",
+      "reasons": [],
+      "task": {
+        "base": "131cf8e920681d3fe01528a6f2df874ee3b386e1",
+        "id": "T067",
+        "status": "done",
+        "task_file": ".project/tasks/T067-control-scripts-review-round-4.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "131cf8e920681d3fe01528a6f2df874ee3b386e1",
+            "commit": "f44ebda9f3dfc30c4baa3606ec415e3b0f339ceb",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T068: Split the pressed-contrast check of button--variants by colour scheme so it holds in the floor WebKit job with every assertion kept"
+      },
+      "landed_commit": "f44ebda9f3dfc30c4baa3606ec415e3b0f339ceb",
+      "reasons": [],
+      "task": {
+        "base": "131cf8e920681d3fe01528a6f2df874ee3b386e1",
+        "id": "T068",
+        "status": "done",
+        "task_file": ".project/tasks/T068-button-variants-pressed-check-per-scheme.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "a291f42dd8f989248e9abc8a6aac5f6ad49c7e94",
+            "commit": "4cafbb1b7c30ea0eb52853594b32f5cea016e46f",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T069: Derive the alert ring inside painted bands from an exhaustive variant, emphasis, band, and scheme matrix in box--paint, and reset the band ink per variant with public tokens"
+      },
+      "landed_commit": "4cafbb1b7c30ea0eb52853594b32f5cea016e46f",
+      "reasons": [],
+      "task": {
+        "base": "a291f42dd8f989248e9abc8a6aac5f6ad49c7e94",
+        "id": "T069",
+        "status": "done",
+        "task_file": ".project/tasks/T069-alert-ring-matrix-in-painted-bands.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "363caa025ba7202e41e39d1c647a3d368bcdc5f4",
+            "commit": "5be2f30386bf134d196c563b9bc067adb6272ff9",
+            "valid": true
+          }
+        ],
+        "head": "1fe9206a78dced2e803cf5020e53124c77076345",
+        "subject": "T070: Make run-job refuse a workflow name, job id, or matrix value that is not a safe name, and refuse a leg report folder outside its checkout folder"
+      },
+      "landed_commit": "5be2f30386bf134d196c563b9bc067adb6272ff9",
+      "reasons": [],
+      "task": {
+        "base": "363caa025ba7202e41e39d1c647a3d368bcdc5f4",
+        "id": "T070",
+        "status": "done",
+        "task_file": ".project/tasks/T070-run-job-refuse-unsafe-names-and-contain-out.md"
+      }
+    }
+  ]
+}
