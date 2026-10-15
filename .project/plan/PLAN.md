@@ -140,6 +140,15 @@ Review depth: full
 | T067 | Make both control scripts refuse a malformed state file and write it atomically, keep only run members on Storybook's dead-PID path, scan Git's sources for Storybook freshness, and bound yeti-app's listener wait | T062 | .claude/skills/control-ngx-yeti-storybook/SKILL.md, .claude/skills/control-ngx-yeti-storybook/scripts/control.mjs, .claude/skills/control-ngx-yeti-storybook/scripts/control.test.mjs, .claude/skills/control-yeti-app/SKILL.md, .claude/skills/control-yeti-app/scripts/control.mjs, .claude/skills/control-yeti-app/scripts/control.test.mjs |
 | T068 | Split the pressed-contrast check of button--variants by colour scheme so it holds in the floor WebKit job with every assertion kept | T020 | apps/ngx-yeti-e2e/src/button.spec.ts |
 
+## Wave 13 — derive the alert ring inside painted bands from an exhaustive matrix
+
+Goal: Eighth build repair (2026-10-15): survivor 1 of review round 5 (range b1a3897..bfd1678, triaged by Claude in the local record tmp/afk-m002/lars-review/r5/triage.md, with its folded cosmetics; its Deferred, Watch, and Declined lists are not planned). Rounds 3 to 5 each found another hand-picked alert case of the painted-band ring rule, so T069 replaces case-by-case discovery with one exhaustive matrix in `box.stories.ts`: every Yeti alert variant and emphasis read from Yeti's manifest, inside `primary`, `white`, `black`, and grey bands, in both schemes, ring at least 3:1 against the colour under it, shown failing at the current rule first; the alert reset in `ngx-yeti-globals.css` is then derived from that measurement with public Yeti tokens only, and any combination no public token can fix becomes a Yeti row in `docs/specs/upstream-bugs.md` and a named, asserted exception. One task; it owns no INTENT success criterion.
+Review depth: full
+
+| Task | Title | Deps | Files |
+|------|-------|------|-------|
+| T069 | Derive the alert ring inside painted bands from an exhaustive variant, emphasis, band, and scheme matrix in box--paint, and reset the band ink per variant with public tokens | T065 | .claude/skills/ngx-yeti-accessibility/SKILL.md, .claude/skills/ngx-yeti-specs/SKILL.md, .claude/skills/yeti-pin/SKILL.md, docs/specs/ledger.md, docs/specs/upstream-bugs.md, packages/ngx-yeti/CHANGELOG.md, packages/ngx-yeti/box/src/box.stories.ts, packages/ngx-yeti/ngx-yeti-globals.css, packages/ngx-yeti/src/accessibility.node.spec.ts, packages/ngx-yeti/src/published-output.node.spec.ts |
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |
