@@ -6,10 +6,11 @@
 // checkout while it runs.
 // Run: node --test .claude/skills/control-ngx-yeti-storybook/scripts/control.test.mjs
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
+  mkdtempSync,
   readFileSync,
   rmSync,
   statSync,
@@ -17,6 +18,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -28,6 +30,7 @@ const scratch = join(root, 'tmp', 'control-ngx-yeti-storybook');
 const stateFile = join(scratch, 'state-static.json');
 const testingSource = join(root, 'packages/ngx-yeti-testing/src/index.ts');
 const plantedFile = join(scratch, 'planted.txt');
+const builtIndex = join(root, 'packages/ngx-yeti/storybook-static/index.json');
 const daemonEntry = join(
   root,
   'node_modules/nx/dist/src/daemon/server/start.js',
@@ -39,8 +42,11 @@ const daemonEntry = join(
  * @typedef {object} ControlResult
  * @property {string} [message]
  * @property {{ name: string, status: string, detail: string }[]} [checks]
- * @property {{ outcome: string, listedOpen?: boolean }} [sessionClose]
+ * @property {{ outcome: string, detail: string }} [sessionClose]
  * @property {{ stopped: boolean }} [daemon]
+ * @property {number[]} [stoppedPids]
+ * @property {number[]} [survivors]
+ * @property {boolean} [portFree]
  */
 
 /**
@@ -120,10 +126,68 @@ function pwsh(command) {
 // control-yeti-app's listener query: a failed query fails the test instead of
 // reading as no listener.
 /** @param {number} port */
-const listening = (port) =>
+const owners = (port) =>
   pwsh(
     `try { Get-NetTCPConnection -State Listen -LocalPort ${String(port)} -ErrorAction Stop | Select-Object -ExpandProperty OwningProcess } catch { if ($_.CategoryInfo.Category -eq 'ObjectNotFound' -and $_.CategoryInfo.Activity -eq 'Get-NetTCPConnection') { exit 0 }; [Console]::Error.WriteLine($_); exit 1 }`,
-  ).trim() !== '';
+  )
+    .split(/\r?\n/)
+    .filter(Boolean)
+    .map(Number);
+
+/** @param {number} port */
+const listening = (port) => owners(port).length > 0;
+
+/** @param {number} port */
+async function waitListening(port) {
+  for (let waited = 0; !listening(port) && waited < 15000; waited += 250) {
+    await new Promise((done) => setTimeout(done, 250));
+  }
+
+  assert.ok(listening(port), `nothing listens on ${port}`);
+}
+
+async function freePort() {
+  const server = createServer();
+  await new Promise((done) => server.listen(0, () => done(undefined)));
+  const address = server.address();
+  assert.ok(address !== null && typeof address === 'object');
+  await new Promise((done) => server.close(done));
+
+  return address.port;
+}
+
+// The start time as control.mjs's process table records it.
+/** @param {number} pid */
+const startOf = (pid) =>
+  pwsh(
+    `(Get-CimInstance Win32_Process -Filter "ProcessId=${String(pid)}").CreationDate.ToUniversalTime().ToString('o')`,
+  ).trim();
+
+/** @param {number} port */
+const listenScript = (port) =>
+  `require('node:net').createServer().listen(${String(port)})`;
+
+// A playwright-cli registry holding an empty `<session>.session` entry.
+/** @param {string} session */
+function registryWithEmptyEntry(session) {
+  const registry = mkdtempSync(join(tmpdir(), 'control-storybook-registry-'));
+  mkdirSync(join(registry, 'daemon-a'));
+  const entry = join(registry, 'daemon-a', `${session}.session`);
+  writeFileSync(entry, '');
+
+  return { registry, entry };
+}
+
+/** @param {number[]} pids */
+function killAll(pids) {
+  for (const pid of pids) {
+    try {
+      process.kill(pid);
+    } catch {
+      // Already gone.
+    }
+  }
+}
 
 /** @param {string} dir */
 const hasCli = (dir) =>
@@ -271,9 +335,117 @@ test('down without playwright-cli exits 1 while the session is listed as open', 
 
   const { code, result } = controlWith(envWithoutCli(), 'down');
   assert.equal(code, 1, JSON.stringify(result));
+  assert.equal(result.sessionClose?.outcome, 'left-open');
+  assert.match(
+    result.message ?? '',
+    new RegExp(`session ${session} left-open`),
+  );
+});
+
+test('down stops the tree and reports an unreadable session entry as left open', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const session = 'control-ngx-yeti-storybook-test-unreadable';
+  const port = await freePort();
+  const target = 'ngx-yeti:static-storybook';
+  const server = spawn(
+    process.execPath,
+    ['-e', listenScript(port), target, `--port=${String(port)}`],
+    { detached: true, stdio: 'ignore', windowsHide: true },
+  );
+  server.unref();
+  const { pid } = server;
+  assert.ok(pid !== undefined);
+  const { registry, entry } = registryWithEmptyEntry(session);
+  t.after(() => {
+    killAll([pid]);
+    rmSync(stateFile, { force: true });
+    rmSync(registry, { recursive: true, force: true });
+  });
+  await waitListening(port);
+  mkdirSync(scratch, { recursive: true });
+  writeState({
+    session,
+    pid,
+    port,
+    url: `http://localhost:${String(port)}`,
+    target,
+    log: join(scratch, 'test-unreadable.log'),
+    startTime: startOf(pid),
+  });
+
+  const { code, result } = controlWith(
+    { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: registry },
+    'down',
+  );
+  assert.equal(code, 1, JSON.stringify(result));
+  assert.equal(result.sessionClose?.outcome, 'left-open');
+  assert.ok(
+    result.sessionClose?.detail.includes(entry),
+    result.sessionClose?.detail,
+  );
+  assert.match(
+    result.message ?? '',
+    new RegExp(`session ${session} left-open`),
+  );
+  assert.deepEqual(result.stoppedPids, [pid]);
+  assert.deepEqual(result.survivors, []);
+  assert.equal(result.portFree, true);
+  assert.equal(alive(pid), false);
+  assert.equal(listening(port), false);
+  assert.equal(existsSync(stateFile), false);
+});
+
+test('down on a dead recorded pid exits 1 while a child of it keeps the port', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const session = 'control-ngx-yeti-storybook-test-orphan';
+  const port = await freePort();
+  const root = spawn(
+    process.execPath,
+    [
+      '-e',
+      `require('node:child_process').spawn(process.execPath, ['-e', ${JSON.stringify(listenScript(port))}], { detached: true, stdio: 'ignore' }); setInterval(() => {}, 1 << 30);`,
+    ],
+    { detached: true, stdio: 'ignore', windowsHide: true },
+  );
+  root.unref();
+  const { pid } = root;
+  assert.ok(pid !== undefined);
+  const registry = mkdtempSync(join(tmpdir(), 'control-storybook-registry-'));
+  t.after(() => {
+    killAll(listening(port) ? owners(port) : []);
+    rmSync(stateFile, { force: true });
+    rmSync(registry, { recursive: true, force: true });
+  });
+  await waitListening(port);
+  const [child] = owners(port);
+  assert.ok(child !== undefined && child !== pid);
+  mkdirSync(scratch, { recursive: true });
+  writeState({
+    session,
+    pid,
+    port,
+    url: `http://localhost:${String(port)}`,
+    target: 'ngx-yeti:static-storybook',
+    log: join(scratch, 'test-orphan.log'),
+    startTime: startOf(pid),
+  });
+  process.kill(pid);
+  await waitGone(pid);
+
+  const { code, result } = controlWith(
+    { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: registry },
+    'down',
+  );
+  assert.equal(code, 1, JSON.stringify(result));
+  assert.match(result.message ?? '', /^teardown incomplete: /);
+  assert.match(result.message ?? '', new RegExp(`pid ${String(child)} still`));
+  assert.match(result.message ?? '', new RegExp(`port ${String(port)} still`));
+  assert.deepEqual(result.stoppedPids, []);
+  assert.deepEqual(result.survivors, [child]);
+  assert.equal(result.portFree, false);
   assert.equal(result.sessionClose?.outcome, 'absent');
-  assert.equal(result.sessionClose?.listedOpen, true);
-  assert.match(result.message ?? '', new RegExp(`session ${session} absent`));
+  assert.equal(existsSync(stateFile), false, 'the state file was kept');
+  assert.ok(alive(child), 'down stopped a process of a dead root');
 });
 
 test('a static launch with the Nx daemon on', async (t) => {
@@ -309,6 +481,41 @@ test('a static launch with the Nx daemon on', async (t) => {
       assert.equal(fresh?.status, 'fail', fresh?.detail);
     } finally {
       utimesSync(testingSource, atime, mtime);
+    }
+  });
+
+  await t.test(
+    'doctor passes on a build the Nx cache restored with older file times',
+    () => {
+      const { atime, mtime } = statSync(builtIndex);
+
+      try {
+        utimesSync(builtIndex, atime, new Date('2000-01-01T00:00:00Z'));
+        const { code, result } = control('doctor');
+        assert.equal(code, 0, JSON.stringify(result.checks));
+      } finally {
+        utimesSync(builtIndex, atime, mtime);
+      }
+    },
+  );
+
+  await t.test('doctor fails when the server log shows no build', () => {
+    const state = readState();
+    const emptyLog = join(scratch, 'test-no-build.log');
+    writeFileSync(emptyLog, '');
+
+    try {
+      writeState({ ...state, log: emptyLog });
+      const { code, result } = control('doctor');
+      assert.equal(code, 1, JSON.stringify(result.checks));
+      const fresh = result.checks?.find(
+        ({ name }) => name === 'build matches checkout',
+      );
+      assert.equal(fresh?.status, 'fail', fresh?.detail);
+      assert.match(fresh?.detail ?? '', /no ngx-yeti:build-storybook run/);
+    } finally {
+      writeState(state);
+      rmSync(emptyLog, { force: true });
     }
   });
 
@@ -373,6 +580,9 @@ test('down closes the session and stops the daemon after the server died on its 
     JSON.stringify(down.result.sessionClose),
   );
   assert.equal(down.result.daemon?.stopped, true);
+  assert.deepEqual(down.result.survivors, []);
+  assert.equal(down.result.portFree, true);
   assert.equal(existsSync(stateFile), false);
+  assert.equal(listening(run.port), false);
   assert.equal(daemonRunning(), false, 'the Nx daemon is still running');
 });

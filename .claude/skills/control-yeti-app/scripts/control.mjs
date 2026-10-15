@@ -259,13 +259,14 @@ function queryListeners(port) {
       '-Command',
       `try { Get-NetTCPConnection -State Listen -LocalPort ${String(port)} -ErrorAction Stop | Select-Object -ExpandProperty OwningProcess } catch { if ($_.CategoryInfo.Category -eq 'ObjectNotFound' -and $_.CategoryInfo.Activity -eq 'Get-NetTCPConnection') { exit 0 }; [Console]::Error.WriteLine($_); exit 1 }`,
     ],
-    { encoding: 'utf8', windowsHide: true },
+    { encoding: 'utf8', timeout: 30000, windowsHide: true },
   );
 
+  // A spawn that failed or timed out has no stderr and a null status.
   if (run.status !== 0) {
     return {
       pids: null,
-      error: `listener query on ${port} failed: ${run.stderr.trim() || run.error}`,
+      error: `listener query on ${port} failed: ${(run.stderr ?? '').trim() || String(run.error)}`,
     };
   }
 
@@ -367,17 +368,60 @@ function playwrightCli() {
   return null;
 }
 
-// playwright-cli's own registry, which its `list` reads: a session is open
-// while the socket in its `<name>.session` file answers.
-/** @param {string} session */
-async function listedOpen(session) {
-  const base = join(
-    process.env['LOCALAPPDATA'] ?? join(homedir(), 'AppData', 'Local'),
-    'ms-playwright',
-    'daemon',
-  );
+/**
+ * `left-open`: no playwright-cli on PATH, and its registry lists the session
+ * as open or holds an entry for it that could not be read.
+ *
+ * @typedef {'closed' | 'not-open' | 'absent' | 'left-open' | 'timeout' | 'failed'} SessionOutcome
+ */
 
-  for (const dir of existsSync(base) ? readdirSync(base) : []) {
+/**
+ * @typedef {object} SessionClose
+ * @property {string} session
+ * @property {SessionOutcome} outcome
+ * @property {string} detail
+ */
+
+/**
+ * @param {SessionOutcome} outcome
+ * @returns {boolean} whether the session may still be open after `down`
+ */
+function sessionLeftOpen(outcome) {
+  return (
+    outcome === 'left-open' || outcome === 'timeout' || outcome === 'failed'
+  );
+}
+
+// playwright-cli's own registry, which its `list` reads: a session is open
+// while the socket in its `<name>.session` file answers. The tests point
+// CONTROL_SESSION_REGISTRY at a folder of their own.
+/**
+ * @param {string} session
+ * @returns {Promise<string | null>} why the session counts as open, or null
+ */
+async function registryOpenReason(session) {
+  const base =
+    process.env['CONTROL_SESSION_REGISTRY'] ??
+    join(
+      process.env['LOCALAPPDATA'] ?? join(homedir(), 'AppData', 'Local'),
+      'ms-playwright',
+      'daemon',
+    );
+
+  if (!existsSync(base)) {
+    return null;
+  }
+
+  /** @type {string[]} */
+  let dirs;
+
+  try {
+    dirs = readdirSync(base);
+  } catch (error) {
+    return `${base} could not be read (${String(error)}), so the session may be open`;
+  }
+
+  for (const dir of dirs) {
     const file = join(base, dir, `${session}.session`);
 
     if (!existsSync(file)) {
@@ -385,18 +429,25 @@ async function listedOpen(session) {
     }
 
     /** @type {unknown} */
-    const config = JSON.parse(readFileSync(file, 'utf8'));
+    let config;
+
+    try {
+      config = JSON.parse(readFileSync(file, 'utf8'));
+    } catch (error) {
+      return `${file} could not be read (${String(error)}), so the session may be open`;
+    }
+
     const socketPath =
       typeof config === 'object' && config !== null && 'socketPath' in config
         ? config.socketPath
         : undefined;
 
     if (typeof socketPath === 'string' && (await answers(socketPath))) {
-      return true;
+      return `the session is listed as open in ${file}`;
     }
   }
 
-  return false;
+  return null;
 }
 
 /**
@@ -422,19 +473,19 @@ function answers(socketPath) {
 /**
  * @param {string | null} entry
  * @param {string} session
+ * @returns {Promise<SessionClose>}
  */
 async function closeSession(entry, session) {
   if (!entry) {
-    const open = await listedOpen(session);
+    const open = await registryOpenReason(session);
 
-    return {
-      session,
-      outcome: 'absent',
-      listedOpen: open,
-      detail: open
-        ? 'no playwright-cli on PATH, and the session is listed as open'
-        : 'no playwright-cli on PATH',
-    };
+    return open === null
+      ? { session, outcome: 'absent', detail: 'no playwright-cli on PATH' }
+      : {
+          session,
+          outcome: 'left-open',
+          detail: `no playwright-cli on PATH, and ${open}`,
+        };
   }
 
   const run = spawnSync(process.execPath, [entry, `-s=${session}`, 'close'], {
@@ -1001,11 +1052,7 @@ async function down() {
   }
 
   rmSync(stateFile, { force: true });
-  const unclosed = sessions.filter(
-    ({ outcome, listedOpen }) =>
-      ['timeout', 'failed'].includes(outcome) ||
-      (outcome === 'absent' && listedOpen),
-  );
+  const unclosed = sessions.filter(({ outcome }) => sessionLeftOpen(outcome));
 
   if (unclosed.length > 0 || !daemon.stopped) {
     finish(1, {

@@ -5,10 +5,11 @@
 // so nothing else may build in this checkout while it runs.
 // Run: node --test .claude/skills/control-yeti-app/scripts/control.test.mjs
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
+  mkdtempSync,
   readFileSync,
   rmSync,
   statSync,
@@ -16,6 +17,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { createServer } from 'node:net';
+import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
@@ -43,8 +45,9 @@ const daemonEntry = join(
  * @property {unknown} [portFree]
  * @property {unknown} [survivors]
  * @property {unknown} [stateFile]
- * @property {{ session: string, outcome: string, listedOpen?: boolean }[]} [sessions]
+ * @property {{ session: string, outcome: string, detail: string }[]} [sessions]
  * @property {{ stopped: boolean }} [daemon]
+ * @property {unknown} [stopped]
  */
 
 /**
@@ -297,17 +300,90 @@ test('down without playwright-cli exits 1 while the session is listed as open', 
   const { code, result } = controlWith(envWithoutCli(), 'down');
   assert.equal(code, 1, JSON.stringify(result));
   assert.deepEqual(
-    (result.sessions ?? []).map(({ outcome, listedOpen }) => ({
-      outcome,
-      listedOpen,
-    })),
-    [
-      { outcome: 'absent', listedOpen: true },
-      { outcome: 'absent', listedOpen: false },
-    ],
+    (result.sessions ?? []).map(({ outcome }) => outcome),
+    ['left-open', 'absent'],
     JSON.stringify(result.sessions),
   );
-  assert.match(result.error ?? '', new RegExp(`session ${session} absent`));
+  assert.match(result.error ?? '', new RegExp(`session ${session} left-open`));
+});
+
+test('down stops the tree and reports an unreadable session entry as left open', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const session = 'control-yeti-app-test-unreadable';
+  const server = createServer();
+  await new Promise((done) => server.listen(0, () => done(undefined)));
+  const address = server.address();
+  assert.ok(address !== null && typeof address === 'object');
+  await new Promise((done) => server.close(done));
+  const { port } = address;
+  const fake = spawn(
+    process.execPath,
+    ['-e', `require('node:net').createServer().listen(${String(port)})`],
+    { detached: true, stdio: 'ignore', windowsHide: true },
+  );
+  fake.unref();
+  const { pid } = fake;
+  assert.ok(pid !== undefined);
+  const registry = mkdtempSync(join(tmpdir(), 'control-yeti-app-registry-'));
+  mkdirSync(join(registry, 'daemon-a'));
+  const entry = join(registry, 'daemon-a', `${session}.session`);
+  writeFileSync(entry, '');
+  const evidenceDir = join(root, 'tmp', 'control-yeti-app', 'test-unreadable');
+  mkdirSync(evidenceDir, { recursive: true });
+  t.after(() => {
+    try {
+      process.kill(pid);
+    } catch {
+      // down stopped it.
+    }
+
+    rmSync(stateFile, { force: true });
+    rmSync(evidenceDir, { recursive: true, force: true });
+    rmSync(registry, { recursive: true, force: true });
+  });
+
+  for (let waited = 0; !listening(port) && waited < 15000; waited += 250) {
+    await new Promise((done) => setTimeout(done, 250));
+  }
+
+  assert.ok(listening(port), `nothing listens on ${port}`);
+  /** @type {{ CommandLine: string | null, Start: string | null }} */
+  const live = JSON.parse(
+    pwsh(
+      `Get-CimInstance Win32_Process -Filter "ProcessId=${String(pid)}" | Select-Object CommandLine,@{n='Start';e={$_.CreationDate.ToUniversalTime().ToString('o')}} | ConvertTo-Json -Compress`,
+    ),
+  );
+  writeState({
+    session,
+    pid,
+    start: live.Start,
+    commandLine: live.CommandLine,
+    port,
+    url: `http://localhost:${String(port)}/sub/`,
+    logFile: join(evidenceDir, 'server.log'),
+    evidenceDir,
+  });
+
+  const { code, result } = controlWith(
+    { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: registry },
+    'down',
+  );
+  assert.equal(code, 1, JSON.stringify(result));
+  assert.deepEqual(
+    (result.sessions ?? []).map(({ outcome }) => outcome),
+    ['left-open', 'absent'],
+    JSON.stringify(result.sessions),
+  );
+  assert.ok(
+    result.sessions?.[0]?.detail.includes(entry),
+    result.sessions?.[0]?.detail,
+  );
+  assert.match(result.error ?? '', new RegExp(`session ${session} left-open`));
+  assert.deepEqual(result.stopped, [pid]);
+  assert.equal(result.portFree, true);
+  assert.equal(alive(pid), false);
+  assert.equal(listening(port), false);
+  assert.equal(existsSync(stateFile), false);
 });
 
 test('a launch with the Nx daemon on', async (t) => {

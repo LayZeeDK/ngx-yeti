@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 // @ts-check
+/// <reference path="./storybook-preview.d.ts" />
 // Launch, health-check, describe and stop the ngx-yeti Storybook for agents.
 // Usage: node .claude/skills/control-ngx-yeti-storybook/scripts/control.mjs
 //   <up|doctor|info|down> [--dev] [--url=<origin>] [--json]
@@ -165,13 +166,20 @@ function isState(value) {
   );
 }
 
+/**
+ * @param {string} text
+ * @returns {unknown}
+ */
+function parseJson(text) {
+  return JSON.parse(text);
+}
+
 function readState() {
   if (!existsSync(statePath)) {
     return null;
   }
 
-  /** @type {unknown} */
-  const state = JSON.parse(readFileSync(statePath, 'utf8'));
+  const state = parseJson(readFileSync(statePath, 'utf8'));
 
   if (!isState(state)) {
     finish(2, {
@@ -206,27 +214,82 @@ function playwrightCli() {
   return null;
 }
 
+/**
+ * `left-open`: no playwright-cli on PATH, and its registry lists the session
+ * as open or holds an entry for it that could not be read.
+ *
+ * @typedef {'closed' | 'not-open' | 'absent' | 'left-open' | 'timeout' | 'failed'} SessionOutcome
+ */
+
+/**
+ * @typedef {object} SessionClose
+ * @property {string} session
+ * @property {SessionOutcome} outcome
+ * @property {string} detail
+ */
+
+/**
+ * @param {SessionOutcome} outcome
+ * @returns {boolean} whether the session may still be open after `down`
+ */
+function sessionLeftOpen(outcome) {
+  return (
+    outcome === 'left-open' || outcome === 'timeout' || outcome === 'failed'
+  );
+}
+
 // playwright-cli's own registry, which its `list` reads: a session is open
-// while the socket in its `<name>.session` file answers.
-/** @param {string} name */
-async function listedOpen(name) {
+// while the socket in its `<name>.session` file answers. The tests point
+// CONTROL_SESSION_REGISTRY at a folder of their own.
+function sessionRegistry() {
   const home = os.homedir();
   const cache = IS_WINDOWS
     ? (process.env['LOCALAPPDATA'] ?? path.join(home, 'AppData', 'Local'))
     : process.platform === 'darwin'
       ? path.join(home, 'Library', 'Caches')
       : (process.env['XDG_CACHE_HOME'] ?? path.join(home, '.cache'));
-  const base = path.join(cache, 'ms-playwright', 'daemon');
 
-  for (const dir of existsSync(base) ? readdirSync(base) : []) {
+  return (
+    process.env['CONTROL_SESSION_REGISTRY'] ??
+    path.join(cache, 'ms-playwright', 'daemon')
+  );
+}
+
+/**
+ * @param {string} name
+ * @returns {Promise<string | null>} why the session counts as open, or null
+ */
+async function registryOpenReason(name) {
+  const base = sessionRegistry();
+
+  if (!existsSync(base)) {
+    return null;
+  }
+
+  /** @type {string[]} */
+  let dirs;
+
+  try {
+    dirs = readdirSync(base);
+  } catch (error) {
+    return `${base} could not be read (${String(error)}), so the session may be open`;
+  }
+
+  for (const dir of dirs) {
     const file = path.join(base, dir, `${name}.session`);
 
     if (!existsSync(file)) {
       continue;
     }
 
-    /** @type {unknown} */
-    const config = JSON.parse(readFileSync(file, 'utf8'));
+    let config = null;
+
+    try {
+      config = parseJson(readFileSync(file, 'utf8'));
+    } catch (error) {
+      return `${file} could not be read (${String(error)}), so the session may be open`;
+    }
+
     const socketPath =
       typeof config === 'object' && config !== null && 'socketPath' in config
         ? config.socketPath
@@ -236,28 +299,34 @@ async function listedOpen(name) {
       typeof socketPath === 'string' &&
       (await answers({ path: socketPath }))
     ) {
-      return true;
+      return `the session is listed as open in ${file}`;
     }
   }
 
-  return false;
+  return null;
 }
 
-/** @param {string} name */
+/**
+ * @param {string} name
+ * @returns {Promise<SessionClose>}
+ */
 async function closeSession(name) {
   const entry = playwrightCli();
 
   if (entry === null) {
-    const open = await listedOpen(name);
+    const open = await registryOpenReason(name);
 
-    return {
-      session: name,
-      outcome: 'absent',
-      listedOpen: open,
-      detail: open
-        ? 'no playwright-cli on PATH, and the session is listed as open'
-        : 'no playwright-cli on PATH',
-    };
+    return open === null
+      ? {
+          session: name,
+          outcome: 'absent',
+          detail: 'no playwright-cli on PATH',
+        }
+      : {
+          session: name,
+          outcome: 'left-open',
+          detail: `no playwright-cli on PATH, and ${open}`,
+        };
   }
 
   const run = spawnSync(process.execPath, [entry, `-s=${name}`, 'close'], {
@@ -458,8 +527,7 @@ async function indexHasStory(origin) {
       return false;
     }
 
-    /** @type {unknown} */
-    const index = await response.json();
+    const index = parseJson(await response.text());
     const entries =
       typeof index === 'object' && index !== null && 'entries' in index
         ? index.entries
@@ -475,17 +543,6 @@ async function indexHasStory(origin) {
 
 // Opens the known story with embed=true (no play function) in the repo's own
 // Playwright Chromium and reports whether it rendered without console errors.
-/**
- * What the two page functions of renderCheck read from the page's global.
- *
- * @typedef {object} StoryPage
- * @property {{ currentRender?: { phase?: string } }} [__STORYBOOK_PREVIEW__]
- * @property {{
- *   body: { classList: { contains(token: string): boolean } },
- *   querySelector(selectors: string): { children: { length: number } } | null,
- * }} document
- */
-
 /** @param {string} origin */
 async function renderCheck(origin) {
   /** @type {typeof import('playwright')} */
@@ -511,28 +568,19 @@ async function renderCheck(origin) {
     await page.waitForFunction(
       () =>
         ['finished', 'errored', 'aborted'].includes(
-          /** @type {StoryPage} */ (/** @type {unknown} */ (globalThis))
-            .__STORYBOOK_PREVIEW__?.currentRender?.phase ?? '',
+          globalThis.__STORYBOOK_PREVIEW__?.currentRender?.phase ?? '',
         ),
       undefined,
       { timeout: 60_000 },
     );
-    const state = await page.evaluate(() => {
-      const view = /** @type {StoryPage} */ (
-        /** @type {unknown} */ (globalThis)
-      );
+    const phase = await page.evaluate(
+      () => globalThis.__STORYBOOK_PREVIEW__?.currentRender?.phase,
+    );
+    const errorDisplay =
+      (await page.locator('body.sb-show-errordisplay').count()) > 0;
+    const rootChildren = await page.locator('#storybook-root > *').count();
 
-      return {
-        phase: view.__STORYBOOK_PREVIEW__?.currentRender?.phase,
-        errorDisplay: view.document.body.classList.contains(
-          'sb-show-errordisplay',
-        ),
-        rootChildren:
-          view.document.querySelector('#storybook-root')?.children.length,
-      };
-    });
-
-    return { ...state, consoleErrors: errors };
+    return { phase, errorDisplay, rootChildren, consoleErrors: errors };
   } finally {
     await browser.close();
   }
@@ -762,7 +810,7 @@ async function doctor() {
       'known story renders',
       render.phase === 'finished' &&
         !render.errorDisplay &&
-        (render.rootChildren ?? 0) > 0,
+        render.rootChildren > 0,
       `${KNOWN_STORY} phase=${render.phase} rootChildren=${String(render.rootChildren)}`,
     );
     add(
@@ -780,23 +828,31 @@ async function doctor() {
   if (recorded === null) {
     skip('build matches checkout', '--url instance');
   } else if (flowName === 'static') {
-    const built = path.join(
-      ROOT,
-      'packages/ngx-yeti/storybook-static/index.json',
+    // `up` runs build-storybook first, so the build matched the sources at
+    // launch. A cache restore keeps the original build's file times, so the
+    // sources are compared with the launch time, not with storybook-static.
+    const built = tail(recorded.log, Infinity).some((line) =>
+      line.includes('nx run ngx-yeti:build-storybook'),
     );
-    const builtAt = existsSync(built) ? statSync(built).mtimeMs : 0;
+    const launchedAt =
+      typeof recorded.startTime === 'string'
+        ? Date.parse(recorded.startTime)
+        : Number.NaN;
     const sourceAt = Math.max(
       ...SOURCE_DIRS.map((dir) =>
         newestMtime(path.join(ROOT, dir), NOT_SOURCE),
       ),
     );
+    const fresh = built && sourceAt < launchedAt;
     const scanned = `${SOURCE_DIRS.join(', ')} (${NOT_SOURCE.join(', ')} skipped)`;
     add(
       'build matches checkout',
-      builtAt >= sourceAt,
-      builtAt >= sourceAt
-        ? `storybook-static is newer than every file in ${scanned}`
-        : `a file in ${scanned} changed after the build; run down and up`,
+      fresh,
+      fresh
+        ? `ngx-yeti:build-storybook ran at launch and no file in ${scanned} changed since`
+        : built
+          ? `a file in ${scanned} changed after launch; run down and up`
+          : `no ngx-yeti:build-storybook run in ${recorded.log}`,
     );
   } else {
     const errors = tail(recorded.log, 500).filter((line) =>
@@ -848,11 +904,17 @@ async function down() {
   const live = table.find((proc) => proc.pid === state.pid);
 
   if (live === undefined) {
+    // A child of the dead root can outlive it and keep the port.
+    const sessionClose = await closeSession(state.session);
+    const { survivors, portFree } = await awaitTeardown(
+      treeMembers(table, state.pid),
+      state.port,
+    );
     endTeardown(
       state,
-      await closeSession(state.session),
+      sessionClose,
       `pid ${String(state.pid)} is not running; removed the state file`,
-      { stoppedPids: [] },
+      { stoppedPids: [], survivors, portFree },
     );
   }
 
@@ -872,8 +934,7 @@ async function down() {
   }
 
   const sessionClose = await closeSession(state.session);
-
-  const tree = [...descendants(table, state.pid)];
+  const members = treeMembers(table, state.pid);
 
   if (IS_WINDOWS) {
     try {
@@ -892,27 +953,20 @@ async function down() {
     }
   }
 
-  const deadline = Date.now() + 15_000;
-  let remaining = tree;
-  let portBusy = true;
+  const { survivors, portFree } = await awaitTeardown(members, state.port);
+  /** @type {Teardown} */
+  const teardown = {
+    stoppedPids: members.map((member) => member.pid),
+    survivors,
+    portFree,
+  };
+  const problems = teardownProblems(state, teardown);
 
-  while (Date.now() < deadline) {
-    const pids = new Set(processTable().map((proc) => proc.pid));
-    remaining = tree.filter((pid) => pids.has(pid));
-    portBusy = await portAnswers(state.port);
-
-    if (remaining.length === 0 && !portBusy) {
-      break;
-    }
-
-    await sleep(500);
-  }
-
-  if (remaining.length > 0 || portBusy) {
+  if (problems.length > 0) {
     finish(1, {
-      message: 'teardown incomplete',
-      remaining,
-      portBusy,
+      message: `teardown incomplete: ${problems.join('; ')}; state kept at ${statePath}; run down again`,
+      ...teardown,
+      port: state.port,
       sessionClose,
       statePath,
     });
@@ -921,9 +975,72 @@ async function down() {
   endTeardown(
     state,
     sessionClose,
-    `stopped pid ${String(state.pid)} and ${String(tree.length - 1)} descendants`,
-    { stoppedPids: tree, portFree: true },
+    `stopped pid ${String(state.pid)} and ${String(members.length - 1)} descendants`,
+    teardown,
   );
+}
+
+/**
+ * @typedef {object} Teardown
+ * @property {number[]} stoppedPids
+ * @property {number[]} survivors
+ * @property {boolean} portFree
+ */
+
+/**
+ * The recorded PID's tree in one process table. Each member keeps its start
+ * time, so a PID that Windows hands out again is not taken for a survivor.
+ *
+ * @param {ReturnType<typeof processTable>} table
+ * @param {number} pid
+ */
+function treeMembers(table, pid) {
+  const tree = descendants(table, pid);
+
+  return table
+    .filter((proc) => tree.has(proc.pid))
+    .map((proc) => ({ pid: proc.pid, start: proc.start }));
+}
+
+/**
+ * Waits up to 15 s until no member runs and the port stops answering.
+ *
+ * @param {ReturnType<typeof treeMembers>} members
+ * @param {number} listenPort
+ */
+async function awaitTeardown(members, listenPort) {
+  const deadline = Date.now() + 15_000;
+
+  for (;;) {
+    const after = new Map(processTable().map((proc) => [proc.pid, proc]));
+    const survivors = members
+      .filter((member) => after.get(member.pid)?.start === member.start)
+      .map((member) => member.pid);
+    const portFree = !(await portAnswers(listenPort));
+
+    if ((survivors.length === 0 && portFree) || Date.now() >= deadline) {
+      return { survivors, portFree };
+    }
+
+    await sleep(500);
+  }
+}
+
+/**
+ * @param {State} state
+ * @param {Teardown} teardown
+ */
+function teardownProblems(state, teardown) {
+  return [
+    ...(teardown.survivors.length > 0
+      ? [`pid ${teardown.survivors.join(', ')} still running`]
+      : []),
+    ...(teardown.portFree
+      ? []
+      : [
+          `port ${String(state.port)} still answers (listeners ${JSON.stringify(listeningPids(state.port))})`,
+        ]),
+  ];
 }
 
 /**
@@ -931,36 +1048,35 @@ async function down() {
  * the dead recorded PID path.
  *
  * @param {State} state
- * @param {Awaited<ReturnType<typeof closeSession>>} sessionClose
+ * @param {SessionClose} sessionClose
  * @param {string} message
- * @param {Record<string, unknown>} fields
+ * @param {Teardown} teardown
  * @returns {never}
  */
-function endTeardown(state, sessionClose, message, fields) {
+function endTeardown(state, sessionClose, message, teardown) {
   rmSync(statePath);
   const daemon = stopDaemon();
   const result = {
-    ...fields,
+    ...teardown,
     port: state.port,
     session: state.session,
     sessionClose,
     daemon,
     evidenceDir: state.evidenceDir,
   };
-  const closeFailed =
-    ['timeout', 'failed'].includes(sessionClose.outcome) ||
-    (sessionClose.outcome === 'absent' && sessionClose.listedOpen === true);
+  const problems = [
+    ...teardownProblems(state, teardown),
+    ...(sessionLeftOpen(sessionClose.outcome)
+      ? [
+          `playwright-cli session ${state.session} ${sessionClose.outcome}; close it with playwright-cli -s=${state.session} close`,
+        ]
+      : []),
+    ...(daemon.stopped ? [] : ['nx daemon --stop failed']),
+  ];
 
-  if (closeFailed || !daemon.stopped) {
+  if (problems.length > 0) {
     finish(1, {
-      message: `teardown incomplete: ${[
-        ...(closeFailed
-          ? [
-              `playwright-cli session ${state.session} ${sessionClose.outcome}; close it with playwright-cli -s=${state.session} close`,
-            ]
-          : []),
-        ...(daemon.stopped ? [] : ['nx daemon --stop failed']),
-      ].join('; ')}`,
+      message: `teardown incomplete: ${problems.join('; ')}`,
       ...result,
     });
   }
