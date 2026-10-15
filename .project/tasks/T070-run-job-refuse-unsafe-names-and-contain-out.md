@@ -3,9 +3,9 @@ id: T070
 title: Make run-job refuse a workflow name, job id, or matrix value that is not a safe name, and refuse a leg report folder outside its checkout folder
 wave: 14
 deps: [T053, T066]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T070
+base: 363caa025ba7202e41e39d1c647a3d368bcdc5f4
 worktree: null
 task_branch: null
 files:
@@ -75,3 +75,30 @@ Heavy: yes
 ## Log
 
 - 2026-10-15 — created by planner (build repair 9), from tmp/afk-m002/lars-review/security-r2.md finding 1; findings 2 to 5 accepted as written and not planned.
+- 2026-10-15 — build_T070 implementation: run-job.mjs gains exported `assertSafeName` (scalar text matching `^[\w.-]+$`, not only dots; throws a `Refusal`), called in `parseArgs` for the workflow name and job id (before `loadJob` looks the job up) and in `combinations` for every matrix value (non-scalar values refused). `legPaths` throws a `Refusal` unless `out` is strictly inside `join(tmpdir(), 'ngx-yeti-run-job', <checkout>)` (compared with `path.relative`). The CLI entry catches `Refusal` and reports it through `fail()` (exit 2; `fail` unchanged), also under `--dry-run`. `combinations` is now exported. Tests added in run-job.test.mjs (matrix values, job id via child run, workflow name, out outside checkout folder, real ci/floor ids and matrix values, dry run of the four container jobs); one existing test's empty label changed to `ci-e2e` because an empty label is now refused. references/ci-local.md states the accepted names and the refusal.
+- Base check: against run-job.mjs at 363caa0 (scratch copy under tmp/, `combinations` exported and a no-op `assertSafeName` appended, removed afterwards) the four refusal tests fail on their assertions: "Missing expected exception: \"..\"", "run-job: ci.yml has no job e2e/..", "Missing expected exception." (workflow name), "Missing expected exception: \"\"" (label). 0 pass, 4 fail.
+- Summary-line log path (measured): the Verify's `rg -o -r '$1' '^pass  ci-unit  .*  log: (.+)$'` yields the Windows path `C:\Users\LARSGY~1\AppData\Local\Temp\ngx-yeti-run-job\7193083e\ci-unit\run-job.log` (backslashes, 8.3 user folder); passed as a plain argument it reaches `node` unchanged and `statSync` finds the file (6482 bytes).
+- Verify result: run through heavy-lock, exit 0 (the only deviation: one added `echo REPORT_LOG=[...]` to see the path; the command was otherwise as written). run-job.test.mjs 13 pass / 0 fail / 0 skipped; dry run `ci 'e2e/..'` exit 2 naming `e2e/..`, no "has no job"; `@ngx-yeti/source:typecheck` passed; `ci unit` leg passed in 0 m 23 s (node --test 51 pass / 0 fail) and wrote run-job.log; prettier check passed on the three files. Rule 13: `npx prettier --check .` clean; `nx affected -t lint typecheck test --base=HEAD` ran typecheck and test for @ngx-yeti/source successfully (2 tasks, 1 cached); no test-storybook run because only tools/ci-local and references changed.
+- 2026-10-15 — orchestrator Verify (sidecar gsd-path-verify/task-t070-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

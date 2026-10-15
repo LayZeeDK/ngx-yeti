@@ -1,11 +1,15 @@
 // @ts-check
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { load } from 'js-yaml';
 import {
+  assertSafeName,
+  combinations,
   containerScript,
   legChecks,
   legPaths,
@@ -129,7 +133,7 @@ test('a leg writes its reports under the checkout hash its volumes carry', () =>
     join(tmpdir(), 'ngx-yeti-run-job', checkout, 'ci-e2e-production'),
   );
   assert.notEqual(
-    legPaths(join(tmpdir(), 'another'), 'ci', 'e2e', '').checkout,
+    legPaths(join(tmpdir(), 'another'), 'ci', 'e2e', 'ci-e2e').checkout,
     checkout,
   );
 });
@@ -170,6 +174,149 @@ test(
       );
 
       assert.deepEqual(mounts, [legPaths(checkout, 'ci', 'e2e', label).out]);
+    }
+  },
+);
+
+test('a matrix value that is not a safe name is refused with the value named', () => {
+  for (const value of [
+    '..',
+    '.',
+    '/../../../victim',
+    'a/b',
+    'a\\b',
+    'C:',
+    'a b',
+    '',
+    ['a'],
+  ]) {
+    assert.throws(
+      () => combinations({ configuration: [value] }, {}),
+      (error) =>
+        error instanceof Error &&
+        error.message.includes('matrix configuration value') &&
+        error.message.includes(JSON.stringify(value)),
+      JSON.stringify(value),
+    );
+  }
+
+  assert.equal(
+    combinations({ shard: [1, 2], engine: ['web-kit_1.2'] }, {}).length,
+    2,
+  );
+});
+
+test('a job id with a path separator is refused with the id named, not as a missing job', () => {
+  for (const id of ['e2e/..', 'e2e\\x', '..']) {
+    const { status, stderr } = spawnSync(
+      process.execPath,
+      [
+        fileURLToPath(new URL('run-job.mjs', import.meta.url)),
+        'ci',
+        id,
+        '--dry-run',
+      ],
+      { encoding: 'utf8' },
+    );
+
+    assert.equal(status, 2, id);
+    assert.ok(stderr.includes(`job id ${JSON.stringify(id)}`), stderr);
+    assert.ok(!stderr.includes('has no job'), stderr);
+  }
+});
+
+test('a workflow name with a path separator is refused with the name named', () => {
+  assert.throws(
+    () => parseArgs(['../ci', 'e2e']),
+    (error) =>
+      error instanceof Error && error.message.includes('workflow name "../ci"'),
+  );
+});
+
+test('a label that would put the reports folder outside the checkout folder is refused', () => {
+  for (const label of ['', '.', '..', '../x', 'a/../..', '/../../victim']) {
+    assert.throws(
+      () => legPaths(checkout, 'ci', 'e2e', label),
+      (error) =>
+        error instanceof Error &&
+        error.message.includes('is not inside') &&
+        error.message.includes(
+          join(
+            tmpdir(),
+            'ngx-yeti-run-job',
+            legPaths(checkout, 'ci', 'e2e', 'ok').checkout,
+          ),
+        ),
+      JSON.stringify(label),
+    );
+  }
+});
+
+/**
+ * @param {unknown} value
+ * @returns {Record<string, unknown>}
+ */
+function record(value) {
+  assert.ok(typeof value === 'object' && value !== null);
+
+  return /** @type {Record<string, unknown>} */ (value);
+}
+
+const jobs = ['ci', 'floor'].flatMap((workflow) => {
+  const parsed = record(
+    load(
+      readFileSync(join(checkout, `.github/workflows/${workflow}.yml`), 'utf8'),
+    ),
+  );
+
+  return Object.entries(record(parsed['jobs'])).map(([job, body]) => {
+    const { container, strategy } = record(body);
+
+    return {
+      workflow,
+      job,
+      container: Boolean(container),
+      matrix: strategy === undefined ? {} : record(record(strategy)['matrix']),
+    };
+  });
+});
+
+test('every job id and matrix value of the real workflows is a safe name', () => {
+  assert.ok(jobs.length >= 11);
+
+  for (const { workflow, job, matrix } of jobs) {
+    assert.doesNotThrow(() => {
+      assertSafeName(workflow, 'workflow name');
+      assertSafeName(job, 'job id');
+      combinations(matrix, {});
+    }, `${workflow} ${job}`);
+  }
+});
+
+test(
+  'every container job of the real workflows dry-runs',
+  { skip: gitRefusal },
+  () => {
+    const containerJobs = jobs.filter(({ container }) => container);
+
+    assert.deepEqual(
+      containerJobs.map(({ workflow, job }) => `${workflow} ${job}`),
+      ['ci unit', 'ci e2e', 'floor webkit-26-4', 'floor firefox-146-e2e'],
+    );
+
+    for (const { workflow, job } of containerJobs) {
+      const { status, stderr } = spawnSync(
+        process.execPath,
+        [
+          fileURLToPath(new URL('run-job.mjs', import.meta.url)),
+          workflow,
+          job,
+          '--dry-run',
+        ],
+        { encoding: 'utf8' },
+      );
+
+      assert.equal(status, 0, `${workflow} ${job}: ${stderr}`);
     }
   },
 );

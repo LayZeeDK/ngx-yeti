@@ -11,7 +11,7 @@ import {
   rmSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { isAbsolute, join, relative } from 'node:path';
 import { createInterface } from 'node:readline';
 import { load } from 'js-yaml';
 
@@ -45,6 +45,32 @@ const defaultE2eWorkers = 3;
 function fail(message) {
   console.error(`run-job: ${message}`);
   process.exit(2);
+}
+
+/** Input the script will not use; the command line reports it through `fail`. */
+class Refusal extends Error {}
+
+/**
+ * Workflow names, job ids, and matrix values reach host paths: only plain names pass.
+ *
+ * @param {unknown} value
+ * @param {string} what
+ */
+export function assertSafeName(value, what) {
+  const scalar =
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean';
+
+  if (
+    !scalar ||
+    !/^[\w.-]+$/.test(String(value)) ||
+    /^\.+$/.test(String(value))
+  ) {
+    throw new Refusal(
+      `${what} ${JSON.stringify(value)} is not a safe name: it must match ^[\\w.-]+$ and not be only dots`,
+    );
+  }
 }
 
 /**
@@ -110,8 +136,13 @@ export function parseArgs(argv) {
     fail(usage);
   }
 
+  const workflowName = workflow.replace(/\.ya?ml$/, '');
+
+  assertSafeName(workflowName, 'workflow name');
+  assertSafeName(job, 'job id');
+
   return {
-    workflow: workflow.replace(/\.ya?ml$/, ''),
+    workflow: workflowName,
     job,
     matrix,
     dryRun,
@@ -384,7 +415,7 @@ function mapping(value, what) {
  * @param {Matrix} matrix
  * @param {Record<string, string>} filter
  */
-function combinations(matrix, filter) {
+export function combinations(matrix, filter) {
   if ('include' in matrix || 'exclude' in matrix) {
     fail('matrix include and exclude are not supported');
   }
@@ -401,6 +432,10 @@ function combinations(matrix, filter) {
   for (const [key, values] of Object.entries(matrix)) {
     if (!Array.isArray(values)) {
       fail(`matrix ${key} is not a list, which run-job.mjs does not run`);
+    }
+
+    for (const value of values) {
+      assertSafeName(value, `matrix ${key} value`);
     }
 
     result = result.flatMap((combo) =>
@@ -474,10 +509,18 @@ export function legPaths(checkoutRoot, workflow, jobName, label) {
     .digest('hex')
     .slice(0, 8);
 
+  const base = join(tmpdir(), 'ngx-yeti-run-job', checkout);
+  const out = join(base, label);
+  const inside = relative(base, out);
+
+  if (inside === '' || inside.startsWith('..') || isAbsolute(inside)) {
+    throw new Refusal(`the reports folder ${out} is not inside ${base}`);
+  }
+
   return {
     checkout,
     volume: `ngx-yeti-run-job-${checkout}-${workflow}-${jobName}`,
-    out: join(tmpdir(), 'ngx-yeti-run-job', checkout, label),
+    out,
   };
 }
 
@@ -798,5 +841,13 @@ async function run({
 }
 
 if (import.meta.main) {
-  await run(parseArgs(process.argv.slice(2)));
+  try {
+    await run(parseArgs(process.argv.slice(2)));
+  } catch (error) {
+    if (error instanceof Refusal) {
+      fail(error.message);
+    }
+
+    throw error;
+  }
 }

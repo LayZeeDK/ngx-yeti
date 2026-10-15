@@ -10,7 +10,7 @@ Every job in `.github/workflows/ci.yml` and `.github/workflows/floor.yml` runs l
 node tools/ci-local/run-job.mjs <workflow> <job> [--matrix key=value]... [--legs <n>] [--e2e-workers <n>] [--dry-run] [-- <command>...]
 ```
 
-The script reads the job's `container` image, `env`, matrix and `run` steps from the workflow file. It refuses any workflow key, step, action input or expression it does not run, so a workflow change either reaches the local run or stops it with a message. For each matrix combination it:
+The script reads the job's `container` image, `env`, matrix and `run` steps from the workflow file. It refuses any workflow key, step, action input or expression it does not run, so a workflow change either reaches the local run or stops it with a message. The workflow name, the job id and every matrix value become part of a host folder name, so each must match `^[\w.-]+$` and not be only dots; `run-job.mjs` refuses any other, naming it, before it creates or removes anything, with or without `--dry-run`. It also refuses a leg whose reports folder is not inside `ngx-yeti-run-job/<checkout>` under the system temp folder. For each matrix combination it:
 
 - streams the working tree, uncommitted files included, into a fresh `--rm` container; the checkout is only read;
 - keeps every `node_modules` folder the lockfile names, and the npm cache, in Docker volumes named `ngx-yeti-run-job-<checkout>-*`;
