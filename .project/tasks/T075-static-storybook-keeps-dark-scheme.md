@@ -3,9 +3,9 @@ id: T075
 title: Build the static Storybook's CSS for the .browserslistrc floor so inline dark-scheme wrappers stay dark, and assert every wrapper story's colours in ngx-yeti-e2e
 wave: 15
 deps: []
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T075
+base: cf6fd65f5a017d5fffab14228f2a5bcf3b29a58d
 worktree: null
 task_branch: null
 files:
@@ -76,3 +76,31 @@ Heavy: yes
 ## Log
 
 - 2026-10-15 — created by planner (final-review patch), from .project/review/PATCH-FINDINGS.md P003 (source .project/review/final-gap-3.md).
+- 2026-10-15 — coder (build_T075): packages/ngx-yeti/.storybook/main.ts `viteFinal` now merges `build: { cssTarget }` read from .browserslistrc (plain `<browser> <version>` lines; `ios_saf` -> `ios`; an unmappable line throws while the config loads, naming the line). Result: `chrome141, edge141, firefox145, safari26.2, ios26.2`. `css.lightningcss.targets` is not set; fastCompile swap and `server.fs.allow` unchanged. New apps/ngx-yeti-e2e/src/color-scheme-wrappers.spec.ts: one test per story and page scheme (`page.emulateMedia`) for 16 stories (box--surfaces, box--paint, box--paint-alerts-light, box--paint-alerts-dark, box--text, box--anti-pattern-low-contrast, breakout--dark-scheme, button--variants, icon--standalone, layer--dark-scheme, layer--badge, overlay--default, overlay--veil, spinner--default, spinner--variants, timeline--dark-scheme). It reads every `[style*="color-scheme"]` wrapper in the story root and asserts a dark wrapper's surface luminance is below 0.18 and its text above, a light wrapper's the reverse, then flips the page scheme and asserts the wrapper colours are unchanged. A coverage test reads every `*.stories.ts` under packages/ngx-yeti whose source matches `color-scheme:` or `withColorScheme(` and fails when no listed story id has that file as its index.json `importPath`. The list adds box--surfaces, box--text and overlay--default to final-gap-3's 13 stories: their sources set an inline `color-scheme` wrapper too. No story, decorator, existing spec, package.json or lock file changed.
+- 2026-10-15 — coder: before the main.ts change (original main.ts, Chromium, native, `nx run ngx-yeti-e2e:e2e --skip-nx-cache -- --project=chromium color-scheme-wrappers`): 32 failed, 1 passed (the coverage test). Every failure is the colour assertion, e.g. "dark wrapper: oklch(0.15 0.02 250) on oklch(0.99 0.02 250)" under a light page and "light wrapper: oklch(0.93 0.02 250) on oklch(0.13 0.02 250)" under a dark page. After the change, the same native Chromium run of color-scheme-wrappers, button, layer, overlay and spinner: 92 passed.
+- 2026-10-15 — coder: dark colours measured in the Verify's run-job legs (blob-report annotations), identical in Chromium, Firefox and WebKit: every dark wrapper `oklch(0.93 0.02 250)` on `oklch(0.13 0.02 250)` and every light wrapper `oklch(0.15 0.02 250)` on `oklch(0.99 0.02 250)`, under both page schemes, for every listed story, including button--variants (button.spec.ts:244's story), layer--dark-scheme, overlay--veil, spinner--default and spinner--variants. a11y-10b-ratio for layer--dark-scheme: 16.500 on black, 11.309 on white; veil-scrim-ratio dark: 16.500 on black, 11.309 on white (all three engines). No dark case fell under its threshold, so INTENT E7's follow-up is not triggered.
+- 2026-10-15 — coder: Verify run exactly as written, exit 0. build-storybook passed; built CSS (assets/iframe-so7-hU1g.css) holds `light-dark(`, no `lightningcss-dark`; lint and typecheck for ngx-yeti and ngx-yeti-e2e passed; test-storybook 25 files, 170 tests passed; run-job ci e2e: chromium 186 passed 1 skipped, firefox 186 passed 1 skipped, webkit 178 passed 9 skipped (skips are the existing forced-colours, Tab-to-buttons and animation-timeline engine skips); prettier passed on both files; Nx daemon stopped.
+- 2026-10-15 — coder: rule-13 check: `npx prettier --check .` passed; `nx affected -t lint typecheck test test-storybook --base=HEAD` passed for 6 projects (ngx-yeti test 85 files / 705 tests, test-storybook 25 files / 170 tests, plus a 1-file / 1-test run).
+- 2026-10-15 — orchestrator Verify (isolate gsd-path-task/T075): pass, exit 0; output tail:
+  ```
+  17.18.26 [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mNG02960: The NgOptimizedImage directive (activated on an <img> element with the `ngSrc="/.storybook/assets/trail.svg?no-inline"`) has detected that the intrinsic image is significantly larger than necessary. 
+  Rendered image size: 250.469w x 140.875h. 
+  Intrinsic image size: 1600w x 900h. 
+  Recommended intrinsic image size: 500.938w x 281.75h. 
+  Note: Recommended intrinsic image size is calculated assuming a maximum DPR of 2. To improve loading time, resize the image or consider using the "ngSrcset" and "sizes" attributes.
+  17.18.26 [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mNG02960: The NgOptimizedImage directive (activated on an <img> element with the `ngSrc="/.storybook/assets/trail.svg?no-inline"`) has detected that the intrinsic image is significantly larger than necessary. 
+  Rendered image size: 250.453w x 140.875h. 
+  Intrinsic image size: 1600w x 900h. 
+  Recommended intrinsic image size: 500.906w x 281.75h. 
+  Note: Recommended intrinsic image size is calculated assuming a maximum DPR of 2. To improve loading time, resize the image or consider using the "ngSrcset" and "sizes" attributes.
+  17.18.26 [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mNG02960: The NgOptimizedImage directive (activated on an <img> element with the `ngSrc="/.storybook/assets/trail.svg?no-inline"`) has detected that the intrinsic image is significantly larger than necessary. 
+  Rendered image size: 250.453w x 140.875h. 
+  Intrinsic image size: 1600w x 900h. 
+  Recommended intrinsic image size: 500.906w x 281.75h. 
+  Note: Recommended intrinsic image size is calculated assuming a maximum DPR of 2. To improve loading time, resize the image or consider using the "ngSrcset" and "sizes" attributes.
+  17.18.31 [vite] [33m[2m(client)[22m[39m [2m[console.warn] [22mNG02952: The NgOptimizedImage directive (activated on an <img> element with the `ngSrc="/.storybook/assets/trail.svg?no-inline"`) has detected that the aspect ratio of the rendered image does not match the image's intrinsic aspect ratio. 
+  Intrinsic image size: 1600w x 900h (aspect-ratio: 1.78). 
+  Rendered image size: 960w x 411.422h (aspect-ratio: 2.33). 
+  This issue can occur if "width" and "height" attributes are added to an image without updating the corresponding image styling. To fix this, adjust image styling. In most cases, adding "height: auto" or "width: auto" to the image styling will fix this issue.
+  17.18.33 [vite] [31m[2m(client)[22m[39m [2m[console.error] [22mNG02955: The NgOptimizedImage directive (activated on an <img> element with the `ngSrc="http://127.0.0.1:62191/.storybook/assets/trail.svg?no-inline"`) has detected that this image is the Largest Contentful Paint (LCP) element but was not marked "priority". This image should be marked "priority" in order to prioritize its loading. To fix this, add the "priority" attribute.
+  ```
