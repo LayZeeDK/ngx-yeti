@@ -161,3 +161,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-15 — plan — build recovery: {"base": "508589f270766cf8573e15c3c9de60f210e007be", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-15 — plan — plan approved
 - 2026-10-15 — build — build started
+- 2026-10-15 — build — waves 12 and 13 cycle 1 reviews pass at bc55b9e; gate wave13-c2 at bc55b9e 7 of 8 plus a passing run-many rerun after an out-of-memory crash; security review r2 found one Medium (run-job host path traversal) that needs a fix task
