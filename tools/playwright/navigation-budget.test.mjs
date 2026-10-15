@@ -1,0 +1,352 @@
+// @ts-check
+import assert from 'node:assert/strict';
+import { globSync, readFileSync } from 'node:fs';
+import { basename } from 'node:path';
+import { test } from 'node:test';
+import ts from 'typescript';
+
+// A test that loads pages in a loop under a fixed budget passes only with
+// headroom: its budget does not grow with the list it walks. The check reads
+// only the syntax tree, so a helper that navigates in a loop on a caller's
+// behalf is not seen.
+
+const root = new URL('../../', import.meta.url);
+const buildOutput = [
+  'node_modules',
+  'dist',
+  'storybook-static',
+  'out-tsc',
+  'coverage',
+  'tmp',
+  'test-output',
+  '.angular',
+  '.nx',
+];
+const fix =
+  'give each visit its own budget: a test timeout scaled by the count, or one test per entry';
+const testNames = new Set(['test', 'it']);
+const testModifiers = new Set(['only', 'fixme', 'fail', 'skip']);
+const navigations = new Set([
+  'goto',
+  'reload',
+  'goBack',
+  'goForward',
+  'setContent',
+  'openStory',
+  'axeViolations',
+]);
+const iterationMethods = new Set(['forEach', 'map', 'flatMap']);
+const timeoutOwners = new Set(['test', 'testInfo', 'test.info()']);
+
+/**
+ * Whether `call` is a `test` or `it` call, or one of their modifiers.
+ *
+ * @param {ts.CallExpression} call
+ */
+function isTestCall(call) {
+  const callee = call.expression;
+
+  if (ts.isIdentifier(callee)) {
+    return testNames.has(callee.text);
+  }
+
+  return (
+    ts.isPropertyAccessExpression(callee) &&
+    ts.isIdentifier(callee.expression) &&
+    testNames.has(callee.expression.text) &&
+    testModifiers.has(callee.name.text)
+  );
+}
+
+/**
+ * Whether `call` loads a page: a navigation method or helper, or a
+ * screen-reader lane's `open`.
+ *
+ * @param {ts.CallExpression} call
+ */
+function isNavigation(call) {
+  const callee = call.expression;
+
+  if (ts.isIdentifier(callee)) {
+    return navigations.has(callee.text);
+  }
+
+  if (!ts.isPropertyAccessExpression(callee)) {
+    return false;
+  }
+
+  const name = callee.name.text;
+
+  return (
+    navigations.has(name) ||
+    (name === 'open' &&
+      ts.isIdentifier(callee.expression) &&
+      callee.expression.text === 'lane')
+  );
+}
+
+/**
+ * Whether `node` holds a navigation call.
+ *
+ * @param {ts.Node} node
+ * @returns {boolean}
+ */
+function navigates(node) {
+  if (ts.isCallExpression(node) && isNavigation(node)) {
+    return true;
+  }
+
+  return ts.forEachChild(node, navigates) ?? false;
+}
+
+/**
+ * The text of every `X` that `node` reads as `X.length`.
+ *
+ * @param {ts.Node} node
+ * @param {ts.SourceFile} source
+ * @returns {string[]}
+ */
+function lengthsRead(node, source) {
+  /** @type {string[]} */
+  const lists = [];
+
+  /** @param {ts.Node} child */
+  const visit = (child) => {
+    if (ts.isPropertyAccessExpression(child) && child.name.text === 'length') {
+      lists.push(child.expression.getText(source));
+    }
+
+    ts.forEachChild(child, visit);
+  };
+
+  visit(node);
+
+  return lists;
+}
+
+/**
+ * The lists a loop walks, by their source text, and the body that runs once
+ * per entry, or `undefined` when `node` is no loop.
+ *
+ * @param {ts.Node} node
+ * @param {ts.SourceFile} source
+ * @returns {{ lists: string[], body: ts.Node } | undefined}
+ */
+function loopOf(node, source) {
+  if (ts.isForOfStatement(node) || ts.isForInStatement(node)) {
+    return { lists: [node.expression.getText(source)], body: node.statement };
+  }
+
+  if (ts.isForStatement(node)) {
+    return {
+      lists: node.condition ? lengthsRead(node.condition, source) : [],
+      body: node.statement,
+    };
+  }
+
+  if (ts.isWhileStatement(node) || ts.isDoStatement(node)) {
+    return {
+      lists: lengthsRead(node.expression, source),
+      body: node.statement,
+    };
+  }
+
+  if (
+    ts.isCallExpression(node) &&
+    ts.isPropertyAccessExpression(node.expression) &&
+    iterationMethods.has(node.expression.name.text)
+  ) {
+    const callback = node.arguments[0];
+
+    if (
+      callback &&
+      (ts.isArrowFunction(callback) || ts.isFunctionExpression(callback))
+    ) {
+      return {
+        lists: [node.expression.expression.getText(source)],
+        body: callback.body,
+      };
+    }
+  }
+
+  return undefined;
+}
+
+/**
+ * The lists whose `.length` a `setTimeout` call in `body` reads.
+ *
+ * @param {ts.Node} body
+ * @param {ts.SourceFile} source
+ */
+function scaledLists(body, source) {
+  /** @type {Set<string>} */
+  const lists = new Set();
+
+  /** @param {ts.Node} node */
+  const visit = (node) => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      node.expression.name.text === 'setTimeout' &&
+      timeoutOwners.has(node.expression.expression.getText(source))
+    ) {
+      for (const argument of node.arguments) {
+        for (const list of lengthsRead(argument, source)) {
+          lists.add(list);
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(body);
+
+  return lists;
+}
+
+/**
+ * Whether a test body walks a list with page loads and its timeout does not
+ * read that list's length.
+ *
+ * @param {ts.Node} body
+ * @param {ts.SourceFile} source
+ */
+function hasFixedBudgetLoop(body, source) {
+  const scaled = scaledLists(body, source);
+
+  /**
+   * @param {ts.Node} node
+   * @returns {boolean}
+   */
+  const visit = (node) => {
+    const loop = loopOf(node, source);
+
+    if (
+      loop &&
+      navigates(loop.body) &&
+      !loop.lists.some((list) => scaled.has(list))
+    ) {
+      return true;
+    }
+
+    return ts.forEachChild(node, visit) ?? false;
+  };
+
+  return visit(body);
+}
+
+/**
+ * The test calls in `text` and the lines of those that load pages in a loop
+ * under a fixed budget.
+ *
+ * @param {string} text
+ * @param {string} fileName
+ */
+function scan(text, fileName) {
+  const source = ts.createSourceFile(
+    fileName,
+    text,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+  let tests = 0;
+  /** @type {number[]} */
+  const lines = [];
+
+  /** @param {ts.Node} node */
+  const visit = (node) => {
+    if (ts.isCallExpression(node) && isTestCall(node)) {
+      const callback = node.arguments.findLast(
+        (argument) =>
+          ts.isArrowFunction(argument) || ts.isFunctionExpression(argument),
+      );
+
+      if (callback) {
+        tests += 1;
+
+        if (hasFixedBudgetLoop(callback.body, source)) {
+          lines.push(
+            source.getLineAndCharacterOfPosition(node.getStart(source)).line +
+              1,
+          );
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit);
+  };
+
+  visit(source);
+
+  return { tests, lines };
+}
+
+const files = globSync('{apps,packages}/**/*.{ts,mts,mjs,tsx}', {
+  cwd: root,
+  exclude: (path) => buildOutput.includes(basename(path)),
+}).map((path) => path.replaceAll('\\', '/'));
+
+test('flags a test that loads pages in a loop under a fixed budget', () => {
+  const text = `
+test('every route', async ({ page }) => {
+  for (const key of keys) {
+    await page.goto(key);
+  }
+});
+test('every story', async ({ page }) => {
+  stories.forEach(async (id) => {
+    await openStory(page, id);
+  });
+});
+`;
+
+  assert.deepEqual(scan(text, 'fixed.spec.ts'), { tests: 2, lines: [2, 7] });
+});
+
+test('passes a test whose timeout scales with the list it walks', () => {
+  const text = `
+test('every route', async ({ page }) => {
+  const keys = registeredKeys();
+  const perVisit = test.info().timeout;
+
+  test.setTimeout(keys.length * perVisit);
+
+  for (const key of keys) {
+    await test.step(key, async () => {
+      await page.goto(key);
+    }, { timeout: perVisit });
+  }
+});
+`;
+
+  assert.deepEqual(scan(text, 'scaled.spec.ts'), { tests: 1, lines: [] });
+});
+
+test('passes a loop that generates one test per entry', () => {
+  const text = `
+for (const key of keys) {
+  test(key, async ({ page }) => {
+    await page.goto(key);
+  });
+}
+`;
+
+  assert.deepEqual(scan(text, 'generated.spec.ts'), { tests: 1, lines: [] });
+});
+
+test('no test under apps/ or packages/ loads pages in a loop under a fixed budget', () => {
+  let tests = 0;
+  /** @type {string[]} */
+  const found = [];
+
+  for (const path of files) {
+    const result = scan(readFileSync(new URL(path, root), 'utf8'), path);
+
+    tests += result.tests;
+    found.push(...result.lines.map((line) => `${path}:${line}`));
+  }
+
+  assert.notEqual(tests, 0, 'no test call parsed under apps/ or packages/');
+  assert.deepEqual(found, [], `${found.join(', ')}: ${fix}`);
+});

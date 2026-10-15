@@ -219,13 +219,22 @@ for (const { kind, prefix } of routeKinds) {
 
     test('serves its fixture, not a stub', async ({ page }) => {
       const keys = registeredKeys();
+      // Every route gets the budget of a one-route test, so a slow route
+      // fails at its own step instead of using up the rest's budget.
+      const perVisit = test.info().timeout;
+
+      test.setTimeout(keys.length * perVisit);
 
       expect(keys, 'the registry holds the card route').toContain('card');
 
       for (const key of keys) {
-        await test.step(key, async () => {
-          await expectFixtureRoute(page, await page.goto(`${prefix}${key}`));
-        });
+        await test.step(
+          key,
+          async () => {
+            await expectFixtureRoute(page, await page.goto(`${prefix}${key}`));
+          },
+          { timeout: perVisit },
+        );
       }
     });
   });

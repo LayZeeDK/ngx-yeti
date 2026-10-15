@@ -3,9 +3,9 @@ id: T071
 title: Give each route visit of the registry route check its own budget, and fail the root test target on any test that loops over page loads under a fixed budget
 wave: 15
 deps: [T053, T066]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T071
+base: cf6fd65f5a017d5fffab14228f2a5bcf3b29a58d
 worktree: null
 task_branch: null
 files:
@@ -72,3 +72,31 @@ Heavy: yes
 ## Log
 
 - 2026-10-15 — created by planner (final-review patch), from .project/review/PATCH-FINDINGS.md P001 (source .project/review/final-gap-1.md) with the orchestrator's measurements of the failing leg.
+- 2026-10-15 — build_T071 implementation: fixture-app.spec.ts's registry test reads `perVisit = test.info().timeout` before changing it, calls `test.setTimeout(keys.length * perVisit)`, and passes `{ timeout: perVisit }` to each key's `test.step`; nothing else in the file changed. New tools/playwright/navigation-budget.test.mjs (`// @ts-check`, JSDoc, `typescript` AST): scans {apps,packages}/**/*.{ts,mts,mjs,tsx} (skips node_modules, dist, storybook-static, out-tsc, coverage, tmp, test-output, .angular, .nx), flags each `test`/`it` call (and `.only`/`.fixme`/`.fail`/`.skip`) whose callback has a for/for-of/for-in/while/do loop or forEach/map/flatMap callback holding `goto`, `reload`, `goBack`, `goForward`, `setContent`, `openStory`, `axeViolations` or `lane.open`, unless a `test.setTimeout`/`testInfo.setTimeout`/`test.info().setTimeout` argument reads `.length` of the iterated list (for for/while/do: an `X.length` the loop condition reads). Inline cases: fixed-budget for-of `goto` and forEach `openStory` flagged (lines 2 and 7), scaled form and a test-generating loop pass; real-tree case asserts tests parsed > 0 and no finding. project.json: root `test` command runs the new file; inputs gain `{workspaceRoot}/{apps,packages}/**/*.{ts,mts,mjs,tsx}`.
+- 2026-10-15 — build_T071 check on the base spec (before the spec edit): `node --test tools/playwright/navigation-budget.test.mjs` 3 pass, 1 fail; the failing assertion: "AssertionError [ERR_ASSERTION]: apps/yeti-app-e2e/src/fixture-app.spec.ts:220: give each visit its own budget: a test timeout scaled by the count, or one test per entry" (actual ['apps/yeti-app-e2e/src/fixture-app.spec.ts:220'], expected []). After the spec edit: 4 pass, 0 fail.
+- 2026-10-15 — build_T071 cache: `nx run @ngx-yeti/source:test` run 1 0/1 hit, run 2 1/1 hit, then a one-character edit to fixture-app.spec.ts (reverted after) gave 0/1 hit (cache miss).
+- 2026-10-15 — build_T071 Verify (exactly as written, through heavy-lock): exit 0. `@ngx-yeti/source:test` 57 tests, 57 pass, 0 fail; `typecheck @ngx-yeti/source` tsc clean, scripts-coverage 1/1 pass; yeti-app-e2e lint and typecheck pass; prettier clean on the three files; `run-job.mjs ci e2e --matrix engine=firefox --matrix configuration=development` pass, leg ci-e2e-firefox-development 6 m 6 s: yeti-app-e2e 616 passed, 4 skipped, 0 failed (the base run had 614 passed, 2 failed, so both registry tests now pass; inferred from the counts, the leg log lists no per-test names), other legs' projects 153 passed 1 skipped and 1 passed.
+- 2026-10-15 — build_T071 bisect check: `npx prettier --check .` clean; `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (through heavy-lock) exit 0, lint, typecheck, test, test-storybook for 9 projects and 2 dependency tasks, 25 tasks, 10 cached.
+- 2026-10-15 — orchestrator Verify (isolate gsd-path-task/T071): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```
