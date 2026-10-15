@@ -3,9 +3,9 @@ id: T065
 title: Limit the painted-band ink reset to the alert emphasis that paints a fill the ring reads on, test low- and high-emphasis alerts in a band, and record Yeti's ring on a high-emphasis alert
 wave: 12
 deps: [T058, T060]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T065
+base: 131cf8e920681d3fe01528a6f2df874ee3b386e1
 worktree: null
 task_branch: null
 files:
@@ -82,3 +82,31 @@ Heavy: yes
 ## Log
 
 - 2026-10-15 — created by planner (build repair 7), from tmp/afk-m002/lars-review/r4/triage.md group A, item 1 with its folded cosmetics (thermos quality L3, test-analyzer C2 and the first bullet of C3).
+- 2026-10-15 — build_T065 measurements (criterion 1 and the upstream row), Playwright 1.63's Chromium, a standalone page loading `vendor/yeti/src/yeti.css` with no package stylesheet, a close button (`.alert > [data-close]`) focused by keyboard, Yeti's ring (`--yeti-color-focus`) against the alert's computed fill (a transparent fill composited on `--yeti-color-surface`), one-off scratch script outside the worktree. Default variant: default emphasis (no attribute, and `medium`) 4.70:1 light, 5.99:1 dark; `high` 1.00:1 light, 1.00:1 dark (fill = ring colour); `low` paints no fill (`rgba(0, 0, 0, 0)`), 5.31:1 light and 7.54:1 dark against the page surface, so in a band the ring sits on the band. High emphasis, every variant, light/dark: `primary` 1.00/1.00, `secondary` 1.07/1.06, `success` 1.06/1.05, `warning` 1.01/1.02, `alert` 1.08/1.07, `danger` 1.08/1.07, `neutral` 1.00/1.00, `black` 3.82/7.88, `white` 5.50/2.66. Default emphasis is at least 4.43:1 for every variant. With `ngx-yeti-globals.css` added and the narrowed reset, a high-emphasis default-variant alert in a `primary` band rings `oklch(0.99 0 0)` light / `oklch(0.15 0 0)` dark (the band ink): 5.36:1 and 7.39:1 against the alert's fill (8-bit canvas rounding; the story's `button-band` T060 recorded as 5.35:1 with the same colours).
+- 2026-10-15 — build_T065 implementation: `ngx-yeti-globals.css` reset is now `:where(.card, .nav, .alert:not([data-emphasis='low'], [data-emphasis='high']), .accordion, .accordion > details > summary, .box[data-surface], .table > thead[data-sticky] th, dialog, [popover])`, still before the 20 paint lines, no `--_yeti-*` read; `.dialog`, `.dropdown > [popover]`, `.nav > ul[popover]` dropped (covered by `dialog` and `[popover]`); the comment says why only the default emphasis resets. `accessibility.node.spec.ts`: `yetiSurfaces` holds the 7 Yeti entries; `inkResets` splits at commas outside parentheses and returns `[]` without a reset (self-test renamed "reads the selectors of the ink reset, and none without one"); the surface test is titled "...on the pinned surfaces..."; the source check (`missingFromYeti`) checks each entry without its `:not()` against Yeti's source with attribute values dropped, and each attribute value the entry names as `.alert[data-emphasis="low"]` / `"high"` against Yeti's source as written, with a unit test that it reports a missing emphasis value and a renamed `.alert`. `published-output.node.spec.ts`: the `A11Y-35` string matches the new rule (hand-written; the shared-array option was not taken). `box.stories.ts` (`box--paint`): a story-local `YetiStoryAlertStyles` directive (`[yetiStoryAlertStyles]`, host `data-ngx-yeti-item-alert`) calls `injectYetiItemStyles('alert')` from `ngx-yeti/styles` on Yeti's own `class="alert" data-emphasis="low|high"` markup, each in a 4px-padded `primary` band holding only an `aria-label`led close button (no text, so axe has no text on the low alert's band to flag); the play waits with `itemStyled('alert', lowAlert, 'display', 'flex')`, asserts the low alert's fill is transparent, tabs to each close button, and asserts the ring at least 3:1 against the band (low) and against the alert's computed fill (high), in both schemes. Every existing assertion and band order check kept. Records: ledger A11Y-35 (package column selector and the alert/popover sentences, Verified with the measurements above, Tested-by with the alert cases and the narrowed node check); upstream-bugs Y18 (high-emphasis alert ring outside bands, the under-3:1 ratios above, alert.css:18, :22-27, :42-58); CHANGELOG globals bullet (an alert of the default emphasis, no dropdown or nav panel entries, low/high take the band colour); specs skill `box.md:207` row (Prettier realigned that table's column widths, no other cell changed); accessibility skill line 48; yeti-pin step 5 (7 Yeti surface selectors, re-derive on a new emphasis or repainting surface). No new ledger row: the package does not fix Y18 outside bands.
+- UPSTREAM: Yeti `src/components/alert/alert.css:22-26` with `src/tokens/color.css:107`: a focused control in a high-emphasis alert draws `--yeti-color-focus` on the variant fill, under 3:1 for every variant but `black` and light-scheme `white` (lowest 1.00:1, default and `primary` and `neutral`); recorded as upstream-bugs Y18.
+- 2026-10-15 — build_T065 failure demonstrations (criterion 4), the reset's alert entry restored to the whole `.alert`, each run once with `npm exec nx -- test-storybook ngx-yeti --skip-nx-cache -- box/src` through the heavy lock, files restored from backups afterwards (rg confirms the narrowed entry and no edit left). (a) Low case: failed "expected 1 to be greater than or equal to 3" at `box.stories.ts:580`, `expectRingOn(lowClose, lowAlertBand)`; 1 failed, 7 passed. (b) High case, with the low ring assertion temporarily removed so the play reaches it: failed "expected 1 to be greater than or equal to 3" at `box.stories.ts:599`, `expectRingOn(highClose, highAlert)`; 1 failed, 7 passed.
+- 2026-10-15 — build_T065 Verify, run exactly as written through the heavy lock: exit 0. rg checks passed; lint and typecheck of ngx-yeti passed; `nx test ngx-yeti -- src/published-output src/accessibility box/src`: 6 files, 58 tests passed; native `test-storybook -- box/src` (Chromium): 1 file, 8 tests passed; `run-job.mjs ci unit` `test-storybook -- box/src`: 3 files, 24 tests passed (`box.stories.ts` 8 of 8 in each of Chromium, Firefox, WebKit); Prettier check on the listed paths passed; Nx daemon stopped. Rule 13: `npx prettier --check .` passed; `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (through the lock) exit 0, all four targets for 6 projects and 2 dependency tasks (17 tasks, 5 from cache).
+- 2026-10-15 — orchestrator Verify (isolate gsd-path-task/T065): pass, exit 0; output tail:
+  ```
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/spinner
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/stack
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/table
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/timeline
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/visually-hidden
+  ```

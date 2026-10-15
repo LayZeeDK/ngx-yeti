@@ -50,14 +50,14 @@
      a ring inside it sits on that fill and not on the band: the surface
      gives its contents Yeti's ring colour back. The reset has no specificity
      and comes first, so a surface that is itself a band keeps its band's
-     colour, and a band inside a surface sets its own again. */
+     colour, and a band inside a surface sets its own again. Only an alert
+     of the default emphasis counts: a low-emphasis alert paints no fill, and
+     a high-emphasis one fills with its variant, on which Yeti's ring does
+     not read, so both keep the band's text colour. */
   :where(
     .card,
-    .dialog,
-    .dropdown > [popover],
     .nav,
-    .nav > ul[popover],
-    .alert,
+    .alert:not([data-emphasis='low'], [data-emphasis='high']),
     .accordion,
     .accordion > details > summary,
     .box[data-surface],

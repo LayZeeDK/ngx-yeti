@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { Directive, signal } from '@angular/core';
 import {
   contrastRatio,
   itemLinks,
@@ -15,6 +15,7 @@ import { YetiButton } from 'ngx-yeti/button';
 import { YetiCard } from 'ngx-yeti/card';
 import { YetiCenter } from 'ngx-yeti/center';
 import { YetiStack } from 'ngx-yeti/stack';
+import { injectYetiItemStyles } from 'ngx-yeti/styles';
 import { expect, userEvent, waitFor } from 'storybook/test';
 import { YetiBox } from './box';
 import { YetiBorder } from './box-border';
@@ -375,14 +376,35 @@ async function expectRingOn(
 /** The ring's reach, 2px wide at a 2px offset, so it lies on the band. */
 const ringRoom = 'padding: 4px';
 
+/** Loads Yeti's alert file, which no package directive loads, on Yeti's own alert markup. */
+@Directive({
+  selector: '[yetiStoryAlertStyles]',
+  host: { 'data-ngx-yeti-item-alert': '' },
+})
+class YetiStoryAlertStyles {
+  constructor() {
+    injectYetiItemStyles('alert');
+  }
+}
+
+/** Yeti's alert at one emphasis in a band, holding only its labelled close button. */
+function alertBand(emphasis: 'low' | 'high'): string {
+  return `<div data-testid="${emphasis}-alert-band" yetiPaint="primary" style="${ringRoom}">
+    <div data-testid="${emphasis}-alert" class="alert" data-emphasis="${emphasis}" yetiStoryAlertStyles><button type="button" data-close aria-label="Dismiss the ${emphasis}-emphasis alert"></button></div>
+  </div>`;
+}
+
 /**
  * Every text-bearing paint as a band with words, and the middle greys as
  * fills without text (usage rule 4), in both schemes (ledger A11Y-21).
- * Focus rings in bands, on a card inside a band, and on a toggle label in a
- * band read at least 3:1 (ledger A11Y-35).
+ * Focus rings in bands, on a card inside a band, on a toggle label in a
+ * band, and in a low- and a high-emphasis alert in a band read at least 3:1
+ * (ledger A11Y-35).
  */
 export const Paint: Story = {
-  decorators: [moduleMetadata({ imports: [YetiButton, YetiCard] })],
+  decorators: [
+    moduleMetadata({ imports: [YetiButton, YetiCard, YetiStoryAlertStyles] }),
+  ],
   render: () => ({
     template: schemes
       .map((scheme) =>
@@ -409,6 +431,8 @@ export const Paint: Story = {
             <div data-testid="toggle-band" yetiPaint="primary" style="${ringRoom}">
               <label data-testid="toggle" yetiButton><input type="checkbox" name="bold" /> Bold</label>
             </div>
+            ${alertBand('low')}
+            ${alertBand('high')}
             ${fillPaints
               .map(
                 (paint) =>
@@ -533,6 +557,46 @@ export const Paint: Story = {
       await expect(input).toHaveFocus();
       await expect(input.matches(':focus-visible')).toBe(true);
       await expectRingOn(toggle, toggleBand);
+
+      // A low-emphasis alert paints no fill, so a ring inside it reads
+      // against the band.
+      const lowAlertBand = byTestId(wrapper, 'low-alert-band');
+      const lowAlert = byTestId(wrapper, 'low-alert');
+      const lowClose = lowAlert.querySelector('button');
+
+      if (lowClose === null) {
+        throw new Error('No close button in the low-emphasis alert');
+      }
+
+      await expect(lowAlertBand).toHaveAttribute('data-paint', 'primary');
+      await itemStyled('alert', lowAlert, 'display', 'flex');
+      await expect(getComputedStyle(lowAlert).backgroundColor).toBe(
+        'rgba(0, 0, 0, 0)',
+      );
+      await userEvent.tab();
+
+      await expect(lowClose).toHaveFocus();
+      await expect(lowClose.matches(':focus-visible')).toBe(true);
+      await expectRingOn(lowClose, lowAlertBand);
+
+      // A high-emphasis alert fills with its variant, so a ring inside it
+      // reads against that fill.
+      const highAlert = byTestId(wrapper, 'high-alert');
+      const highClose = highAlert.querySelector('button');
+
+      if (highClose === null) {
+        throw new Error('No close button in the high-emphasis alert');
+      }
+
+      await expect(byTestId(wrapper, 'high-alert-band')).toHaveAttribute(
+        'data-paint',
+        'primary',
+      );
+      await userEvent.tab();
+
+      await expect(highClose).toHaveFocus();
+      await expect(highClose.matches(':focus-visible')).toBe(true);
+      await expectRingOn(highClose, highAlert);
     }
   },
 };

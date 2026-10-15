@@ -248,15 +248,13 @@ function paintValues(
 
 /**
  * Yeti's rules that paint a fill of their own behind focusable contents, so
- * a ring inside them sits on that fill and not on a band around them.
+ * a ring inside them sits on that fill and not on a band around them. An
+ * alert paints one at its default emphasis only.
  */
 const yetiSurfaces = [
   '.card',
-  '.dialog',
-  '.dropdown > [popover]',
   '.nav',
-  '.nav > ul[popover]',
-  '.alert',
+  ".alert:not([data-emphasis='low'], [data-emphasis='high'])",
   '.accordion',
   '.accordion > details > summary',
   '.box[data-surface]',
@@ -266,25 +264,71 @@ const yetiSurfaces = [
 /** The browser's top-layer boxes, which paint the canvas colour. */
 const browserSurfaces = ['dialog', '[popover]'];
 
-/** The selectors of the rule that gives a surface Yeti's ring colour back. */
+/**
+ * The selectors of the rule that gives a surface Yeti's ring colour back,
+ * split at the commas outside a pseudo-class's parentheses, and none
+ * without that rule.
+ */
 function inkResets(css: string): string[] {
   const reset =
     /:where\(([^{]*)\)\s*\{\s*--_ngx-yeti-band-ink: var\(--yeti-color-focus\);\s*\}/.exec(
       css,
     );
 
-  return (reset?.[1] ?? '').split(',').map((selector) => selector.trim());
+  if (reset === null) {
+    return [];
+  }
+
+  return (reset[1] ?? '')
+    .split(/,(?![^(]*\))/)
+    .map((selector) => selector.trim());
 }
 
-/** Every stylesheet of Yeti's source, with attribute values dropped. */
-function yetiSourceSelectors(): string {
+/** Every stylesheet of Yeti's source. */
+function yetiSource(): string {
   const source = path.join(packageRoot, '../../vendor/yeti/src');
 
   return readdirSync(source, { recursive: true, encoding: 'utf8' })
     .filter((file) => file.endsWith('.css'))
     .map((file) => readFileSync(path.join(source, file), 'utf8'))
-    .join('\n')
-    .replaceAll(/\[([\w-]+)=[^\]]*\]/g, '[$1]');
+    .join('\n');
+}
+
+/**
+ * The selectors of Yeti's source a reset entry stands on, each with whether
+ * it keeps its attribute values: the entry without its `:not()`, matched
+ * with attribute values dropped, and each attribute value the entry names on
+ * that selector, matched as Yeti writes it.
+ */
+function yetiSelectorsOf(
+  entry: string,
+): { readonly selector: string; readonly valued: boolean }[] {
+  const base = entry.replaceAll(/:not\([^)]*\)/g, '');
+
+  return [
+    { selector: base, valued: false },
+    ...[...entry.matchAll(/\[([\w-]+)='([^']*)'\]/g)].map(
+      ([, name, value]) => ({
+        selector: `${base}[${name ?? ''}="${value ?? ''}"]`,
+        valued: true,
+      }),
+    ),
+  ];
+}
+
+/** The reset entries' selectors that Yeti's source does not have. */
+function missingFromYeti(entries: readonly string[], source: string): string[] {
+  const valueless = source.replaceAll(/\[([\w-]+)=[^\]]*\]/g, '[$1]');
+
+  return entries
+    .flatMap(yetiSelectorsOf)
+    .filter(
+      ({ selector, valued }) =>
+        !new RegExp(`${RegExp.escape(selector)}(?![\\w-])`).test(
+          valued ? source : valueless,
+        ),
+    )
+    .map(({ selector }) => selector);
 }
 
 describe('ngx-yeti/ngx-yeti-globals.css', () => {
@@ -320,30 +364,45 @@ describe('ngx-yeti/ngx-yeti-globals.css', () => {
 
   // A11Y-35: a surface inside a band gives its contents Yeti's ring again, so
   // the list of surfaces is pinned here and each Yeti one checked against
-  // Yeti's source, so a moved pin that renames one fails.
-  it("gives Yeti's ring colour back on every surface that paints its own fill inside a band", () => {
-    const yeti = yetiSourceSelectors();
-
+  // Yeti's source, so a moved pin that renames one, or an alert emphasis the
+  // list names, fails.
+  it("gives Yeti's ring colour back on the pinned surfaces that paint their own fill inside a band", () => {
     expect(inkResets(readPackageFile('ngx-yeti-globals.css'))).toStrictEqual([
       ...yetiSurfaces,
       ...browserSurfaces,
     ]);
-    expect(
-      yetiSurfaces.filter(
-        (selector) =>
-          !new RegExp(`${RegExp.escape(selector)}(?![\\w-])`).test(yeti),
-      ),
-    ).toStrictEqual([]);
+    expect(missingFromYeti(yetiSurfaces, yetiSource())).toStrictEqual([]);
   });
 
-  it('reads the selectors of the ink reset, and reports one it leaves out', () => {
+  it('reads the selectors of the ink reset, and none without one', () => {
     expect(
       inkResets(
-        '@layer ngx-yeti { :where(.card, dialog) { --_ngx-yeti-band-ink: var(--yeti-color-focus); } }',
+        "@layer ngx-yeti { :where(.card, .alert:not([data-emphasis='low'], [data-emphasis='high']), dialog) { --_ngx-yeti-band-ink: var(--yeti-color-focus); } }",
       ),
-    ).toStrictEqual(['.card', 'dialog']);
-    expect(inkResets('@layer ngx-yeti { a { color: red; } }')).toStrictEqual([
-      '',
+    ).toStrictEqual([
+      '.card',
+      ".alert:not([data-emphasis='low'], [data-emphasis='high'])",
+      'dialog',
+    ]);
+    expect(inkResets('@layer ngx-yeti { a { color: red; } }')).toStrictEqual(
+      [],
+    );
+  });
+
+  it("reports a reset entry whose class or named attribute value is not in Yeti's source", () => {
+    const source =
+      '.alert { color: red; } .alert[data-emphasis="low"] { color: blue; } .box[data-surface="raised"] { color: green; }';
+    const entry = ".alert:not([data-emphasis='low'], [data-emphasis='high'])";
+
+    expect(
+      missingFromYeti([entry, '.box[data-surface]'], source),
+    ).toStrictEqual(['.alert[data-emphasis="high"]']);
+    expect(
+      missingFromYeti([entry], source.replaceAll('.alert', '.callout')),
+    ).toStrictEqual([
+      '.alert',
+      '.alert[data-emphasis="low"]',
+      '.alert[data-emphasis="high"]',
     ]);
   });
 
