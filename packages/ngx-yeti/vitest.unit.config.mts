@@ -5,6 +5,7 @@ import { webdriverio } from '@vitest/browser-webdriverio';
 import { defineConfig } from 'vitest/config';
 import type { BrowserConfigOptions } from 'vitest/node';
 import {
+  chromiumFloor,
   vitestBrowserApi,
   vitestInstances,
 } from '../../tools/playwright/engines.mjs';
@@ -15,7 +16,7 @@ function browserEngines(): Pick<
   BrowserConfigOptions,
   'provider' | 'instances'
 > {
-  const chromiumFloor = process.env['FLOOR_CHROMIUM_PATH'];
+  const floor = chromiumFloor();
 
   if (process.env['FLOOR_FIREFOX'] === 'true') {
     // Measured in ticket 27: the plain '145.0' tag finds no Firefox build.
@@ -41,16 +42,10 @@ function browserEngines(): Pick<
     return { provider: playwright(), instances: [{ browser: 'webkit' }] };
   }
 
-  if (chromiumFloor) {
+  if (floor) {
     return {
-      provider: playwright({
-        launchOptions: {
-          executablePath: chromiumFloor,
-          // As in tools/playwright/browser-projects.mjs.
-          args: ['--disable-stack-profiler'],
-        },
-      }),
-      instances: [{ browser: 'chromium' }],
+      provider: playwright(floor.options),
+      instances: [{ browser: floor.engine }],
     };
   }
 

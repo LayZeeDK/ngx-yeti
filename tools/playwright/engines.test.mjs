@@ -2,7 +2,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createServer } from 'vite';
-import { engines, vitestBrowserApi, vitestInstances } from './engines.mjs';
+import {
+  chromiumFloor,
+  engines,
+  vitestBrowserApi,
+  vitestInstances,
+} from './engines.mjs';
 
 /** @param {NodeJS.ProcessEnv} env */
 const names = (env) => engines(env).map(({ name }) => name);
@@ -173,4 +178,18 @@ test('names the Vite server URL 127.0.0.1 at the port vitestBrowserApi() picks',
   } finally {
     await server.close();
   }
+});
+
+test('starts the Chromium floor build without the stack profiler', () => {
+  assert.equal(chromiumFloor({}), undefined);
+  assert.deepEqual(chromiumFloor({ FLOOR_CHROMIUM_PATH: '/floor/chrome' }), {
+    name: 'chromium',
+    engine: 'chromium',
+    options: {
+      launchOptions: {
+        executablePath: '/floor/chrome',
+        args: ['--disable-stack-profiler'],
+      },
+    },
+  });
 });

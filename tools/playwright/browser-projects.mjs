@@ -1,7 +1,7 @@
 // @ts-check
 import { fileURLToPath } from 'node:url';
 import { devices } from '@playwright/test';
-import { engines, localEnv } from './engines.mjs';
+import { chromiumFloor, engines, localEnv } from './engines.mjs';
 
 /**
  * The command the e2e web servers start Nx with: this Node and the installed
@@ -69,7 +69,7 @@ export function hostPort(url) {
  * @param {NodeJS.ProcessEnv} env
  */
 export function browserProjects(webServerUrls, env = localEnv()) {
-  const chromiumFloor = env['FLOOR_CHROMIUM_PATH'];
+  const floor = chromiumFloor(env);
 
   if (env['FLOOR_WEBKIT'] === 'true') {
     return [project({ name: 'webkit', engine: 'webkit' })];
@@ -79,21 +79,8 @@ export function browserProjects(webServerUrls, env = localEnv()) {
     return [project({ name: 'firefox', engine: 'firefox' })];
   }
 
-  if (chromiumFloor) {
-    return [
-      project({
-        name: 'chromium',
-        engine: 'chromium',
-        options: {
-          launchOptions: {
-            executablePath: chromiumFloor,
-            // Under x64 emulation on Windows on Arm, a renderer started with
-            // the stack profiler can end unkillable, and the run never exits.
-            args: ['--disable-stack-profiler'],
-          },
-        },
-      }),
-    ];
+  if (floor) {
+    return [project(floor)];
   }
 
   return engines(env, webServerUrls.map(hostPort)).map((browser) =>

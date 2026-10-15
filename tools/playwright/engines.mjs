@@ -98,6 +98,35 @@ function known(env, expose) {
 }
 
 /**
+ * The Chromium floor build at `FLOOR_CHROMIUM_PATH`, in the shape of an
+ * `engines()` entry, or `undefined` without the variable. Both the Playwright
+ * e2e projects and the Vitest browser config take it as is.
+ *
+ * @param {NodeJS.ProcessEnv} env
+ * @returns {(Browser & { options: Options }) | undefined}
+ */
+export function chromiumFloor(env = localEnv()) {
+  const executablePath = env['FLOOR_CHROMIUM_PATH'];
+
+  if (!executablePath) {
+    return undefined;
+  }
+
+  return {
+    name: 'chromium',
+    engine: 'chromium',
+    options: {
+      launchOptions: {
+        executablePath,
+        // Under x64 emulation on Windows on Arm, a renderer started with
+        // the stack profiler can end unkillable, and the run never exits.
+        args: ['--disable-stack-profiler'],
+      },
+    },
+  };
+}
+
+/**
  * The browsers of every browser test run that no floor variable (FLOOR_*,
  * SAFARI) claims: the configs check those first. BROWSERS, a comma-separated
  * list such as `webkit` or `msedge,firefox`, wins over CI; with CI set, the

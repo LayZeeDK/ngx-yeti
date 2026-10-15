@@ -3,9 +3,9 @@ id: T061
 title: Test the run-job output folder without Git, record the unit job's skipped count, and give the floor Chromium one launch-options value
 wave: 11
 deps: [T028, T054, T059]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T061
+base: 3ec57a6562acaf2dc706b32351aa126287336fb4
 worktree: null
 task_branch: null
 files:
@@ -70,3 +70,30 @@ Heavy: yes
 ## Log
 
 - 2026-10-15 — created by planner (build repair 6), from tmp/afk-m002/lars-review/r3/triage.md group B items 5 to 7 and the `vitest.unit.config.mts` half of item 20.
+- 2026-10-15 — build_T061 implementation. run-job.mjs exports `legPaths(checkoutRoot, workflow, jobName, label)` returning the 8-hex checkout hash, the job volume prefix and the leg output folder; `run()`/`leg()` use it. The test now calls it in-process (no Git, no skip, no dry run; `inCheckout` gone). engines.mjs exports `chromiumFloor(env)` (executablePath plus `--disable-stack-profiler` and its reason, once); browser-projects.mjs and vitest.unit.config.mts use it. New standing cases: engines.test.mjs (export carries the argument) and vitest-configs.test.mjs (the unit config's provider launch options with FLOOR_CHROMIUM_PATH set). ci-local.md `unit` row now gives passed/skipped plus a note on the earlier skip.
+- Counts source for the ci-local.md row: `node tools/ci-local/run-job.mjs ci unit` at base 3ec57a6 plus this change (uncommitted), exit 0, 7 m 35 s with other jobs running: Vitest 126/0, 504/0, 1713/0, 1/0, 1/0 passed/skipped; node:test 46/0.
+- Verify (exact command, through the heavy lock): exit 0. node --test of the four files 28 pass, 0 fail, 0 skipped (the Vitest-config file 1 more run is included in the 28/1 split); `@ngx-yeti/source:typecheck`, lint and typecheck of ngx-yeti pass; `run-job ci unit -- source:test` pass (node:test 46/0); floor Chrome for Testing 141.0.7390.54 `test ngx-yeti --project=browser`: 27 files, 507 tests passed; prettier check clean.
+- Rule 13: `npx prettier --check .` clean; `nx affected -t lint typecheck test test-storybook --base=HEAD` exit 0 (9 projects plus 2 dependency tasks).
+- 2026-10-15 — orchestrator Verify (isolate gsd-path-task/T061): pass, exit 0; output tail:
+  ```
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/spinner
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/stack
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/table
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/timeline
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/visually-hidden
+  ```

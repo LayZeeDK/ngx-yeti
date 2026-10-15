@@ -2,11 +2,13 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
 import { test } from 'node:test';
-import { existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   containerScript,
   legChecks,
+  legPaths,
   parseArgs,
   quote,
   resolve,
@@ -112,30 +114,25 @@ test('--legs and --e2e-workers accept decimal digits', () => {
   );
 });
 
-// A dry run lists the checkout's files with Git; a container leg has no `.git`.
-const inCheckout = existsSync(
-  fileURLToPath(new URL('../../.git', import.meta.url)),
-);
+test('a leg writes its reports under the checkout hash its volumes carry', () => {
+  const { checkout, volume, out } = legPaths(
+    join(tmpdir(), 'a-checkout'),
+    'ci',
+    'e2e',
+    'ci-e2e-production',
+  );
 
-test(
-  'a leg writes its reports under the checkout hash its volumes carry',
-  {
-    skip: !inCheckout,
-  },
-  () => {
-    const { stdout } = dryRun(['--matrix', 'configuration=production']);
-    const checkout =
-      /'ngx-yeti-run-job-([0-9a-f]{8})-ci-e2e-node_modules:/.exec(stdout)?.[1];
-
-    assert.ok(checkout !== undefined, stdout);
-    assert.match(
-      stdout,
-      new RegExp(
-        `ngx-yeti-run-job[\\\\/]${checkout}[\\\\/]ci-e2e-[^:']+:/out'`,
-      ),
-    );
-  },
-);
+  assert.match(checkout, /^[0-9a-f]{8}$/);
+  assert.equal(volume, `ngx-yeti-run-job-${checkout}-ci-e2e`);
+  assert.equal(
+    out,
+    join(tmpdir(), 'ngx-yeti-run-job', checkout, 'ci-e2e-production'),
+  );
+  assert.notEqual(
+    legPaths(join(tmpdir(), 'another'), 'ci', 'e2e', '').checkout,
+    checkout,
+  );
+});
 
 test('a replacement command after -- reaches the container as literal words', () => {
   const [step] = steps(scriptOf(legChecks(['true'], {}, ['echo', ...hostile])));

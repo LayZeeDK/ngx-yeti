@@ -48,3 +48,31 @@ for (const path of configs) {
     }
   });
 }
+
+test('the unit config starts the Chromium floor build without the stack profiler', async () => {
+  const before = process.env['FLOOR_CHROMIUM_PATH'];
+
+  process.env['FLOOR_CHROMIUM_PATH'] = '/floor/chrome';
+
+  try {
+    const { default: config } = await import(
+      new URL('packages/ngx-yeti/vitest.unit.config.mts?floor', root).href
+    );
+    const browser = config.test.projects.find(
+      (/** @type {{ test: { name: string } }} */ project) =>
+        project.test.name === 'browser',
+    ).test.browser;
+
+    assert.deepEqual(browser.provider.options.launchOptions, {
+      executablePath: '/floor/chrome',
+      args: ['--disable-stack-profiler'],
+    });
+    assert.deepEqual(browser.instances, [{ browser: 'chromium' }]);
+  } finally {
+    if (before === undefined) {
+      delete process.env['FLOOR_CHROMIUM_PATH'];
+    } else {
+      process.env['FLOOR_CHROMIUM_PATH'] = before;
+    }
+  }
+});

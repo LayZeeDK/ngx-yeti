@@ -459,6 +459,28 @@ function modulesFolders(lockfile) {
   return [...folders].sort();
 }
 
+/**
+ * What a checkout's legs share by name: the 8-hex hash of its path, the
+ * prefix of the job's volumes, and the host folder a leg's reports go to.
+ *
+ * @param {string} checkoutRoot
+ * @param {string} workflow
+ * @param {string} jobName
+ * @param {string} label
+ */
+export function legPaths(checkoutRoot, workflow, jobName, label) {
+  const checkout = createHash('sha256')
+    .update(checkoutRoot)
+    .digest('hex')
+    .slice(0, 8);
+
+  return {
+    checkout,
+    volume: `ngx-yeti-run-job-${checkout}-${workflow}-${jobName}`,
+    out: join(tmpdir(), 'ngx-yeti-run-job', checkout, label),
+  };
+}
+
 /** Tracked and untracked, not ignored, files; deleted tracked files would fail tar. */
 function sourceFiles() {
   return execFileSync('git', ['ls-files', '-co', '--exclude-standard', '-z'], {
@@ -661,8 +683,7 @@ async function run({
   const folders = modulesFolders(
     JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8')),
   );
-  const checkout = createHash('sha256').update(root).digest('hex').slice(0, 8);
-  const volume = `ngx-yeti-run-job-${checkout}-${workflow}-${jobName}`;
+  const { checkout, volume } = legPaths(root, workflow, jobName, '');
   const legs = Math.min(cap, combos.length);
 
   /**
@@ -676,7 +697,7 @@ async function run({
     const checks = legChecks(job.checks, combo, command);
     const key = setupKey(job, setup, files);
     const label = [workflow, jobName, ...Object.values(combo)].join('-');
-    const out = join(tmpdir(), 'ngx-yeti-run-job', checkout, label);
+    const { out } = legPaths(root, workflow, jobName, label);
     const name =
       `ngx-yeti-run-job-${checkout}-${label}-${String(process.pid)}`.replace(
         /[^\w.-]/g,
