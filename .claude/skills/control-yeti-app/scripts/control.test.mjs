@@ -1,8 +1,10 @@
 // @ts-check
-// Drives control.mjs through one ssr launch with the Nx daemon on: the refused
-// flags and planted state, doctor's build-fresh scan, down's kept state file
-// and its daemon stop. Windows only, like control.mjs. Builds the Fixture app,
-// so nothing else may build in this checkout while it runs.
+// Drives control.mjs through stand-in states, short serve launches that up
+// gives up on, and ssr launches with the Nx daemon on: the refused flags and
+// planted state, doctor's build probe and build-fresh scan, down's kept state
+// file and its daemon stop. Windows only, like control.mjs. Builds the Fixture
+// app and stops the checkout's Nx daemon, so no other build or Nx work may run
+// in this checkout while it runs.
 // Run: node --test .claude/skills/control-yeti-app/scripts/control.test.mjs
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
@@ -16,6 +18,8 @@ import {
   utimesSync,
   writeFileSync,
 } from 'node:fs';
+import { createServer as createHttpServer } from 'node:http';
+import { createRequire } from 'node:module';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
@@ -49,6 +53,10 @@ const daemonEntry = join(
  * @property {{ session: string, outcome: string, detail: string }[]} [sessions]
  * @property {{ stopped: boolean }} [daemon]
  * @property {unknown} [stopped]
+ * @property {unknown} [pid]
+ * @property {unknown} [recordedPidRunning]
+ * @property {unknown} [launchStopped]
+ * @property {string[]} [warnings]
  */
 
 /**
@@ -91,6 +99,57 @@ function started() {
 
 /** @param {string[]} args */
 const control = (...args) => controlWith(process.env, ...args);
+
+/**
+ * control.mjs without blocking this process, so a test can act while `up`
+ * waits.
+ *
+ * @param {NodeJS.ProcessEnv} env
+ * @param {string[]} args
+ * @returns {Promise<{ code: number | null, result: ControlResult }>}
+ */
+function controlAsync(env, ...args) {
+  const child = spawn(process.execPath, [script, ...args, '--json'], {
+    cwd: root,
+    env,
+    windowsHide: true,
+  });
+  let stdout = '';
+  child.stdout.on('data', (chunk) => {
+    stdout += String(chunk);
+  });
+
+  return new Promise((done) => {
+    child.on('close', (code) => {
+      assert.ok(stdout, `control.mjs ${args.join(' ')} wrote nothing`);
+      /** @type {ControlResult} */
+      const result = JSON.parse(stdout);
+      done({ code, result });
+    });
+  });
+}
+
+// Stops whatever an `up` under test left recorded, without control.mjs, so a
+// run against a script that leaves its launch behind cleans up too.
+function forceDown() {
+  if (existsSync(stateFile)) {
+    const { pid } = readState();
+    spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], {
+      windowsHide: true,
+    });
+    rmSync(stateFile, { force: true });
+  }
+
+  spawnSync(
+    process.execPath,
+    [
+      createRequire(join(root, 'package.json')).resolve('nx'),
+      'daemon',
+      '--stop',
+    ],
+    { cwd: root, windowsHide: true },
+  );
+}
 
 /**
  * @param {NodeJS.ProcessEnv} env
@@ -358,6 +417,164 @@ async function deadRun(name) {
     evidenceDir,
   };
 }
+
+test('a flag that does not apply to the command exits 2 before anything runs', () => {
+  for (const [command, flag] of [
+    ['info', '--port=4000'],
+    ['doctor', '--mode=ssr'],
+    ['down', '--url=http://localhost:4310/sub/'],
+    ['up', '--url=http://localhost:4310/sub/'],
+  ]) {
+    assert.ok(command !== undefined && flag !== undefined);
+    const { code, result } = control(command, flag);
+    assert.equal(code, 2, `${command} ${flag}: ${JSON.stringify(result)}`);
+    assert.equal(
+      result.error,
+      `flag ${flag.replace(/=.*$/, '')} does not apply to ${command}`,
+    );
+  }
+
+  assert.equal(existsSync(stateFile), false, 'a refused up wrote state');
+});
+
+test('an error the script does not handle exits 2 with one JSON object', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const state = await deadRun('test-uncaught');
+  t.after(() => {
+    rmSync(stateFile, { force: true });
+    rmSync(state.evidenceDir, { recursive: true, force: true });
+  });
+  // doctor reads the serve log, which this state names but nobody wrote.
+  writeState({ ...state, mode: 'serve' });
+
+  const { code, result } = control('doctor');
+  assert.equal(code, 2, JSON.stringify(result));
+  assert.match(result.error ?? '', /^could not run: Error: ENOENT/);
+});
+
+test('info names both sessions and the state file', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const state = await deadRun('test-info');
+  t.after(() => {
+    rmSync(stateFile, { force: true });
+    rmSync(state.evidenceDir, { recursive: true, force: true });
+  });
+  writeState(state);
+
+  const { code, result } = control('info');
+  assert.equal(code, 0, JSON.stringify(result));
+  assert.deepEqual(result.sessions, [state.session, `${state.session}-jsoff`]);
+  assert.equal(result.stateFile, stateFile);
+});
+
+test('down reports a dead recorded pid with a free port as not running', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const state = await deadRun('test-dead-free');
+  const registry = mkdtempSync(join(tmpdir(), 'control-yeti-app-registry-'));
+  t.after(() => {
+    rmSync(stateFile, { force: true });
+    rmSync(state.evidenceDir, { recursive: true, force: true });
+    rmSync(registry, { recursive: true, force: true });
+  });
+  const env = { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: registry };
+  writeState(state);
+
+  const { code, result } = controlWith(env, 'down');
+  assert.equal(code, 0, JSON.stringify(result));
+  assert.equal(result.recordedPidRunning, false);
+  assert.deepEqual(result.warnings, [
+    `pid ${String(state.pid)} was not running`,
+  ]);
+
+  writeState(state);
+  const text = spawnSync(process.execPath, [script, 'down'], {
+    cwd: root,
+    env,
+    encoding: 'utf8',
+    windowsHide: true,
+  });
+  assert.equal(text.status, 0, text.stdout);
+  assert.match(
+    text.stdout,
+    new RegExp(`^\\[WARN\\] pid ${String(state.pid)} was not running$`, 'm'),
+  );
+});
+
+test('up records no start time or command line it could not read: it stops the launch and exits 1', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const port = await freePort();
+  t.after(forceDown);
+
+  const { code, result } = controlWith(
+    { ...process.env, CONTROL_PID_LOOKUP_MISSES: '1000' },
+    'up',
+    `--port=${String(port)}`,
+    '--timeout=5',
+  );
+  assert.equal(code, 1, JSON.stringify(result));
+  assert.match(result.error ?? '', /did not appear in the process table/);
+  assert.equal(result.launchStopped, true);
+  assert.equal(existsSync(stateFile), false, 'up kept a state file');
+  assert.equal(listening(port), false, `something listens on ${port}`);
+});
+
+test('up stops the launch and removes the state file when it is not ready in time', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const port = await freePort();
+  t.after(forceDown);
+
+  const { code, result } = control(
+    'up',
+    `--port=${String(port)}`,
+    '--timeout=1',
+  );
+  assert.equal(code, 1, JSON.stringify(result));
+  assert.match(result.error ?? '', /^not ready after 1s; stopped the launch/);
+  assert.equal(result.launchStopped, true);
+  assert.equal(existsSync(stateFile), false, 'up kept the state file');
+  assert.equal(typeof result.pid, 'number');
+  await waitGone(Number(result.pid));
+  assert.equal(listening(port), false, `something listens on ${port}`);
+});
+
+test('up stops the launch and removes the state file when another process answers its port', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const port = await freePort();
+  const other = createHttpServer((_request, response) => {
+    response.end('<app-root><h1>Welcome yeti-app</h1></app-root>');
+  });
+  t.after(async () => {
+    forceDown();
+    await new Promise((done) => other.close(done));
+  });
+
+  const launch = controlAsync(process.env, 'up', `--port=${String(port)}`);
+
+  // up checked the port and spawned its server once it wrote the state file.
+  for (
+    let waited = 0;
+    !existsSync(stateFile) && waited < 30000;
+    waited += 100
+  ) {
+    await new Promise((done) => setTimeout(done, 100));
+  }
+
+  assert.ok(existsSync(stateFile), 'up wrote no state file');
+  await new Promise((done) => other.listen(port, () => done(undefined)));
+
+  const { code, result } = await launch;
+  assert.equal(code, 1, JSON.stringify(result));
+  assert.match(
+    result.error ?? '',
+    new RegExp(
+      `^port ${String(port)} answers but pid ${String(process.pid)} is not in the started tree; stopped the launch`,
+    ),
+  );
+  assert.equal(result.launchStopped, true);
+  assert.equal(existsSync(stateFile), false, 'up kept the state file');
+  assert.equal(typeof result.pid, 'number');
+  await waitGone(Number(result.pid));
+});
 
 test('down counts a session entry without a socketPath, or a registry it cannot list, as left open', async (t) => {
   assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
@@ -695,15 +912,51 @@ test('a launch with the Nx daemon on', async (t) => {
     assert.equal(code, 0, JSON.stringify(result));
     assert.ok(isLaunch(result), JSON.stringify(result));
     launch = result;
+    assert.equal(typeof launch.start, 'string', 'up recorded no start time');
+    assert.equal(
+      typeof launch.commandLine,
+      'string',
+      'up recorded no command line',
+    );
   });
 
   t.after(ensureDown);
 
-  await t.test('doctor takes the build from the state file', () => {
-    const { code, result } = control('doctor');
-    assert.equal(code, 0, JSON.stringify(result.checks));
-    assert.equal(result.build, 'production');
-  });
+  await t.test(
+    'doctor probes the build, and it agrees with the state file',
+    () => {
+      const { code, result } = control('doctor');
+      assert.equal(code, 0, JSON.stringify(result.checks));
+      assert.equal(result.build, 'production');
+      assert.match(
+        result.checks?.find(({ name }) => name === 'build')?.detail ?? '',
+        /window\.ng absent/,
+      );
+    },
+  );
+
+  await t.test(
+    'doctor fails build when the state file records another build',
+    () => {
+      const state = readState();
+      writeState({ ...state, configuration: 'development' });
+
+      try {
+        const { code, result } = control('doctor');
+        assert.equal(code, 1, JSON.stringify(result.checks));
+        assert.ok(
+          (result.failed ?? []).includes('build'),
+          JSON.stringify(result.checks),
+        );
+        assert.match(
+          result.checks?.find(({ name }) => name === 'build')?.detail ?? '',
+          /records development, the page is a production build/,
+        );
+      } finally {
+        writeState(state);
+      }
+    },
+  );
 
   await t.test('doctor build-fresh fails after a source changes', () => {
     for (const source of [entrySource, yetiSource]) {
@@ -721,11 +974,14 @@ test('a launch with the Nx daemon on', async (t) => {
     }
   });
 
-  await t.test('doctor ignores node_modules, storybook-static and dist', () => {
+  await t.test('doctor ignores files Git ignores', () => {
     const created = [
       'packages/ngx-yeti/node_modules',
       'packages/ngx-yeti/storybook-static',
       'packages/ngx-yeti/box/dist',
+      'vendor/yeti/docs',
+      'packages/ngx-yeti/.vitest-attachments',
+      'packages/ngx-yeti/box/src/__screenshots__',
     ].map((dir) => {
       const made = !existsSync(join(root, dir));
       mkdirSync(join(root, dir), { recursive: true });

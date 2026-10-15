@@ -3,9 +3,9 @@ id: T073
 title: Run a full maintenance pass on control-yeti-app and fix every triaged survivor, the map drift, the build-fresh scan, and the contract findings
 wave: 15
 deps: [T072]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T073
+base: 1f75c2a2d67a46bc52cf91fc34c4c0b07bddc7c4
 worktree: null
 task_branch: null
 files:
@@ -103,3 +103,36 @@ Heavy: yes
 ## Log
 
 - 2026-10-15 — created by planner (wave 15, user ruling "Approve all recommendations, as part of M002."), from control-combined-triage.md, control-trial-triage.md and contract-review-control-yeti-app.md in the session scratchpad.
+- 2026-10-15 — build_T073 (coder). Maintenance pass outcome: **changed** (run tmp/control-yeti-app/maintain/20261015T151646Z/, git-ignored; coverage.md there, last-run.md beside it). Steps: 0 run dir; 1 check-skill exit 0 before and after (13/13 checks); 2 versions Angular 22.2.1, Nx 23.2.1, Playwright 1.63.0, playwright-cli 0.1.21, no .mcp.json, no dependent verify-* skill; targets resolved from project.json (the Verify's typecheck and the suite stop the daemon; NX_DAEMON never set); 3 four haiku-medium readers (readers/*.md); 4 reconcile: reader drift spot-checked in source; 5 live pass on the derived worktree port 4762; 6 triage below; 7 teardown proofs; 8 no commit (pipeline lands it).
+- Implementation (all in the declared files): control.mjs: catch at the dispatch, exit 2 `could not run: <error>` with one JSON object (F1); usage line and header in `=` form, shared `usage` constant (F2); per-command flag allow list, exit 2 `flag --<name> does not apply to <command>` (F3); `sessions` recorded by `up` and printed by `info` with `stateFile` (F4, F20); dead recorded PID with a free port reports `recordedPidRunning: false` and warning `pid <n> was not running` (`[WARN]` line without --json; F5); `up` polls the process table up to 20 x 250 ms for the PID with a string start and command line, else stops the tree and exits 1 (F6; test knob CONTROL_PID_LOOKUP_MISSES); every `up` exit-1 path after the spawn stops the tree and the Nx daemon (`launchStopped`, `daemon`) and removes the state file (F8: chose code over doc so Helpers' "state removed" holds); `doctor` probes `window.ng` on every run and fails `build` when it disagrees with the state file (F10); build-fresh scans `git ls-files -co --exclude-standard -z -- apps/yeti-app packages/ngx-yeti vendor/yeti`, names the newest file, a git failure fails the check (Y5); worktree range 4620-4819 (F13). T072's dead-root down kept as landed; all prior exit codes, refusals and the listener-query bound kept. Docs: Y1 (four sites, five links in rank order), Y2 (three recipes as `async function <name>(page)` declarations; convention in README driving conventions; no prettier-ignore), Y3, Y4, F7, F9, F11 (Cleanup: reason and cost), F12 (Test paragraph under Helpers), F14, F15 (`## Manual only`), F16, F17 (`Steps:` lines), F18 (all four Launch rows measured), F19.
+- Drift found by the pass beyond Context (fixed): item links are ordered by Yeti's rank, not insertion (item-routes.md sub-feature; source packages/ngx-yeti/styles/src/yeti-styles.ts #insert); the `?csp` strict-CSP server flow (apps/yeti-app/src/server.ts, e2e setup-serving.spec.ts) was missing: added sub-feature `route-csp` with a curl recipe; the Leave step had no expected value (now `[]`); a `Production dev server` step added to build-configurations; build-configurations says `serve` uses `build-log`, not `build-fresh`.
+- Red runs (new tests against the base control.mjs, restored from HEAD in place, then the edited script put back; log maintain/20261015T151646Z/red-base.log): 25 tests, 14 pass, 11 fail; every new or changed test failed for its intended reason: flag allow list (got "no state file"), unhandled error (exit 1 with an ENOENT stack, no JSON), info sessions (undefined), dead PID free port (recordedPidRunning undefined), null start never recorded (base: "not ready after 5s; run down", state kept), not ready in time (base kept the state), another process on the port (base: no "stopped the launch", state kept), doctor probes the build (base: "production build (state file)"), disagreeing state file (base: build passed), files Git ignores (base: build-fresh failed on vendor/yeti/docs, .vitest-attachments, __screenshots__). Green run on the edited script: 25/25 pass (green-1.log).
+- Live drives (each recipe re-extracted from the edited feature file before driving; evidence under tmp/control-yeti-app/): item-links `["grid","button","card","spinner","lift"]` on prerendered and server/card x2 (2026-10-15T15-40-53-989Z/, drive2/) and on ssr production (2026-10-15T15-47-56-055Z/); after Leave `[]` x2; held-card `{"held":{"itemLinks":["grid","button","card","spinner","lift"],"jsaction":7},"jsactionAfter":0}` x3 (serve dev x2, ssr prod x1); held-replay `{"jsaction":1,"text":"Clicked 1 times"}` x3; hydration summary line starts `Angular hydrated 2 component(s) and 59 node(s), 0 component(s) were skipped.` then `1 defer block(s) were configured to use incremental hydration.` x2; JS-off snapshot, curl five links, Tab to `Remove the live cards`, screenshot x2; CSP header and 5 nonced links x2 on ssr production (2026-10-15T16-00-04-803Z/), header also on serve; build configurations, each `up` + `doctor` exit 0 with the documented build detail: serve dev x3 (ready 18 s), serve prod x2 (13-16 s), ssr prod x3 (10 s, cache), ssr dev x2 (10 s); each `down` exit 0 (maintain/*.json).
+- Teardown (maintain step 7): check-teardown.mjs exit 0 on info-serve-dev.json, info-ssr-prod.json, info.json and info-final.json (with --artifact proof files); prove-refusal.mjs exit 0 on state-ssr-prod.json, state.json and state-final.json. No control-yeti-app session listed afterwards.
+- Coverage: item-routes 6/6 sub-features proven (route-csp new), javascript-off 4/4, hydration-and-replay 4/4, build-configurations 5/5; none verified-unreachable.
+- Observed, not fixed (outside the edit scope): the Fixture app logs NG02952 (NgOptimizedImage aspect-ratio warning on `trail.svg`) on /sub/card in development; a warning, so doctor's console-errors passes. check-teardown.mjs reads only the top-level `session`, so it does not prove the `-jsoff` session closed (yardstick note Y7, global skill; `info` now lists both under `sessions`).
+- Verify (exactly as written, through the heavy lock; maintain/20261015T151646Z/verify.log): exit 0. npm ci ok; playwright install ok; the four rg guards pass; check-skill exit 0; `nx typecheck @ngx-yeti/source --skip-nx-cache` ok (tsc + scripts-coverage 1/1); control.test.mjs 25/25 pass; prettier check on the skill folder clean; daemon stopped.
+- Rule 13: `npx prettier --check .` clean; `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` exit 0 (2 tasks: @ngx-yeti/source typecheck and test).
+- 2026-10-15 — orchestrator Verify (isolate gsd-path-task/T073): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

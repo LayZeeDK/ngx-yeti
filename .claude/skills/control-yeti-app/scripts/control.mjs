@@ -2,8 +2,9 @@
 // @ts-check
 // Launch, health-check, describe and stop one Fixture app (yeti-app)
 // instance per checkout. Driving stays in playwright-cli.
-// Usage: node control.mjs <up|doctor|info|down> [--mode serve|ssr]
-//   [--configuration development|production] [--port N] [--url URL] [--json]
+// Usage: node control.mjs <up|doctor|info|down> [--mode=serve|ssr]
+//   [--configuration=development|production] [--port=<n>] [--timeout=<s>]
+//   [--url=<url>] [--json]
 import { spawn, spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import {
@@ -32,7 +33,9 @@ const requireFromRoot = createRequire(join(root, 'package.json'));
 // The main checkout's documented ports: `nx serve` keeps the dev-server
 // default, and server.ts listens on PORT or 4000.
 const mainPorts = { serve: 4200, ssr: 4000 };
-const worktreeRange = { first: 4600, size: 200 };
+// Above control-ngx-yeti-storybook's 4420-4619, so two skills' worktrees
+// never derive the same port.
+const worktreeRange = { first: 4620, size: 200 };
 const marker = 'Welcome yeti-app';
 const readyPath = 'card';
 const hydrationSummary =
@@ -45,6 +48,15 @@ const valueFlags = /** @type {const} */ ([
   'url',
   'timeout',
 ]);
+/** @type {Record<string, readonly FlagName[]>} */
+const commandFlags = {
+  up: ['mode', 'configuration', 'port', 'timeout'],
+  doctor: ['url'],
+  info: [],
+  down: [],
+};
+const usage =
+  'usage: control.mjs <up|doctor|info|down> [--mode=serve|ssr] [--configuration=development|production] [--port=<n>] [--timeout=<s>] [--url=<url>] [--json]';
 const sessionName = /^[\w-]+$/;
 
 /**
@@ -59,7 +71,7 @@ const sessionName = /^[\w-]+$/;
  */
 
 /**
- * @typedef {{ error?: string, checks?: Check[] } & Record<string, unknown>} Result
+ * @typedef {{ error?: string, checks?: Check[], warnings?: string[] } & Record<string, unknown>} Result
  */
 
 /**
@@ -124,6 +136,15 @@ function parseFlags(args) {
       });
     }
 
+    const allowed =
+      command !== undefined && Object.hasOwn(commandFlags, command)
+        ? commandFlags[command]
+        : undefined;
+
+    if (allowed !== undefined && !allowed.includes(name)) {
+      finish(2, { error: `flag --${name} does not apply to ${command}` });
+    }
+
     result[name] = value;
   }
 
@@ -155,9 +176,13 @@ function finish(code, result) {
       process.stdout.write(`${tag} ${check.name}: ${check.detail}\n`);
     }
 
+    for (const warning of result.warnings ?? []) {
+      process.stdout.write(`[WARN] ${warning}\n`);
+    }
+
     const tag = code === 0 ? '[OK]' : code === 1 ? '[WARN]' : '[ERROR]';
     process.stdout.write(
-      `${tag} ${command ?? ''} ${JSON.stringify({ ...result, checks: undefined })}\n`,
+      `${tag} ${command ?? ''} ${JSON.stringify({ ...result, checks: undefined, warnings: undefined })}\n`,
     );
   }
 
@@ -297,6 +322,13 @@ function treeMembers(table, pid, rootStart) {
 // nothing else sets it.
 const listenerTimeout =
   Number(process.env['CONTROL_LISTENER_TIMEOUT_MS']) || 30000;
+// The tests set CONTROL_PID_LOOKUP_MISSES to make up's first lookups of the
+// started PID miss; nothing else sets it.
+const pidLookupMisses = Number(process.env['CONTROL_PID_LOOKUP_MISSES']) || 0;
+
+// The run's browser and its JavaScript-off browser (features/javascript-off.md).
+/** @param {string} session */
+const sessionsOf = (session) => [session, `${session}-jsoff`];
 
 // Get-NetTCPConnection, not netstat: netstat translates its state column. Only
 // the cmdlet's own no-match error means no listener; a misspelled command is
@@ -721,7 +753,33 @@ async function up() {
     });
   }
 
-  const live = processTable().get(pid);
+  // `down` matches the recorded start time and command line, so neither may
+  // be recorded before the process table lists the fresh PID with both.
+  /** @type {ProcessEntry | undefined} */
+  let live;
+
+  for (let attempt = 0; attempt < 20 && live === undefined; attempt += 1) {
+    const entry =
+      attempt < pidLookupMisses ? undefined : processTable().get(pid);
+
+    if (
+      typeof entry?.Start === 'string' &&
+      typeof entry.CommandLine === 'string'
+    ) {
+      live = entry;
+    } else {
+      await sleep(250);
+    }
+  }
+
+  if (live === undefined) {
+    finish(1, {
+      error: `pid ${pid} did not appear in the process table with a start time and command line; stopped its tree; see ${logFile}`,
+      ...stopLaunch(pid),
+      logFile,
+    });
+  }
+
   const url = `http://localhost:${port}/sub/`;
   const state = {
     flow: currentFlow.id,
@@ -729,24 +787,30 @@ async function up() {
     mode,
     configuration,
     pid,
-    start: live?.Start ?? null,
-    commandLine: live?.CommandLine ?? null,
+    start: live.Start,
+    commandLine: live.CommandLine,
     port,
     url,
     session: currentFlow.session,
+    sessions: sessionsOf(currentFlow.session),
     evidenceDir,
     logFile,
   };
   writeState(state);
   const timeout = timeoutSeconds * 1000;
 
+  // Every exit-1 path stops what this launch started and removes the state
+  // file, so a failed up leaves nothing for down.
+  /** @param {string} error */
+  const fail = (error) => {
+    const stop = stopLaunch(pid);
+    rmSync(stateFile, { force: true });
+    finish(1, { error, ...state, ...stop });
+  };
+
   while (Date.now() - started < timeout) {
     if (child.exitCode !== null || !processTable().has(pid)) {
-      rmSync(stateFile, { force: true });
-      finish(1, {
-        error: `the launch exited before it was ready; see ${logFile}`,
-        logFile,
-      });
+      fail(`the launch exited before it was ready; see ${logFile}`);
     }
 
     const page = await fetchPage(`${url}${readyPath}`);
@@ -756,10 +820,9 @@ async function up() {
       const listening = listeners(port);
 
       if (!listening.some((pid) => owned.includes(pid))) {
-        finish(1, {
-          error: `port ${port} answers but pid ${listening.join(', ')} is not in the started tree`,
-          ...state,
-        });
+        fail(
+          `port ${port} answers but pid ${listening.join(', ')} is not in the started tree; stopped the launch`,
+        );
       }
 
       finish(0, {
@@ -771,10 +834,24 @@ async function up() {
     await sleep(2000);
   }
 
-  finish(1, {
-    error: `not ready after ${timeout / 1000}s; run down; see ${logFile}`,
-    ...state,
+  fail(
+    `not ready after ${timeout / 1000}s; stopped the launch (raise --timeout for an uncached build); see ${logFile}`,
+  );
+}
+
+// Stops a launch `up` gave up on: its tree, and the Nx daemon it may have
+// started, as `down` does.
+/** @param {number} pid */
+function stopLaunch(pid) {
+  const kill = spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], {
+    encoding: 'utf8',
+    windowsHide: true,
   });
+
+  return {
+    launchStopped: kill.status === 0 || !processTable().has(pid),
+    daemon: stopDaemon(),
+  };
 }
 
 // Nx colours its output even into a file.
@@ -783,28 +860,40 @@ function serverLog(state) {
   return stripVTControlCharacters(readFileSync(state.logFile, 'utf8'));
 }
 
-// Directories whose files change without changing the build.
-const notSource = ['node_modules', 'storybook-static', 'dist'];
 const sourceDirs = ['apps/yeti-app', 'packages/ngx-yeti', 'vendor/yeti'];
 
-/**
- * @param {string} dir
- * @returns {number}
- */
-function newestSource(dir) {
-  let newest = 0;
+// Git's tracked and untracked files only: ignored output (node_modules, dist,
+// storybook-static, the vendor/yeti/docs that yeti-build writes, Vitest's
+// attachments and screenshots) changes without changing the sources.
+/** @returns {{ file: string | null, mtimeMs: number } | string} */
+function newestSource() {
+  const run = spawnSync(
+    'git',
+    ['ls-files', '-co', '--exclude-standard', '-z', '--', ...sourceDirs],
+    {
+      cwd: root,
+      encoding: 'utf8',
+      maxBuffer: 256 * 1024 * 1024,
+      windowsHide: true,
+    },
+  );
 
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (notSource.includes(entry.name)) {
-      continue;
-    }
+  if (run.status !== 0) {
+    return `git ls-files failed: ${String(run.error ?? run.stderr.trim())}`;
+  }
 
-    const full = join(dir, entry.name);
+  /** @type {{ file: string | null, mtimeMs: number }} */
+  let newest = { file: null, mtimeMs: 0 };
 
-    if (entry.isDirectory()) {
-      newest = Math.max(newest, newestSource(full));
-    } else if (entry.isFile()) {
-      newest = Math.max(newest, statSync(full).mtimeMs);
+  for (const file of run.stdout.split('\0')) {
+    // A listed file that is gone (deleted, not yet staged) has no time.
+    const stat =
+      file === ''
+        ? undefined
+        : statSync(join(root, file), { throwIfNoEntry: false });
+
+    if (stat !== undefined && stat.mtimeMs > newest.mtimeMs) {
+      newest = { file, mtimeMs: stat.mtimeMs };
     }
   }
 
@@ -878,19 +967,25 @@ async function doctor() {
       const built = serverLog(state).includes(
         `nx run yeti-app:build:${state.configuration}`,
       );
-      const sources = Math.max(
-        ...sourceDirs.map((dir) => newestSource(join(root, dir))),
-      );
-      const fresh = built && sources < Date.parse(String(state.start));
-      const scanned = `${sourceDirs.join(', ')} (${notSource.join(', ')} skipped)`;
+      const newest = newestSource();
+      const fresh =
+        built &&
+        typeof newest !== 'string' &&
+        newest.mtimeMs < Date.parse(String(state.start));
+      const changed =
+        typeof newest === 'string'
+          ? newest
+          : `newest: ${String(newest.file)} at ${new Date(newest.mtimeMs).toISOString()}`;
       check(
         'build-fresh',
         fresh ? 'pass' : 'fail',
-        fresh
-          ? `yeti-app:build:${state.configuration} ran at launch and no file in ${scanned} changed since`
-          : built
-            ? `a file in ${scanned} changed after launch; run down and up`
-            : `no yeti-app:build:${state.configuration} run in ${state.logFile}`,
+        !built
+          ? `no yeti-app:build:${state.configuration} run in ${state.logFile}`
+          : fresh
+            ? `yeti-app:build:${state.configuration} ran at launch and none of the files Git lists under ${sourceDirs.join(', ')} changed since (${changed})`
+            : typeof newest === 'string'
+              ? newest
+              : `${changed}, after the launch; run down and up`,
       );
     }
   } else {
@@ -936,28 +1031,30 @@ async function doctor() {
       ? `${url}${readyPath} answered 200 with "${marker}"`
       : `status ${status}, marker missing`,
   );
-  // A recorded launch knows its build. An instance named by --url is probed,
-  // and a probe that could not run leaves the build unknown, never production.
-  let build = fromState && state ? state.configuration : null;
-
-  if (!fromState && shown) {
-    const ng = await page
-      .evaluate(
-        () =>
-          typeof (/** @type {{ ng?: unknown }} */ (globalThis).ng) === 'object',
-      )
-      .catch(() => null);
-    build = ng === null ? null : ng ? 'development' : 'production';
-  }
+  // The page is probed on every run, and a probe that could not run leaves
+  // the build unknown, never production. A recorded launch must agree with it.
+  const ng = shown
+    ? await page
+        .evaluate(
+          () =>
+            typeof (/** @type {{ ng?: unknown }} */ (globalThis).ng) ===
+            'object',
+        )
+        .catch(() => null)
+    : null;
+  const probed = ng === null ? null : ng ? 'development' : 'production';
+  const recorded = fromState && state ? state.configuration : null;
+  const build = probed ?? recorded;
+  const found = `${String(probed)} build (window.ng ${probed === 'development' ? 'present' : 'absent'})`;
 
   check(
     'build',
-    build ? 'pass' : 'fail',
-    build
-      ? fromState
-        ? `${build} build (state file)`
-        : `${build} build (window.ng ${build === 'development' ? 'present' : 'absent'})`
-      : 'the page probe failed; build unknown',
+    probed !== null && (!fromState || probed === recorded) ? 'pass' : 'fail',
+    probed === null
+      ? 'the page probe failed; build unknown'
+      : fromState && probed !== recorded
+        ? `the state file records ${String(recorded)}, the page is a ${found}`
+        : found,
   );
 
   if (build === 'development') {
@@ -1011,7 +1108,7 @@ function info() {
     finish(2, { error: `no state file at ${stateFile}` });
   }
 
-  finish(0, state);
+  finish(0, { ...state, sessions: sessionsOf(state.session), stateFile });
 }
 
 async function down() {
@@ -1051,7 +1148,7 @@ async function down() {
   const entry = playwrightCli();
   const sessions = [];
 
-  for (const session of [state.session, `${state.session}-jsoff`]) {
+  for (const session of sessionsOf(state.session)) {
     sessions.push(await closeSession(entry, session));
   }
 
@@ -1117,6 +1214,7 @@ async function down() {
   const daemon = stopDaemon();
   const result = {
     pid: state.pid,
+    recordedPidRunning: live !== undefined,
     stopped: stopped.map((member) => member.ProcessId),
     survivors: survivors.map((member) => member.ProcessId),
     ...(live ? {} : { uncheckedPids }),
@@ -1185,7 +1283,10 @@ async function down() {
     });
   }
 
-  finish(0, result);
+  finish(0, {
+    ...result,
+    ...(live ? {} : { warnings: [`pid ${state.pid} was not running`] }),
+  });
 }
 
 /** @type {Map<string, () => unknown>} */
@@ -1198,10 +1299,11 @@ const commands = new Map([
 const run = command === undefined ? undefined : commands.get(command);
 
 if (!run) {
-  finish(2, {
-    error:
-      'usage: control.mjs <up|doctor|info|down> [--mode serve|ssr] [--configuration development|production] [--port N] [--url URL] [--timeout S] [--json]',
-  });
+  finish(2, { error: usage });
 }
 
-await run();
+try {
+  await run();
+} catch (error) {
+  finish(2, { error: `could not run: ${String(error)}` });
+}

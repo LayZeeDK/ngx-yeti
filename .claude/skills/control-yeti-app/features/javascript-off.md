@@ -21,15 +21,18 @@ Preconditions:
 
 - Baseline from the README.
 - `up` wrote `<evidenceDir>/js-off.json`: `{ "browser": { "contextOptions": { "javaScriptEnabled": false } } }`.
-- The JavaScript-off browser runs in its own session, `<session>-jsoff`; `down` closes it with `<session>`.
+- The JavaScript-off browser runs in its own session, `<session>-jsoff` (`info` lists it under `sessions`); `down`
+  closes it together with `<session>`.
+
+Steps:
 
 - **Open with JavaScript off.** Run
   `playwright-cli -s=<session>-jsoff open <url>card --config=<evidenceDir>/js-off.json`. The snapshot shows
   heading `Welcome yeti-app`, heading `Weekend trips` and link `Weekend in the hills` (measured).
 - **Snapshot.** Run `playwright-cli -s=<session>-jsoff snapshot --filename=<evidenceDir>/card-jsoff.yml`.
 - **Item links.** Read them from the served HTML, which is the page with JavaScript off:
-  `curl -s <url>card | rg -o 'data-ngx-yeti-styles="[^"]+"'`. On `card` it prints
-  `data-ngx-yeti-styles="card"` and `data-ngx-yeti-styles="lift"` (measured).
+  `curl -s <url>card | rg -o 'data-ngx-yeti-styles="[^"]+"'`. On `card` it prints one line each for `grid`,
+  `button`, `card`, `spinner` and `lift`, in that order (measured 2026-10-15).
 - **Keyboard.** Run `playwright-cli -s=<session>-jsoff press Tab` and take a fresh snapshot; the focused element is
   marked `[active]`.
 - **Proof.** Run `playwright-cli -s=<session>-jsoff screenshot --filename=<evidenceDir>/card-jsoff.png` (measured:

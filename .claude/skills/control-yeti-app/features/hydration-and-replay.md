@@ -27,14 +27,17 @@ Preconditions:
 - Baseline from the README, a development build (`doctor` says `build: development`) for the summary. The held
   recipes work in both builds: the pattern matches `main.js` and the hashed `main-<HASH>.js`.
 
+Steps:
+
 - **Summary.** Run `playwright-cli -s=<session> open <url>card`, then `playwright-cli -s=<session> console`. The
-  console log holds `Angular is running in development mode.` and
-  `Angular hydrated 2 component(s) and 59 node(s), 0 component(s) were skipped.` (measured on `serve` development).
+  console log holds `Angular is running in development mode.` and a line starting
+  `Angular hydrated 2 component(s) and 59 node(s), 0 component(s) were skipped.` (measured on `serve` development;
+  Angular's message goes on after it).
 - **Hold `main.js` back on an item route.** Save this as `<evidenceDir>/held-card.js` (it follows
   `holdBackMainBundle` in `apps/yeti-app-e2e/src/support/main-bundle.ts`) and replace `<evidenceDir>` inside it:
 
   ```js
-  async (page) => {
+  async function heldCard(page) {
     let release;
     const released = new Promise((resolve) => {
       release = resolve;
@@ -43,7 +46,9 @@ Preconditions:
       await released;
       await route.continue();
     });
-    await page.goto(page.url().replace(/[^/]*$/, 'card'), { waitUntil: 'commit' });
+    await page.goto(page.url().replace(/[^/]*$/, 'card'), {
+      waitUntil: 'commit',
+    });
     await page.locator('article').first().waitFor();
     const held = {
       itemLinks: await page.locator('head link[data-ngx-yeti-styles]').evaluateAll((links) => links.map((link) => link.getAttribute('data-ngx-yeti-styles'))),
@@ -54,17 +59,18 @@ Preconditions:
     await page.waitForFunction(() => !document.querySelector('[jsaction]'));
     await page.unrouteAll();
     return { held, jsactionAfter: await page.locator('[jsaction]').count() };
-  };
+  }
   ```
 
   From a page of the app, run `playwright-cli -s=<session> --raw run-code --filename=<evidenceDir>/held-card.js`.
-  It prints `{"held":{"itemLinks":["card","lift"],"jsaction":7},"jsactionAfter":0}` (measured on `serve`
-  development): the item links are in place before any client code, and hydration clears the markers once released.
+  It prints `{"held":{"itemLinks":["grid","button","card","spinner","lift"],"jsaction":7},"jsactionAfter":0}`
+  (measured on `serve` development, 2026-10-15): the item links are in place before any client code, and hydration
+  clears the markers once released.
 
 - **Replay a click.** Save this as `<evidenceDir>/held-replay.js` and replace `<evidenceDir>` inside it:
 
   ```js
-  async (page) => {
+  async function heldReplay(page) {
     let release;
     const released = new Promise((resolve) => {
       release = resolve;
@@ -73,7 +79,9 @@ Preconditions:
       await released;
       await route.continue();
     });
-    await page.goto(page.url().replace(/[^/]*$/, 'replay'), { waitUntil: 'commit' });
+    await page.goto(page.url().replace(/[^/]*$/, 'replay'), {
+      waitUntil: 'commit',
+    });
     const button = page.getByRole('button', { name: /Clicked/ });
     await button.waitFor();
     const jsaction = await page.locator('[jsaction]').count();
@@ -83,7 +91,7 @@ Preconditions:
     await page.waitForFunction(() => !document.querySelector('[jsaction]'));
     await page.unrouteAll();
     return { jsaction, text: (await button.textContent()).trim() };
-  };
+  }
   ```
 
   Run `playwright-cli -s=<session> --raw run-code --filename=<evidenceDir>/held-replay.js`. The text is

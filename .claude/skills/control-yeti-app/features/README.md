@@ -6,8 +6,10 @@ the feature file that matches the case.
 ## Baseline preconditions
 
 - Run every command from the checkout root.
-- `node .claude/skills/control-yeti-app/scripts/control.mjs up --json` exited 0, and `doctor --json` exited 0 for
-  the build the case needs (`build` says `development` or `production`).
+- `playwright-cli --version` answers. If it does not, stop and ask Lars: a global install is his call.
+- `node .claude/skills/control-yeti-app/scripts/control.mjs up --json` exited 0, and
+  `node .claude/skills/control-yeti-app/scripts/control.mjs doctor --json` exited 0 for the build the case needs
+  (`build` says `development` or `production`).
 - `node .claude/skills/control-yeti-app/scripts/control.mjs info --json` gives `url` (`http://localhost:<port>/sub/`),
   `session` (`control-yeti-app-<flow id>`) and `evidenceDir` (`tmp/control-yeti-app/<run-id>/`). The recipes write
   these as `<url>`, `<session>` and `<evidenceDir>`.
@@ -26,6 +28,9 @@ the feature file that matches the case.
 - Snapshot, one action, fresh snapshot, check the change. Wait on an end state inside `run-code`, never a sleep.
 - Recipe scripts for `run-code --filename` are saved under `<evidenceDir>`; the commands below are literal apart
   from the three placeholders.
+- A recipe file is one `async function <name>(page) { ... }` declaration. playwright-cli 0.1.21 wraps the file in
+  parentheses and evaluates it as one expression, so a trailing `;` is a `SyntaxError` (measured 2026-10-15), and
+  Prettier adds that `;` back to an arrow function in Markdown. Prettier leaves a declaration without one.
 
 ## Proof and skip reporting
 
@@ -36,12 +41,13 @@ the feature file that matches the case.
   the console, the URL.
 - A recipe that passed once after a fix runs a second time before it counts.
 - For a fix, run the same recipe on a baseline (the parent commit in a second worktree on its own derived port) and
-  report one verdict: verified, not verified, or inconclusive.
+  report one verdict: verified, not verified, or inconclusive. A negative result is reported as it is.
+- A mock counts only where a production boundary already isolates the external system; the Fixture app has none
+  to mock.
 - Name an entry point you could not reach and why; never report it as covered through another path.
 - Screen readers are automated, not manual: `apps/screen-reader-e2e` runs real NVDA (CI's `nvda` job, and locally
   on Windows) and real VoiceOver in Safari (CI's `voiceover` job) on Storybook stories (ngx-yeti-testing,
   "Screen readers"). Firefox and WebKit run in the e2e projects, and real Safari in CI's `safari` job.
-- Manual only: Angular DevTools checks.
 
 ## Feature entry contract
 
@@ -57,3 +63,10 @@ Each feature file has an H1, one paragraph of user-visible behavior, and four H2
   replayed after hydration.
 - [Build configurations](./build-configurations.md): development and production builds through `serve` and
   `serve-ssr`.
+
+## Manual only
+
+- Angular DevTools checks: a browser extension that playwright-cli does not load.
+- With JavaScript off, playwright-cli's `eval` and `run-code` hang, so a computed-style claim (geometry, colour) has
+  no recipe here. Take it to the e2e suite (`npm exec nx -- e2e yeti-app-e2e`), whose JavaScript-off cases evaluate
+  through Playwright's locator API.

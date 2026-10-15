@@ -20,15 +20,25 @@ or the built Node server, each in the development or production configuration. O
 
 Preconditions:
 
-- No instance of this checkout is up (`info` exits 2), or run `down` first: one instance per checkout.
+- No instance of this checkout is up (`node .claude/skills/control-yeti-app/scripts/control.mjs info --json` exits
+  2), or run `node .claude/skills/control-yeti-app/scripts/control.mjs down --json` first: one instance per checkout.
+
+Steps:
 
 - **Development dev server.** Run `node .claude/skills/control-yeti-app/scripts/control.mjs up --json`, then
-  `doctor --json`. `doctor` reports `build: development` and a passing `hydration` check (measured).
+  `node .claude/skills/control-yeti-app/scripts/control.mjs doctor --json`. `doctor` reports `build` passing with
+  `development build (window.ng present)` and a passing `hydration` check (measured 2026-10-15).
+- **Production dev server.** Run `node .claude/skills/control-yeti-app/scripts/control.mjs down --json`, then
+  `node .claude/skills/control-yeti-app/scripts/control.mjs up --configuration=production --json`, then
+  `node .claude/skills/control-yeti-app/scripts/control.mjs doctor --json`. `doctor` reports
+  `production build (window.ng absent)` and `hydration` skipped (measured 2026-10-15).
 - **Production SSR.** Run `node .claude/skills/control-yeti-app/scripts/control.mjs down --json`, then
   `node .claude/skills/control-yeti-app/scripts/control.mjs up --mode=ssr --configuration=production --json`, then
-  `doctor --json`. `doctor` reports `build: production`, `build-fresh` passing and `hydration` skipped (measured;
-  ready in 5 s on a cache hit).
-- **Development SSR.** `up --mode=ssr --configuration=development`. Use it for `@defer`, `hydrate never` and
+  `node .claude/skills/control-yeti-app/scripts/control.mjs doctor --json`. `doctor` reports
+  `production build (window.ng absent)`, `build-fresh` passing and `hydration` skipped (measured 2026-10-15).
+- **Development SSR.** Run `node .claude/skills/control-yeti-app/scripts/control.mjs down --json`, then
+  `node .claude/skills/control-yeti-app/scripts/control.mjs up --mode=ssr --configuration=development --json`, then
+  `node .claude/skills/control-yeti-app/scripts/control.mjs doctor --json`. Use it for `@defer`, `hydrate never` and
   incremental-hydration cases: it serves built chunks, not the HMR dev server.
 - **Proof.** Keep the `up` and `doctor` JSON in `<evidenceDir>` (redirect with `> <evidenceDir>/doctor.json`) and
   a screenshot from the item-routes recipe.
@@ -37,9 +47,11 @@ Preconditions:
 
 - The `ssr` modes run Nx's `build` dependency first and share one output folder, `dist/apps/yeti-app`; switching
   configuration rebuilds it or restores it from the Nx cache. `build-fresh` trusts the Nx build that ran at launch
-  and flags only source files changed after it, in `apps/yeti-app/src` and in every entry point of
-  `packages/ngx-yeti` (`packages/ngx-yeti/<item>/src` included); it skips directories named `node_modules`,
-  `storybook-static` and `dist`, whose files change without changing the build.
+  and flags only files Git lists (tracked or untracked, not ignored) under `apps/yeti-app`, `packages/ngx-yeti` and
+  `vendor/yeti` that changed after it; ignored output such as `node_modules`, `dist`, `storybook-static`,
+  `vendor/yeti/docs` and Vitest's attachments and screenshots changes without changing the build.
+- The dev server modes (`serve`) have no `build-fresh` check; `doctor` reads their `server.log` for errors instead
+  (`build-log`).
 - A build started by `up` and the e2e run (`npm exec nx -- e2e yeti-app-e2e`) write the same `dist` folder; do not
   run both at once in one checkout.
 - The Tailwind C1 and C2 Fixture build configurations of the setup spec are `tailwind-c1` and `tailwind-c2` in
