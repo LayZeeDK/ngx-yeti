@@ -5,7 +5,7 @@ milestone: layouts-and-button
 phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: active
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -177,3 +177,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-15 — plan — patch plan approved
 - 2026-10-15 — build — build started
 - 2026-10-16 — build — user ruling 2026-10-16, verbatim: "Use /lars-maintain-verification and /lars-create-verification to audit/(re)create control-* skills and other verification artifacts.s" and "Verification artifacts should be runnable by /lars-verify". T074 Verify cannot run: it calls ~/.claude/skills/lars-maintain-control-skill/scripts/check-skill.mjs, removed by the 2026-10-15 rename of the global skills; the renamed check-skill.mjs adds fingerprint-copy and doctor-map-fresh checks that control-yeti-app fails (measured) at 7031099. T074 attempt 1 saved (tmp/afk-m002/tools/T074-attempt1.patch), Log copied, isolate retired; build plan repair follows
+- 2026-10-16 — build — build started
