@@ -2,7 +2,7 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: ship
+phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
 status: active
@@ -169,3 +169,10 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-15 — build — build started
 - 2026-10-15 — build — wave 14 cycle 1 review passes at 08323f5; security re-check r3 verdict closed for the run-job path traversal (0 above Informational)
 - 2026-10-15 — ship — build done; final review pending
+- 2026-10-15 — ship — user ruling 2026-10-15, verbatim: "down: Use Storybook's behaviour, fixed before shipping M002" (control-yeti-app down dead-root lockout); final review lists it as a gap risk
+- 2026-10-15 — ship — project Verify failed at f8aa2eac (exit 1): run-job ci e2e leg firefox-development, apps/yeti-app-e2e/src/fixture-app.spec.ts:220 'serves its fixture, not a stub' (prerendered and server-rendered) hit the 30 s test timeout on all 3 attempts, each at a different one of 34 routes, while another repository's gate ran on the machine; evidence .project/review/final-gap-1.md and .project/build/verify-ledger.jsonl
+- 2026-10-15 — ship — user ruling 2026-10-15, verbatim: "Yes" (to: run the lockout gap review now so both fixes go into one patch wave), an exception to 'Do not launch reviewers while project Verify is failing'; review_gap_2 dispatched at f8aa2eac
+- 2026-10-15 — plan — patch plan reopened
+- 2026-10-15 — plan — user ruling 2026-10-15, verbatim: "Approve all recommendations, as part of M002." (1: a third gap review at f8aa2ea for the static Storybook dark-wrapper defect, run while project Verify is failing; 2: fold the triaged control-skill survivors into wave 15 as tasks that run /lars-maintain-control-skill passes)
+- 2026-10-15 — plan — patch plan approved
+- 2026-10-15 — build — build started
