@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { transform } from 'lightningcss';
 import type { MediaCondition, MediaQuery } from 'lightningcss';
+import manifest from 'yeti-css/manifest';
 
 const packageRoot = path.join(import.meta.dirname, '..');
 
@@ -32,6 +33,13 @@ function classNames(node: unknown): string[] {
 
 function readPackageFile(name: string): string {
   return readFileSync(path.join(packageRoot, name), 'utf8');
+}
+
+function readYetiFile(name: string): string {
+  return readFileSync(
+    path.join(packageRoot, '../../vendor/yeti/src', name),
+    'utf8',
+  );
 }
 
 interface Findings {
@@ -249,12 +257,13 @@ function paintValues(
 /**
  * Yeti's rules that paint a fill of their own behind focusable contents, so
  * a ring inside them sits on that fill and not on a band around them. An
- * alert paints one at its default emphasis only.
+ * alert paints an opaque one at its default emphasis, in every variant but
+ * the translucent black and white.
  */
 const yetiSurfaces = [
   '.card',
   '.nav',
-  ".alert:not([data-emphasis='low'], [data-emphasis='high'])",
+  ".alert:not([data-emphasis='low'], [data-emphasis='high'], [data-variant='black'], [data-variant='white'])",
   '.accordion',
   '.accordion > details > summary',
   '.box[data-surface]',
@@ -266,8 +275,8 @@ const browserSurfaces = ['dialog', '[popover]'];
 
 /**
  * The selectors of the rule that gives a surface Yeti's ring colour back,
- * split at the commas outside a pseudo-class's parentheses, and none
- * without that rule.
+ * split at the commas outside a pseudo-class's parentheses, each on one
+ * line, and none without that rule.
  */
 function inkResets(css: string): string[] {
   const reset =
@@ -281,7 +290,65 @@ function inkResets(css: string): string[] {
 
   return (reset[1] ?? '')
     .split(/,(?![^(]*\))/)
-    .map((selector) => selector.trim());
+    .map((selector) =>
+      selector
+        .trim()
+        .replaceAll(/\s+/g, ' ')
+        .replaceAll('( ', '(')
+        .replaceAll(' )', ')'),
+    );
+}
+
+/**
+ * Each high-emphasis alert rule's variant (null for the rule on the alert
+ * without one) and the ring colour it sets, in the order the rules appear.
+ */
+function highAlertInks(css: string): (string | null)[][] {
+  return [
+    ...css.matchAll(
+      /:where\(\.alert\[data-emphasis='high'\](?::not\(\[data-variant\]\)|\[data-variant='([\w-]+)'\])\)\s*\{\s*--_ngx-yeti-band-ink:\s*([^;}]+);\s*\}/g,
+    ),
+  ].map(([, variant, ink]) => [variant ?? null, ink?.trim() ?? null]);
+}
+
+/**
+ * The text colour Yeti gives a high-emphasis alert's fill,
+ * `--_yeti-on-variant`, per variant (null for the alert's own default), in
+ * the order Yeti writes them.
+ */
+function yetiOnVariants(
+  alert: string,
+  attributes: string,
+): (string | null)[][] {
+  const onVariant = String.raw`\{[^}]*?--_yeti-on-variant:\s*([^;}]+)`;
+  const fallback = new RegExp(
+    String.raw`\.alert:not\(\[data-variant\]\)\s*${onVariant}`,
+  ).exec(alert);
+
+  return [
+    [null, fallback?.[1]?.trim() ?? null],
+    ...[
+      ...attributes.matchAll(
+        new RegExp(String.raw`\[data-variant="([\w-]+)"\]\s*${onVariant}`, 'g'),
+      ),
+    ].map(([, variant, ink]) => [variant ?? null, ink?.trim() ?? null]),
+  ];
+}
+
+/**
+ * The variants whose `--_yeti-variant-subtle`, a default-emphasis alert's
+ * fill, Yeti writes with an alpha.
+ */
+function translucentTints(attributes: string): string[] {
+  return [
+    ...attributes.matchAll(
+      /\[data-variant="([\w-]+)"\]\s*\{[^}]*?--_yeti-variant-subtle:\s*([^;}]+)/g,
+    ),
+  ].flatMap(([, variant, tint]) =>
+    variant !== undefined && /\/\s*[\d.]+%?\s*\)/.test(tint ?? '')
+      ? [variant]
+      : [],
+  );
 }
 
 /** Every stylesheet of Yeti's source. */
@@ -295,38 +362,42 @@ function yetiSource(): string {
 }
 
 /**
- * The selectors of Yeti's source a reset entry stands on, each with whether
- * it keeps its attribute values: the entry without its `:not()`, matched
- * with attribute values dropped, and each attribute value the entry names on
- * that selector, matched as Yeti writes it.
+ * The selectors of Yeti's source a reset entry stands on: the entry without
+ * its `:not()`, matched with attribute values dropped, and each attribute
+ * value the entry names on that selector, matched as Yeti writes it, on
+ * that selector or as a rule of the attribute alone (as Yeti writes its
+ * variants).
  */
-function yetiSelectorsOf(
-  entry: string,
-): { readonly selector: string; readonly valued: boolean }[] {
+function yetiSelectorsOf(entry: string): {
+  readonly selector: string;
+  readonly attribute: string | null;
+}[] {
   const base = entry.replaceAll(/:not\([^)]*\)/g, '');
 
   return [
-    { selector: base, valued: false },
-    ...[...entry.matchAll(/\[([\w-]+)='([^']*)'\]/g)].map(
-      ([, name, value]) => ({
-        selector: `${base}[${name ?? ''}="${value ?? ''}"]`,
-        valued: true,
-      }),
-    ),
+    { selector: base, attribute: null },
+    ...[...entry.matchAll(/\[([\w-]+)='([^']*)'\]/g)].map(([, name, value]) => {
+      const attribute = `[${name ?? ''}="${value ?? ''}"]`;
+
+      return { selector: `${base}${attribute}`, attribute };
+    }),
   ];
 }
 
 /** The reset entries' selectors that Yeti's source does not have. */
 function missingFromYeti(entries: readonly string[], source: string): string[] {
   const valueless = source.replaceAll(/\[([\w-]+)=[^\]]*\]/g, '[$1]');
+  const has = (selector: string, css: string): boolean =>
+    new RegExp(`${RegExp.escape(selector)}(?![\\w-])`).test(css);
+  const hasRuleOf = (attribute: string): boolean =>
+    new RegExp(`^\\s*${RegExp.escape(attribute)}\\s*\\{`, 'm').test(source);
 
   return entries
     .flatMap(yetiSelectorsOf)
-    .filter(
-      ({ selector, valued }) =>
-        !new RegExp(`${RegExp.escape(selector)}(?![\\w-])`).test(
-          valued ? source : valueless,
-        ),
+    .filter(({ selector, attribute }) =>
+      attribute === null
+        ? !has(selector, valueless)
+        : !has(selector, source) && !hasRuleOf(attribute),
     )
     .map(({ selector }) => selector);
 }
@@ -346,10 +417,7 @@ describe('ngx-yeti/ngx-yeti-globals.css', () => {
   // A11Y-35: the band-ink mapping copies Yeti's data-paint text colours, so a
   // moved pin that changes one of them fails here.
   it("gives each painted band the text colour Yeti's data-paint rule gives it, and draws only the ring's colour with it", () => {
-    const yeti = readFileSync(
-      path.join(packageRoot, '../../vendor/yeti/src/layouts/attributes.css'),
-      'utf8',
-    );
+    const yeti = readYetiFile('layouts/attributes.css');
     const globals = readPackageFile('ngx-yeti-globals.css');
     const yetiInks = paintValues(yeti, 'color', '"');
 
@@ -374,14 +442,14 @@ describe('ngx-yeti/ngx-yeti-globals.css', () => {
     expect(missingFromYeti(yetiSurfaces, yetiSource())).toStrictEqual([]);
   });
 
-  it('reads the selectors of the ink reset, and none without one', () => {
+  it('reads the selectors of the ink reset, each on one line, and none without one', () => {
     expect(
       inkResets(
-        "@layer ngx-yeti { :where(.card, .alert:not([data-emphasis='low'], [data-emphasis='high']), dialog) { --_ngx-yeti-band-ink: var(--yeti-color-focus); } }",
+        "@layer ngx-yeti { :where(.card, .alert:not(\n  [data-emphasis='low'],\n  [data-variant='white']\n), dialog) { --_ngx-yeti-band-ink: var(--yeti-color-focus); } }",
       ),
     ).toStrictEqual([
       '.card',
-      ".alert:not([data-emphasis='low'], [data-emphasis='high'])",
+      ".alert:not([data-emphasis='low'], [data-variant='white'])",
       'dialog',
     ]);
     expect(inkResets('@layer ngx-yeti { a { color: red; } }')).toStrictEqual(
@@ -390,20 +458,92 @@ describe('ngx-yeti/ngx-yeti-globals.css', () => {
   });
 
   it("reports a reset entry whose class or named attribute value is not in Yeti's source", () => {
-    const source =
-      '.alert { color: red; } .alert[data-emphasis="low"] { color: blue; } .box[data-surface="raised"] { color: green; }';
-    const entry = ".alert:not([data-emphasis='low'], [data-emphasis='high'])";
+    const source = [
+      '.alert { color: red; }',
+      '.alert[data-emphasis="low"] { color: blue; }',
+      '\t[data-variant="black"] { --x: 1; }',
+      '.box[data-surface="raised"] { color: green; }',
+      '.badge[data-variant="white"] { color: red; }',
+    ].join('\n');
+    const entry =
+      ".alert:not([data-emphasis='low'], [data-emphasis='high'], [data-variant='black'], [data-variant='white'])";
 
     expect(
       missingFromYeti([entry, '.box[data-surface]'], source),
-    ).toStrictEqual(['.alert[data-emphasis="high"]']);
+    ).toStrictEqual([
+      '.alert[data-emphasis="high"]',
+      '.alert[data-variant="white"]',
+    ]);
     expect(
       missingFromYeti([entry], source.replaceAll('.alert', '.callout')),
     ).toStrictEqual([
       '.alert',
       '.alert[data-emphasis="low"]',
       '.alert[data-emphasis="high"]',
+      '.alert[data-variant="white"]',
     ]);
+  });
+
+  // A11Y-35: a high-emphasis alert's ring copies the text colour Yeti's
+  // variant rules give its fill, so a moved pin that changes one, or adds a
+  // variant the mapping lacks, fails here.
+  it("gives a high-emphasis alert of each variant, and of none, the text colour Yeti's variant rule gives its fill", () => {
+    const inks = highAlertInks(readPackageFile('ngx-yeti-globals.css'));
+    const variants =
+      manifest.components.alert.attributes.find(
+        ({ name }) => name === 'data-variant',
+      )?.values ?? [];
+
+    expect(variants.length).toBeGreaterThan(0);
+    expect(inks.map(([variant]) => variant)).toStrictEqual([null, ...variants]);
+    expect(inks).toStrictEqual(
+      yetiOnVariants(
+        readYetiFile('components/alert/alert.css'),
+        readYetiFile('layouts/attributes.css'),
+      ),
+    );
+  });
+
+  // A11Y-35: a default-emphasis alert with a translucent tint keeps the
+  // band's ring colour, so the variants the reset leaves out follow Yeti's
+  // tints.
+  it('leaves out of the alert reset exactly the variants whose default tint Yeti makes translucent', () => {
+    const alertEntry =
+      inkResets(readPackageFile('ngx-yeti-globals.css')).find((entry) =>
+        entry.startsWith('.alert'),
+      ) ?? '';
+
+    expect(
+      [...alertEntry.matchAll(/\[data-variant='([\w-]+)'\]/g)].map(
+        ([, variant]) => variant,
+      ),
+    ).toStrictEqual(translucentTints(readYetiFile('layouts/attributes.css')));
+  });
+
+  it('reads the high-emphasis alert inks, the on-variant colours, and the translucent tints', () => {
+    expect(
+      highAlertInks(
+        "@layer ngx-yeti { :where(.alert[data-emphasis='high']:not([data-variant])) { --_ngx-yeti-band-ink: var(--a); } :where(.alert[data-emphasis='high'][data-variant='black']) { --_ngx-yeti-band-ink: var(--b); } :where(.card) { --_ngx-yeti-band-ink: var(--c); } }",
+      ),
+    ).toStrictEqual([
+      [null, 'var(--a)'],
+      ['black', 'var(--b)'],
+    ]);
+    expect(
+      yetiOnVariants(
+        '.alert:not([data-variant]) { --_yeti-variant: red; --_yeti-on-variant: var(--a); }',
+        '[data-variant="x"] { --_yeti-on-variant: var(--b); } [data-variant="y"] { --_yeti-variant-subtle: oklch(0 0 0 / 0.08); --_yeti-on-variant: var(--c); }',
+      ),
+    ).toStrictEqual([
+      [null, 'var(--a)'],
+      ['x', 'var(--b)'],
+      ['y', 'var(--c)'],
+    ]);
+    expect(
+      translucentTints(
+        '[data-variant="x"] { --_yeti-variant-subtle: var(--x-subtle); } [data-variant="y"] { --_yeti-variant-subtle: oklch(0 0 0 / 0.08); }',
+      ),
+    ).toStrictEqual(['y']);
   });
 
   it('sets only system colour keywords in its forced-colours rules', () => {

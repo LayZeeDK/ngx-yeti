@@ -50,14 +50,24 @@
      a ring inside it sits on that fill and not on the band: the surface
      gives its contents Yeti's ring colour back. The reset has no specificity
      and comes first, so a surface that is itself a band keeps its band's
-     colour, and a band inside a surface sets its own again. Only an alert
-     of the default emphasis counts: a low-emphasis alert paints no fill, and
-     a high-emphasis one fills with its variant, on which Yeti's ring does
-     not read, so both keep the band's text colour. */
+     colour, and a band inside a surface sets its own again.
+
+     An alert's fill depends on its emphasis and its variant. At the default
+     emphasis a hue fills with an opaque tint on which Yeti's ring reads, but
+     the black and white tints are translucent and a low-emphasis alert
+     paints no fill, so those keep the band's text colour. A high-emphasis
+     alert fills with its variant, on which Yeti's ring does not read and the
+     band's colour may not, so its ring takes the alert's own text colour:
+     the public token Yeti's variant rule gives it, one rule per variant. */
   :where(
     .card,
     .nav,
-    .alert:not([data-emphasis='low'], [data-emphasis='high']),
+    .alert:not(
+      [data-emphasis='low'],
+      [data-emphasis='high'],
+      [data-variant='black'],
+      [data-variant='white']
+    ),
     .accordion,
     .accordion > details > summary,
     .box[data-surface],
@@ -66,6 +76,46 @@
     [popover]
   ) {
     --_ngx-yeti-band-ink: var(--yeti-color-focus);
+  }
+
+  :where(.alert[data-emphasis='high']:not([data-variant])) {
+    --_ngx-yeti-band-ink: var(--yeti-on-primary);
+  }
+
+  :where(.alert[data-emphasis='high'][data-variant='primary']) {
+    --_ngx-yeti-band-ink: var(--yeti-on-primary);
+  }
+
+  :where(.alert[data-emphasis='high'][data-variant='secondary']) {
+    --_ngx-yeti-band-ink: var(--yeti-on-secondary);
+  }
+
+  :where(.alert[data-emphasis='high'][data-variant='success']) {
+    --_ngx-yeti-band-ink: var(--yeti-on-success);
+  }
+
+  :where(.alert[data-emphasis='high'][data-variant='warning']) {
+    --_ngx-yeti-band-ink: var(--yeti-on-warning);
+  }
+
+  :where(.alert[data-emphasis='high'][data-variant='alert']) {
+    --_ngx-yeti-band-ink: var(--yeti-on-alert);
+  }
+
+  :where(.alert[data-emphasis='high'][data-variant='danger']) {
+    --_ngx-yeti-band-ink: var(--yeti-on-alert);
+  }
+
+  :where(.alert[data-emphasis='high'][data-variant='neutral']) {
+    --_ngx-yeti-band-ink: var(--yeti-on-neutral);
+  }
+
+  :where(.alert[data-emphasis='high'][data-variant='black']) {
+    --_ngx-yeti-band-ink: var(--yeti-white);
+  }
+
+  :where(.alert[data-emphasis='high'][data-variant='white']) {
+    --_ngx-yeti-band-ink: var(--yeti-black);
   }
 
   [data-paint='primary'] {

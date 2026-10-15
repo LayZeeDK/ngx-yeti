@@ -1,9 +1,12 @@
 import { Directive, signal } from '@angular/core';
 import {
+  composite,
   contrastRatio,
   itemLinks,
   itemStyled,
+  manifestValues,
   nextFrame,
+  parseColor,
 } from '@ngx-yeti/testing';
 import {
   moduleMetadata,
@@ -17,6 +20,7 @@ import { YetiCenter } from 'ngx-yeti/center';
 import { YetiStack } from 'ngx-yeti/stack';
 import { injectYetiItemStyles } from 'ngx-yeti/styles';
 import { expect, userEvent, waitFor } from 'storybook/test';
+import manifest from 'yeti-css/manifest';
 import { YetiBox } from './box';
 import { YetiBorder } from './box-border';
 import { NgxYetiPaint } from './box-paint';
@@ -387,24 +391,14 @@ class YetiStoryAlertStyles {
   }
 }
 
-/** Yeti's alert at one emphasis in a band, holding only its labelled close button. */
-function alertBand(emphasis: 'low' | 'high'): string {
-  return `<div data-testid="${emphasis}-alert-band" yetiPaint="primary" style="${ringRoom}">
-    <div data-testid="${emphasis}-alert" class="alert" data-emphasis="${emphasis}" yetiStoryAlertStyles><button type="button" data-close aria-label="Dismiss the ${emphasis}-emphasis alert"></button></div>
-  </div>`;
-}
-
 /**
  * Every text-bearing paint as a band with words, and the middle greys as
  * fills without text (usage rule 4), in both schemes (ledger A11Y-21).
- * Focus rings in bands, on a card inside a band, on a toggle label in a
- * band, and in a low- and a high-emphasis alert in a band read at least 3:1
- * (ledger A11Y-35).
+ * Focus rings in bands, on a card inside a band, and on a toggle label in a
+ * band read at least 3:1 (ledger A11Y-35).
  */
 export const Paint: Story = {
-  decorators: [
-    moduleMetadata({ imports: [YetiButton, YetiCard, YetiStoryAlertStyles] }),
-  ],
+  decorators: [moduleMetadata({ imports: [YetiButton, YetiCard] })],
   render: () => ({
     template: schemes
       .map((scheme) =>
@@ -431,8 +425,6 @@ export const Paint: Story = {
             <div data-testid="toggle-band" yetiPaint="primary" style="${ringRoom}">
               <label data-testid="toggle" yetiButton><input type="checkbox" name="bold" /> Bold</label>
             </div>
-            ${alertBand('low')}
-            ${alertBand('high')}
             ${fillPaints
               .map(
                 (paint) =>
@@ -557,49 +549,178 @@ export const Paint: Story = {
       await expect(input).toHaveFocus();
       await expect(input.matches(':focus-visible')).toBe(true);
       await expectRingOn(toggle, toggleBand);
-
-      // A low-emphasis alert paints no fill, so a ring inside it reads
-      // against the band.
-      const lowAlertBand = byTestId(wrapper, 'low-alert-band');
-      const lowAlert = byTestId(wrapper, 'low-alert');
-      const lowClose = lowAlert.querySelector('button');
-
-      if (lowClose === null) {
-        throw new Error('No close button in the low-emphasis alert');
-      }
-
-      await expect(lowAlertBand).toHaveAttribute('data-paint', 'primary');
-      await itemStyled('alert', lowAlert, 'display', 'flex');
-      await expect(getComputedStyle(lowAlert).backgroundColor).toBe(
-        'rgba(0, 0, 0, 0)',
-      );
-      await userEvent.tab();
-
-      await expect(lowClose).toHaveFocus();
-      await expect(lowClose.matches(':focus-visible')).toBe(true);
-      await expectRingOn(lowClose, lowAlertBand);
-
-      // A high-emphasis alert fills with its variant, so a ring inside it
-      // reads against that fill.
-      const highAlert = byTestId(wrapper, 'high-alert');
-      const highClose = highAlert.querySelector('button');
-
-      if (highClose === null) {
-        throw new Error('No close button in the high-emphasis alert');
-      }
-
-      await expect(byTestId(wrapper, 'high-alert-band')).toHaveAttribute(
-        'data-paint',
-        'primary',
-      );
-      await userEvent.tab();
-
-      await expect(highClose).toHaveFocus();
-      await expect(highClose.matches(':focus-visible')).toBe(true);
-      await expectRingOn(highClose, highAlert);
     }
   },
 };
+
+/** Every variant of Yeti's alert, and none; the default variant is primary. */
+const alertVariants: readonly (string | undefined)[] = [
+  undefined,
+  ...manifestValues(manifest.components.alert, 'data-variant'),
+];
+
+/** Every emphasis of Yeti's alert, and none; the default emphasis is medium. */
+const alertEmphases: readonly (string | undefined)[] = [
+  undefined,
+  ...manifestValues(manifest.components.alert, 'data-emphasis'),
+];
+
+/** Every paint value, each a band holding the whole alert matrix. */
+const alertBands: readonly YetiPaint[] = [...textPaints, ...fillPaints];
+
+/**
+ * The alert rings that no public Yeti token brings to 3:1, as
+ * `<scheme> <band> band, <variant> <emphasis>`, each with an upstream-bugs
+ * row. The matrix fails when one of them reaches 3:1.
+ */
+const alertRingExceptions: readonly string[] = [];
+
+function alertCase(
+  variant: string | undefined,
+  emphasis: string | undefined,
+): string {
+  return `${variant ?? 'no-variant'} ${emphasis ?? 'no-emphasis'}`;
+}
+
+/** Yeti's alert markup holding only its labelled close button. */
+function alertMarkup(
+  paint: YetiPaint,
+  variant: string | undefined,
+  emphasis: string | undefined,
+): string {
+  const variantAttribute =
+    variant === undefined ? '' : ` data-variant="${variant}"`;
+  const emphasisAttribute =
+    emphasis === undefined ? '' : ` data-emphasis="${emphasis}"`;
+  const name = alertCase(variant, emphasis);
+
+  return `<div class="alert"${variantAttribute}${emphasisAttribute} data-alert-case="${name}" yetiStoryAlertStyles><button type="button" data-close aria-label="Dismiss the ${name} alert on ${paint}"></button></div>`;
+}
+
+/**
+ * Yeti's alert in every variant and emphasis, and with each attribute left
+ * off, inside a band of every paint value, in one scheme. The ring of a
+ * focused close button reads at least 3:1 against what it sits on: the
+ * alert's fill composited over the band (ledger A11Y-35). One story per
+ * scheme keeps each run short.
+ */
+function paintAlerts(scheme: (typeof schemes)[number]): Story {
+  const cases = alertVariants.flatMap((variant) =>
+    alertEmphases.map((emphasis) => alertCase(variant, emphasis)),
+  );
+  const exceptions = alertRingExceptions.filter((ring) =>
+    ring.startsWith(`${scheme} `),
+  );
+
+  return {
+    decorators: [moduleMetadata({ imports: [YetiStoryAlertStyles] })],
+    render: () => ({
+      template: schemeWrapper(
+        scheme,
+        alertBands
+          .map(
+            (paint) =>
+              `<div data-alert-band="${paint}" yetiPaint="${paint}" style="${ringRoom}; display: flex; flex-wrap: wrap; gap: 4px">${alertVariants
+                .flatMap((variant) =>
+                  alertEmphases.map((emphasis) =>
+                    alertMarkup(paint, variant, emphasis),
+                  ),
+                )
+                .join('')}</div>`,
+          )
+          .join(''),
+      ),
+    }),
+    play: async ({ canvasElement }) => {
+      const bands = [
+        ...canvasElement.querySelectorAll<HTMLElement>('[data-alert-band]'),
+      ];
+      const firstAlert = canvasElement.querySelector('.alert');
+
+      if (firstAlert === null) {
+        throw new Error('No alert');
+      }
+
+      await expect(
+        bands.map((band) => band.dataset['alertBand']),
+      ).toStrictEqual(alertBands);
+      await itemStyled('alert', firstAlert, 'display', 'flex');
+
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
+
+      // Without the per-key delay a tab takes a fraction of the time.
+      const keyboard = userEvent.setup({ delay: null });
+      // Checked per case and asserted once, so a failing run lists them all.
+      const unmet: string[] = [];
+      const underThree: { readonly ring: string; readonly ratio: number }[] =
+        [];
+
+      for (const band of bands) {
+        const paint = band.dataset['alertBand'] ?? '';
+        const alerts = [...band.querySelectorAll<HTMLElement>('.alert')];
+        const bandFill = getComputedStyle(band).backgroundColor;
+
+        await expect(band).toHaveAttribute('data-paint', paint);
+        await expect(
+          alerts.map((alert) => alert.dataset['alertCase']),
+        ).toStrictEqual(cases);
+
+        for (const alert of alerts) {
+          const ring = `${scheme} ${paint} band, ${alert.dataset['alertCase'] ?? ''}`;
+          const close = alert.querySelector('button');
+          const fill = getComputedStyle(alert).backgroundColor;
+          const emphasis = alert.getAttribute('data-emphasis');
+
+          if (close === null) {
+            throw new Error(`No close button in ${ring}`);
+          }
+
+          if (emphasis === 'high' && parseColor(fill).alpha !== 1) {
+            unmet.push(`${ring}: not filled (${fill})`);
+          }
+
+          if (emphasis === 'low' && fill !== 'rgba(0, 0, 0, 0)') {
+            unmet.push(`${ring}: filled (${fill})`);
+          }
+
+          await keyboard.tab();
+
+          const { outlineStyle, outlineColor } = getComputedStyle(close);
+
+          if (document.activeElement !== close) {
+            unmet.push(`${ring}: not focused`);
+          } else if (!close.matches(':focus-visible')) {
+            unmet.push(`${ring}: not :focus-visible`);
+          } else if (outlineStyle === 'none') {
+            unmet.push(`${ring}: no ring`);
+          }
+
+          const ratio = contrastRatio(outlineColor, composite(fill, bandFill));
+
+          if (ratio < 3) {
+            underThree.push({ ring, ratio: Math.round(ratio * 100) / 100 });
+          }
+        }
+      }
+
+      await expect(unmet).toStrictEqual([]);
+      await expect(
+        underThree.filter(({ ring }) => !exceptions.includes(ring)),
+      ).toStrictEqual([]);
+      await expect(
+        exceptions.filter(
+          (exception) => !underThree.some(({ ring }) => ring === exception),
+        ),
+      ).toStrictEqual([]);
+    },
+  };
+}
+
+export const PaintAlertsLight: Story = paintAlerts('light');
+
+export const PaintAlertsDark: Story = paintAlerts('dark');
 
 /**
  * The `yetiText` values that read on the page surface in both schemes, and
