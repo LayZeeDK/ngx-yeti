@@ -3,9 +3,9 @@ id: T072
 title: Make control-yeti-app down on a dead recorded root wait for the root's surviving children, name them and the port's listeners, and remove the state file, as Storybook's down does
 wave: 15
 deps: [T053, T067]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T072
+base: cf6fd65f5a017d5fffab14228f2a5bcf3b29a58d
 worktree: null
 task_branch: null
 files:
@@ -68,3 +68,30 @@ Heavy: yes
 ## Log
 
 - 2026-10-15 — created by planner (final-review patch), from .project/review/PATCH-FINDINGS.md P002 (source .project/review/final-gap-2.md).
+- 2026-10-15 — build_T072 implementation: control.mjs gains `treeMembers` (dead root's tree by ParentProcessId, skipping processes that started before the recorded `start` and their descendants; unparseable start times stay members and go to `uncheckedPids`). In `down`, the dead-root branch still stops the recorded survivors that match by PID, start and command line, then waits (same 20-attempt loop, same one-failed-query bound) for the dead tree's members without stopping them, then removes state.json whatever survives. Kept-state and `run down again` now apply only when `live`. The incomplete message lists `pid <..> still running`, `port <p> still listens (listeners [..])` or `port <p> not confirmed free (<query error>)`, session/daemon problems, and ends `; removed <stateFile>; to stop by hand: pid <survivors and listeners>`. Result: `stopped` now holds only the PIDs taskkilled; dead-path results add `uncheckedPids`. The mismatch refusal and live path are unchanged. Tests: added `down on a dead recorded pid exits 1 while a child of it keeps the port` (criteria 1 and 3: exit 1, `stopped` [], `survivors` [child], `portFree` false, sessions absent/absent, daemon stopped, state removed, child alive; second down exit 2 `no state file`; `up --port=<port>` exit 2 `port <port> is in use by pid <child>`, not `already up`) and `down on a dead recorded pid leaves out a process that started before the recorded root` (criterion 2, exit 0, child not named, child alive). Two existing tests changed to the new dead-root contract: the hung-query test now asserts state.json removed (was kept) and `not confirmed free`; the busy-port subtest now asserts the first (live) down says `run down again`, the retry (root then dead) exits 1, removes state.json and names the test process as the listener to stop by hand, and a third down exits 2 (was: retry kept the file, third down exit 0). SKILL.md Cleanup paragraph, wait/kept-state paragraphs, Test paragraph and `down` Helpers row updated. Not added: a test for an unparseable start (`uncheckedPids`) or for criterion 4's recorded-survivor stop on the next down; that code path is unchanged from base.
+- 2026-10-15 — build_T072 red check: the new test run against the base control.mjs (swapped in, then restored; cmp identical) fails on its assertion: `The input did not match the regular expression /pid 7224 still running/`, actual `teardown incomplete; state kept at ...\tmp\control-yeti-app\state.json; run down again` (87.6 s).
+- 2026-10-15 — build_T072 Verify (exact command, through the heavy lock): exit 0. npm ci ok; playwright install chromium ok; rg found the test name; `nx typecheck @ngx-yeti/source --skip-nx-cache` succeeded; `node --test control.test.mjs` 17 tests (10 top-level, 7 subtests), 17 pass, 0 fail, 252.7 s (new orphan test 58.4 s, stale test 5.2 s); prettier --check on the skill folder: all matched files formatted; nx daemon stopped.
+- 2026-10-15 — build_T072 commit gate: `npx prettier --check .` all files formatted; `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (through the lock) exit 0: affected project @ngx-yeti/source only, targets typecheck and test, 2/2 succeeded (typecheck from cache of the Verify run).
+- 2026-10-15 — orchestrator Verify (isolate gsd-path-task/T072): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

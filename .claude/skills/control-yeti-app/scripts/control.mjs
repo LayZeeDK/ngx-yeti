@@ -246,6 +246,53 @@ function tree(table, pid) {
   return [...pids].filter((member) => table.has(member));
 }
 
+/**
+ * A dead root's surviving tree, without the processes that started before
+ * the recorded root, or their descendants: Windows leaves a dead parent's PID
+ * on its children and hands that PID out again, so the children of an
+ * earlier holder match by parent PID alone. A process whose start time, or a
+ * root whose recorded start time, cannot be parsed stays a member and is
+ * listed in `uncheckedPids`.
+ *
+ * @param {Map<number, ProcessEntry>} table
+ * @param {number} pid
+ * @param {unknown} rootStart
+ */
+function treeMembers(table, pid, rootStart) {
+  const since =
+    typeof rootStart === 'string' ? Date.parse(rootStart) : Number.NaN;
+  const pids = new Set([pid]);
+  /** @type {ProcessEntry[]} */
+  const members = [];
+  let grew = true;
+
+  while (grew) {
+    grew = false;
+
+    for (const entry of table.values()) {
+      if (
+        pids.has(entry.ParentProcessId) &&
+        !pids.has(entry.ProcessId) &&
+        !(Date.parse(entry.Start ?? '') < since)
+      ) {
+        pids.add(entry.ProcessId);
+        members.push(entry);
+        grew = true;
+      }
+    }
+  }
+
+  return {
+    members,
+    uncheckedPids: members
+      .filter(
+        (entry) =>
+          Number.isNaN(since) || Number.isNaN(Date.parse(entry.Start ?? '')),
+      )
+      .map((entry) => entry.ProcessId),
+  };
+}
+
 // The tests set CONTROL_LISTENER_TIMEOUT_MS to make the query time out;
 // nothing else sets it.
 const listenerTimeout =
@@ -986,7 +1033,11 @@ async function down() {
     entry?.Start === recorded.start &&
     entry?.CommandLine === recorded.commandLine;
   /** @type {ProcessEntry[]} */
-  let members;
+  let stopped;
+  /** @type {ProcessEntry[]} */
+  let waited = [];
+  /** @type {number[]} */
+  let uncheckedPids = [];
 
   if (live && !same(live, state)) {
     finish(2, {
@@ -1005,7 +1056,7 @@ async function down() {
   }
 
   if (live) {
-    members = tree(table, state.pid)
+    stopped = tree(table, state.pid)
       .map((pid) => table.get(pid))
       .filter((member) => member !== undefined);
     spawnSync('taskkill', ['/PID', String(state.pid), '/T', '/F'], {
@@ -1013,24 +1064,36 @@ async function down() {
       windowsHide: true,
     });
   } else {
-    // A retry after an incomplete teardown: stop only the survivors an
+    // A retry after an incomplete live teardown: stop only the survivors an
     // earlier down recorded that are still the same processes.
-    members = (state.survivors ?? [])
+    stopped = (state.survivors ?? [])
       .filter((recorded) => same(table.get(recorded.pid), recorded))
       .map((recorded) => table.get(recorded.pid))
       .filter((member) => member !== undefined);
 
-    for (const member of members) {
+    for (const member of stopped) {
       spawnSync('taskkill', ['/PID', String(member.ProcessId), '/T', '/F'], {
         encoding: 'utf8',
         windowsHide: true,
       });
     }
+
+    // A child of the dead root can outlive it and keep the port; it is
+    // waited for, not stopped.
+    const dead = treeMembers(table, state.pid, state.start);
+    waited = dead.members.filter(
+      (member) =>
+        !stopped.some((entry) => entry.ProcessId === member.ProcessId),
+    );
+    uncheckedPids = dead.uncheckedPids;
   }
 
+  const members = [...stopped, ...waited];
   let portFree = false;
   /** @type {string | null} */
   let listenerError = null;
+  /** @type {number[] | null} */
+  let listenerPids = null;
   let survivors = members;
 
   for (let attempt = 0; attempt < 20; attempt += 1) {
@@ -1041,6 +1104,7 @@ async function down() {
     );
     const query = queryListeners(state.port);
     listenerError = query.error;
+    listenerPids = query.pids;
     portFree = query.pids !== null && query.pids.length === 0;
 
     // A query that failed or timed out ends the wait: a hung pwsh would
@@ -1053,8 +1117,9 @@ async function down() {
   const daemon = stopDaemon();
   const result = {
     pid: state.pid,
-    stopped: members.map((member) => member.ProcessId),
+    stopped: stopped.map((member) => member.ProcessId),
     survivors: survivors.map((member) => member.ProcessId),
+    ...(live ? {} : { uncheckedPids }),
     port: state.port,
     portFree,
     ...(listenerError === null ? {} : { listenerError }),
@@ -1065,7 +1130,7 @@ async function down() {
     evidenceKept: existsSync(state.evidenceDir),
   };
 
-  if (!portFree || survivors.length > 0) {
+  if (live && (!portFree || survivors.length > 0)) {
     writeState({
       ...state,
       survivors: survivors.map((member) => ({
@@ -1081,18 +1146,41 @@ async function down() {
     });
   }
 
+  // A dead root reaches here whatever survives: another down could only wait
+  // again, so the state file goes and the error names what to stop by hand.
   rmSync(stateFile, { force: true });
   const unclosed = sessions.filter(({ outcome }) => sessionLeftOpen(outcome));
+  const toStop = [
+    ...new Set([
+      ...result.survivors,
+      ...(portFree ? [] : (listenerPids ?? [])),
+    ]),
+  ];
+  const problems = [
+    ...(survivors.length > 0
+      ? [`pid ${result.survivors.join(', ')} still running`]
+      : []),
+    ...(portFree
+      ? []
+      : [
+          listenerPids === null
+            ? `port ${state.port} not confirmed free (${listenerError})`
+            : `port ${state.port} still listens (listeners [${listenerPids.join(', ')}])`,
+        ]),
+    ...unclosed.map(
+      ({ session, outcome }) =>
+        `playwright-cli session ${session} ${outcome}; close it with playwright-cli -s=${session} close`,
+    ),
+    ...(daemon.stopped ? [] : ['nx daemon --stop failed']),
+  ];
 
-  if (unclosed.length > 0 || !daemon.stopped) {
+  if (problems.length > 0) {
     finish(1, {
-      error: `teardown incomplete: ${[
-        ...unclosed.map(
-          ({ session, outcome }) =>
-            `playwright-cli session ${session} ${outcome}; close it with playwright-cli -s=${session} close`,
-        ),
-        ...(daemon.stopped ? [] : ['nx daemon --stop failed']),
-      ].join('; ')}`,
+      error: `teardown incomplete: ${problems.join('; ')}${
+        portFree && survivors.length === 0
+          ? ''
+          : `; removed ${stateFile}; to stop by hand: ${toStop.length > 0 ? `pid ${toStop.join(', ')}` : `the listener on port ${state.port}`}`
+      }`,
       ...result,
     });
   }
