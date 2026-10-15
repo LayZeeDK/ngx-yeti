@@ -3,9 +3,9 @@ id: T066
 title: Make the run-job output-folder test able to fail, let a .d.ts edit miss the scripts typecheck cache, clear every floor variable in the unit-config test, fix the ci-local unit row, and bound the VoiceOver foreground query
 wave: 12
 deps: [T053, T061, T063]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T066
+base: d22e9f6fc751b748f5f468e450f177c4e54cbb8c
 worktree: null
 task_branch: null
 files:
@@ -109,3 +109,27 @@ Heavy: yes
   ```
 - 2026-10-15 — orchestrator rejection (Claude): finish ran the Verify in the isolate gsd-path-task/T066 at base 131cf8e and it exited 1 at the .d.ts cache probe (the typecheck after the probe edit replayed from the cache). Rejected diff: tools/ci-local/run-job.mjs, tools/ci-local/run-job.test.mjs, project.json, tools/playwright/vitest-configs.test.mjs, references/ci-local.md, apps/screen-reader-e2e/src/support/voiceover.ts; saved patch tmp/afk-m002/tools/T066-attempt1.patch, sha256 3e5bc3e01a9aad55901a18f4b6b81df680b3d155b3b18eaf5eba987063539583. Cause (read): the probe appended a fixed newline, and the coder's own probe runs had already cached that exact content in the same tree's .nx/cache, so any second run of the probe in one tree replays; the product change is not at fault.
 - 2026-10-15 — plan defect repair (Claude, orchestrator, AFK; not a user ruling): Verify's probe now appends a unique comment (`printf '\n// cache probe %s\n' "$(date +%s%N)"`) so each run hashes new content; no other field changed. The retry reapplies the saved patch unchanged.
+- 2026-10-15 — coder build_T066 (retry): reapplied tmp/afk-m002/tools/T066-attempt1.patch unchanged (sha256 3e5bc3e01a9aad55901a18f4b6b81df680b3d155b3b18eaf5eba987063539583, `git apply`, nothing staged). Checks: `npx prettier --check` on the six task files clean; `node --test tools/ci-local/run-job.test.mjs tools/playwright/vitest-configs.test.mjs` 12 tests, 12 pass, 0 fail, 0 skipped. Full Verify left to the orchestrator finish.
+- 2026-10-15 — orchestrator Verify (sidecar gsd-path-verify/task-t066-verify): pass, exit 0; output tail:
+  ```
+  [ci-unit] npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  [ci-unit] npm warn deprecated @yuku-parser/binding-linux-arm64-gnu@0.10.2: yuku-parser runs on yuku-core since 0.14
+  [ci-unit] npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  [ci-unit] npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  [ci-unit] npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  [ci-unit] npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  [ci-unit] npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  [ci-unit] npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  [ci-unit] npm warn install-scripts 9 packages have install scripts not yet covered by allowScripts:
+  [ci-unit] npm warn install-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  [ci-unit] npm warn install-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  [ci-unit] npm warn install-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  [ci-unit] npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  [ci-unit] npm warn install-scripts   ffmpeg-static@5.3.0 (install: node install.js)
+  [ci-unit] npm warn install-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  [ci-unit] npm warn install-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  [ci-unit] npm warn install-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  [ci-unit] npm warn install-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  [ci-unit] npm warn install-scripts
+  [ci-unit] npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+  ```

@@ -50,7 +50,12 @@ for (const path of configs) {
 }
 
 test('the unit config starts the Chromium floor build without the stack profiler', async () => {
-  const before = process.env['FLOOR_CHROMIUM_PATH'];
+  const names = ['FLOOR_CHROMIUM_PATH', 'FLOOR_FIREFOX', 'FLOOR_WEBKIT'];
+  const before = names.map((name) => process.env[name]);
+
+  for (const name of names) {
+    delete process.env[name];
+  }
 
   process.env['FLOOR_CHROMIUM_PATH'] = '/floor/chrome';
 
@@ -69,10 +74,14 @@ test('the unit config starts the Chromium floor build without the stack profiler
     });
     assert.deepEqual(browser.instances, [{ browser: 'chromium' }]);
   } finally {
-    if (before === undefined) {
-      delete process.env['FLOOR_CHROMIUM_PATH'];
-    } else {
-      process.env['FLOOR_CHROMIUM_PATH'] = before;
-    }
+    names.forEach((name, index) => {
+      const value = before[index];
+
+      if (value === undefined) {
+        delete process.env[name];
+      } else {
+        process.env[name] = value;
+      }
+    });
   }
 });

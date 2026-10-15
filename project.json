@@ -11,6 +11,7 @@
         "{workspaceRoot}/tsconfig.scripts.json",
         "{workspaceRoot}/tsconfig.base.json",
         "{workspaceRoot}/**/*.{mjs,cjs,js}",
+        "{workspaceRoot}/**/*.d.ts",
         "{workspaceRoot}/package-lock.json",
         "{workspaceRoot}/tools/typecheck/scripts-coverage.test.mjs"
       ],

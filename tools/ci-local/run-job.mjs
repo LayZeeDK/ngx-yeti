@@ -683,7 +683,6 @@ async function run({
   const folders = modulesFolders(
     JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8')),
   );
-  const { checkout, volume } = legPaths(root, workflow, jobName, '');
   const legs = Math.min(cap, combos.length);
 
   /**
@@ -697,7 +696,7 @@ async function run({
     const checks = legChecks(job.checks, combo, command);
     const key = setupKey(job, setup, files);
     const label = [workflow, jobName, ...Object.values(combo)].join('-');
-    const { out } = legPaths(root, workflow, jobName, label);
+    const { checkout, volume, out } = legPaths(root, workflow, jobName, label);
     const name =
       `ngx-yeti-run-job-${checkout}-${label}-${String(process.pid)}`.replace(
         /[^\w.-]/g,

@@ -134,6 +134,46 @@ test('a leg writes its reports under the checkout hash its volumes carry', () =>
   );
 });
 
+const checkout = join(import.meta.dirname, '../..');
+
+/** The reason Git cannot list the checkout, or undefined when it can. */
+const gitRefusal = (() => {
+  try {
+    execFileSync('git', ['ls-files', '-z'], {
+      cwd: checkout,
+      stdio: 'pipe',
+      maxBuffer: 256 * 1024 * 1024,
+    });
+
+    return undefined;
+  } catch (error) {
+    return `git ls-files refused the checkout: ${String(error)}`;
+  }
+})();
+
+test(
+  'every dry-run leg mounts the report folder legPaths names for it',
+  { skip: gitRefusal },
+  () => {
+    const { status, stdout } = dryRun([]);
+
+    assert.equal(status, 0);
+
+    const legs = stdout.split('=== ').slice(1);
+
+    assert.ok(legs.length > 1);
+
+    for (const section of legs) {
+      const label = section.slice(0, section.indexOf(' '));
+      const mounts = [...section.matchAll(/'-v' '([^']*):\/out'/g)].map(
+        (match) => match[1],
+      );
+
+      assert.deepEqual(mounts, [legPaths(checkout, 'ci', 'e2e', label).out]);
+    }
+  },
+);
+
 test('a replacement command after -- reaches the container as literal words', () => {
   const [step] = steps(scriptOf(legChecks(['true'], {}, ['echo', ...hostile])));
 

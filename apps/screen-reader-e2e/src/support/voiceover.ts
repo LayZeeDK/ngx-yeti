@@ -17,12 +17,22 @@ type Safari = Awaited<ReturnType<typeof remote>>;
 const execFileAsync = promisify(execFile);
 
 async function frontmostApplication(): Promise<string> {
-  const { stdout } = await execFileAsync('osascript', [
-    '-e',
-    'tell application "System Events" to get name of first application process whose frontmost is true',
-  ]);
+  try {
+    const { stdout } = await execFileAsync(
+      'osascript',
+      [
+        '-e',
+        'tell application "System Events" to get name of first application process whose frontmost is true',
+      ],
+      { timeout: 10_000 },
+    );
 
-  return stdout.trim();
+    return stdout.trim();
+  } catch (error) {
+    throw new Error('The foreground application query failed.', {
+      cause: error,
+    });
+  }
 }
 
 /**

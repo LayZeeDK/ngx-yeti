@@ -149,21 +149,21 @@ The development e2e runs also pass `yeti-analog-e2e` (1) and `ngx-yeti-e2e` (16 
 
 Measured on 2026-10-14 on Windows 11 on ARM64 with Docker Desktop (linux/arm64), at `4d63e28`, one job at a time and each leg alone (`--legs 1`). Container times include the leg's setup. Every job passed with no retry.
 
-| Job                                     | Run                                                         | Time                  | Counts (passed/skipped)                                                         |
-| --------------------------------------- | ----------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------- |
-| `ci.yml` `static` and the other checks  | native, `npm run check -- --skip-nx-cache`                  | 1 m 31 s              | lint, typecheck, test and test-storybook pass                                   |
-| `ci.yml` `package`                      | native                                                      | 24 s                  | build and pack-check pass                                                       |
-| `ci.yml` `unit`                         | `run-job.mjs`                                               | 2 m 29 s              | 126/0, 504/0, 1713/0, 1/0 and 1/0; `node --test` 46/0                           |
-| `ci.yml` `e2e`, 12 legs                 | `run-job.mjs --legs 1`, 3 local workers                     | 20 m 8 s              | below                                                                           |
-| `ci.yml` `e2e` (firefox, development)   | `run-job.mjs --legs 1 --e2e-workers 0`, as CI runs the leg  | 10 m 10 s             | `yeti-analog-e2e` 1; `ngx-yeti-e2e` 152/1; `yeti-app-e2e` 616/4                 |
-| `floor.yml` `webkit-26-4`               | `run-job.mjs`                                               | 7 m 3 s               | unit 507; `ngx-yeti-e2e` 136/17; `yeti-app-e2e` 608/12                          |
-| `floor.yml` `firefox-146-e2e`, 2 shards | `run-job.mjs --legs 1`                                      | 3 m 46 s and 2 m 53 s | shard 1: 76/1, then 308/2; shard 2: 76, then 308/2                              |
-| `floor.yml` `firefox-145`               | native, Firefox 145.0                                       | 1 m 17 s              | unit 507                                                                        |
-| `floor.yml` `chromium-141`              | native, `CI=true`, Chrome for Testing 141.0.7390.54         | 32 s and 11 m 51 s    | unit 507; `ngx-yeti-e2e` 152/1; `yeti-app-e2e` 618/2; Chromium exited by itself |
-| `ci.yml` `nvda`                         | native, no `BROWSERS` (Playwright's Chromium, then Firefox) | 6 m 27 s              | 22 passed, no retry                                                             |
-| `ci.yml` `nvda` with `BROWSERS=msedge`  | native arm64 Edge, not evidence for the job                 | 3 m 3 s               | 11 passed                                                                       |
+| Job                                                    | Run                                                         | Time                  | Counts (passed/skipped)                                                         |
+| ------------------------------------------------------ | ----------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------- |
+| `ci.yml` `static` and the other checks                 | native, `npm run check -- --skip-nx-cache`                  | 1 m 31 s              | lint, typecheck, test and test-storybook pass                                   |
+| `ci.yml` `package`                                     | native                                                      | 24 s                  | build and pack-check pass                                                       |
+| `ci.yml` `unit` (at `131cf8e` plus the run-job change) | `run-job.mjs`                                               | 2 m 43 s              | 126/0, 504/0, 1715/0, 1/0 and 1/0; `node --test` 46/1                           |
+| `ci.yml` `e2e`, 12 legs                                | `run-job.mjs --legs 1`, 3 local workers                     | 20 m 8 s              | below                                                                           |
+| `ci.yml` `e2e` (firefox, development)                  | `run-job.mjs --legs 1 --e2e-workers 0`, as CI runs the leg  | 10 m 10 s             | `yeti-analog-e2e` 1; `ngx-yeti-e2e` 152/1; `yeti-app-e2e` 616/4                 |
+| `floor.yml` `webkit-26-4`                              | `run-job.mjs`                                               | 7 m 3 s               | unit 507; `ngx-yeti-e2e` 136/17; `yeti-app-e2e` 608/12                          |
+| `floor.yml` `firefox-146-e2e`, 2 shards                | `run-job.mjs --legs 1`                                      | 3 m 46 s and 2 m 53 s | shard 1: 76/1, then 308/2; shard 2: 76, then 308/2                              |
+| `floor.yml` `firefox-145`                              | native, Firefox 145.0                                       | 1 m 17 s              | unit 507                                                                        |
+| `floor.yml` `chromium-141`                             | native, `CI=true`, Chrome for Testing 141.0.7390.54         | 32 s and 11 m 51 s    | unit 507; `ngx-yeti-e2e` 152/1; `yeti-app-e2e` 618/2; Chromium exited by itself |
+| `ci.yml` `nvda`                                        | native, no `BROWSERS` (Playwright's Chromium, then Firefox) | 6 m 27 s              | 22 passed, no retry                                                             |
+| `ci.yml` `nvda` with `BROWSERS=msedge`                 | native arm64 Edge, not evidence for the job                 | 3 m 3 s               | 11 passed                                                                       |
 
-The `unit` row was re-run at `3ec57a6` plus the run-job output-folder change (7 m 35 s with other jobs running). The `4d63e28` run skipped the run-job checkout-hash test, because the local container leg has no `.git`; that test now needs no Git and runs in both places.
+The `node --test` step skips the dry-run output-folder check where Git cannot list the checkout, as in the local container leg, which has no `.git`; the pure `legPaths` test runs everywhere.
 
 `e2e` legs at 3 local workers: development 3 m 7 s, 4 m 26 s and 4 m 8 s in Chromium, Firefox and WebKit (`yeti-analog-e2e` 1; `ngx-yeti-e2e` 152/1, 152/1 and 144/9; `yeti-app-e2e` 618/2, 616/4 and 612/8); production 1 m 40 s, 2 m 51 s and 2 m 27 s (559/61, 557/63 and 553/67); `tailwind-c1` and `tailwind-c2` 13 to 17 s each, 8 passed. The longest leg takes 10 m 10 s locally with one worker, under the 15 minutes at which a job gets a Playwright `--shard` axis, so `e2e` keeps one leg per engine and configuration.
 
