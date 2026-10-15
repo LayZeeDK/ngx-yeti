@@ -167,3 +167,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-15 — plan — build recovery: {"base": "6ef32da7b8b2693c690d1fca9b92ae396d418245", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-15 — plan — plan approved
 - 2026-10-15 — build — build started
+- 2026-10-15 — build — wave 14 cycle 1 review passes at 08323f5; security re-check r3 verdict closed for the run-job path traversal (0 above Informational)
