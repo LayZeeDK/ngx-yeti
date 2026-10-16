@@ -2,7 +2,7 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: ship
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
 status: active
@@ -183,3 +183,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-16 — plan — build recovery: {"base": "6930b5dd9a3f353e4194c5eee08b2cca373dbca1", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-16 — plan — plan approved
 - 2026-10-16 — build — build started
+- 2026-10-16 — ship — build done; final review pending
