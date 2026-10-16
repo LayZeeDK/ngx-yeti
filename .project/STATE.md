@@ -2,7 +2,7 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: ship
+phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
 status: active
@@ -184,3 +184,9 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-16 — plan — plan approved
 - 2026-10-16 — build — build started
 - 2026-10-16 — ship — build done; final review pending
+- 2026-10-16 — ship — project Verify failed at d63e7e0b (exit 1) in run-job ci unit: tools/playwright/navigation-budget.test.mjs:274 (T077) runs git ls-files, and the ci unit container has no .git (run-job ships the tree by tar): "fatal: not a git repository"; later steps did not run; evidence .project/review/final-gap-1.md and .project/build/verify-ledger.jsonl
+- 2026-10-16 — ship — user ruling 2026-10-16, verbatim: "Approve, resolve in M002" (to: run gap reviews 2 to 6 now while project Verify fails, an exception to "Do not launch reviewers while project Verify is failing", so every finding goes into one M002 patch wave); gap risks 2-6 from review round 7 (scratchpad lars-review/r7/triage.md)
+- 2026-10-16 — ship — final review blocked at d63e7e0b: final-gap-1 (project Verify), final-gap-2 (.browserslistrc Nx inputs), final-gap-3 (control-yeti-app kill identity), final-gap-5 (spec writer --open, loop-budget path resolution), final-gap-6 (guard coverage) blocked; final-gap-4 pass; findings in .project/review/PATCH-FINDINGS.md
+- 2026-10-16 — plan — patch plan reopened
+- 2026-10-16 — plan — patch plan approved
+- 2026-10-16 — build — build started
