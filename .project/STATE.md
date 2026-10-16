@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -179,3 +179,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-16 — build — user ruling 2026-10-16, verbatim: "Use /lars-maintain-verification and /lars-create-verification to audit/(re)create control-* skills and other verification artifacts.s" and "Verification artifacts should be runnable by /lars-verify". T074 Verify cannot run: it calls ~/.claude/skills/lars-maintain-control-skill/scripts/check-skill.mjs, removed by the 2026-10-15 rename of the global skills; the renamed check-skill.mjs adds fingerprint-copy and doctor-map-fresh checks that control-yeti-app fails (measured) at 7031099. T074 attempt 1 saved (tmp/afk-m002/tools/T074-attempt1.patch), Log copied, isolate retired; build plan repair follows
 - 2026-10-16 — build — build started
 - 2026-10-16 — build — build blocked again for the verification-skill plan repair: Claude ran dispatch_driver round to settle the orphaned T074 attempt-1 record (resolved); round re-entered build/active (6ff62ce) and a second round dispatched T074 attempt 2 serially with a no-op child (node -e process.exit(3)), now settled blocked (child exited 3); its task-file activation was restored to the committed pending state and its unused Verify sidecar retired; nothing landed and no Verify ran
+- 2026-10-16 — plan — build plan repair requested
+- 2026-10-16 — plan — build recovery: {"base": "6930b5dd9a3f353e4194c5eee08b2cca373dbca1", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
+- 2026-10-16 — plan — plan approved
