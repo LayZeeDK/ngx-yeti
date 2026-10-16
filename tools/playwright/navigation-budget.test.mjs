@@ -1,8 +1,19 @@
 // @ts-check
 import assert from 'node:assert/strict';
-import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
+import native from 'nx/src/native';
 import ts from 'typescript';
 
 // A test that loads pages in a loop under a fixed budget passes only with
@@ -10,6 +21,7 @@ import ts from 'typescript';
 // only the syntax tree, so a helper that navigates in a loop on a caller's
 // behalf is not seen.
 
+const { WorkspaceContext } = native;
 const root = new URL('../../', import.meta.url);
 const fix =
   'give each visit its own budget: a test timeout scaled by the count, or one test per entry';
@@ -271,16 +283,63 @@ function scan(text, fileName) {
   return { tests, lines };
 }
 
-const files = execFileSync(
-  'git',
-  ['ls-files', '-co', '--exclude-standard', '-z', '--', 'apps', 'packages'],
-  { cwd: root, encoding: 'utf8', maxBuffer: 1 << 26 },
-)
-  .split('\0')
-  .filter(
-    (path) =>
-      /\.(?:ts|mts|mjs|tsx)$/.test(path) && existsSync(new URL(path, root)),
-  );
+/**
+ * The source files under apps/ and packages/ of `directory`, listed by the Nx
+ * walker that hashes the test target's inputs: it applies .gitignore and
+ * .nxignore whether or not `directory` holds .git, and lists only files.
+ *
+ * @param {string} directory
+ */
+function sourceFiles(directory) {
+  const cache = mkdtempSync(join(tmpdir(), 'navigation-budget-cache-'));
+
+  try {
+    return new WorkspaceContext(directory, cache)
+      .glob(['{apps,packages}/**/*.{ts,mts,mjs,tsx}'])
+      .filter((path) => existsSync(join(directory, path)));
+  } finally {
+    rmSync(cache, { recursive: true, force: true });
+  }
+}
+
+const files = sourceFiles(fileURLToPath(root));
+
+test('lists the source files .gitignore leaves in, in a tree without .git', () => {
+  const tree = mkdtempSync(join(tmpdir(), 'navigation-budget-'));
+
+  try {
+    for (const [path, text] of Object.entries({
+      '.gitignore': '__screenshots__/\nignored.ts\n',
+      'apps/app/src/plain.ts': '',
+      'apps/app/src/ignored.ts': '',
+      'apps/app/__screenshots__/x.spec.ts/shot.ts': '',
+      'packages/lib/src/plain.mjs': '',
+      'packages/lib/src/plain.mts': '',
+      'packages/lib/src/plain.tsx': '',
+      'packages/lib/.storybook/main.ts': '',
+    })) {
+      mkdirSync(dirname(join(tree, path)), { recursive: true });
+      writeFileSync(join(tree, path), text);
+    }
+
+    const listed = sourceFiles(tree);
+
+    assert.deepEqual(listed.toSorted(), [
+      'apps/app/src/plain.ts',
+      'packages/lib/.storybook/main.ts',
+      'packages/lib/src/plain.mjs',
+      'packages/lib/src/plain.mts',
+      'packages/lib/src/plain.tsx',
+    ]);
+    assert.ok(listed.every((path) => statSync(join(tree, path)).isFile()));
+  } finally {
+    rmSync(tree, { recursive: true, force: true });
+  }
+});
+
+test('lists the tracked dot folder .storybook', () => {
+  assert.ok(files.includes('packages/ngx-yeti/.storybook/main.ts'));
+});
 
 test('flags a test that loads pages in a loop under a fixed budget', () => {
   const text = `

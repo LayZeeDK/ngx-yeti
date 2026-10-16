@@ -524,15 +524,19 @@ export function legPaths(checkoutRoot, workflow, jobName, label) {
   };
 }
 
-/** Tracked and untracked, not ignored, files; deleted tracked files would fail tar. */
-function sourceFiles() {
+/**
+ * Tracked and untracked, not ignored, files; deleted tracked files would fail tar.
+ *
+ * @param {string} directory
+ */
+export function sourceFiles(directory) {
   return execFileSync('git', ['ls-files', '-co', '--exclude-standard', '-z'], {
-    cwd: root,
+    cwd: directory,
     encoding: 'utf8',
     maxBuffer: 256 * 1024 * 1024,
   })
     .split('\0')
-    .filter((path) => path && existsSync(join(root, path)));
+    .filter((path) => path && existsSync(join(directory, path)));
 }
 
 /**
@@ -705,16 +709,22 @@ function seconds(ms) {
   return `${String(Math.floor(total / 60))} m ${String(total % 60)} s`;
 }
 
-/** @param {ReturnType<typeof parseArgs>} options */
-async function run({
-  workflow,
-  job: jobName,
-  matrix: filter,
-  dryRun,
-  legs: cap,
-  e2eWorkers,
-  command,
-}) {
+/**
+ * @param {ReturnType<typeof parseArgs>} options
+ * @param {string[]} [files] the checkout files a run ships; the Git listing when left out
+ */
+export async function run(
+  {
+    workflow,
+    job: jobName,
+    matrix: filter,
+    dryRun,
+    legs: cap,
+    e2eWorkers,
+    command,
+  },
+  files,
+) {
   const job = loadJob(workflow, jobName);
   const combos = combinations(job.matrix, filter);
 
@@ -722,7 +732,7 @@ async function run({
     fail('the --matrix filter matches no combination');
   }
 
-  const files = sourceFiles();
+  const listed = files ?? sourceFiles(root);
   const folders = modulesFolders(
     JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8')),
   );
@@ -737,7 +747,7 @@ async function run({
   function leg(combo, slot) {
     const setup = job.setup.map((run) => resolve(run, combo));
     const checks = legChecks(job.checks, combo, command);
-    const key = setupKey(job, setup, files);
+    const key = setupKey(job, setup, listed);
     const label = [workflow, jobName, ...Object.values(combo)].join('-');
     const { checkout, volume, out } = legPaths(root, workflow, jobName, label);
     const name =
@@ -819,7 +829,7 @@ async function run({
         mkdirSync(current.out, { recursive: true });
         console.log(`=== start ${current.label}`);
 
-        const status = await runContainer(current, files);
+        const status = await runContainer(current, listed);
 
         results[next.index] = { ...current, status, ms: Date.now() - start };
         console.log(

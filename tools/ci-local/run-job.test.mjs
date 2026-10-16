@@ -1,8 +1,14 @@
 // @ts-check
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { test } from 'node:test';
+import {
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
+import { mock, test } from 'node:test';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,6 +22,8 @@ import {
   parseArgs,
   quote,
   resolve,
+  run,
+  sourceFiles,
 } from './run-job.mjs';
 
 const hostile = ["it's", '$(echo injected)', '`echo injected`'];
@@ -140,43 +148,48 @@ test('a leg writes its reports under the checkout hash its volumes carry', () =>
 
 const checkout = join(import.meta.dirname, '../..');
 
-/** The reason Git cannot list the checkout, or undefined when it can. */
-const gitRefusal = (() => {
+/**
+ * What a dry run of `args` prints, given the checkout files it would ship.
+ *
+ * @param {string[]} args
+ */
+async function dryRunOutput(args) {
+  /** @type {string[]} */
+  const lines = [];
+  const log = mock.method(
+    console,
+    'log',
+    (/** @type {unknown[]} */ ...values) => {
+      lines.push(values.map(String).join(' '));
+    },
+  );
+
   try {
-    execFileSync('git', ['ls-files', '-z'], {
-      cwd: checkout,
-      stdio: 'pipe',
-      maxBuffer: 256 * 1024 * 1024,
-    });
-
-    return undefined;
-  } catch (error) {
-    return `git ls-files refused the checkout: ${String(error)}`;
+    await run(parseArgs([...args, '--dry-run']), [
+      'package.json',
+      'package-lock.json',
+    ]);
+  } finally {
+    log.mock.restore();
   }
-})();
 
-test(
-  'every dry-run leg mounts the report folder legPaths names for it',
-  { skip: gitRefusal },
-  () => {
-    const { status, stdout } = dryRun([]);
+  return lines.join('\n');
+}
 
-    assert.equal(status, 0);
+test('every dry-run leg mounts the report folder legPaths names for it', async () => {
+  const legs = (await dryRunOutput(['ci', 'e2e'])).split('=== ').slice(1);
 
-    const legs = stdout.split('=== ').slice(1);
+  assert.ok(legs.length > 1);
 
-    assert.ok(legs.length > 1);
+  for (const section of legs) {
+    const label = section.slice(0, section.indexOf(' '));
+    const mounts = [...section.matchAll(/'-v' '([^']*):\/out'/g)].map(
+      (match) => match[1],
+    );
 
-    for (const section of legs) {
-      const label = section.slice(0, section.indexOf(' '));
-      const mounts = [...section.matchAll(/'-v' '([^']*):\/out'/g)].map(
-        (match) => match[1],
-      );
-
-      assert.deepEqual(mounts, [legPaths(checkout, 'ci', 'e2e', label).out]);
-    }
-  },
-);
+    assert.deepEqual(mounts, [legPaths(checkout, 'ci', 'e2e', label).out]);
+  }
+});
 
 test('a matrix value that is not a safe name is refused with the value named', () => {
   for (const value of [
@@ -293,33 +306,22 @@ test('every job id and matrix value of the real workflows is a safe name', () =>
   }
 });
 
-test(
-  'every container job of the real workflows dry-runs',
-  { skip: gitRefusal },
-  () => {
-    const containerJobs = jobs.filter(({ container }) => container);
+test('every container job of the real workflows dry-runs', async () => {
+  const containerJobs = jobs.filter(({ container }) => container);
 
-    assert.deepEqual(
-      containerJobs.map(({ workflow, job }) => `${workflow} ${job}`),
-      ['ci unit', 'ci e2e', 'floor webkit-26-4', 'floor firefox-146-e2e'],
+  assert.deepEqual(
+    containerJobs.map(({ workflow, job }) => `${workflow} ${job}`),
+    ['ci unit', 'ci e2e', 'floor webkit-26-4', 'floor firefox-146-e2e'],
+  );
+
+  for (const { workflow, job } of containerJobs) {
+    assert.match(
+      await dryRunOutput([workflow, job]),
+      /^\n=== /,
+      `${workflow} ${job}`,
     );
-
-    for (const { workflow, job } of containerJobs) {
-      const { status, stderr } = spawnSync(
-        process.execPath,
-        [
-          fileURLToPath(new URL('run-job.mjs', import.meta.url)),
-          workflow,
-          job,
-          '--dry-run',
-        ],
-        { encoding: 'utf8' },
-      );
-
-      assert.equal(status, 0, `${workflow} ${job}: ${stderr}`);
-    }
-  },
-);
+  }
+});
 
 test('a replacement command after -- reaches the container as literal words', () => {
   const [step] = steps(scriptOf(legChecks(['true'], {}, ['echo', ...hostile])));
@@ -327,4 +329,38 @@ test('a replacement command after -- reaches the container as literal words', ()
   assert.ok(step !== undefined);
 
   assert.deepEqual(words(step), ['echo', ...hostile]);
+});
+
+test('a real run ships the tracked and untracked files that exist, not the ignored ones', () => {
+  const repository = mkdtempSync(join(tmpdir(), 'run-job-files-'));
+
+  try {
+    execFileSync('git', ['init', '-q'], { cwd: repository });
+
+    for (const name of [
+      '.gitignore',
+      'tracked.txt',
+      'deleted.txt',
+      'untracked.txt',
+      'ignored.txt',
+    ]) {
+      writeFileSync(
+        join(repository, name),
+        name === '.gitignore' ? 'ignored.txt\n' : '',
+      );
+    }
+
+    execFileSync('git', ['add', '.gitignore', 'tracked.txt', 'deleted.txt'], {
+      cwd: repository,
+    });
+    unlinkSync(join(repository, 'deleted.txt'));
+
+    assert.deepEqual(sourceFiles(repository).toSorted(), [
+      '.gitignore',
+      'tracked.txt',
+      'untracked.txt',
+    ]);
+  } finally {
+    rmSync(repository, { recursive: true, force: true });
+  }
 });

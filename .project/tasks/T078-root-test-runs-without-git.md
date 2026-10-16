@@ -3,9 +3,9 @@ id: T078
 title: Make the root test target run in full in a checkout without .git, listing apps/ and packages/ without Git and running run-job's dry-run tests without a skip
 wave: 17
 deps: [T070, T077]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_t078
+base: 23b3101b03a2500226db5b6b13c4948ce106cdb0
 worktree: null
 task_branch: null
 files:
@@ -76,3 +76,33 @@ Heavy: yes
 ## Log
 
 - 2026-10-16 — created by planner
+- 2026-10-17 — build_t078 (coder): implementation. navigation-budget.test.mjs lists with Nx's native `WorkspaceContext(directory, cacheDir).glob(['{apps,packages}/**/*.{ts,mts,mjs,tsx}'])` from `nx/src/native` (an explicit `exports` entry of the installed nx; default import, since Node cannot see its named CJS exports). Why: it is the walker that hashes the root test target's inputs (same glob syntax as project.json `inputs`); nx's walker.rs sets `require_git(false)` and adds `.nxignore`, so .gitignore applies with or without .git, and it yields files only. `@nx/devkit`'s `glob`/`globAsync` were not used: both need a `Tree` (only the internal `FsTree` builds one for a real folder), `globAsync` routes to the daemon, which globs the daemon's workspace instead of a temporary tree, and both share one module-level context whose data folder follows NX_WORKSPACE_DATA_DIRECTORY; the native class with a throwaway cache folder avoids all three. The `existsSync` filter stays. No branch on `.git`. Native comparison on this worktree: the Nx list and `git ls-files -co --exclude-standard -- apps packages` filtered to the four extensions are the same 361 paths (byte-sorted diff empty). run-job.mjs: `run` is exported and takes an optional `files` list (`files ?? sourceFiles()` at the same point as before); the CLI passes none, so a real run and the CLI dry run still list with `git ls-files -co --exclude-standard -z` filtered by `existsSync`, and the printed dry-run shape is unchanged. run-job.test.mjs: `gitRefusal` and both `{ skip }` options are gone; the two dry-run tests call `run(parseArgs([...args, '--dry-run']), ['package.json', 'package-lock.json'])` in-process with `console.log` mocked (node:test `mock.method`), so they never ask Git.
+- 2026-10-17 — build_t078: red first. The new temp-tree test ("lists the source files .gitignore leaves in, in a tree without .git") ran against d63e7e0's Git listing (`git ls-files -co --exclude-standard -z -- apps packages` with cwd at the tree): tests 7, pass 6, fail 1, the new test failing with `fatal: not a git repository`. After the switch: tests 7, pass 7, fail 0. The fixture's ignored directory then held `__screenshots__/x.spec.ts/shot.ts` (a .ts file, so a missed ignore or a listed directory both fail it).
+- 2026-10-17 — build_t078: pattern search re-run at base (rg for git, .git, execFileSync, spawnSync, spawn( over apps/, packages/, tools/, .claude/). Fixed here: navigation-budget.test.mjs listing; run-job.test.mjs :144-160 and :298 skips (run-job.mjs `sourceFiles()` reached by the dry run). Still safe for the stated reasons: lars-verify-spec.test.mjs :88/:106 and lars-verify-spec.mjs :252 (own `git init` repo; 19 tests pass in the leg below as part of the 79), scripts-coverage.test.mjs :30 (typecheck target, `static` has no container), vendor-yeti.mjs :37-43 (pin move only), .claude control.mjs/fingerprint.mjs (no target or workflow runs them), yeti-rank.node.spec.ts :14 and playwright-configs.test.mjs :32 (spawn node). Other hits checked: tools/package/pack-check.mjs spawns `npm pack` and other non-Git commands only, run by ci.yml's build step without a container; tools/playwright-server/container.mjs spawns node, server.mjs spawns docker and is not in the root test. No new site needs .git in a container job.
+- 2026-10-17 — build_t078: Verify ran as written (through the heavy lock, HEAVY_DOCKER=1), exit 0. Native `@ngx-yeti/source:test`: tests 79, pass 79, fail 0, skipped 0. typecheck @ngx-yeti/source: pass (tsc 0 errors; scripts-coverage 1/1). prettier --check on the three files: pass. `run-job.mjs ci unit` (tree without .git): `=== pass ci-unit in 3 m 27 s`; nx test + test-storybook for 5 projects passed; the root test ran after the other projects' tests and reported tests 79, pass 79, fail 0, skipped 0, with both dry-run tests and all four listing tests passing.
+- 2026-10-17 — build_t078: rule 13 checks. `npx prettier --check .`: all files pass. `nx affected --base=HEAD` (9 projects): lint + typecheck pass (18 tasks); test pass for 5 projects (vitest 1, 94, 705 tests and the root 79/79, 0 skipped); test-storybook (ngx-yeti, through the lock) 25 files, 170 tests passed. Git index untouched.
+- 2026-10-17 — build_t078: review fixes (code F2, F3). F2: run-job.mjs `sourceFiles` is exported and takes the folder to list (`run` passes `root`; same `git ls-files -co --exclude-standard -z` plus `existsSync` filter). New run-job.test.mjs test "a real run ships the tracked and untracked files that exist, not the ignored ones": a temporary `git init` repository with tracked `.gitignore`/`tracked.txt`, tracked `deleted.txt` removed from disk without `git rm`, `untracked.txt` and ignored `ignored.txt`; expects exactly `.gitignore`, `tracked.txt`, `untracked.txt`. Red: with `-o` dropped from the listing it failed (tests 1, pass 0, fail 1, `untracked.txt` missing); restored: run-job.test.mjs tests 14, pass 14, fail 0, skipped 0. F3: navigation-budget's no-.git fixture now also holds `packages/lib/src/plain.mts` and `plain.tsx`, both expected in the list (7/7 pass).
+- 2026-10-17 — build_t078: Verify re-run as written (heavy lock, HEAVY_DOCKER=1, 13873 MB free), exit 0. Native root test: tests 80, pass 80, fail 0, skipped 0. typecheck @ngx-yeti/source pass. prettier on the three files pass. `run-job.mjs ci unit`: `=== pass ci-unit in 3 m 8 s`; test + test-storybook for 5 projects passed; root test in the leg tests 80, pass 80, fail 0, skipped 0 (the new Git-repository test passes there too). Also `npx prettier --check .` pass; `nx affected -t lint typecheck --base=HEAD` pass for 9 projects. Git index untouched.
+- 2026-10-16 — orchestrator Verify (isolate gsd-path-task/T078): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```
