@@ -24,7 +24,7 @@ import ts from 'typescript';
 const { WorkspaceContext } = native;
 const root = new URL('../../', import.meta.url);
 const fix =
-  'give each visit its own budget: a test timeout scaled by the count, or one test per entry';
+  'give each visit its own budget: a test timeout scaled by the count with each visit in a test.step with its own timeout, or one test per entry';
 const testNames = new Set(['test', 'it']);
 const testModifiers = new Set(['only', 'fixme', 'fail', 'skip']);
 const navigations = new Set([
@@ -207,8 +207,73 @@ function scaledLists(body, source) {
 }
 
 /**
- * Whether a test body walks a list with page loads and its timeout does not
- * read that list's length.
+ * Whether `value` is a literal that sets no step limit: Playwright reads `0`
+ * as no timeout, and `undefined` or `null` as none set.
+ *
+ * @param {ts.Expression} value
+ */
+function isNoLimit(value) {
+  return (
+    (ts.isNumericLiteral(value) && Number(value.text) === 0) ||
+    value.kind === ts.SyntaxKind.NullKeyword ||
+    (ts.isIdentifier(value) && value.text === 'undefined')
+  );
+}
+
+/**
+ * Whether `call` is a `test.step` call whose options set a `timeout` that is
+ * not a literal without a limit.
+ *
+ * @param {ts.CallExpression} call
+ */
+function isTimedStep(call) {
+  const callee = call.expression;
+  const options = call.arguments[2];
+
+  return (
+    ts.isPropertyAccessExpression(callee) &&
+    ts.isIdentifier(callee.expression) &&
+    callee.expression.text === 'test' &&
+    callee.name.text === 'step' &&
+    options !== undefined &&
+    ts.isObjectLiteralExpression(options) &&
+    options.properties.some(
+      (property) =>
+        (ts.isPropertyAssignment(property) &&
+          ts.isIdentifier(property.name) &&
+          property.name.text === 'timeout' &&
+          !isNoLimit(property.initializer)) ||
+        (ts.isShorthandPropertyAssignment(property) &&
+          property.name.text === 'timeout'),
+    )
+  );
+}
+
+/**
+ * Whether `node` holds a navigation call outside every `test.step` that sets
+ * its own `timeout`.
+ *
+ * @param {ts.Node} node
+ * @returns {boolean}
+ */
+function navigatesOutsideTimedStep(node) {
+  if (ts.isCallExpression(node)) {
+    if (isTimedStep(node)) {
+      return false;
+    }
+
+    if (isNavigation(node)) {
+      return true;
+    }
+  }
+
+  return ts.forEachChild(node, navigatesOutsideTimedStep) ?? false;
+}
+
+/**
+ * Whether a test body walks a list with page loads and either its timeout
+ * does not read that list's length or a visit runs outside a `test.step`
+ * with its own `timeout`.
  *
  * @param {ts.Node} body
  * @param {ts.SourceFile} source
@@ -226,7 +291,8 @@ function hasFixedBudgetLoop(body, source) {
     if (
       loop &&
       navigates(loop.body) &&
-      !loop.lists.some((list) => scaled.has(list))
+      (!loop.lists.some((list) => scaled.has(list)) ||
+        navigatesOutsideTimedStep(loop.body))
     ) {
       return true;
     }
@@ -427,6 +493,57 @@ test('every route', async ({ page }) => {
 `;
 
   assert.deepEqual(scan(text, 'scaled.spec.ts'), { tests: 1, lines: [] });
+});
+
+test('flags a scaled loop whose visits have no step timeout of their own', () => {
+  const text = `
+test('every route', async ({ page }) => {
+  const keys = registeredKeys();
+  const perVisit = test.info().timeout;
+
+  test.setTimeout(keys.length * perVisit);
+
+  for (const key of keys) {
+    await test.step(key, async () => {
+      await page.goto(key);
+    });
+  }
+});
+test('every story', async ({ page }) => {
+  test.setTimeout(stories.length * 30_000);
+
+  for (const id of stories) {
+    await openStory(page, id);
+  }
+});
+`;
+
+  assert.deepEqual(scan(text, 'unbounded.spec.ts'), {
+    tests: 2,
+    lines: [2, 14],
+  });
+});
+
+test('flags a scaled loop whose step timeout sets no limit', () => {
+  const text = ['0', 'undefined', 'null', 'perVisit']
+    .map(
+      (timeout) => `
+test('every route', async ({ page }) => {
+  test.setTimeout(keys.length * perVisit);
+
+  for (const key of keys) {
+    await test.step(key, async () => {
+      await page.goto(key);
+    }, { timeout: ${timeout} });
+  }
+});`,
+    )
+    .join('');
+
+  assert.deepEqual(scan(text, 'unlimited.spec.ts'), {
+    tests: 4,
+    lines: [2, 11, 20],
+  });
 });
 
 test('passes a loop that generates one test per entry', () => {
