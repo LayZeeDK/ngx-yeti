@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: plan
+phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: done
+status: active
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -182,3 +182,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-16 — plan — build plan repair requested
 - 2026-10-16 — plan — build recovery: {"base": "6930b5dd9a3f353e4194c5eee08b2cca373dbca1", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-16 — plan — plan approved
+- 2026-10-16 — build — build started
