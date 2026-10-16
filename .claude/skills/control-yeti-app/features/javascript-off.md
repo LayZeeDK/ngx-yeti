@@ -33,6 +33,9 @@ Steps:
 - **Item links.** Read them from the served HTML, which is the page with JavaScript off:
   `curl -s <url>card | rg -o 'data-ngx-yeti-styles="[^"]+"'`. On `card` it prints one line each for `grid`,
   `button`, `card`, `spinner` and `lift`, in that order (measured 2026-10-15).
+- **Markup.** The served HTML holds the markup too: `curl -s <url>card | rg -o '<article[^>]*>'` prints
+  `<article data-ngx-yeti-item-card="" yeticard="" threshold="xs" class="card" data-threshold="xs">` (measured
+  2026-10-16).
 - **Keyboard.** Run `playwright-cli -s=<session>-jsoff press Tab` and take a fresh snapshot; the focused element is
   marked `[active]`.
 - **Proof.** Run `playwright-cli -s=<session>-jsoff screenshot --filename=<evidenceDir>/card-jsoff.png` (measured:

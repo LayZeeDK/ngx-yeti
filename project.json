@@ -18,7 +18,7 @@
       "outputs": []
     },
     "test": {
-      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright/playwright-configs.test.mjs tools/playwright-server/container.test.mjs tools/ci-local/run-job.test.mjs tools/playwright/navigation-budget.test.mjs",
+      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright/playwright-configs.test.mjs tools/playwright-server/container.test.mjs tools/ci-local/run-job.test.mjs tools/playwright/navigation-budget.test.mjs tools/verification/lars-verify-spec.test.mjs",
       "dependsOn": [],
       "cache": true,
       "inputs": [
@@ -31,6 +31,8 @@
         "{workspaceRoot}/tools/playwright-server/container.test.mjs",
         "{workspaceRoot}/tools/ci-local/run-job.mjs",
         "{workspaceRoot}/tools/ci-local/run-job.test.mjs",
+        "{workspaceRoot}/tools/verification/lars-verify-spec.mjs",
+        "{workspaceRoot}/tools/verification/lars-verify-spec.test.mjs",
         "{workspaceRoot}/.github/workflows/ci.yml"
       ]
     },

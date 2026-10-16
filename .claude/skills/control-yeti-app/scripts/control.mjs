@@ -24,7 +24,9 @@ import { homedir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
+import { mapFresh } from './fingerprint.mjs';
 
+const skillDir = fileURLToPath(new URL('..', import.meta.url));
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
 const scratch = join(root, 'tmp', 'control-yeti-app');
 const stateFile = join(scratch, 'state.json');
@@ -66,7 +68,7 @@ const sessionName = /^[\w-]+$/;
 /**
  * @typedef {object} Check
  * @property {string} name
- * @property {'pass' | 'fail' | 'skip'} status
+ * @property {'pass' | 'fail' | 'skip' | 'warn'} status
  * @property {string} detail
  */
 
@@ -170,9 +172,12 @@ function finish(code, result) {
     );
   } else {
     for (const check of result.checks ?? []) {
-      const tag = { pass: '[OK]', fail: '[ERROR]', skip: '[SKIP]' }[
-        check.status
-      ];
+      const tag = {
+        pass: '[OK]',
+        fail: '[ERROR]',
+        skip: '[SKIP]',
+        warn: '[WARN]',
+      }[check.status];
       process.stdout.write(`${tag} ${check.name}: ${check.detail}\n`);
     }
 
@@ -1095,6 +1100,10 @@ async function doctor() {
           .join(' | '),
   );
   await browser.close();
+  // A stale feature map does not make the instance unhealthy, so a warning
+  // here never reaches `failed`.
+  const fresh = mapFresh(skillDir);
+  check('map-fresh', fresh.status, fresh.detail);
   const failed = checks
     .filter((entry) => entry.status === 'fail')
     .map((entry) => entry.name);

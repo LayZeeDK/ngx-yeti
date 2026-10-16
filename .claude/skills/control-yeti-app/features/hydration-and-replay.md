@@ -29,8 +29,8 @@ Preconditions:
 
 Steps:
 
-- **Summary.** Run `playwright-cli -s=<session> open <url>card`, then `playwright-cli -s=<session> console`. The
-  console log holds `Angular is running in development mode.` and a line starting
+- **Summary.** Run `playwright-cli -s=<session> open <url>card`, then `playwright-cli -s=<session> console`. It
+  prints the page's messages under `### Result`: `Angular is running in development mode.` and a line starting
   `Angular hydrated 2 component(s) and 59 node(s), 0 component(s) were skipped.` (measured on `serve` development;
   Angular's message goes on after it).
 - **Hold `main.js` back on an item route.** Save this as `<evidenceDir>/held-card.js` (it follows
@@ -97,8 +97,9 @@ Steps:
   Run `playwright-cli -s=<session> --raw run-code --filename=<evidenceDir>/held-replay.js`. The text is
   `Clicked 1 times` (measured on `serve` development): the click made before hydration reached the handler.
 
-- **Proof.** Keep the screenshot the script wrote, the printed JSON, and the console log file named in the
-  command output (`.playwright-cli/console-*.log`).
+- **Proof.** Keep the screenshot the script wrote, the printed JSON, and the `console` output (redirect it with
+  `> <evidenceDir>/console.txt`); a navigation's own output also names `.playwright-cli/console-*.log` under
+  `### Events` (measured 2026-10-16).
 
 ## Gotchas
 

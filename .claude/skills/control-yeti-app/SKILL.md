@@ -75,9 +75,10 @@ reports one line per check:
 | `build`               | probed on every run: `development` when `window.ng` exists, `production` when it does not; fails when the page did not load or the probe threw, and, from a state file, when the probe disagrees with the recorded `configuration`                                                                                                                                                                               |
 | `hydration`           | development: Angular logs `Angular hydrated ... 0 component(s) were skipped.` and no `NG05xx` message; production: skipped (no summary is logged); unknown build: fails                                                                                                                                                                                                                                          |
 | `console-errors`      | no `console.error` and no page error on first load                                                                                                                                                                                                                                                                                                                                                               |
+| `map-fresh`           | never fails: `pass` (`[OK]`) when every feature of `features/` is fresh in `features/.proven.json`, `warn` (`[WARN]`) naming the stale ones (with how many files changed) and the unproven ones; from `mapFresh` in `scripts/fingerprint.mjs`, which reads this skill's folder from the script's own location, never the working directory                                                                       |
 
-With `--url`, `process-alive` and `port-owned` report `skip`; the page checks still run. Exit 0 healthy, 1 not
-healthy (`failed` names the checks), 2 could not run (no state and no `--url`, Chromium missing, a worktree state
+With `--url`, `process-alive` and `port-owned` report `skip`; the page checks and `map-fresh` still run. Exit 0
+healthy, 1 not healthy (`failed` names the checks; `map-fresh` is never among them, so it never changes the exit code), 2 could not run (no state and no `--url`, Chromium missing, a worktree state
 on a main-checkout port, an error the script does not handle). The JSON holds `url`, `build` (the probed build, or
 the recorded one when the probe failed), `failed` and `checks`.
 
@@ -104,8 +105,9 @@ Recipes: [features/README.md](features/README.md).
 
 ## Inspect
 
-- Console: `playwright-cli -s=<session> console` writes `.playwright-cli/console-*.log`; the development build logs
-  `Angular is running in development mode.` and the hydration summary (measured).
+- Console: `playwright-cli -s=<session> console` prints the page's messages under `### Result` (measured
+  2026-10-16); each navigation's output names a `.playwright-cli/console-*.log` under `### Events`. The development
+  build logs `Angular is running in development mode.` and the hydration summary (measured).
 - Network: `playwright-cli -s=<session> requests`.
 - Item links: `head link[data-ngx-yeti-styles]`, in Yeti's rank order (measured on `/sub/card` on 2026-10-15:
   `grid`, `button`, `card`, `spinner`, `lift`).
@@ -194,7 +196,7 @@ naming the port's listener until you stop it. `up` refuses while the file exists
 | `info`   | prints the state and where it lives                                                                                                                                                                                                                                                                                                                                                                                                         | 0, 2 no or invalid state file                                                                                                                                                                                                                                                                                                        |
 | `down`   | stops only a PID whose start time and command line match the state file; on a live PID keeps the state file with the survivors when the port or a tree PID survives (`run down again`); on a dead PID stops the recorded survivors that still match, waits for the dead root's tree without stopping it, and removes the state file whatever survives, naming the PIDs to stop by hand; closes the sessions and stops the Nx daemon on both | 0 stopped (on a dead PID with a `[WARN]`), 1 port or a tree PID survived or the listener query failed (state kept on a live PID, removed on a dead one), a session close `left-open`, `timeout` or `failed`, or the daemon stop failed, 2 refused (mismatch, invalid state file) or no state file                                    |
 
-Output: with `--json`, one JSON object on stdout; otherwise one `[OK]`, `[ERROR]` or `[SKIP]` line per doctor check,
+Output: with `--json`, one JSON object on stdout; otherwise one `[OK]`, `[ERROR]`, `[SKIP]` or `[WARN]` line per doctor check,
 one `[WARN]` line per warning, and a closing line tagged `[OK]` (exit 0), `[WARN]` (exit 1) or `[ERROR]` (exit 2).
 Every object holds `command` and `exit`, and `error` when the command failed. Besides those:
 
@@ -202,7 +204,7 @@ Every object holds `command` and `exit`, and `error` when the command failed. Be
 - `info`: the state `up` wrote (`flow`, `worktree`, `mode`, `configuration`, `pid`, `start`, `commandLine`, `port`,
   `url`, `session`, `sessions` (`<session>` and `<session>-jsoff`), `evidenceDir`, `logFile`, and `survivors` after a
   `down` that kept the file), plus `stateFile`.
-- `doctor`: `url`, `build`, `failed`, `checks`.
+- `doctor`: `url`, `build`, `failed`, `checks` (each `name`, `status` (`pass`, `fail`, `skip`, or `warn` for `map-fresh`), `detail`).
 - `down`: `pid`, `recordedPidRunning`, `stopped` (PIDs it stopped), `survivors`, `uncheckedPids` (dead root only),
   `port`, `portFree`, `listenerError` (when the query failed), `session`, `sessions` (one close outcome each),
   `daemon` (`stopped`, and `detail` on a failure), `evidenceDir`, `evidenceKept`, `warnings` (dead root, exit 0),
@@ -224,11 +226,24 @@ listeners from `Get-NetTCPConnection -State Listen -ErrorAction Stop` (netstat t
 cmdlet's own no-match error (category `ObjectNotFound` from `Get-NetTCPConnection`) means no listener; any other
 error makes `up` and `doctor` exit 2 with the error, and `down` exit 1 as above.
 
+`node .claude/skills/control-yeti-app/scripts/fingerprint.mjs <command> [flags]` is the proof manifest's script, a
+byte copy of `~/.claude/skills/lars-create-verification/scripts/fingerprint.mjs`: copy it again after that one changes,
+never edit it here (Prettier skips it, and `features/.proven.json`, through `.prettierignore`). It spawns nothing and
+writes only the manifest.
+
+| Command                                       | Does                                                                                                                                                                                                                                                                                                                                                                                                          | Exit codes                                                         |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `record --feature <id> [--entries <path>...]` | records the files feature `<id>` (`features/<id>.md`) depends on and their git blob hashes in `features/.proven.json`: the import closure of the entries through the repository's TypeScript and the nearest `tsconfig.json`, plus Angular `templateUrl` and `styleUrl(s)`; entries are repository-relative, and without `--entries` the recorded ones are reused; writes nothing when files and hashes match | 0 written or unchanged, 2 refused                                  |
+| `check [--feature <id>]`                      | compares each recorded hash with the file now: `fresh`, `stale` (a file changed, went missing or became a link) or `unproven` (no entry)                                                                                                                                                                                                                                                                      | 0 every feature fresh, 1 one is stale or unproven, 2 could not run |
+
+Both take `--json`. Record a feature only after a live pass proved every sub-feature of it
+(`/lars-maintain-verification`); `/lars-verify` runs `check --feature <id>` before a claim.
+
 The tests point `CONTROL_SESSION_REGISTRY` at a registry folder of their own, or at a file to make the folder
 unreadable, set `CONTROL_LISTENER_TIMEOUT_MS` to make the listener query time out, and set
 `CONTROL_PID_LOOKUP_MISSES` to make `up`'s first lookups of the started PID miss; nothing else sets any of them.
 
-Test: `node --test .claude/skills/control-yeti-app/scripts/control.test.mjs` proves the refused flags (unknown ones
+Test: `node --test .claude/skills/control-yeti-app/scripts/control.test.mjs` proves `doctor`'s `map-fresh` line in a copy of the skill against a stand-in page (`[WARN]` unproven, `[OK]` after `record`, `[WARN]` stale after an entry changes, exit 0 in all three), the refused flags (unknown ones
 and ones the command does not take), an unhandled error exiting 2 with JSON, `info` naming both sessions and the
 state file, every command's exit-2 refusal of a state file that is not JSON, a `left-open` close for a registry entry
 with no `socketPath` and for a registry folder that cannot be listed, a `down` whose first listener query times out

@@ -1,7 +1,7 @@
 // @ts-check
 // Drives control.mjs through stand-in states, short serve launches that up
 // gives up on, and ssr launches with the Nx daemon on: the refused flags and
-// planted state, doctor's build probe and build-fresh scan, down's kept state
+// planted state, doctor's build probe, build-fresh scan and map-fresh line, down's kept state
 // file and its daemon stop. Windows only, like control.mjs. Builds the Fixture
 // app and stops the checkout's Nx daemon, so no other build or Nx work may run
 // in this checkout while it runs.
@@ -9,6 +9,7 @@
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -465,6 +466,124 @@ test('info names both sessions and the state file', async (t) => {
   assert.equal(code, 0, JSON.stringify(result));
   assert.deepEqual(result.sessions, [state.session, `${state.session}-jsoff`]);
   assert.equal(result.stateFile, stateFile);
+});
+
+test('doctor reports map-fresh as a warning or a pass that never changes its exit code', async (t) => {
+  // A copy of the skill in a checkout of its own, so its manifest can be
+  // unproven, fresh and stale without touching this skill's. It sits below
+  // the repository, so the copy still resolves playwright from it.
+  mkdirSync(join(root, 'tmp', 'control-yeti-app'), { recursive: true });
+  const checkout = mkdtempSync(
+    join(root, 'tmp', 'control-yeti-app', 'map-fresh-'),
+  );
+  const skill = join(checkout, '.claude', 'skills', 'control-yeti-app');
+  const server = createHttpServer((_, response) => {
+    response.writeHead(200, { 'content-type': 'text/html' });
+    response.end(
+      '<!doctype html><title>stand-in</title><app-root><h1>Welcome yeti-app</h1></app-root>',
+    );
+  });
+  t.after(async () => {
+    await new Promise((done) => server.close(done));
+    rmSync(checkout, { recursive: true, force: true });
+  });
+  mkdirSync(join(checkout, '.git'));
+  mkdirSync(join(skill, 'scripts'), { recursive: true });
+  mkdirSync(join(skill, 'features'));
+
+  for (const name of ['control.mjs', 'fingerprint.mjs']) {
+    copyFileSync(join(here, name), join(skill, 'scripts', name));
+  }
+
+  writeFileSync(join(skill, 'features', 'page.md'), '# Page\n');
+  writeFileSync(join(checkout, 'entry.txt'), 'proven\n');
+  await new Promise((done) =>
+    server.listen(0, '127.0.0.1', () => done(undefined)),
+  );
+  const address = server.address();
+  assert.ok(address !== null && typeof address === 'object');
+  const url = `http://127.0.0.1:${String(address.port)}/sub/`;
+
+  // Spawned without blocking this process: it serves the stand-in page.
+  /**
+   * @param {string[]} args
+   * @returns {Promise<{ status: number | null, stdout: string }>}
+   */
+  const run = (...args) =>
+    new Promise((done) => {
+      const child = spawn(process.execPath, args, {
+        cwd: checkout,
+        windowsHide: true,
+      });
+      let stdout = '';
+      child.stdout.on('data', (chunk) => {
+        stdout += String(chunk);
+      });
+      child.on('close', (status) => done({ status, stdout }));
+    });
+  const doctor = async () => {
+    const asJson = await run(
+      join(skill, 'scripts', 'control.mjs'),
+      'doctor',
+      `--url=${url}`,
+      '--json',
+    );
+    /** @type {ControlResult} */
+    const result = JSON.parse(asJson.stdout);
+    const asText = await run(
+      join(skill, 'scripts', 'control.mjs'),
+      'doctor',
+      `--url=${url}`,
+    );
+
+    return {
+      code: asJson.status,
+      textCode: asText.status,
+      line: result.checks?.find(({ name }) => name === 'map-fresh'),
+      failed: result.failed ?? [],
+      text: asText.stdout,
+    };
+  };
+
+  const unproven = await doctor();
+  assert.deepEqual(unproven.line, {
+    name: 'map-fresh',
+    status: 'warn',
+    detail: 'unproven: page',
+  });
+  assert.match(unproven.text, /^\[WARN\] map-fresh: unproven: page$/m);
+  assert.deepEqual(
+    [unproven.code, unproven.textCode, unproven.failed],
+    [0, 0, []],
+  );
+
+  const recorded = await run(
+    join(skill, 'scripts', 'fingerprint.mjs'),
+    'record',
+    '--feature',
+    'page',
+    '--entries',
+    'entry.txt',
+  );
+  assert.equal(recorded.status, 0, recorded.stdout);
+  const fresh = await doctor();
+  assert.deepEqual(fresh.line, {
+    name: 'map-fresh',
+    status: 'pass',
+    detail: '1 features fresh',
+  });
+  assert.match(fresh.text, /^\[OK\] map-fresh: 1 features fresh$/m);
+  assert.deepEqual([fresh.code, fresh.textCode, fresh.failed], [0, 0, []]);
+
+  writeFileSync(join(checkout, 'entry.txt'), 'changed\n');
+  const stale = await doctor();
+  assert.equal(stale.line?.status, 'warn', JSON.stringify(stale.line));
+  assert.match(
+    stale.line?.detail ?? '',
+    /^stale: page \(since .+, 1 files changed\)$/,
+  );
+  assert.match(stale.text, /^\[WARN\] map-fresh: stale: page /m);
+  assert.deepEqual([stale.code, stale.textCode, stale.failed], [0, 0, []]);
 });
 
 test('down reports a dead recorded pid with a free port as not running', async (t) => {
