@@ -172,6 +172,15 @@ Review depth: full
 | T075 | Build the static Storybook's CSS for the .browserslistrc floor so inline dark-scheme wrappers stay dark, and assert every wrapper story's colours in ngx-yeti-e2e | — | packages/ngx-yeti/.storybook/main.ts, apps/ngx-yeti-e2e/src/color-scheme-wrappers.spec.ts |
 | T076 | Run a full /lars-maintain-verification pass on control-yeti-app, adopt the proof manifest, and make the skill runnable by /lars-verify through a spec written from its feature map | T071, T073 | .claude/skills/control-yeti-app/SKILL.md, .claude/skills/control-yeti-app/features/README.md, .claude/skills/control-yeti-app/features/item-routes.md, .claude/skills/control-yeti-app/features/javascript-off.md, .claude/skills/control-yeti-app/features/hydration-and-replay.md, .claude/skills/control-yeti-app/features/build-configurations.md, .claude/skills/control-yeti-app/features/.proven.json, .claude/skills/control-yeti-app/scripts/control.mjs, .claude/skills/control-yeti-app/scripts/control.test.mjs, .claude/skills/control-yeti-app/scripts/fingerprint.mjs, tools/verification/lars-verify-spec.mjs, tools/verification/lars-verify-spec.test.mjs, project.json, .prettierignore |
 
+## Wave 16 — fix wave 15 cycle 1 review findings
+
+Goal: Repair the blocking findings of the wave 15 cycle 1 review without changing source task contracts.
+Review depth: full
+
+| Task | Title | Deps | Files |
+|------|-------|------|-------|
+| T077 | Fix wave 15 cycle 1 review findings in T071 | T071 | apps/yeti-app-e2e/src/fixture-app.spec.ts, project.json, tools/playwright/navigation-budget.test.mjs |
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |
