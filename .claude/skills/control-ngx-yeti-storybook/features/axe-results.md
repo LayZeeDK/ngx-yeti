@@ -1,6 +1,6 @@
 # Axe results
 
-`@storybook/addon-a11y` runs axe on every story after its play function, with `parameters.a11y.test = 'error'` and `runOnly` on the six `wcagTags` of `@ngx-yeti/testing` (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`, `best-practice`), and the `region` rule off. A violation fails the story. This is the axe story gate of the `ngx-yeti-stories` skill; capturing its report is how a reviewer proves a story is axe-clean in the running Storybook.
+`@storybook/addon-a11y` runs axe on every story after its play function, with `parameters.a11y.test = 'error'` and `runOnly` on the six `wcagTags` of `@ngx-yeti/testing` (`wcag2a`, `wcag2aa`, `wcag21a`, `wcag21aa`, `wcag22aa`, `best-practice`), and the `region` rule off (the addon's own default: `preview.ts` sets only `runOnly`, and the report's `toolOptions.rules` shows `region` disabled). A violation fails the story. This is the axe story gate of the `ngx-yeti-stories` skill; capturing its report is how a reviewer proves a story is axe-clean in the running Storybook.
 
 ## Sub-features
 
@@ -15,6 +15,8 @@
 
 ## Driving it with control-ngx-yeti-storybook
 
+Preconditions: the README baseline, on either flow; the story open without `embed=true`.
+
 Open the story without `embed=true`, then capture the report with the `forceRemount` recipe in `features/play-functions.md`. The saved JSON has:
 
 - `a11y[0].status`: `passed` or `failed`;
@@ -28,6 +30,8 @@ node -e 'const r = JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"
 ```
 
 Measured for `card--stretched-link`: `{"storyId":"card--stretched-link","status":"success","a11y":[{"status":"passed","violations":[],"incomplete":[],"passes":12}]}`.
+
+For an anti-pattern story, run the same recipe with its id, for example `box--anti-pattern-low-contrast`, and read `reporters[0].result.toolOptions.rules`: measured `{"region":{"enabled":false},"color-contrast":{"enabled":false}}`, status `success`, a11y `passed` with 3 passes. Only the rule the story demonstrates is added to the addon's `region` default.
 
 ## Gotchas
 

@@ -22,8 +22,10 @@ import { connect } from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { mapFresh } from './fingerprint.mjs';
 
 const NAME = 'control-ngx-yeti-storybook';
+const SKILL_DIR = fileURLToPath(new URL('..', import.meta.url));
 const ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../../../..',
@@ -49,13 +51,15 @@ const flowName = args.includes('--dev') ? 'dev' : 'static';
 const urlArg = args.find((arg) => arg.startsWith('--url='))?.slice(6);
 const flow = FLOWS[flowName];
 // Only the flags the skill names, in their written form: a mistyped flag or a
-// value after a space must not fall back to the recorded instance.
+// value after a space must not fall back to the recorded instance. Only
+// doctor reads --url, so on another command it would act on the recorded
+// instance while the caller named a different one.
 const unknown = [
   ...args.filter(
     (arg) =>
       arg.startsWith('--') &&
       !['--dev', '--json'].includes(arg) &&
-      !/^--url=./.test(arg),
+      !(command === 'doctor' && /^--url=./.test(arg)),
   ),
   ...extra,
 ];
@@ -83,7 +87,7 @@ const session = `${NAME}-${flowName}-${String(port)}`;
 /**
  * @typedef {object} Check
  * @property {string} name
- * @property {'pass' | 'fail' | 'skipped'} status
+ * @property {'pass' | 'fail' | 'skipped' | 'warn'} status
  * @property {string} detail
  */
 
@@ -121,9 +125,12 @@ function finish(code, result) {
     process.stdout.write(`${marker} ${command}: ${result.message ?? ''}\n`);
 
     for (const check of result.checks ?? []) {
-      const tag = { pass: '[OK]', fail: '[ERROR]', skipped: '[SKIP]' }[
-        check.status
-      ];
+      const tag = {
+        pass: '[OK]',
+        fail: '[ERROR]',
+        skipped: '[SKIP]',
+        warn: '[WARN]',
+      }[check.status];
       process.stdout.write(`  ${tag} ${check.name}: ${check.detail}\n`);
     }
 
@@ -680,19 +687,24 @@ function tail(file, lines = 20) {
     .slice(-lines);
 }
 
-/** @param {string | undefined} target */
-function refuseMainPort(target) {
+// A backstop: the derived range never holds a main checkout port.
+function refuseMainPort() {
   const mainPorts = Object.values(FLOWS).map((f) => f.mainPort);
 
-  if (isWorktree && target === undefined && mainPorts.includes(port)) {
+  if (isWorktree && mainPorts.includes(port)) {
     finish(2, {
       message: `refused: ${String(port)} is the main checkout's Storybook port`,
     });
   }
 }
 
+// Set once `up` has spawned the server, so an exception after it names the
+// cleanup.
+/** @type {number | undefined} */
+let launchedPid;
+
 async function up() {
-  refuseMainPort(urlArg);
+  refuseMainPort();
   const existing = readState();
 
   if (existing !== null) {
@@ -740,6 +752,7 @@ async function up() {
     },
   });
   child.unref();
+  launchedPid = child.pid;
   closeSync(log);
   /** @type {number | null} */
   let exited = null;
@@ -828,7 +841,7 @@ async function doctor() {
   const recorded = urlArg === undefined ? state : null;
 
   if (recorded !== null) {
-    refuseMainPort(undefined);
+    refuseMainPort();
     const table = processTable();
     const live = table.find((proc) => proc.pid === recorded.pid);
     add(
@@ -933,6 +946,15 @@ async function doctor() {
       errors.length === 0 ? 'server log has no errors' : errors.join(' | '),
     );
   }
+
+  // A stale feature map does not make the instance unhealthy, so this line
+  // is a warning at most and never changes the exit code.
+  const fresh = mapFresh(SKILL_DIR);
+  checks.push({
+    name: 'map-fresh',
+    status: fresh.status,
+    detail: fresh.detail,
+  });
 
   const healthy = checks.every((check) => check.status !== 'fail');
   finish(healthy ? 0 : 1, {
@@ -1039,6 +1061,12 @@ async function down() {
   const { problems, toStop } = teardownProblems(state, teardown);
 
   if (problems.length > 0) {
+    const daemon = stopDaemon();
+
+    if (!daemon.stopped) {
+      problems.push('nx daemon --stop failed');
+    }
+
     // With the root gone, another down takes the dead-PID path, which stops
     // nothing.
     const next = survivors.includes(state.pid)
@@ -1049,6 +1077,7 @@ async function down() {
       ...teardown,
       port: state.port,
       sessionClose,
+      daemon,
       statePath,
     });
   }
@@ -1210,4 +1239,13 @@ if (run === undefined) {
   });
 }
 
-await run();
+try {
+  await run();
+} catch (error) {
+  const reason = error instanceof Error ? error.message : String(error);
+  const cleanup =
+    launchedPid === undefined
+      ? ''
+      : `; the server (pid ${String(launchedPid)}) may still run: ${existsSync(statePath) ? 'run down' : 'stop it yourself'}`;
+  finish(2, { message: `could not run: ${reason}${cleanup}`, statePath });
+}

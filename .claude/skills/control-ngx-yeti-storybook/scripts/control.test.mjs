@@ -1,13 +1,14 @@
 // @ts-check
-// Drives control.mjs through one static launch with the Nx daemon on: the
+// Drives control.mjs through static launches with the Nx daemon on: the
 // refused flags and planted state, the freshness check over the shared story
-// helpers, and down's session report and daemon stop. Windows only, like the
-// proof runs. Builds the static Storybook, so nothing else may build in this
-// checkout while it runs.
+// helpers, doctor's map-fresh line, down's session report and daemon stop,
+// and an exception's exit 2. Windows only, like the proof runs. Builds the
+// static Storybook, so nothing else may build in this checkout while it runs.
 // Run: node --test .claude/skills/control-ngx-yeti-storybook/scripts/control.test.mjs
 import assert from 'node:assert/strict';
 import { spawn, spawnSync } from 'node:child_process';
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -17,11 +18,12 @@ import {
   utimesSync,
   writeFileSync,
 } from 'node:fs';
+import { createServer as createHttpServer } from 'node:http';
 import { createServer } from 'node:net';
 import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, '../../../..');
@@ -293,11 +295,154 @@ function ensureDown() {
   }
 }
 
+test('doctor reports map-fresh as a warning or a pass that never changes its exit code', async (t) => {
+  // A copy of the skill in a checkout of its own, so its manifest can be
+  // unproven, fresh and stale without touching this skill's. The copy's
+  // playwright module re-exports this checkout's, so no link is needed.
+  mkdirSync(scratch, { recursive: true });
+  const checkout = mkdtempSync(join(scratch, 'map-fresh-'));
+  const skill = join(
+    checkout,
+    '.claude',
+    'skills',
+    'control-ngx-yeti-storybook',
+  );
+  const page =
+    '<!doctype html><title>stand-in</title><body><div id="storybook-root"><p>stand-in</p></div>' +
+    '<script>window.__STORYBOOK_PREVIEW__ = { currentRender: { phase: "finished" } };</script></body>';
+  const server = createHttpServer((request, response) => {
+    if ((request.url ?? '').startsWith('/index.json')) {
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({ entries: { 'card--stretched-link': {} } }));
+
+      return;
+    }
+
+    response.writeHead(200, { 'content-type': 'text/html' });
+    response.end(page);
+  });
+  t.after(async () => {
+    await new Promise((done) => server.close(done));
+    rmSync(checkout, { recursive: true, force: true });
+  });
+  mkdirSync(join(checkout, '.git'));
+  mkdirSync(join(checkout, 'node_modules', 'playwright'), { recursive: true });
+  writeFileSync(
+    join(checkout, 'node_modules', 'playwright', 'index.mjs'),
+    `export * from '${pathToFileURL(join(root, 'node_modules', 'playwright', 'index.mjs')).href}';\n`,
+  );
+  mkdirSync(join(skill, 'scripts'), { recursive: true });
+  mkdirSync(join(skill, 'features'));
+
+  for (const name of [
+    'control.mjs',
+    'fingerprint.mjs',
+    'storybook-preview.d.ts',
+  ]) {
+    copyFileSync(join(here, name), join(skill, 'scripts', name));
+  }
+
+  writeFileSync(join(skill, 'features', 'page.md'), '# Page\n');
+  writeFileSync(join(checkout, 'entry.txt'), 'proven\n');
+  await new Promise((done) =>
+    server.listen(0, '127.0.0.1', () => done(undefined)),
+  );
+  const address = server.address();
+  assert.ok(address !== null && typeof address === 'object');
+  const url = `http://127.0.0.1:${String(address.port)}`;
+
+  // Spawned without blocking this process: it serves the stand-in page.
+  /**
+   * @param {string[]} args
+   * @returns {Promise<{ status: number | null, stdout: string }>}
+   */
+  const run = (...args) =>
+    new Promise((done) => {
+      const child = spawn(process.execPath, args, {
+        cwd: checkout,
+        windowsHide: true,
+      });
+      let stdout = '';
+      child.stdout.on('data', (chunk) => {
+        stdout += String(chunk);
+      });
+      child.on('close', (status) => done({ status, stdout }));
+    });
+  const doctor = async () => {
+    const asJson = await run(
+      join(skill, 'scripts', 'control.mjs'),
+      'doctor',
+      `--url=${url}`,
+      '--json',
+    );
+    /** @type {ControlResult} */
+    const result = JSON.parse(asJson.stdout);
+    const asText = await run(
+      join(skill, 'scripts', 'control.mjs'),
+      'doctor',
+      `--url=${url}`,
+    );
+
+    return {
+      code: asJson.status,
+      textCode: asText.status,
+      line: result.checks?.find(({ name }) => name === 'map-fresh'),
+      failing: (result.checks ?? [])
+        .filter(({ status }) => status === 'fail')
+        .map(({ name }) => name),
+      text: asText.stdout,
+    };
+  };
+
+  const unproven = await doctor();
+  assert.deepEqual(unproven.line, {
+    name: 'map-fresh',
+    status: 'warn',
+    detail: 'unproven: page',
+  });
+  assert.match(unproven.text, /^ {2}\[WARN\] map-fresh: unproven: page$/m);
+  assert.deepEqual(
+    [unproven.code, unproven.textCode, unproven.failing],
+    [0, 0, []],
+  );
+
+  const recorded = await run(
+    join(skill, 'scripts', 'fingerprint.mjs'),
+    'record',
+    '--feature',
+    'page',
+    '--entries',
+    'entry.txt',
+  );
+  assert.equal(recorded.status, 0, recorded.stdout);
+  const fresh = await doctor();
+  assert.deepEqual(fresh.line, {
+    name: 'map-fresh',
+    status: 'pass',
+    detail: '1 features fresh',
+  });
+  assert.match(fresh.text, /^ {2}\[OK\] map-fresh: 1 features fresh$/m);
+  assert.deepEqual([fresh.code, fresh.textCode, fresh.failing], [0, 0, []]);
+
+  writeFileSync(join(checkout, 'entry.txt'), 'changed\n');
+  const stale = await doctor();
+  assert.equal(stale.line?.status, 'warn', JSON.stringify(stale.line));
+  assert.match(
+    stale.line?.detail ?? '',
+    /^stale: page \(since .+, 1 files changed\)$/,
+  );
+  assert.match(stale.text, /^ {2}\[WARN\] map-fresh: stale: page /m);
+  assert.deepEqual([stale.code, stale.textCode, stale.failing], [0, 0, []]);
+});
+
 test('refuses unknown flags and values after a space', () => {
   for (const args of [
     ['up', '--devv'],
     ['doctor', '--url', 'http://localhost:4401'],
     ['up', '--port=4401'],
+    ['info', '--url=http://localhost:4401'],
+    ['down', '--url=http://localhost:4401'],
+    ['up', '--url=http://localhost:4401'],
   ]) {
     const { code, result } = control(...args);
     assert.equal(code, 2, `${args.join(' ')}: ${JSON.stringify(result)}`);
@@ -605,6 +750,11 @@ test('down names the listener to stop once the root is gone, and then shows a fa
     ),
   );
   assert.equal(existsSync(stateFile), true, 'the state file was removed');
+  assert.equal(
+    first.result.daemon?.stopped,
+    true,
+    JSON.stringify(first.result.daemon),
+  );
 
   const second = controlWith(
     { ...env, CONTROL_LISTENER_TIMEOUT_MS: '1' },
@@ -801,4 +951,32 @@ test('down closes the session and stops the daemon after the server died on its 
   assert.equal(existsSync(stateFile), false);
   assert.equal(listening(run.port), false);
   assert.equal(daemonRunning(), false, 'the Nx daemon is still running');
+});
+
+test('an exception inside up or doctor exits 2 with one JSON object', (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  // An empty browsers folder, so the render check cannot launch Chromium.
+  const browsers = mkdtempSync(join(tmpdir(), 'control-storybook-browsers-'));
+  const env = { ...process.env, PLAYWRIGHT_BROWSERS_PATH: browsers };
+  t.after(() => {
+    if (existsSync(stateFile)) {
+      control('down');
+    }
+
+    rmSync(browsers, { recursive: true, force: true });
+  });
+
+  const up = controlWith(env, 'up');
+  assert.equal(up.code, 2, JSON.stringify(up.result));
+  assert.match(
+    up.result.message ?? '',
+    /^could not run: .*; the server \(pid \d+\) may still run: run down$/s,
+  );
+
+  const doctor = controlWith(env, 'doctor');
+  assert.equal(doctor.code, 2, JSON.stringify(doctor.result));
+  assert.match(doctor.result.message ?? '', /^could not run: /);
+
+  const down = control('down');
+  assert.equal(down.code, 0, JSON.stringify(down.result));
 });
