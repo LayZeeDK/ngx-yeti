@@ -275,6 +275,21 @@ const refusals = [
     /--open card\/\{runDir\} is not a path below the app's URL/,
   ],
   [
+    'an --open value that extends the port',
+    (checkout) => ({ cwd: checkout, argv: args({ open: '1/iframe.html' }) }),
+    /--open 1\/iframe\.html is not a path below the app's URL/,
+  ],
+  [
+    'an --open value that climbs above the app',
+    (checkout) => ({ cwd: checkout, argv: args({ open: '../card' }) }),
+    /--open \.\.\/card is not a path below the app's URL/,
+  ],
+  [
+    'an --open value that climbs above the app once decoded',
+    (checkout) => ({ cwd: checkout, argv: args({ open: '%2e%2e/card' }) }),
+    /--open %2e%2e\/card is not a path below the app's URL/,
+  ],
+  [
     'an --out path with a placeholder',
     (checkout) => ({
       cwd: checkout,
@@ -351,5 +366,22 @@ test('an empty --open opens the root route', (t) => {
     '-s={up.session}',
     'open',
     '{up.url}',
+  ]);
+});
+
+test('an --open value with a query opens that route', (t) => {
+  const { checkout, run } = setup(t);
+  const open = '/iframe.html?id=button--variants&viewMode=story';
+  const result = run(checkout, ...args({ open }));
+  assert.equal(result.status, 0, result.stderr);
+  /** @type {{ steps: { setup: unknown[] } }} */
+  const spec = JSON.parse(
+    readFileSync(join(checkout, 'out', 'spec', 'spec.json'), 'utf8'),
+  );
+  assert.deepEqual(spec.steps.setup[2], [
+    'playwright-cli',
+    '-s={up.session}',
+    'open',
+    `{up.url}${open}`,
   ]);
 });

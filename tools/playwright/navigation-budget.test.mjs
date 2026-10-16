@@ -302,7 +302,29 @@ function sourceFiles(directory) {
   }
 }
 
-const files = sourceFiles(fileURLToPath(root));
+/**
+ * The `path:line` of every test under apps/ and packages/ of `directory` that
+ * loads pages in a loop under a fixed budget, and the count of tests parsed.
+ *
+ * @param {string} directory
+ */
+function fixedBudgetLoops(directory) {
+  let tests = 0;
+  /** @type {string[]} */
+  const found = [];
+
+  for (const path of sourceFiles(directory)) {
+    const result = scan(readFileSync(join(directory, path), 'utf8'), path);
+
+    tests += result.tests;
+    found.push(...result.lines.map((line) => `${path}:${line}`));
+  }
+
+  return { tests, found };
+}
+
+const checkout = fileURLToPath(root);
+const files = sourceFiles(checkout);
 
 test('lists the source files .gitignore leaves in, in a tree without .git', () => {
   const tree = mkdtempSync(join(tmpdir(), 'navigation-budget-'));
@@ -332,6 +354,36 @@ test('lists the source files .gitignore leaves in, in a tree without .git', () =
       'packages/lib/src/plain.tsx',
     ]);
     assert.ok(listed.every((path) => statSync(join(tree, path)).isFile()));
+  } finally {
+    rmSync(tree, { recursive: true, force: true });
+  }
+});
+
+test('reads a listed file whose name holds #, %2e%2e or %20', () => {
+  const tree = mkdtempSync(join(tmpdir(), 'navigation-budget-'));
+  const loop = `
+test('every route', async ({ page }) => {
+  for (const key of keys) {
+    await page.goto(key);
+  }
+});
+`;
+
+  try {
+    for (const path of [
+      'apps/a/loop#x.spec.ts',
+      'apps/a/%2e%2e/loop.spec.ts',
+      'apps/a/loop%20x.spec.ts',
+    ]) {
+      mkdirSync(dirname(join(tree, path)), { recursive: true });
+      writeFileSync(join(tree, path), loop);
+    }
+
+    const { found } = fixedBudgetLoops(tree);
+
+    assert.ok(found.includes('apps/a/loop#x.spec.ts:2'), found.join(', '));
+    assert.ok(found.includes('apps/a/%2e%2e/loop.spec.ts:2'), found.join(', '));
+    assert.ok(found.includes('apps/a/loop%20x.spec.ts:2'), found.join(', '));
   } finally {
     rmSync(tree, { recursive: true, force: true });
   }
@@ -391,23 +443,14 @@ for (const key of keys) {
 
 test('scans only regular files', () => {
   const notFiles = files.filter(
-    (path) => !statSync(new URL(path, root)).isFile(),
+    (path) => !statSync(join(checkout, path)).isFile(),
   );
 
   assert.deepEqual(notFiles, []);
 });
 
 test('no test under apps/ or packages/ loads pages in a loop under a fixed budget', () => {
-  let tests = 0;
-  /** @type {string[]} */
-  const found = [];
-
-  for (const path of files) {
-    const result = scan(readFileSync(new URL(path, root), 'utf8'), path);
-
-    tests += result.tests;
-    found.push(...result.lines.map((line) => `${path}:${line}`));
-  }
+  const { tests, found } = fixedBudgetLoops(checkout);
 
   assert.notEqual(tests, 0, 'no test call parsed under apps/ or packages/');
   assert.deepEqual(found, [], `${found.join(', ')}: ${fix}`);

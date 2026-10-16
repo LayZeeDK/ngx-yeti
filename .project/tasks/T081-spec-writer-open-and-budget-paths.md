@@ -3,9 +3,9 @@ id: T081
 title: Refuse an --open value that leaves the app's URL in the lars-verify spec writer, and resolve the loop-budget gate's listed paths as file-system paths
 wave: 17
 deps: [T076, T078]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_t081
+base: 72ef155eec8ea86c05ef06294ec9f4e4f5df3fe1
 worktree: null
 task_branch: null
 files:
@@ -64,3 +64,29 @@ Heavy: no
 ## Log
 
 - 2026-10-16 — created by planner
+- 2026-10-17 — build_t081: Red first, measured at base 72ef155 (whose writer guard matches d63e7e0's) with only the new tests added: `node --test tools/verification/lars-verify-spec.test.mjs tools/playwright/navigation-budget.test.mjs` gave 31 tests, 27 pass, 4 fail. The 4 failures: the three new refusals (`--open 1/iframe.html`, `--open ../card`, `--open %2e%2e/card` exited 0 and wrote a spec), and the new navigation-budget test "reads a listed file whose name holds #, %2e%2e or %20", which failed with ENOENT on `apps\loop.spec.ts` because `new URL` resolution read the wrong file.
+- 2026-10-17 — build_t081: Implementation. In tools/verification/lars-verify-spec.mjs, the `--open` guard keeps its earlier refusals and message, and also refuses a leading digit and any `.` or `..` segment before `?`/`#` after `%2e`/`%2E` decoding. In tools/verification/lars-verify-spec.test.mjs: three refusal cases (exit 2, the "is not a path below the app's URL" message, no stdout, no out dir), plus one accept case for `/iframe.html?id=button--variants&viewMode=story`. `card` (default args) and empty `--open` stay covered by existing tests. In tools/playwright/navigation-budget.test.mjs: listed paths are now read with `join(checkout, path)`, and the repository scan moved into `fixedBudgetLoops(directory)`, which lists through `sourceFiles` and reads with `join`. The new test plants `apps/a/loop#x.spec.ts`, `apps/a/%2e%2e/loop.spec.ts` and `apps/a/loop%20x.spec.ts` in a temporary tree (removed in `finally`) and expects each to be flagged. `?` is left out of the planted names because Windows file names cannot hold `?`. No `new URL(path, root)` is left.
+- 2026-10-17 — build_t081: Verify ran exactly as written through the heavy lock: exit 0. Counts: node --test of the two files 31 tests / 31 pass; `@ngx-yeti/source:test` 85 tests / 85 pass; `@ngx-yeti/source:typecheck` passed with 0 errors (scripts-coverage 1/1); prettier --check on the three files passed. A first Verify run failed at typecheck (TS2532 on `split(...)[0]`); I changed it to `.replace(/[?#].*/s, '')` and re-ran the whole Verify, which passed. Rule 13: `npx prettier --check .` passed. `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (through the lock) succeeded for 9 projects and the 2 tasks they depend on: 25 tasks, 7 from cache, 0 failed.
+- 2026-10-16 — orchestrator Verify (isolate gsd-path-task/T081): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

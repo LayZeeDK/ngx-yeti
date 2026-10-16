@@ -239,12 +239,19 @@ export function writeSpec(argv, cwd) {
     throw new Error(`--recipe ${recipe} is not a function name`);
   }
 
-  // A path below the app's URL: no userinfo, host or scheme that would leave it, and no
-  // placeholder verdict.mjs would fill.
+  // A path below the app's URL: no userinfo, host or scheme that would leave it, no
+  // leading digit that would extend a URL ending in a port, no . or .. segment that
+  // would climb above it, and no placeholder verdict.mjs would fill.
   if (
     !/^[A-Za-z0-9/_.~%?=&#-]*$/.test(open) ||
     open.includes('//') ||
-    /^[A-Za-z][A-Za-z0-9+.-]*:/.test(open)
+    /^[A-Za-z][A-Za-z0-9+.-]*:/.test(open) ||
+    /^[0-9]/.test(open) ||
+    open
+      .replace(/[?#].*/s, '')
+      .replaceAll(/%2e/gi, '.')
+      .split('/')
+      .some((segment) => segment === '.' || segment === '..')
   ) {
     throw new Error(`--open ${open} is not a path below the app's URL`);
   }
