@@ -5,7 +5,7 @@ milestone: layouts-and-button
 phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: active
+status: blocked
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -190,3 +190,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-16 — plan — patch plan reopened
 - 2026-10-16 — plan — patch plan approved
 - 2026-10-16 — build — build started
+- 2026-10-17 — build — user ruling 2026-10-17, verbatim: "Yes, wait for proctree and add T084" (T084: one /lars-maintain-verification pass on both control skills to the updated lars-create-verification contract: ports table, doctor ports line, fingerprint copy, proctree.mjs; T080 reworked to adopt proctree for down and T083 after T084). Wave 17: T078, T079, T081, T082 landed; T080 attempt 1 saved (tmp/afk-m002/tools/T080-attempt1.patch), Log copied, isolate retired, record settled; build plan repair follows once the shared proctree.mjs lands (peer session larsgyrupbrinknielse-d0)
