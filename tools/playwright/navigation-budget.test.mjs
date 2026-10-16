@@ -1,7 +1,7 @@
 // @ts-check
 import assert from 'node:assert/strict';
-import { globSync, readFileSync } from 'node:fs';
-import { basename } from 'node:path';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { test } from 'node:test';
 import ts from 'typescript';
 
@@ -11,17 +11,6 @@ import ts from 'typescript';
 // behalf is not seen.
 
 const root = new URL('../../', import.meta.url);
-const buildOutput = [
-  'node_modules',
-  'dist',
-  'storybook-static',
-  'out-tsc',
-  'coverage',
-  'tmp',
-  'test-output',
-  '.angular',
-  '.nx',
-];
 const fix =
   'give each visit its own budget: a test timeout scaled by the count, or one test per entry';
 const testNames = new Set(['test', 'it']);
@@ -282,10 +271,16 @@ function scan(text, fileName) {
   return { tests, lines };
 }
 
-const files = globSync('{apps,packages}/**/*.{ts,mts,mjs,tsx}', {
-  cwd: root,
-  exclude: (path) => buildOutput.includes(basename(path)),
-}).map((path) => path.replaceAll('\\', '/'));
+const files = execFileSync(
+  'git',
+  ['ls-files', '-co', '--exclude-standard', '-z', '--', 'apps', 'packages'],
+  { cwd: root, encoding: 'utf8', maxBuffer: 1 << 26 },
+)
+  .split('\0')
+  .filter(
+    (path) =>
+      /\.(?:ts|mts|mjs|tsx)$/.test(path) && existsSync(new URL(path, root)),
+  );
 
 test('flags a test that loads pages in a loop under a fixed budget', () => {
   const text = `
@@ -333,6 +328,14 @@ for (const key of keys) {
 `;
 
   assert.deepEqual(scan(text, 'generated.spec.ts'), { tests: 1, lines: [] });
+});
+
+test('scans only regular files', () => {
+  const notFiles = files.filter(
+    (path) => !statSync(new URL(path, root)).isFile(),
+  );
+
+  assert.deepEqual(notFiles, []);
 });
 
 test('no test under apps/ or packages/ loads pages in a loop under a fixed budget', () => {
