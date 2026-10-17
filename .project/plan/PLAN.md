@@ -196,6 +196,15 @@ Review depth: full
 | T083 | Make both control scripts' PID-mismatch refusals name only the image name and start time of the process that now holds the recorded PID | T074, T080, T084 | .claude/skills/control-yeti-app/scripts/control.mjs, .claude/skills/control-yeti-app/scripts/control.test.mjs, .claude/skills/control-yeti-app/SKILL.md, .claude/skills/control-ngx-yeti-storybook/scripts/control.mjs, .claude/skills/control-ngx-yeti-storybook/scripts/control.test.mjs, .claude/skills/control-ngx-yeti-storybook/SKILL.md |
 | T084 | Run one /lars-maintain-verification pass on both control skills to the current verification contract, with a ports table and doctor ports line, process trees through proctree.mjs, fresh byte copies, the Nx daemon left running, and a /lars-verify run per skill | T074, T076 | .claude/skills/control-yeti-app/SKILL.md, .claude/skills/control-yeti-app/features/README.md, .claude/skills/control-yeti-app/features/item-routes.md, .claude/skills/control-yeti-app/features/javascript-off.md, .claude/skills/control-yeti-app/features/hydration-and-replay.md, .claude/skills/control-yeti-app/features/build-configurations.md, .claude/skills/control-yeti-app/features/.proven.json, .claude/skills/control-yeti-app/scripts/control.mjs, .claude/skills/control-yeti-app/scripts/control.test.mjs, .claude/skills/control-yeti-app/scripts/fingerprint.mjs, .claude/skills/control-yeti-app/scripts/proctree.mjs, .claude/skills/control-ngx-yeti-storybook/SKILL.md, .claude/skills/control-ngx-yeti-storybook/features/README.md, .claude/skills/control-ngx-yeti-storybook/features/stories.md, .claude/skills/control-ngx-yeti-storybook/features/play-functions.md, .claude/skills/control-ngx-yeti-storybook/features/axe-results.md, .claude/skills/control-ngx-yeti-storybook/features/.proven.json, .claude/skills/control-ngx-yeti-storybook/scripts/control.mjs, .claude/skills/control-ngx-yeti-storybook/scripts/control.test.mjs, .claude/skills/control-ngx-yeti-storybook/scripts/fingerprint.mjs, .claude/skills/control-ngx-yeti-storybook/scripts/proctree.mjs, .prettierignore |
 
+## Wave 18 — fix wave 17 cycle 1 review findings
+
+Goal: Repair the blocking findings of the wave 17 cycle 1 review without changing source task contracts.
+Review depth: full
+
+| Task | Title | Deps | Files |
+|------|-------|------|-------|
+| T085 | Fix wave 17 cycle 1 review findings in T079 | T079 | nx.json, packages/ngx-yeti-testing/project.json, packages/ngx-yeti/project.json, project.json, tools/nx/browser-floor-inputs.test.mjs |
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |
