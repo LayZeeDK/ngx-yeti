@@ -1,6 +1,6 @@
 # Run CI and floor jobs locally
 
-Every job in `.github/workflows/ci.yml` and `.github/workflows/floor.yml` runs locally except `ci.yml` `safari` and `voiceover`, which need real Safari and VoiceOver on macOS; those two pass in CI on every pull request. Every other job passes both locally and in CI before a push. Run commands from the repository root.
+Every job in `.github/workflows/ci.yml` and `.github/workflows/floor.yml` passes in CI. Before a push, the checks that run natively pass locally: `npm run check`, the `static` and `package` jobs, the floor jobs `firefox-145` and `chromium-141`, the e2e projects `ngx-yeti-e2e` and `yeti-app-e2e` run natively, and the `nvda` lane without `BROWSERS`. The `BROWSERS=msedge` NVDA lane is faster but not evidence for the job. The container jobs `unit`, `e2e`, `webkit-26-4`, and `firefox-146-e2e` need no local run; `tools/ci-local/run-job.mjs` reproduces one on demand (below). `ci.yml` `safari` and `voiceover` need real Safari and VoiceOver on macOS and pass in CI only, on every pull request. Run commands from the repository root.
 
 ## Container jobs: run them from the workflow
 

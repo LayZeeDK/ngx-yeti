@@ -248,7 +248,7 @@ Read `references/fast-compile.md` before you change a Vite, Vitest, or Storybook
 
 # Run CI locally
 
-Every job in `.github/workflows/ci.yml` and `floor.yml` passes locally and in CI before a push, except `ci.yml` `safari` and `voiceover`, which need real Safari and VoiceOver on macOS and pass in CI only. Run a job that has a `container` with `node tools/ci-local/run-job.mjs <workflow> <job>`, and every other job natively. The `nvda` job runs real NVDA natively on Windows in Playwright's Chromium and then Firefox, as CI does: `npm exec nx -- run screen-reader-e2e:nvda`. `BROWSERS=msedge` runs a faster native Edge lane that is not evidence for the job.
+Every job in `.github/workflows/ci.yml` and `floor.yml` passes in CI. Before a push, the checks that run natively pass locally: `npm run check`, the `static` and `package` jobs, the floor jobs `firefox-145` and `chromium-141`, the e2e projects `ngx-yeti-e2e` and `yeti-app-e2e` run natively, and the `nvda` lane without `BROWSERS`. The container jobs `unit`, `e2e`, `webkit-26-4`, and `firefox-146-e2e` need no local run; `node tools/ci-local/run-job.mjs <workflow> <job>` reproduces one on demand. `ci.yml` `safari` and `voiceover` need real Safari and VoiceOver on macOS and pass in CI only. The `nvda` job runs real NVDA natively on Windows in Playwright's Chromium and then Firefox, as CI does: `npm exec nx -- run screen-reader-e2e:nvda`. `BROWSERS=msedge` runs a faster native Edge lane that is not evidence for the job.
 
 Read `references/ci-local.md` before you run a CI or floor job locally. After `npm install --no-save playwright@<release>`, run `npm ci` before anything else, and then `npx playwright install chromium firefox webkit`.
 
