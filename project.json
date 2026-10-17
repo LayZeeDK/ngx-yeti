@@ -37,7 +37,11 @@
         "{workspaceRoot}/tools/nx/browser-floor-inputs.test.mjs",
         "{workspaceRoot}/nx.json",
         "{workspaceRoot}/{apps,packages}/*/project.json",
-        "{workspaceRoot}/tools/yeti/nx-plugin.mjs"
+        "{workspaceRoot}/tools/yeti/nx-plugin.mjs",
+        "browserFloor",
+        "{workspaceRoot}/package.json",
+        "{workspaceRoot}/{apps,packages}/*/package.json",
+        "{workspaceRoot}/vendor/yeti/COMMIT"
       ]
     },
     "local-registry": {

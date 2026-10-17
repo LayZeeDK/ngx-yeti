@@ -110,3 +110,21 @@ for (const target of nonReaders) {
     assert.ok(!inputFiles(target).includes(floor), `${target} hashes ${floor}`);
   });
 }
+
+// This guard's results change when the floor file, the package manifests that
+// shape the project graph, or the pin that creates yeti-css change, so its own
+// cached run must hash them.
+for (const file of [
+  floor,
+  'package.json',
+  'packages/ngx-yeti/package.json',
+  'apps/yeti-analog/package.json',
+  'vendor/yeti/COMMIT',
+]) {
+  test(`@ngx-yeti/source:test hashes ${file}`, () => {
+    assert.ok(
+      inputFiles('@ngx-yeti/source:test').includes(file),
+      `@ngx-yeti/source:test misses ${file}`,
+    );
+  });
+}

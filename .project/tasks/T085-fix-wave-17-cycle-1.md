@@ -3,9 +3,9 @@ id: T085
 title: Fix wave 17 cycle 1 review findings in T079
 wave: 18
 deps: [T079]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_t085
+base: 568663d7e69d67708a4d1ccb3cc613d532d045b1
 worktree: null
 task_branch: null
 files:
@@ -63,3 +63,28 @@ Criterion: tools/nx/browser-floor-inputs.test.mjs asserts criterion 2, is shown 
 
 - 2026-10-17 — created by dispatch_driver.py fix-tasks from wave 17 cycle 1
 - 2026-10-17 — orchestrator: plan-defect repair of Verify under Lars's ruling of 2026-10-17, verbatim: "We don't have to replay everything that runs in CI, in Docker containers. As long as we run CI checks that are possible natively and locally, I'm happy. Other checks may be deferred to CI." The `run-job ci unit` leg was removed from Verify; the PLAN.md project Verify still runs `ci unit`, and CI runs it on the pull request. The fix is also to add the four inputs the review names and a guard case asserting `@ngx-yeti/source:test` lists .browserslistrc and package.json, shown failing first.
+- 2026-10-17 — build_T085: added one guard case group to tools/nx/browser-floor-inputs.test.mjs asserting `@ngx-yeti/source:test` hashes .browserslistrc, package.json, packages/ngx-yeti/package.json, apps/yeti-analog/package.json and vendor/yeti/COMMIT. Red run on the base project.json (568663d): `node --test tools/nx/browser-floor-inputs.test.mjs` 25 tests, 20 pass, 5 fail, each failing case naming `@ngx-yeti/source:test misses <file>` for the five files above. Fix: root project.json `targets.test.inputs` gains `"browserFloor"`, `"{workspaceRoot}/package.json"`, `"{workspaceRoot}/{apps,packages}/*/package.json"` and `"{workspaceRoot}/vendor/yeti/COMMIT"`. `npm exec nx -- show target inputs @ngx-yeti/source:test --json`: `files` 389 -> 394, all five present (packages/ngx-yeti-testing has no package.json, so the glob matches two). Green run: 25 tests, 25 pass, 0 fail. nx.json, packages/ngx-yeti/project.json and packages/ngx-yeti-testing/project.json unchanged.
+- 2026-10-17 — build_T085: Verify ran exactly as written through heavy-lock: exit 0. npm ci ok; playwright chromium ok; rg ok; guard 25/25 pass; `nx run @ngx-yeti/source:test --skip-nx-cache` 112 tests, 112 pass, 0 fail; `nx typecheck @ngx-yeti/source --skip-nx-cache` ok (scripts-coverage 1/1 pass); prettier on the five files clean; daemon stopped. `npx prettier --check .` clean. `nx affected -t lint typecheck test test-storybook --base=HEAD`: affected project @ngx-yeti/source only, typecheck and test succeeded (2 tasks).
+- 2026-10-17 — orchestrator Verify (sidecar gsd-path-verify/task-t085-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```
