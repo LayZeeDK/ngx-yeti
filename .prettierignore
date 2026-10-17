@@ -14,6 +14,8 @@ package-lock.json
 # Byte-faithful copy of Yeti's dist/yeti.d.ts, written by tools/yeti/generate-sources.mjs
 /packages/ngx-yeti/src/yeti-types.ts
 
-# A byte copy of lars-create-verification's fingerprint.mjs, and the manifest only its record command writes
+# Byte copies of lars-create-verification's fingerprint.mjs and proctree.mjs, and the manifest only its record
+# command writes
 /.claude/skills/control-*/scripts/fingerprint.mjs
+/.claude/skills/control-*/scripts/proctree.mjs
 /.claude/skills/control-*/features/.proven.json

@@ -3,9 +3,9 @@ id: T084
 title: Run one /lars-maintain-verification pass on both control skills to the current verification contract, with a ports table and doctor ports line, process trees through proctree.mjs, fresh byte copies, the Nx daemon left running, and a /lars-verify run per skill
 wave: 17
 deps: [T074, T076]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_t084
+base: 083d04a307f40fd1414cb77b7ea7e831a89fe0e9
 worktree: null
 task_branch: null
 files:
@@ -169,3 +169,27 @@ Heavy: yes
   - Both SKILL.md test descriptions now name the checkout's own slots and ports, and say that every test passes in a main checkout and a linked worktree and cleans up on failure.
 - 2026-10-17 — build_t084 Verify after the worktree fix (exactly as written, through heavy-lock): exit 0. npm ci added 1942 packages; check-skill exit 0 on both; fingerprint checks exit 0; prettierignore and no-daemon rg checks passed; control-yeti-app 42/42, Storybook 40/40; lars-verify tmp/control-yeti-app/verify/item-routes/T084-20261017T100437Z and tmp/control-ngx-yeti-storybook/verify/stories/T084-20261017T100620Z both `verified`, lint "well formed; verdict verified"; typecheck @ngx-yeti/source --skip-nx-cache passed; prettier on both skill folders and .prettierignore passed. `npx prettier --check .` passed afterwards. Only declared files changed; Git index empty; no instance or state file left.
 - 2026-10-17 — orchestrator: attempt 1 `finish` blocked, "Verify failed in the isolate" (measured, tmp/afk-m002/finish-T084.log). In the verify sidecar, a linked worktree, control-yeti-app control.test.mjs:771 "up exits 2 naming each port and holder when ten slots are busy" occupied the main checkout's slots 0-9, while `up` took the sidecar's hashed slot 13 (4632) and exited 0. Its `t.after` never stopped that instance, so 11 later tests failed on "state.json exists". The coder then fixed this in the primary: both suites are checkout-agnostic and clean up on failure, the failure was reproduced and the fix passed in a scratch checkout whose `.git` is a file, and Verify exited 0 in the primary (42/42, 40/40). The retry starts from the saved attempt: tmp/afk-m002/tools/T084-attempt1.patch (14 tracked files, sha256 6c53e59e2047c6933c09b9b0899f3b8cc173c58139c482403ccd958042dac628) plus the two untracked proctree.mjs byte copies in tmp/afk-m002/tools/T084-attempt1/. The stash backup is "T084 attempt 1 backup". Task reset to pending for its one logged redispatch (attempt 2).
+- 2026-10-17 — orchestrator: attempt 2 (base 083d04a) restored attempt 1's tracked bytes from tmp/afk-m002/tools/T084-attempt1.patch with `git apply`, plus both proctree.mjs copies; `git diff --quiet` against the backup stash came out identical, and all four byte copies match lars-create-verification. Those are the same bytes whose Verify exited 0 in the primary at 10:04 (control-yeti-app 42/42, Storybook 40/40). The finish's isolated Verify in the linked-worktree sidecar is this attempt's evidence.
+- 2026-10-17 — orchestrator Verify (sidecar gsd-path-verify/task-t084-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

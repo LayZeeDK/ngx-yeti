@@ -11,7 +11,7 @@ What an agent can reach in the `ngx-yeti` Storybook and how to drive it with `co
 
 ## Driving conventions
 
-- Every recipe runs on either flow, static or dev (`--dev`): take the URL and the session from `info` for the flow you started. The recipes show the example session `control-ngx-yeti-storybook-static-4483` on port 4483.
+- Every recipe runs on either flow, static or dev (`--dev`): take the URL and the session from `info` for the flow you started. The recipes show the example session `control-ngx-yeti-storybook-wt-1a2b3c4d-static` of a worktree's static flow on port 4483; the session is named per checkout and flow (`control-ngx-yeti-storybook-main-static` in the main checkout), never per port.
 - Open stories in `<url>/iframe.html?id=<story-id>&viewMode=story`, with `&embed=true` when the play function must not run.
 - Story ids are `<item>--<story>` in kebab case (`meta.id` pins the item, `ngx-yeti-stories`); `<url>/index.json` lists every id.
 - Args go in the URL as `&args=<name>:<value>`, several joined with `;` (booleans `!true`); `openStory` in `apps/ngx-yeti-e2e/src/open-story.ts` lists the characters Storybook keeps.
@@ -19,7 +19,7 @@ What an agent can reach in the `ngx-yeti` Storybook and how to drive it with `co
 - Wait after every `open` or `goto`, before reading anything, until the render settles; never a fixed sleep. The recipe returns the end phase, `finished`, `errored` or `aborted`:
 
 ```bash
-playwright-cli -s=control-ngx-yeti-storybook-static-4483 --raw run-code 'async function settled(page) { await page.waitForFunction(() => ["finished", "errored", "aborted"].includes(window.__STORYBOOK_PREVIEW__?.currentRender?.phase ?? "")); return page.evaluate(() => window.__STORYBOOK_PREVIEW__.currentRender.phase); }'
+playwright-cli -s=control-ngx-yeti-storybook-wt-1a2b3c4d-static --raw run-code 'async function settled(page) { await page.waitForFunction(() => ["finished", "errored", "aborted"].includes(window.__STORYBOOK_PREVIEW__?.currentRender?.phase ?? "")); return page.evaluate(() => window.__STORYBOOK_PREVIEW__.currentRender.phase); }'
 ```
 
 ## Proof and skip reporting

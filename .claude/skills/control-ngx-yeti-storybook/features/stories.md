@@ -25,16 +25,16 @@ Preconditions: the README baseline, on either flow. The commands use the example
 Open without the play function, wait for the render (the README's wait recipe), and check autoplay is off:
 
 ```bash
-playwright-cli -s=control-ngx-yeti-storybook-static-4483 open "http://localhost:4483/iframe.html?id=card--stretched-link&viewMode=story&embed=true"
-playwright-cli -s=control-ngx-yeti-storybook-static-4483 --raw run-code 'async function settled(page) { await page.waitForFunction(() => ["finished", "errored", "aborted"].includes(window.__STORYBOOK_PREVIEW__?.currentRender?.phase ?? "")); return page.evaluate(() => window.__STORYBOOK_PREVIEW__.currentRender.phase); }'
-playwright-cli -s=control-ngx-yeti-storybook-static-4483 --raw eval "() => window.__STORYBOOK_PREVIEW__.currentRender.renderOptions.autoplay"
-playwright-cli -s=control-ngx-yeti-storybook-static-4483 snapshot
+playwright-cli -s=control-ngx-yeti-storybook-wt-1a2b3c4d-static open "http://localhost:4483/iframe.html?id=card--stretched-link&viewMode=story&embed=true"
+playwright-cli -s=control-ngx-yeti-storybook-wt-1a2b3c4d-static --raw run-code 'async function settled(page) { await page.waitForFunction(() => ["finished", "errored", "aborted"].includes(window.__STORYBOOK_PREVIEW__?.currentRender?.phase ?? "")); return page.evaluate(() => window.__STORYBOOK_PREVIEW__.currentRender.phase); }'
+playwright-cli -s=control-ngx-yeti-storybook-wt-1a2b3c4d-static --raw eval "() => window.__STORYBOOK_PREVIEW__.currentRender.renderOptions.autoplay"
+playwright-cli -s=control-ngx-yeti-storybook-wt-1a2b3c4d-static snapshot
 ```
 
 List the ids, from a page open on the Storybook (`eval` needs an open session, and the fetch is relative to the page's origin):
 
 ```bash
-playwright-cli -s=control-ngx-yeti-storybook-static-4483 --raw eval "async () => Object.keys((await (await fetch('/index.json')).json()).entries)"
+playwright-cli -s=control-ngx-yeti-storybook-wt-1a2b3c4d-static --raw eval "async () => Object.keys((await (await fetch('/index.json')).json()).entries)"
 ```
 
 Then drive it through the snapshot loop, for example `click "getByRole('button', { name: 'Save' })"`, a fresh `snapshot`, and a check that the button now reads "Saved" (the step the `StretchedLink` play function covers).

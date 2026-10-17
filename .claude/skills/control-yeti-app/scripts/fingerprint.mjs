@@ -6,11 +6,12 @@
 // A control skill carries a byte copy at scripts/fingerprint.mjs; edit only
 // ~/.claude/skills/lars-create-verification/scripts/fingerprint.mjs (check-skill.mjs fails a copy that differs).
 // Usage, from anywhere; the skill is this file's parent folder, the repository the checkout that holds it:
-//   node fingerprint.mjs record --feature <id> [--entries <path>...] [--json]
+//   node fingerprint.mjs record --feature <id> [--entries <path>... | --external <reason>] [--json]
 //     Entries are relative to the repository root; without --entries the recorded ones are reused.
+//     --external records a feature whose source lives outside the checkout, with no files.
 //     Exit 0 written or unchanged, 2 refused.
 //   node fingerprint.mjs check [--feature <id>] [--json]
-//     Exit 0 every feature fresh, 1 one is stale or unproven, 2 could not run.
+//     Exit 0 every feature fresh or external, 1 one is stale or unproven, 2 could not run.
 // It spawns nothing and writes only the manifest.
 import { createHash, randomBytes } from 'node:crypto';
 import { lstatSync, readdirSync, readFileSync, readlinkSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
@@ -22,7 +23,7 @@ import { fileURLToPath } from 'node:url';
 /** @typedef {'typescript' | 'entries'} Method */
 
 /**
- * @typedef {object} Entry
+ * @typedef {object} ProvenEntry
  * @property {string} provenAt  ISO time the feature was proven against these files
  * @property {string | null} commit  HEAD when it was proven, or null when unreadable
  * @property {Method} method  how the file list was found: the TypeScript import closure, or the entries alone
@@ -30,13 +31,21 @@ import { fileURLToPath } from 'node:url';
  * @property {Record<string, string>} files  repository-relative path to git blob hash
  */
 
+/**
+ * @typedef {object} ExternalEntry
+ * @property {string} recordedAt  ISO time it was recorded
+ * @property {string | null} commit  HEAD when it was recorded, or null when unreadable
+ * @property {string} external  why its source cannot be fingerprinted, such as where it lives
+ */
+
+/** @typedef {ProvenEntry | ExternalEntry} Entry */
 /** @typedef {{ version: 1, features: Map<string, Entry> }} Manifest */
 /** @typedef {{ path: string, why: string }} Change */
 
 /**
  * @typedef {object} Freshness
  * @property {string} id
- * @property {'fresh' | 'stale' | 'unproven'} status
+ * @property {'fresh' | 'stale' | 'unproven' | 'external'} status
  * @property {Entry | null} proven
  * @property {Change[]} changed
  */
@@ -49,6 +58,11 @@ const BLOB = /^[0-9a-f]{40}$/;
 const SHA = /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/;
 const NETWORK = /^(?:[\\/]{2}|\\\?\?\\)/;
 const CODE = /\.(?:[cm]?[jt]s|[jt]sx)$/i;
+const TS_SOURCE = /\.(?:[cm]?ts|tsx)$/i;
+const MAX_REASON = 500;
+// Control, format (bidirectional marks included), surrogate and separator characters, which would let printed
+// manifest text rewrite or split the terminal line it is on.
+const UNPRINTABLE = /[\p{Cc}\p{Cf}\p{Cs}\p{Zl}\p{Zp}]/u;
 const MAX_MANIFEST = 16 * 1024 * 1024;
 const MAX_FILES = 50_000;
 
@@ -178,12 +192,30 @@ export function admit(root, path, kind = 'file') {
 }
 
 /**
- * Whether `path` is a repository-relative, `/`-separated path with no `.`, `..`, drive, stream or empty segment.
+ * Whether `path` is a repository-relative, `/`-separated path with no `.`, `..`, drive, stream or empty segment,
+ * and no character UNPRINTABLE matches.
  * @param {string} path
  * @returns {boolean}
  */
 function safeRelative(path) {
-  return path.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..' && !/[\\:\0]/.test(segment));
+  return (
+    !UNPRINTABLE.test(path) &&
+    path.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..' && !/[\\:\0]/.test(segment))
+  );
+}
+
+/**
+ * `text` with every character UNPRINTABLE matches written as a `\u` escape, for printing a message that may quote
+ * manifest content.
+ * @param {string} text
+ * @returns {string}
+ */
+export function printable(text) {
+  return text.replace(new RegExp(UNPRINTABLE.source, 'gu'), (char) => {
+    const hex = (char.codePointAt(0) ?? 0).toString(16);
+
+    return hex.length > 4 ? `\\u{${hex}}` : `\\u${hex.padStart(4, '0')}`;
+  });
 }
 
 /**
@@ -326,9 +358,10 @@ export function loadTypeScript(root, fromDir) {
 
 /**
  * The files `entries` depend on: with TypeScript, every file their imports, `export ... from`, `import()`,
- * `require()` and `/// <reference path>` reach, resolved with the nearest tsconfig.json (and the tsconfig files it
- * extends, which are recorded too), plus Angular `templateUrl` and `styleUrl(s)` files; without it, the entries
- * alone. Only regular files inside the repository, outside node_modules and reached through no link are read or
+ * `require()` and `/// <reference path>` reach, resolved with the nearest tsconfig.json, plus Angular `templateUrl`
+ * and `styleUrl(s)` files; without it, the entries alone. That tsconfig and the files it extends are recorded only
+ * for a TypeScript file, whose compiled output they change; a JavaScript file runs as written, so a tsconfig
+ * reached from one only type-checks it. Only regular files inside the repository, outside node_modules and reached through no link are read or
  * returned.
  * @param {string} root
  * @param {string[]} entries  absolute
@@ -391,7 +424,7 @@ export function closure(root, entries, ts) {
     const text = readFileSync(file, 'utf8');
     const config = configFor(dirname(file));
     /** @type {string[]} */
-    const found = [...config.files];
+    const found = TS_SOURCE.test(file) ? [...config.files] : [];
     const info = ts.preProcessFile(text, true, true);
 
     for (const reference of info.importedFiles) {
@@ -420,6 +453,28 @@ export function closure(root, entries, ts) {
   }
 
   return files;
+}
+
+/**
+ * What is wrong with an external reason, or null when it is a trimmed, non-empty, printable line of at most
+ * MAX_REASON characters.
+ * @param {unknown} value
+ * @returns {string | null}
+ */
+export function reasonProblem(value) {
+  if (typeof value !== 'string') {
+    return 'is not a string';
+  }
+
+  if (value.trim() === '') {
+    return 'is empty';
+  }
+
+  if (value !== value.trim() || value.length > MAX_REASON || UNPRINTABLE.test(value)) {
+    return `is not one trimmed, printable line of at most ${MAX_REASON} characters`;
+  }
+
+  return null;
 }
 
 /**
@@ -464,15 +519,30 @@ export function parseManifest(value) {
     }
 
     const entry = object(raw, where);
-    exactKeys(entry, ['provenAt', 'commit', 'method', 'entries', 'files'], where);
-    const { provenAt, commit, method, entries, files } = entry;
+    const isExternal = Object.hasOwn(entry, 'external');
+    exactKeys(entry, isExternal ? ['recordedAt', 'commit', 'external'] : ['provenAt', 'commit', 'method', 'entries', 'files'], where);
+    const { provenAt, recordedAt, commit, external, method, entries, files } = entry;
+    const at = isExternal ? 'recordedAt' : 'provenAt';
+    const date = isExternal ? recordedAt : provenAt;
 
-    if (typeof provenAt !== 'string' || Number.isNaN(Date.parse(provenAt))) {
-      throw new Error(`${where}: provenAt is not a date`);
+    // The round trip accepts only what toISOString writes: no text Date.parse skips, no rolled-over February 31.
+    if (typeof date !== 'string' || Number.isNaN(Date.parse(date)) || new Date(date).toISOString() !== date) {
+      throw new Error(`${where}: ${at} is not a date as toISOString writes it`);
     }
 
     if (commit !== null && (typeof commit !== 'string' || !SHA.test(commit))) {
       throw new Error(`${where}: commit is neither null nor a commit hash`);
+    }
+
+    if (isExternal) {
+      const problem = reasonProblem(external);
+
+      if (problem !== null || typeof external !== 'string') {
+        throw new Error(`${where}: external ${problem ?? 'is not a string'}`);
+      }
+
+      features.set(id, { recordedAt: date, commit, external });
+      continue;
     }
 
     const way = METHODS.find((item) => item === method);
@@ -511,7 +581,7 @@ export function parseManifest(value) {
       throw new Error(`${where}: entries is not a non-empty list of paths in files`);
     }
 
-    features.set(id, { provenAt, commit, method: way, entries: /** @type {string[]} */ (entries), files: hashes });
+    features.set(id, { provenAt: date, commit, method: way, entries: /** @type {string[]} */ (entries), files: hashes });
   }
 
   return { version: 1, features };
@@ -568,21 +638,54 @@ function assertFeature(skillDir, id) {
 }
 
 /**
- * Records the files feature `id` depends on and their hashes. Leaves the entry as it was when nothing changed, so
- * a clean pass writes nothing. Drops the entries of features whose feature file is gone.
+ * Records the files feature `id` depends on and their hashes, or, with `external`, that its source lives outside
+ * the checkout and why, with no files. Leaves the entry as it was when nothing changed, so a clean pass writes
+ * nothing. Drops the entries of features whose feature file is gone.
  * @param {string} skillDir
  * @param {string} id
  * @param {string[] | null} entryArgs  paths relative to the repository root; null reuses the recorded entries
+ * @param {string | null} [external]  the reason, trimmed; null records files
  * @returns {{ status: 'written' | 'unchanged', entry: Entry }}
  */
-export function record(skillDir, id, entryArgs) {
+export function record(skillDir, id, entryArgs, external = null) {
   const root = findRoot(skillDir);
   // First: it refuses a features folder that is a link, before anything lists it.
   const manifest = readManifest(skillDir);
   assertFeature(skillDir, id);
   const previous = manifest.features.get(id);
-  const entries = entryArgs ?? previous?.entries;
 
+  if (external !== null && entryArgs !== null) {
+    throw new Error('give --entries or --external, not both');
+  }
+
+  const entry =
+    external === null
+      ? fingerprint(root, id, entryArgs ?? (previous === undefined || 'external' in previous ? undefined : previous.entries))
+      : externalEntry(root, external.trim());
+  const ids = featureIds(skillDir);
+  const orphans = [...manifest.features.keys()].filter((key) => !ids.includes(key));
+
+  for (const orphan of orphans) {
+    manifest.features.delete(orphan);
+  }
+
+  if (orphans.length === 0 && previous !== undefined && same(previous, entry)) {
+    return { status: 'unchanged', entry: previous };
+  }
+
+  manifest.features.set(id, entry);
+  writeManifest(skillDir, manifest);
+
+  return { status: 'written', entry };
+}
+
+/**
+ * @param {string} root
+ * @param {string} id
+ * @param {string[] | undefined} entries  repository-relative
+ * @returns {ProvenEntry}
+ */
+function fingerprint(root, id, entries) {
   if (entries === undefined || entries.length === 0) {
     throw new Error(`feature ${id} has no recorded entries; give --entries`);
   }
@@ -608,36 +711,46 @@ export function record(skillDir, id, entryArgs) {
     files[posix(root, path)] = blobHash(path);
   }
 
-  /** @type {Entry} */
-  const entry = {
+  return {
     provenAt: new Date().toISOString(),
     commit: readCommit(root),
     method: ts === null ? 'entries' : 'typescript',
     entries: absolute.map((path) => posix(root, path)),
     files,
   };
+}
 
-  const ids = featureIds(skillDir);
-  const orphans = [...manifest.features.keys()].filter((key) => !ids.includes(key));
+/**
+ * @param {string} root
+ * @param {string} reason
+ * @returns {ExternalEntry}
+ */
+function externalEntry(root, reason) {
+  const problem = reasonProblem(reason);
 
-  for (const orphan of orphans) {
-    manifest.features.delete(orphan);
+  if (problem !== null) {
+    throw new Error(`--external reason ${problem}`);
   }
 
-  if (
-    orphans.length === 0 &&
-    previous !== undefined &&
-    previous.method === entry.method &&
-    JSON.stringify(previous.entries) === JSON.stringify(entry.entries) &&
-    JSON.stringify(sorted(previous.files)) === JSON.stringify(sorted(entry.files))
-  ) {
-    return { status: 'unchanged', entry: previous };
+  return { recordedAt: new Date().toISOString(), commit: readCommit(root), external: reason };
+}
+
+/**
+ * Whether two entries record the same thing, their dates and commits aside.
+ * @param {Entry} a
+ * @param {Entry} b
+ * @returns {boolean}
+ */
+function same(a, b) {
+  if ('external' in a || 'external' in b) {
+    return 'external' in a && 'external' in b && a.external === b.external;
   }
 
-  manifest.features.set(id, entry);
-  writeManifest(skillDir, manifest);
-
-  return { status: 'written', entry };
+  return (
+    a.method === b.method &&
+    JSON.stringify(a.entries) === JSON.stringify(b.entries) &&
+    JSON.stringify(sorted(a.files)) === JSON.stringify(sorted(b.files))
+  );
 }
 
 /**
@@ -657,7 +770,7 @@ function sorted(record) {
 function writeManifest(skillDir, manifest) {
   const features = [...manifest.features.entries()]
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([id, entry]) => [id, { ...entry, files: sorted(entry.files) }]);
+    .map(([id, entry]) => [id, 'external' in entry ? entry : { ...entry, files: sorted(entry.files) }]);
   const file = join(skillDir, ...MANIFEST.split('/'));
   // A random name, so no committed link can sit where the write lands.
   const temporary = `${file}.${randomBytes(8).toString('hex')}.tmp`;
@@ -672,7 +785,7 @@ function writeManifest(skillDir, manifest) {
 
 /**
  * Compares each feature's recorded hashes with the files now. Without `only`, every feature in the manifest or in
- * the feature folder; a feature file the manifest lacks is unproven.
+ * the feature folder; a feature file the manifest lacks is unproven, one recorded as external is external.
  * @param {string} skillDir
  * @param {string} [only]
  * @returns {Freshness[]}
@@ -695,6 +808,10 @@ export function checkFeatures(skillDir, only) {
 
     if (proven === null) {
       return { id, status: 'unproven', proven, changed: [] };
+    }
+
+    if ('external' in proven) {
+      return { id, status: 'external', proven, changed: [] };
     }
 
     /** @type {Change[]} */
@@ -726,7 +843,11 @@ export function checkFeatures(skillDir, only) {
  * @returns {string}
  */
 export function since(proven) {
-  return proven === null ? '' : (proven.commit?.slice(0, 12) ?? proven.provenAt);
+  if (proven === null) {
+    return '';
+  }
+
+  return proven.commit?.slice(0, 12) ?? ('external' in proven ? proven.recordedAt : proven.provenAt);
 }
 
 /**
@@ -739,9 +860,12 @@ export function mapFresh(skillDir) {
     const results = checkFeatures(skillDir);
     const stale = results.filter((result) => result.status === 'stale');
     const unproven = results.filter((result) => result.status === 'unproven');
+    const fresh = results.filter((result) => result.status === 'fresh');
+    const external = results.filter((result) => result.status === 'external');
+    const externalPart = external.length > 0 ? `external: ${external.map((result) => result.id).join(', ')}` : '';
 
     if (stale.length === 0 && unproven.length === 0) {
-      return { status: 'pass', detail: `${results.length} features fresh` };
+      return { status: 'pass', detail: [`${fresh.length} features fresh`, externalPart].filter(Boolean).join('; ') };
     }
 
     return {
@@ -751,16 +875,18 @@ export function mapFresh(skillDir) {
           ? `stale: ${stale.map((result) => `${result.id} (since ${since(result.proven)}, ${result.changed.length} files changed)`).join(', ')}`
           : '',
         unproven.length > 0 ? `unproven: ${unproven.map((result) => result.id).join(', ')}` : '',
+        externalPart,
       ]
         .filter(Boolean)
         .join('; '),
     };
   } catch (error) {
-    return { status: 'warn', detail: `could not check: ${error instanceof Error ? error.message : String(error)}` };
+    return { status: 'warn', detail: `could not check: ${printable(error instanceof Error ? error.message : String(error))}` };
   }
 }
 
-const USAGE = 'usage: fingerprint.mjs record --feature <id> [--entries <path>...] [--json] | fingerprint.mjs check [--feature <id>] [--json]';
+const USAGE =
+  'usage: fingerprint.mjs record --feature <id> [--entries <path>... | --external <reason>] [--json] | fingerprint.mjs check [--feature <id>] [--json]';
 
 /**
  * @param {string[]} argv
@@ -774,16 +900,20 @@ export function main(argv, skillDir) {
   let feature;
   /** @type {string[] | null} */
   let entries = null;
+  /** @type {string | null} */
+  let external = null;
 
   for (let i = 0; i < rest.length; i += 1) {
     const arg = rest[i];
+    const next = rest[i + 1];
+    const value = next !== undefined && !next.startsWith('--') ? next : undefined;
 
     if (arg === '--json') {
       continue;
     }
 
-    if (arg === '--feature' && feature === undefined && rest[i + 1] !== undefined && !(rest[i + 1] ?? '').startsWith('--')) {
-      feature = rest[i + 1];
+    if (arg === '--feature' && feature === undefined && value !== undefined) {
+      feature = value;
       i += 1;
     } else if (arg === '--entries' && command === 'record' && entries === null) {
       entries = [];
@@ -792,6 +922,9 @@ export function main(argv, skillDir) {
         entries.push(/** @type {string} */ (rest[i + 1]));
         i += 1;
       }
+    } else if (arg === '--external' && command === 'record' && external === null && value !== undefined) {
+      external = value;
+      i += 1;
     } else {
       console.log(json ? JSON.stringify({ error: USAGE }) : `[ERROR] ${USAGE}`);
 
@@ -801,13 +934,9 @@ export function main(argv, skillDir) {
 
   try {
     if (command === 'record' && feature !== undefined) {
-      const { status, entry } = record(skillDir, feature, entries);
-      const count = Object.keys(entry.files).length;
-      console.log(
-        json
-          ? JSON.stringify({ feature, status, ...entry }, null, 2)
-          : `[OK] ${feature}: ${status} (${entry.method}, ${count} files, since ${since(entry)})`,
-      );
+      const { status, entry } = record(skillDir, feature, entries, external);
+      const what = 'external' in entry ? `external: ${entry.external}` : `${entry.method}, ${Object.keys(entry.files).length} files`;
+      console.log(json ? JSON.stringify({ feature, status, ...entry }, null, 2) : `[OK] ${feature}: ${status} (${what}, since ${since(entry)})`);
 
       return 0;
     }
@@ -824,15 +953,15 @@ export function main(argv, skillDir) {
       console.log(JSON.stringify({ manifest: MANIFEST, features: results }, null, 2));
     } else {
       for (const { id, status, proven, changed } of results) {
-        const detail = changed.map((change) => `${change.path} ${change.why}`).join(', ');
-        const tag = status === 'fresh' ? '[OK]' : '[WARN]';
+        const detail = proven !== null && 'external' in proven ? proven.external : changed.map((change) => `${change.path} ${change.why}`).join(', ');
+        const tag = status === 'fresh' || status === 'external' ? '[OK]' : '[WARN]';
         console.log(`${tag} ${id}: ${status}${proven === null ? '' : ` since ${since(proven)}`}${detail === '' ? '' : `: ${detail}`}`);
       }
     }
 
-    return results.every((result) => result.status === 'fresh') ? 0 : 1;
+    return results.every((result) => result.status === 'fresh' || result.status === 'external') ? 0 : 1;
   } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error);
+    const reason = printable(error instanceof Error ? error.message : String(error));
     console.log(json ? JSON.stringify({ error: reason }) : `[ERROR] ${reason}`);
 
     return 2;

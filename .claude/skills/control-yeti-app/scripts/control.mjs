@@ -24,7 +24,15 @@ import { homedir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { stripVTControlCharacters } from 'node:util';
-import { mapFresh } from './fingerprint.mjs';
+import { mapFresh, printable } from './fingerprint.mjs';
+import {
+  describe,
+  matches,
+  merge,
+  processTable,
+  snapshot,
+  stop,
+} from './proctree.mjs';
 
 const skillDir = fileURLToPath(new URL('..', import.meta.url));
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../..');
@@ -32,12 +40,18 @@ const scratch = join(root, 'tmp', 'control-yeti-app');
 const stateFile = join(scratch, 'state.json');
 const requireFromRoot = createRequire(join(root, 'package.json'));
 
-// The main checkout's documented ports: `nx serve` keeps the dev-server
-// default, and server.ts listens on PORT or 4000.
-const mainPorts = { serve: 4200, ssr: 4000 };
-// Above control-ngx-yeti-storybook's 4420-4619, so two skills' worktrees
-// never derive the same port.
-const worktreeRange = { first: 4620, size: 200 };
+// The ports table of SKILL.md, "Pick a flow": each mode opens one port. Slot 0
+// is the main checkout's documented port (`nx serve` keeps the dev-server
+// default, and server.ts listens on PORT or 4000); slot 1 to 99 give
+// `base + slot - 1`, above control-ngx-yeti-storybook's 4420-4619, so two
+// skills' worktrees never derive the same port.
+const portRows = {
+  serve: { name: 'serve', main: 4200, base: 4620 },
+  ssr: { name: 'ssr', main: 4000, base: 4720 },
+};
+const mainPorts = Object.values(portRows).map((row) => row.main);
+const slots = 100;
+const slotTries = 10;
 const marker = 'Welcome yeti-app';
 const readyPath = 'card';
 const hydrationSummary =
@@ -76,19 +90,16 @@ const sessionName = /^[\w-]+$/;
  * @typedef {{ error?: string, checks?: Check[], warnings?: string[] } & Record<string, unknown>} Result
  */
 
-/**
- * @typedef {object} ProcessEntry
- * @property {number} ProcessId
- * @property {number} ParentProcessId
- * @property {string | null} CommandLine
- * @property {string | null} Start
- */
+/** @typedef {import('./proctree.mjs').ProcRecord} ProcRecord */
 
 /**
- * @typedef {object} Survivor
- * @property {number} pid
- * @property {unknown} [start]
- * @property {unknown} [commandLine]
+ * One row of the ports table as this run uses it.
+ *
+ * @typedef {object} PortEntry
+ * @property {string} name
+ * @property {number} port
+ * @property {'derived'} kind
+ * @property {string} [reason]
  */
 
 /**
@@ -98,10 +109,11 @@ const sessionName = /^[\w-]+$/;
  * @property {string} session
  * @property {number} pid
  * @property {number} port
+ * @property {PortEntry[]} ports
  * @property {string} url
  * @property {string} logFile
  * @property {string} evidenceDir
- * @property {Survivor[] | null} [survivors]
+ * @property {[ProcRecord, ...ProcRecord[]]} tree  the recorded process tree, root first
  * @property {unknown} [mode]
  * @property {unknown} [configuration]
  * @property {unknown} [start]
@@ -178,16 +190,20 @@ function finish(code, result) {
         skip: '[SKIP]',
         warn: '[WARN]',
       }[check.status];
-      process.stdout.write(`${tag} ${check.name}: ${check.detail}\n`);
+      process.stdout.write(
+        `${tag} ${check.name}: ${printable(check.detail)}\n`,
+      );
     }
 
     for (const warning of result.warnings ?? []) {
-      process.stdout.write(`[WARN] ${warning}\n`);
+      process.stdout.write(`[WARN] ${printable(warning)}\n`);
     }
 
+    // JSON.stringify escapes only C0 controls; a recorded command line can
+    // hold other control and bidi characters, which never reach the terminal.
     const tag = code === 0 ? '[OK]' : code === 1 ? '[WARN]' : '[ERROR]';
     process.stdout.write(
-      `${tag} ${command ?? ''} ${JSON.stringify({ ...result, checks: undefined, warnings: undefined })}\n`,
+      `${tag} ${command ?? ''} ${printable(JSON.stringify({ ...result, checks: undefined, warnings: undefined }))}\n`,
     );
   }
 
@@ -204,17 +220,41 @@ function flow() {
 }
 
 /**
+ * The checkout's own slot: 0 in the main checkout, else 1 to 99 from a hash
+ * of its path, so a worktree's usual port stays the same from run to run.
+ *
  * @param {ReturnType<typeof flow>} currentFlow
- * @param {keyof typeof mainPorts} mode
  */
-function derivedPort(currentFlow, mode) {
+function slotOf(currentFlow) {
   if (!currentFlow.worktree) {
-    return mainPorts[mode];
+    return 0;
   }
 
   const hash = createHash('sha1').update(root.toLowerCase()).digest();
 
-  return worktreeRange.first + (hash.readUInt32BE(0) % worktreeRange.size);
+  return 1 + (hash.readUInt32BE(0) % (slots - 1));
+}
+
+/**
+ * The slots `up` tries, in order: `first` and the next ones, `slotTries` in
+ * all. From a worktree they wrap within 1 to 99 and never reach slot 0.
+ *
+ * @param {number} first
+ */
+function slotOrder(first) {
+  return Array.from({ length: slotTries }, (_, i) =>
+    first === 0 ? i : 1 + ((first - 1 + i) % (slots - 1)),
+  );
+}
+
+/**
+ * @param {keyof typeof portRows} mode
+ * @param {number} slot
+ */
+function portAt(mode, slot) {
+  const row = portRows[mode];
+
+  return slot === 0 ? row.main : row.base + slot - 1;
 }
 
 /**
@@ -222,114 +262,68 @@ function derivedPort(currentFlow, mode) {
  * @param {number} port
  */
 function refusedPort(currentFlow, port) {
-  return currentFlow.worktree && Object.values(mainPorts).includes(port);
-}
-
-// ponytail: Windows only (Lars's platform); add a `ps -eo` reader when
-// another OS needs the script.
-function processTable() {
-  if (process.platform !== 'win32') {
-    finish(2, { error: `unsupported platform ${process.platform}` });
-  }
-
-  const script =
-    "Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,CommandLine,@{n='Start';e={$_.CreationDate.ToUniversalTime().ToString('o')}} | ConvertTo-Json -Compress";
-  const run = spawnSync(
-    'pwsh',
-    ['-NoProfile', '-NonInteractive', '-Command', script],
-    {
-      encoding: 'utf8',
-      maxBuffer: 64 * 1024 * 1024,
-      windowsHide: true,
-    },
-  );
-
-  if (run.status !== 0) {
-    finish(2, { error: `process table: ${run.stderr || run.error}` });
-  }
-
-  /** @type {ProcessEntry[]} */
-  const entries = JSON.parse(run.stdout);
-
-  return new Map(entries.map((entry) => [entry.ProcessId, entry]));
+  return currentFlow.worktree && mainPorts.includes(port);
 }
 
 /**
- * @param {Map<number, ProcessEntry>} table
- * @param {number} pid
- */
-function tree(table, pid) {
-  const pids = new Set([pid]);
-  let grew = true;
-
-  while (grew) {
-    grew = false;
-
-    for (const entry of table.values()) {
-      if (pids.has(entry.ParentProcessId) && !pids.has(entry.ProcessId)) {
-        pids.add(entry.ProcessId);
-        grew = true;
-      }
-    }
-  }
-
-  return [...pids].filter((member) => table.has(member));
-}
-
-/**
- * A dead root's surviving tree, without the processes that started before
- * the recorded root, or their descendants: Windows leaves a dead parent's PID
- * on its children and hands that PID out again, so the children of an
- * earlier holder match by parent PID alone. A process whose start time, or a
- * root whose recorded start time, cannot be parsed stays a member and is
- * listed in `uncheckedPids`.
+ * The live processes of a recorded tree: each record whose PID still has its
+ * recorded start time and command line.
  *
- * @param {Map<number, ProcessEntry>} table
- * @param {number} pid
- * @param {unknown} rootStart
+ * @param {ProcRecord[]} tree
+ * @param {ProcRecord[]} rows
  */
-function treeMembers(table, pid, rootStart) {
-  const since =
-    typeof rootStart === 'string' ? Date.parse(rootStart) : Number.NaN;
-  const pids = new Set([pid]);
-  /** @type {ProcessEntry[]} */
-  const members = [];
-  let grew = true;
+function liveMembers(tree, rows) {
+  const byPid = new Map(rows.map((row) => [row.pid, row]));
 
-  while (grew) {
-    grew = false;
-
-    for (const entry of table.values()) {
-      if (
-        pids.has(entry.ParentProcessId) &&
-        !pids.has(entry.ProcessId) &&
-        !(Date.parse(entry.Start ?? '') < since)
-      ) {
-        pids.add(entry.ProcessId);
-        members.push(entry);
-        grew = true;
-      }
-    }
-  }
-
-  return {
-    members,
-    uncheckedPids: members
-      .filter(
-        (entry) =>
-          Number.isNaN(since) || Number.isNaN(Date.parse(entry.Start ?? '')),
-      )
-      .map((entry) => entry.ProcessId),
-  };
+  return new Set(
+    tree
+      .filter((record) => matches(record, byPid.get(record.pid)))
+      .map((record) => record.pid),
+  );
 }
 
-// The tests set CONTROL_LISTENER_TIMEOUT_MS to make the query time out;
-// nothing else sets it.
+/**
+ * The recorded tree merged with the live tree below its root, from one
+ * process table read.
+ *
+ * @param {ProcRecord[]} tree
+ * @param {ProcRecord[]} rows
+ */
+function refreshed(tree, rows) {
+  const [rootRecord] = tree;
+
+  return rootRecord === undefined
+    ? tree
+    : merge(tree, snapshot(rootRecord, { table: () => rows }));
+}
+
+// Test seams; nothing else sets them. CONTROL_LISTENER_TIMEOUT_MS makes the
+// listener query time out, from query CONTROL_LISTENER_QUERIES_OK on (0 by
+// default). CONTROL_PID_LOOKUP_MISSES makes up's first lookups of the started
+// PID miss. CONTROL_SPAWN_WINDOW_SHIFT_MS moves the spawn window those lookups
+// pass to snapshot. CONTROL_STOP_ROUNDS limits stop's rounds; 0 reports every
+// matched record as survived.
 const listenerTimeout =
   Number(process.env['CONTROL_LISTENER_TIMEOUT_MS']) || 30000;
-// The tests set CONTROL_PID_LOOKUP_MISSES to make up's first lookups of the
-// started PID miss; nothing else sets it.
+const listenerQueriesOk =
+  Number(process.env['CONTROL_LISTENER_QUERIES_OK']) || 0;
 const pidLookupMisses = Number(process.env['CONTROL_PID_LOOKUP_MISSES']) || 0;
+const spawnWindowShift =
+  Number(process.env['CONTROL_SPAWN_WINDOW_SHIFT_MS']) || 0;
+const stopRounds =
+  process.env['CONTROL_STOP_ROUNDS'] === undefined
+    ? undefined
+    : Number(process.env['CONTROL_STOP_ROUNDS']);
+let listenerQueries = 0;
+// Set once up has spawned a server, so an error after it names the cleanup.
+/** @type {number | undefined} */
+let launchedPid;
+
+/** @param {string} error */
+const withLaunchNote = (error) =>
+  launchedPid === undefined
+    ? error
+    : `${error}; the launched server (pid ${launchedPid}) may still run: ${existsSync(stateFile) ? `state kept at ${stateFile}; run down` : 'stop it yourself'}`;
 
 // The run's browser and its JavaScript-off browser (features/javascript-off.md).
 /** @param {string} session */
@@ -341,6 +335,9 @@ const sessionsOf = (session) => [session, `${session}-jsoff`];
 // exits 1.
 /** @param {number} port */
 function queryListeners(port) {
+  const timeout =
+    listenerQueries >= listenerQueriesOk ? listenerTimeout : 30000;
+  listenerQueries += 1;
   const run = spawnSync(
     'pwsh',
     [
@@ -349,7 +346,7 @@ function queryListeners(port) {
       '-Command',
       `try { Get-NetTCPConnection -State Listen -LocalPort ${String(port)} -ErrorAction Stop | Select-Object -ExpandProperty OwningProcess } catch { if ($_.CategoryInfo.Category -eq 'ObjectNotFound' -and $_.CategoryInfo.Activity -eq 'Get-NetTCPConnection') { exit 0 }; [Console]::Error.WriteLine($_); exit 1 }`,
     ],
-    { encoding: 'utf8', timeout: listenerTimeout, windowsHide: true },
+    { encoding: 'utf8', timeout, windowsHide: true },
   );
 
   // A spawn that failed has no stderr; a timed-out one may have none, and its
@@ -363,7 +360,7 @@ function queryListeners(port) {
     return {
       pids: null,
       error: timedOut
-        ? `listener query on ${port} gave no answer in ${listenerTimeout} ms`
+        ? `listener query on ${port} gave no answer in ${timeout} ms`
         : `listener query on ${port} failed: ${(run.stderr ?? '').trim() || String(run.error)}`,
     };
   }
@@ -379,24 +376,50 @@ function listeners(port) {
   const { pids, error } = queryListeners(port);
 
   if (pids === null) {
-    finish(2, { error });
+    finish(2, { error: withLaunchNote(String(error)) });
   }
 
   return pids;
 }
 
-// The recorded session, PIDs and port reach commands, so a state file that
+// The recorded session, PIDs and ports reach commands, so a state file that
 // holds anything else is refused before any of them runs.
 /**
  * @param {unknown} value
- * @returns {value is Survivor}
+ * @returns {value is ProcRecord}
  */
-function isSurvivor(value) {
+function isRecord(value) {
   return (
     typeof value === 'object' &&
     value !== null &&
     'pid' in value &&
-    positiveInteger(value.pid)
+    positiveInteger(value.pid) &&
+    'ppid' in value &&
+    typeof value.ppid === 'number' &&
+    Number.isInteger(value.ppid) &&
+    'start' in value &&
+    typeof value.start === 'number' &&
+    Number.isFinite(value.start) &&
+    'commandLine' in value &&
+    (value.commandLine === null || typeof value.commandLine === 'string')
+  );
+}
+
+/**
+ * @param {unknown} value
+ * @returns {value is PortEntry}
+ */
+function isPortEntry(value) {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'name' in value &&
+    typeof value.name === 'string' &&
+    'port' in value &&
+    validPort(value.port) &&
+    'kind' in value &&
+    value.kind === 'derived' &&
+    (!('reason' in value) || typeof value.reason === 'string')
   );
 }
 
@@ -413,12 +436,15 @@ function isState(value) {
     sessionName.test(value.session) &&
     'pid' in value &&
     positiveInteger(value.pid) &&
-    (!('survivors' in value) ||
-      value.survivors === undefined ||
-      value.survivors === null ||
-      (Array.isArray(value.survivors) && value.survivors.every(isSurvivor))) &&
+    'tree' in value &&
+    Array.isArray(value.tree) &&
+    value.tree.every(isRecord) &&
+    value.tree[0]?.pid === value.pid &&
     'port' in value &&
     validPort(value.port) &&
+    'ports' in value &&
+    Array.isArray(value.ports) &&
+    value.ports.every(isPortEntry) &&
     'url' in value &&
     typeof value.url === 'string' &&
     'logFile' in value &&
@@ -445,9 +471,26 @@ function readState() {
     });
   }
 
+  // A state file from a control.mjs before process trees names a PID but no
+  // tree: its descendants are unknown, so nothing guesses one.
+  if (
+    typeof state === 'object' &&
+    state !== null &&
+    !('tree' in state) &&
+    'pid' in state &&
+    positiveInteger(state.pid) &&
+    'port' in state &&
+    validPort(state.port)
+  ) {
+    finish(2, {
+      error: `refused: ${stateFile} was written by a control.mjs without a process tree (pid ${String(state.pid)}, port ${String(state.port)}); check that pid ${String(state.pid)} is this checkout's server, stop it by hand, then delete ${stateFile}; nothing was run`,
+      stateFile,
+    });
+  }
+
   if (!isState(state)) {
     finish(2, {
-      error: `refused: ${stateFile} records a session outside [\\w-], a PID that is not a positive integer, an invalid port, or a url, logFile or evidenceDir that is not a string; nothing was run`,
+      error: `refused: ${stateFile} records a session outside [\\w-], a PID that is not a positive integer, a tree that is not a list of process records rooted at that PID, an invalid port or ports list, or a url, logFile or evidenceDir that is not a string; nothing was run`,
       stateFile,
     });
   }
@@ -635,21 +678,6 @@ async function closeSession(entry, session) {
   };
 }
 
-function stopDaemon() {
-  const run = spawnSync(
-    process.execPath,
-    [requireFromRoot.resolve('nx'), 'daemon', '--stop'],
-    { cwd: root, encoding: 'utf8', timeout: 60000, windowsHide: true },
-  );
-
-  return run.status === 0
-    ? { stopped: true }
-    : {
-        stopped: false,
-        detail: `exit ${run.status}: ${`${run.stdout ?? ''}${run.stderr ?? ''}`.trim() || run.error}`,
-      };
-}
-
 /** @param {string} url */
 async function fetchPage(url) {
   try {
@@ -666,6 +694,35 @@ async function fetchPage(url) {
  * @returns {Promise<void>}
  */
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
+
+/**
+ * Stops a recorded tree through proctree.mjs: a last snapshot below the root
+ * while the parents live, merged into the record, then `stop`.
+ *
+ * @param {ProcRecord[]} tree
+ */
+function stopTree(tree) {
+  const records = refreshed(tree, processTable());
+  const result = stop(
+    records,
+    stopRounds === undefined ? {} : { rounds: stopRounds },
+  );
+
+  return { records, result };
+}
+
+/**
+ * @param {ReturnType<typeof stop>} result
+ */
+const stopSummary = (result) => ({
+  stopped: result.stopped.map((record) => record.pid),
+  gone: result.gone.map((record) => record.pid),
+  refused: result.refused.map((record) => ({
+    pid: record.pid,
+    reason: record.reason,
+    process: describe(record),
+  })),
+});
 
 async function up() {
   const currentFlow = flow();
@@ -700,22 +757,100 @@ async function up() {
     });
   }
 
-  const port = flags.port ? Number(flags.port) : derivedPort(currentFlow, mode);
+  const first = slotOf(currentFlow);
+  const forced = flags.port ? Number(flags.port) : undefined;
 
-  if (refusedPort(currentFlow, port)) {
+  if (forced !== undefined && refusedPort(currentFlow, forced)) {
     finish(2, {
-      error: `port ${port} belongs to the main checkout; a worktree uses its derived port ${derivedPort(currentFlow, mode)}`,
+      error: `port ${forced} belongs to the main checkout; a worktree uses its derived port ${portAt(mode, first)}`,
     });
   }
 
-  const owners = listeners(port);
+  if (forced !== undefined) {
+    const holders = listeners(forced);
 
-  if (owners.length > 0) {
-    finish(2, {
-      error: `port ${port} is in use by pid ${owners.join(', ')}; not starting`,
-    });
+    if (holders.length > 0) {
+      finish(2, {
+        error: `port ${forced} (--port) held by PID ${holders.join(', ')}; --port has no fallback`,
+      });
+    }
   }
 
+  const name = portRows[mode].name;
+  const order = forced === undefined ? slotOrder(first) : [first];
+  /** @type {string[]} */
+  const tried = [];
+  /** @type {string | undefined} */
+  let leftFirst;
+
+  for (const slot of order) {
+    const port = forced ?? portAt(mode, slot);
+
+    if (forced === undefined) {
+      const holders = listeners(port);
+
+      if (holders.length > 0) {
+        tried.push(`${name} ${port} held by PID ${holders.join(', ')}`);
+        leftFirst ??= `held by PID ${holders.join(', ')}`;
+        continue;
+      }
+    }
+
+    /** @type {PortEntry} */
+    const entry =
+      slot === first || forced !== undefined
+        ? { name, port, kind: 'derived' }
+        : {
+            name,
+            port,
+            kind: 'derived',
+            reason: `fell back from ${portAt(mode, first)}: ${String(leftFirst)}`,
+          };
+    const holders = await launch({
+      currentFlow,
+      mode,
+      configuration,
+      slot,
+      entry,
+      fixedPort: forced !== undefined,
+      timeout: timeoutSeconds * 1000,
+    });
+    tried.push(
+      `${name} ${port} taken after the check by PID ${holders.join(', ')}`,
+    );
+    leftFirst ??= `held by PID ${holders.join(', ')}`;
+  }
+
+  finish(2, {
+    error: `no free slot in ${order.length} tries (slots ${order.join(', ')}): ${tried.join('; ')}`,
+  });
+}
+
+/**
+ * One launch on one slot. Finishes the run when the instance is ready or the
+ * launch failed; returns the listener PIDs when another process took the port
+ * after the check, once this launch's tree is stopped and its state file gone.
+ *
+ * @param {object} options
+ * @param {ReturnType<typeof flow>} options.currentFlow
+ * @param {keyof typeof portRows} options.mode
+ * @param {string} options.configuration
+ * @param {number} options.slot
+ * @param {PortEntry} options.entry
+ * @param {boolean} options.fixedPort  `--port` given: no next slot
+ * @param {number} options.timeout  in milliseconds
+ * @returns {Promise<number[]>}
+ */
+async function launch({
+  currentFlow,
+  mode,
+  configuration,
+  slot,
+  entry,
+  fixedPort,
+  timeout,
+}) {
+  const { port } = entry;
   const runId = new Date().toISOString().replaceAll(/[:.]/g, '-');
   const evidenceDir = join(scratch, runId);
   mkdirSync(evidenceDir, { recursive: true });
@@ -740,7 +875,7 @@ async function up() {
     nxArgs.push(`--port=${port}`);
   }
 
-  const started = Date.now();
+  const notBefore = Date.now();
   const child = spawn(process.execPath, nxArgs, {
     cwd: root,
     detached: true,
@@ -748,6 +883,7 @@ async function up() {
     stdio: ['ignore', log, log],
     windowsHide: true,
   });
+  const notAfter = Date.now();
   child.unref();
   const { pid } = child;
 
@@ -758,29 +894,43 @@ async function up() {
     });
   }
 
+  launchedPid = pid;
+
   // `down` matches the recorded start time and command line, so neither may
   // be recorded before the process table lists the fresh PID with both.
-  /** @type {ProcessEntry | undefined} */
-  let live;
+  /** @type {ProcRecord[]} */
+  let tree = [];
 
-  for (let attempt = 0; attempt < 20 && live === undefined; attempt += 1) {
-    const entry =
-      attempt < pidLookupMisses ? undefined : processTable().get(pid);
+  for (let attempt = 0; attempt < 20 && tree.length === 0; attempt += 1) {
+    const found =
+      attempt < pidLookupMisses
+        ? []
+        : snapshot(pid, {
+            notBefore: notBefore + spawnWindowShift,
+            notAfter: notAfter + spawnWindowShift,
+          });
 
-    if (
-      typeof entry?.Start === 'string' &&
-      typeof entry.CommandLine === 'string'
-    ) {
-      live = entry;
+    if (typeof found[0]?.commandLine === 'string') {
+      tree = found;
     } else {
       await sleep(250);
     }
   }
 
-  if (live === undefined) {
+  const [rootRecord] = tree;
+
+  if (rootRecord === undefined) {
+    const found = snapshot(pid, { notBefore, notAfter });
+    const result = stop(found);
+
+    if (found.length === 0) {
+      child.kill();
+    }
+
     finish(1, {
       error: `pid ${pid} did not appear in the process table with a start time and command line; stopped its tree; see ${logFile}`,
-      ...stopLaunch(pid),
+      launchStopped: snapshot(pid, { notBefore, notAfter }).length === 0,
+      ...stopSummary(result),
       logFile,
     });
   }
@@ -792,47 +942,112 @@ async function up() {
     mode,
     configuration,
     pid,
-    start: live.Start,
-    commandLine: live.CommandLine,
+    start: new Date(rootRecord.start).toISOString(),
+    commandLine: rootRecord.commandLine,
     port,
+    slot,
+    ports: [entry],
     url,
     session: currentFlow.session,
     sessions: sessionsOf(currentFlow.session),
     evidenceDir,
     logFile,
+    tree,
   };
   writeState(state);
-  const timeout = timeoutSeconds * 1000;
 
-  // Every exit-1 path stops what this launch started and removes the state
-  // file, so a failed up leaves nothing for down.
-  /** @param {string} error */
-  const fail = (error) => {
-    const stop = stopLaunch(pid);
+  /** @param {Record<string, unknown>} extra */
+  const stopLaunch = (extra) => {
+    const { records, result } = stopTree(tree);
+    const survived = result.refused.filter(
+      (record) => record.reason === 'survived',
+    );
+    const report = {
+      ...state,
+      tree: records,
+      ...extra,
+      launchStopped: survived.length === 0,
+      ...stopSummary(result),
+    };
+
+    // A launch that keeps respawning children can outlast stop's rounds; its
+    // state file stays, so down can stop what is left.
+    if (survived.length > 0) {
+      writeState({ ...state, tree: records });
+      finish(1, {
+        ...report,
+        error: `${typeof extra['error'] === 'string' ? extra['error'] : 'another process took the port'}; ${survived.map((record) => describe(record)).join(', ')} still runs after the last round; state kept at ${stateFile}; run down`,
+        stateFile,
+      });
+    }
+
     rmSync(stateFile, { force: true });
-    finish(1, { error, ...state, ...stop });
-  };
+    launchedPid = undefined;
 
-  while (Date.now() - started < timeout) {
-    if (child.exitCode !== null || !processTable().has(pid)) {
+    return report;
+  };
+  // Every exit-1 path stops what this launch started and removes the state
+  // file, so a failed up leaves nothing for down unless a process outlasted
+  // the stop.
+  /** @type {(error: string) => never} */
+  const fail = (error) => finish(1, stopLaunch({ error }));
+
+  while (Date.now() - notBefore < timeout) {
+    const rows = processTable();
+    const grown = refreshed(tree, rows);
+
+    if (grown.length !== tree.length) {
+      tree = grown;
+      writeState({ ...state, tree });
+    }
+
+    if (
+      child.exitCode !== null ||
+      !matches(
+        rootRecord,
+        rows.find((row) => row.pid === pid),
+      )
+    ) {
+      const owned = liveMembers(tree, rows);
+      const others = listeners(port).filter((holder) => !owned.has(holder));
+
+      if (!fixedPort && others.length > 0) {
+        stopLaunch({});
+
+        return others;
+      }
+
       fail(`the launch exited before it was ready; see ${logFile}`);
     }
 
     const page = await fetchPage(`${url}${readyPath}`);
 
     if (page.status === 200 && page.body.includes(marker)) {
-      const owned = tree(processTable(), pid);
+      const now = processTable();
+      tree = refreshed(tree, now);
+      const owned = liveMembers(tree, now);
       const listening = listeners(port);
+      const foreign = listening.filter((holder) => !owned.has(holder));
 
-      if (!listening.some((pid) => owned.includes(pid))) {
+      // Every listener must be the launch's own: a foreign one beside it may
+      // have answered the page.
+      if (foreign.length > 0 || listening.length === 0) {
+        if (!fixedPort) {
+          stopLaunch({});
+
+          return foreign.length > 0 ? foreign : listening;
+        }
+
         fail(
-          `port ${port} answers but pid ${listening.join(', ')} is not in the started tree; stopped the launch`,
+          `port ${port} answers but pid ${(foreign.length > 0 ? foreign : listening).join(', ')} is not in the started tree; stopped the launch`,
         );
       }
 
+      writeState({ ...state, tree });
       finish(0, {
         ...state,
-        readySeconds: Math.round((Date.now() - started) / 1000),
+        tree,
+        readySeconds: Math.round((Date.now() - notBefore) / 1000),
       });
     }
 
@@ -842,21 +1057,6 @@ async function up() {
   fail(
     `not ready after ${timeout / 1000}s; stopped the launch (raise --timeout for an uncached build); see ${logFile}`,
   );
-}
-
-// Stops a launch `up` gave up on: its tree, and the Nx daemon it may have
-// started, as `down` does.
-/** @param {number} pid */
-function stopLaunch(pid) {
-  const kill = spawnSync('taskkill', ['/PID', String(pid), '/T', '/F'], {
-    encoding: 'utf8',
-    windowsHide: true,
-  });
-
-  return {
-    launchStopped: kill.status === 0 || !processTable().has(pid),
-    daemon: stopDaemon(),
-  };
 }
 
 // Nx colours its output even into a file.
@@ -934,24 +1134,50 @@ async function doctor() {
       });
     }
 
-    const table = processTable();
-    const live = table.get(state.pid);
+    const rows = processTable();
+    const [rootRecord] = state.tree;
+    const live = rows.find((row) => row.pid === state.pid);
+    const alive = matches(rootRecord, live);
     check(
       'process-alive',
-      live ? 'pass' : 'fail',
-      live
-        ? `pid ${state.pid} started ${live.Start}`
-        : `pid ${state.pid} is not running`,
+      alive ? 'pass' : 'fail',
+      alive
+        ? `pid ${state.pid} started ${state.start}`
+        : live
+          ? `pid ${state.pid} runs, but not with the recorded start time and command line`
+          : `pid ${state.pid} is not running`,
     );
-    const owned = live ? tree(table, state.pid) : [];
-    const listening = listeners(state.port);
-    const owner = listening.find((pid) => owned.includes(pid));
+    // The tree refresh is doctor's one write.
+    const tree = refreshed(state.tree, rows);
+
+    if (tree.length !== state.tree.length) {
+      writeState({ ...state, tree });
+    }
+
+    const owned = liveMembers(tree, rows);
+    const problems = state.ports.flatMap(({ name, port }) => {
+      const holders = listeners(port);
+      const foreign = holders.filter((holder) => !owned.has(holder));
+
+      return holders.length === 0
+        ? [`${name} ${port} not listening`]
+        : foreign.length > 0
+          ? [
+              `${name} ${port} held by PID ${foreign.join(', ')}, not the recorded tree`,
+            ]
+          : [];
+    });
     check(
-      'port-owned',
-      owner ? 'pass' : 'fail',
-      owner
-        ? `port ${state.port} listened on by pid ${owner} in the recorded tree`
-        : `port ${state.port} listeners: ${listening.join(', ') || 'none'}`,
+      'ports',
+      problems.length === 0 ? 'pass' : 'fail',
+      problems.length > 0
+        ? problems.join('; ')
+        : state.ports
+            .map(
+              ({ name, port, kind, reason }) =>
+                `${name} ${port} (${kind}${reason === undefined ? '' : `: ${reason}`})`,
+            )
+            .join(', '),
     );
 
     if (state.mode === 'serve') {
@@ -995,7 +1221,7 @@ async function doctor() {
     }
   } else {
     check('process-alive', 'skip', '--url names the instance');
-    check('port-owned', 'skip', '--url names the instance');
+    check('ports', 'skip', '--url given; ownership not checked');
   }
 
   /** @type {typeof import('playwright')} */
@@ -1129,29 +1355,8 @@ async function down() {
     });
   }
 
-  const table = processTable();
-  const live = table.get(state.pid);
-  /**
-   * @param {ProcessEntry | undefined} entry
-   * @param {{ start?: unknown, commandLine?: unknown }} recorded
-   */
-  const same = (entry, recorded) =>
-    entry?.Start === recorded.start &&
-    entry?.CommandLine === recorded.commandLine;
-  /** @type {ProcessEntry[]} */
-  let stopped;
-  /** @type {ProcessEntry[]} */
-  let waited = [];
-  /** @type {number[]} */
-  let uncheckedPids = [];
-
-  if (live && !same(live, state)) {
-    finish(2, {
-      error: `pid ${state.pid} does not match the recorded start time or command; refusing to stop it`,
-      recorded: { start: state.start, commandLine: state.commandLine },
-      live: { start: live.Start, commandLine: live.CommandLine },
-    });
-  }
+  const [rootRecord] = state.tree;
+  const live = processTable().find((row) => row.pid === rootRecord.pid);
 
   // Never close-all: it reaches every playwright-cli session on the machine.
   const entry = playwrightCli();
@@ -1161,53 +1366,49 @@ async function down() {
     sessions.push(await closeSession(entry, session));
   }
 
-  if (live) {
-    stopped = tree(table, state.pid)
-      .map((pid) => table.get(pid))
-      .filter((member) => member !== undefined);
-    spawnSync('taskkill', ['/PID', String(state.pid), '/T', '/F'], {
-      encoding: 'utf8',
-      windowsHide: true,
-    });
-  } else {
-    // A retry after an incomplete live teardown: stop only the survivors an
-    // earlier down recorded that are still the same processes.
-    stopped = (state.survivors ?? [])
-      .filter((recorded) => same(table.get(recorded.pid), recorded))
-      .map((recorded) => table.get(recorded.pid))
-      .filter((member) => member !== undefined);
-
-    for (const member of stopped) {
-      spawnSync('taskkill', ['/PID', String(member.ProcessId), '/T', '/F'], {
-        encoding: 'utf8',
-        windowsHide: true,
-      });
-    }
-
-    // A child of the dead root can outlive it and keep the port; it is
-    // waited for, not stopped.
-    const dead = treeMembers(table, state.pid, state.start);
-    waited = dead.members.filter(
-      (member) =>
-        !stopped.some((entry) => entry.ProcessId === member.ProcessId),
+  const { records, result } = stopTree(state.tree);
+  const summary = stopSummary(result);
+  const rootRefused = result.refused.find(
+    (record) =>
+      record.reason === 'reused' &&
+      record.pid === rootRecord.pid &&
+      record.start === rootRecord.start,
+  );
+  const survived = result.refused.filter(
+    (record) => record.reason === 'survived',
+  );
+  const notes = result.refused
+    .filter((record) => record !== rootRefused && record.reason !== 'survived')
+    .map(
+      (record) =>
+        `left ${describe(record)} alone: ${record.reason === 'helper' ? 'a shared helper, never stopped' : record.reason === 'caller' ? 'it runs this script' : 'its PID now belongs to another process'}`,
     );
-    uncheckedPids = dead.uncheckedPids;
+
+  if (rootRefused !== undefined || survived.length > 0) {
+    writeState({ ...state, tree: records });
+    finish(2, {
+      error:
+        rootRefused === undefined
+          ? `${survived.map((record) => `${describe(record)} still runs after the last round`).join('; ')}; state kept at ${stateFile}; run down again`
+          : `pid ${state.pid} does not match the recorded start time or command line; refusing to stop it, and stopped the other recorded processes that still match; state kept at ${stateFile}`,
+      ...(rootRefused === undefined || live === undefined
+        ? {}
+        : { recorded: describe(rootRecord), live: describe(live) }),
+      ...summary,
+      notes,
+      sessions,
+      stateFile,
+    });
   }
 
-  const members = [...stopped, ...waited];
   let portFree = false;
   /** @type {string | null} */
   let listenerError = null;
   /** @type {number[] | null} */
   let listenerPids = null;
-  let survivors = members;
 
   for (let attempt = 0; attempt < 20; attempt += 1) {
     await sleep(500);
-    const after = processTable();
-    survivors = members.filter(
-      (member) => after.get(member.ProcessId)?.Start === member.Start,
-    );
     const query = queryListeners(state.port);
     listenerError = query.error;
     listenerPids = query.pids;
@@ -1215,85 +1416,60 @@ async function down() {
 
     // A query that failed or timed out ends the wait: a hung pwsh would
     // otherwise hold every attempt for the full timeout.
-    if ((portFree && survivors.length === 0) || query.pids === null) {
+    if (portFree || query.pids === null) {
       break;
     }
   }
 
-  const daemon = stopDaemon();
-  const result = {
+  const report = {
     pid: state.pid,
     recordedPidRunning: live !== undefined,
-    stopped: stopped.map((member) => member.ProcessId),
-    survivors: survivors.map((member) => member.ProcessId),
-    ...(live ? {} : { uncheckedPids }),
+    ...summary,
+    notes,
     port: state.port,
     portFree,
     ...(listenerError === null ? {} : { listenerError }),
     session: state.session,
     sessions,
-    daemon,
     evidenceDir: state.evidenceDir,
     evidenceKept: existsSync(state.evidenceDir),
   };
-
-  if (live && (!portFree || survivors.length > 0)) {
-    writeState({
-      ...state,
-      survivors: survivors.map((member) => ({
-        pid: member.ProcessId,
-        start: member.Start,
-        commandLine: member.CommandLine,
-      })),
-    });
-    finish(1, {
-      error: `teardown incomplete; ${listenerError ? `${listenerError}; ` : ''}state kept at ${stateFile}; run down again`,
-      ...result,
-      stateFile,
-    });
-  }
-
-  // A dead root reaches here whatever survives: another down could only wait
-  // again, so the state file goes and the error names what to stop by hand.
+  // Every recorded process is stopped or gone by now, so another down could
+  // do no more: the state file goes. A listener left on the port is outside
+  // the recorded tree, so it may be another session's instance or the user's
+  // own; it is named, never offered for stopping.
   rmSync(stateFile, { force: true });
+  const rows = listenerPids === null || portFree ? [] : processTable();
+  /** @param {number} holder */
+  const holderLine = (holder) => {
+    const row = rows.find((candidate) => candidate.pid === holder);
+
+    return row === undefined ? `PID ${holder}` : describe(row);
+  };
   const unclosed = sessions.filter(({ outcome }) => sessionLeftOpen(outcome));
-  const toStop = [
-    ...new Set([
-      ...result.survivors,
-      ...(portFree ? [] : (listenerPids ?? [])),
-    ]),
-  ];
   const problems = [
-    ...(survivors.length > 0
-      ? [`pid ${result.survivors.join(', ')} still running`]
-      : []),
     ...(portFree
       ? []
       : [
           listenerPids === null
             ? `port ${state.port} not confirmed free (${listenerError})`
-            : `port ${state.port} still listens (listeners [${listenerPids.join(', ')}])`,
+            : `port ${state.port} still held by ${listenerPids.map(holderLine).join(', ')}, not the recorded tree; it may be another session's instance or the user's own, so down left it running`,
         ]),
     ...unclosed.map(
       ({ session, outcome }) =>
         `playwright-cli session ${session} ${outcome}; close it with playwright-cli -s=${session} close`,
     ),
-    ...(daemon.stopped ? [] : ['nx daemon --stop failed']),
   ];
 
   if (problems.length > 0) {
     finish(1, {
-      error: `teardown incomplete: ${problems.join('; ')}${
-        portFree && survivors.length === 0
-          ? ''
-          : `; removed ${stateFile}; to stop by hand: ${toStop.length > 0 ? `pid ${toStop.join(', ')}` : `the listener on port ${state.port}`}`
-      }`,
-      ...result,
+      error: `teardown incomplete: ${problems.join('; ')}${portFree ? '' : `; removed ${stateFile}`}`,
+      ...report,
     });
   }
 
   finish(0, {
-    ...result,
+    ...report,
     ...(live ? {} : { warnings: [`pid ${state.pid} was not running`] }),
   });
 }
@@ -1314,5 +1490,5 @@ if (!run) {
 try {
   await run();
 } catch (error) {
-  finish(2, { error: `could not run: ${String(error)}` });
+  finish(2, { error: withLaunchNote(`could not run: ${String(error)}`) });
 }
