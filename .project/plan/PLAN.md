@@ -1,8 +1,8 @@
 # Plan — ngx-yeti M002 layouts-and-button
 
-Project verify: `npm ci && npx playwright install chromium && npx prettier --check . && npm run check && npm exec nx -- run-many -t build pack-check && node tools/ci-local/run-job.mjs ci unit && node tools/ci-local/run-job.mjs ci e2e && node tools/ci-local/run-job.mjs floor webkit-26-4 && node tools/ci-local/run-job.mjs floor firefox-146-e2e && FLOOR_FIREFOX=true npm exec nx -- test ngx-yeti -- --project=browser && BROWSERS=msedge npm exec nx -- run screen-reader-e2e:nvda && export FLOOR_CHROMIUM_PATH="$(npx --no-install @puppeteer/browsers install chrome@141.0.7390.54 --path "$(pwd)/tmp/floor-chrome" | awk '{print $2}')" && npm exec nx -- test ngx-yeti -- --project=browser && npm exec nx -- run-many -t e2e -p ngx-yeti-e2e yeti-app-e2e`
+Project verify: `unset BROWSERS && npm ci && npx playwright install chromium firefox && npx prettier --check . && npm run check && npm exec nx -- run-many -t build pack-check && FLOOR_FIREFOX=true npm exec nx -- test ngx-yeti -- --project=browser && npm exec nx -- run-many -t e2e -p ngx-yeti-e2e yeti-app-e2e && npm exec nx -- run screen-reader-e2e:nvda && export FLOOR_CHROMIUM_PATH="$(npx --no-install @puppeteer/browsers install chrome@141.0.7390.54 --path "$(pwd)/tmp/floor-chrome" | awk '{print $2}')" && test -x "$FLOOR_CHROMIUM_PATH" && npm exec nx -- test ngx-yeti -- --project=browser && npm exec nx -- run-many -t e2e -p ngx-yeti-e2e yeti-app-e2e; status=$?; npx --no-install nx daemon --stop; exit $status`
 
-This is INTENT SC8's local set: `npm run check`, the `static` and `package` jobs, every container job of `ci.yml` and `floor.yml` through `tools/ci-local/run-job.mjs` (the `e2e` job runs every engine and configuration, the Tailwind ones included once T024 adds them), the native `firefox-145` and `chromium-141` floor jobs, and the `nvda` lane. The macOS-only `safari` and `voiceover` jobs pass in CI on the milestone's pull request (integration `pull-request`).
+This is INTENT SC8's local set as corrected on 2026-10-17 (Lars, verbatim: "Correct SC8 now: native local checks only, real NVDA lane"): `npm run check`, the `static` job (`npx prettier --check .` plus the `lint` and `typecheck` that `npm run check` runs) and the `package` job, the native floor jobs `firefox-145` and `chromium-141` (Chrome for Testing 141, its path refused by `test -x` when the install prints none), the e2e projects `ngx-yeti-e2e` and `yeti-app-e2e` run natively in Playwright's Chromium, and the real `nvda` lane with `BROWSERS` unset (Playwright's Chromium, then Firefox, which is why both are installed). The steps run one after another: the `nvda` lane takes the desktop and port 4401, which the e2e projects also use. The container jobs `unit`, `e2e`, `webkit-26-4`, and `firefox-146-e2e` pass in CI and need no local run; `node tools/ci-local/run-job.mjs` reproduces one on demand. The macOS-only `safari` and `voiceover` jobs pass in CI as well, and every job of `ci.yml` and `floor.yml` passes on the milestone's pull request (integration `pull-request`) before the user merges it.
 
 ## Config
 
@@ -13,7 +13,7 @@ This is INTENT SC8's local set: `npm run check`, the `static` and `package` jobs
 
 ## Wave review gate
 
-Before each wave's review, the orchestrator runs an integrated, uncached check on the wave's combined tip, because parallel tasks that share a route, a registry, or an engine-specific behaviour pass alone and fail together (LESSONS.md): `npm exec nx -- run-many -t lint typecheck test test-storybook --skip-nx-cache`; the e2e projects the wave touched through the ci-local container jobs in Chromium, Firefox, and WebKit (`node tools/ci-local/run-job.mjs ci e2e` with the matching `--matrix engine=` and `--matrix configuration=` values) and `node tools/ci-local/run-job.mjs ci unit`; and the floor jobs that run those tests (`node tools/ci-local/run-job.mjs floor webkit-26-4`, `node tools/ci-local/run-job.mjs floor firefox-146-e2e`, and `firefox-145` and `chromium-141` natively when the wave adds layer-2 tests). Measured reason (orchestrator, 2026-10-10): M001's integration commit 04c74ac landed on main with CI red (run 37180509152): `card--stretched-link` failed in Firefox ("focus has left the card") and the real-Safari job failed lift.spec.ts's hover case, because only Chromium ran locally. Real Safari and VoiceOver stay CI-only (INTENT SC8) and are first measured on the milestone's pull request. Item tasks whose own cases are engine-specific (hover, focus, forced colours, Tab, reduced motion) also run their e2e specs in Firefox and WebKit through `run-job.mjs` in their Verify.
+Before each wave's review, the orchestrator runs an integrated, uncached check on the wave's combined tip, because parallel tasks that share a route, a registry, or an engine-specific behaviour pass alone and fail together (LESSONS.md): `npm exec nx -- run-many -t lint typecheck test test-storybook --skip-nx-cache`; the e2e projects the wave touched, natively (`npm exec nx -- run-many -t e2e -p <projects> --skip-nx-cache`); and `firefox-145` and `chromium-141` natively when the wave adds layer-2 tests. Measured reason (orchestrator, 2026-10-10): M001's integration commit 04c74ac landed on main with CI red (run 37180509152): `card--stretched-link` failed in Firefox ("focus has left the card") and the real-Safari job failed lift.spec.ts's hover case, because only Chromium ran locally. Under the corrected SC8 (Lars, 2026-10-17, verbatim: "Correct SC8 now: native local checks only, real NVDA lane") the container jobs (`unit`, `e2e` in every engine and configuration, `webkit-26-4`, `firefox-146-e2e`) pass in CI on the milestone's pull request, before it reaches `main`, and need no local run in a wave gate or a task Verify; `node tools/ci-local/run-job.mjs` stays available to reproduce one when a wave's risk calls for it. Real Safari and VoiceOver stay CI-only (INTENT SC8) and are first measured on the milestone's pull request. Item tasks whose own cases are engine-specific (hover, focus, forced colours, Tab, reduced motion) run their e2e specs natively and pass in Firefox and WebKit in CI.
 
 ## Wave 1 — risk burn-down
 
@@ -198,12 +198,13 @@ Review depth: full
 
 ## Wave 18 — fix wave 17 cycle 1 review findings
 
-Goal: Repair the blocking findings of the wave 17 cycle 1 review without changing source task contracts.
+Goal: Repair the blocking findings of the wave 17 cycle 1 review without changing source task contracts (T085). Build repair after the SC8 intent correction (Lars, 2026-10-17, verbatim: "Correct SC8 now: native local checks only, real NVDA lane"; "Land T085 first, then correct SC8"; "Approve the corrected intent"): T086 makes AGENTS.md "Run CI locally", the opening of references/ci-local.md, and the local-gate paragraph of the testing skill say what the corrected SC8 says, that every job passes in CI, the jobs that run natively also pass locally, the container jobs need no local run and run-job.mjs reproduces one on demand, the macOS-only jobs stay CI-only, and the `BROWSERS=msedge` NVDA lane is not evidence for the job. T086 owns SC8's narrowed local set; its deps T064, T070, and T048 are the last landed tasks that changed AGENTS.md, references/ci-local.md, and the testing skill (file overlap only); it shares no file with T085.
 Review depth: full
 
 | Task | Title | Deps | Files |
 |------|-------|------|-------|
 | T085 | Fix wave 17 cycle 1 review findings in T079 | T079 | nx.json, packages/ngx-yeti-testing/project.json, packages/ngx-yeti/project.json, project.json, tools/nx/browser-floor-inputs.test.mjs |
+| T086 | Make the local-CI rule in AGENTS.md, references/ci-local.md, and the testing skill say that container jobs pass in CI and need no local run, while the native jobs and the real NVDA lane pass locally | T064, T070, T048 | AGENTS.md, references/ci-local.md, .claude/skills/ngx-yeti-testing/SKILL.md |
 
 ## Intent coverage
 
@@ -292,6 +293,7 @@ Review depth: full
 | SC8 | T004 | AC3 |
 | SC8 | T024 | AC2 |
 | SC8 | T028 | AC1 |
+| SC8 | T086 | AC1 |
 | SC9 | T004 | AC1 |
 | SC9 | T004 | AC2 |
 | SC9 | T027 | AC1 |

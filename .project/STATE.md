@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -196,3 +196,8 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-17 — plan — plan approved
 - 2026-10-17 — build — build started
 - 2026-10-17 — build — user ruling 2026-10-17, verbatim: "Correct SC8 now: native local checks only, real NVDA lane" and "Land T085 first, then correct SC8" (SC8's local set narrows to native checks; container jobs pass in CI; the project Verify runs the real nvda lane)
+- 2026-10-17 — define — build intent corrections requested
+- 2026-10-17 — define — build recovery: {"base": "16f8ff041ef0bcec0ff6bfb50cc5b0fa719afd37", "branch": "gsd-path/M002", "kind": "define", "source": "build"}
+- 2026-10-17 — define — milestone intent approved
+- 2026-10-17 — plan — planning started
+- 2026-10-17 — plan — plan approved
