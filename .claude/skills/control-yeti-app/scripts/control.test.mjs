@@ -26,6 +26,7 @@ import { tmpdir } from 'node:os';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
+import { unrecorded } from './control.mjs';
 import { merge, processTable, snapshot, stop } from './proctree.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -78,6 +79,9 @@ const [ownPort = 0] = servePorts;
  * @property {unknown} [pid]
  * @property {unknown} [recordedPidRunning]
  * @property {unknown} [launchStopped]
+ * @property {number[]} [survivors]
+ * @property {number[]} [unrecorded]
+ * @property {string[]} [notes]
  * @property {string[]} [warnings]
  */
 
@@ -490,6 +494,85 @@ async function deadRun(name) {
     await freePort(),
   );
 }
+
+/**
+ * @param {number} pid
+ * @param {number} ppid
+ * @param {number} start
+ * @param {string} [commandLine]
+ * @returns {ProcRecord}
+ */
+const row = (pid, ppid, start, commandLine = `node ${String(pid)}.js`) => ({
+  pid,
+  ppid,
+  start,
+  commandLine,
+});
+
+// A recorded parent (PID 10, started at 1000) that was first seen gone at
+// 5000, and nothing else alive.
+const goneParent = row(10, 1, 1000);
+/** @param {ProcRecord[]} rows */
+const foundBelowGone = (rows) =>
+  unrecorded([goneParent], rows, new Map([['10@1000', 5000]])).map(
+    ({ pid }) => pid,
+  );
+
+test('unrecorded names a child of a gone recorded process that started while the parent ran', () => {
+  assert.deepEqual(
+    foundBelowGone([row(20, 10, 3000), row(21, 20, 3100)]),
+    [20, 21],
+  );
+});
+
+test('unrecorded leaves out a process that started before the gone parent', () => {
+  assert.deepEqual(foundBelowGone([row(20, 10, 500)]), []);
+});
+
+test('unrecorded leaves out a process that started after the parent was first seen gone', () => {
+  assert.deepEqual(foundBelowGone([row(20, 10, 6000)]), []);
+});
+
+test('unrecorded never follows a recorded PID that a live process holds again', () => {
+  assert.deepEqual(foundBelowGone([row(10, 1, 4000), row(20, 10, 4500)]), []);
+});
+
+test('unrecorded never follows a gone record without the time it was first seen gone', () => {
+  assert.deepEqual(
+    unrecorded([goneParent], [row(20, 10, 3000)], new Map()),
+    [],
+  );
+});
+
+test('unrecorded leaves out the Nx daemon and everything below it', () => {
+  assert.deepEqual(
+    foundBelowGone([
+      row(
+        20,
+        10,
+        3000,
+        'node D:\\repo\\node_modules\\nx\\src\\daemon\\server\\start.js',
+      ),
+      row(21, 20, 3100),
+    ]),
+    [],
+  );
+});
+
+test('unrecorded keys a record by PID and start, so a new process on a gone record PID still counts', () => {
+  const gone = row(30, 10, 1200);
+  assert.deepEqual(
+    unrecorded(
+      [goneParent, gone],
+      [row(30, 10, 3000)],
+      new Map([
+        ['10@1000', 5000],
+        ['30@1200', 2000],
+      ]),
+    ).map(({ pid, start }) => `${String(pid)}@${String(start)}`),
+    ['30@3000'],
+  );
+});
 
 test('refuses unknown flags and values after a space', (t) => {
   t.after(forceDown);
@@ -1371,11 +1454,14 @@ test('down leaves alone a recorded child whose PID now belongs to another proces
 
 /**
  * A stand-in launch: a wrapper that keeps running and a child of it that
- * listens on `port`, recorded the way up records a tree.
+ * listens on `port`, recorded the way up records a tree. With `t`, both are
+ * stopped after the test, whatever it left.
  *
  * @param {number} port
+ * @param {import('node:test').TestContext} [t]
  */
-async function standInLaunch(port) {
+async function standInLaunch(port, t) {
+  const began = Date.now() - 1000;
   const wrapper = spawn(
     process.execPath,
     [
@@ -1386,6 +1472,12 @@ async function standInLaunch(port) {
   );
   wrapper.unref();
   const { pid } = wrapper;
+  t?.after(() => {
+    wrapper.kill();
+    killStarted(
+      processTable().filter((row) => row.ppid === pid && row.start >= began),
+    );
+  });
   assert.ok(pid !== undefined);
   await waitListening(port);
   const [child] = owners(port);
@@ -1466,6 +1558,418 @@ test('down exits 2 and keeps the state file when a recorded process survives the
   const again = controlWith(env, 'down');
   assert.equal(again.code, 0, JSON.stringify(again.result));
   await waitGone(launch.child);
+});
+
+/**
+ * Stops each process that still has the start time it had when the test
+ * recorded it, so a PID Windows has handed out again is left alone.
+ *
+ * @param {ProcRecord[]} records
+ */
+function killStarted(records) {
+  if (records.length === 0) {
+    return;
+  }
+
+  const live = new Map(processTable().map((row) => [row.pid, row]));
+  killAll(
+    records
+      .filter(({ pid, start }) => live.get(pid)?.start === start)
+      .map(({ pid }) => pid),
+  );
+}
+
+/**
+ * The PIDs a control.mjs result lists as stopped, refused or surviving.
+ *
+ * @param {ControlResult} result
+ */
+const listedPids = (result) => [
+  ...(Array.isArray(result.stopped) ? result.stopped : []),
+  ...(result.refused ?? []).map(({ pid }) => pid),
+  ...(result.survivors ?? []),
+];
+
+test('down on a live recorded root leaves out a process that started before it', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const began = Date.now() - 1000;
+  /** @type {Set<number>} */
+  const parents = new Set();
+  /** @type {import('node:child_process').ChildProcess | undefined} */
+  let root;
+  /** @param {ProcRecord} row */
+  const isOrphan = (row) =>
+    parents.has(row.ppid) &&
+    row.start >= began &&
+    /\bping\b/i.test(row.commandLine ?? '');
+  t.after(() => {
+    root?.kill();
+    killStarted(processTable().filter(isOrphan));
+    rmSync(stateFile, { force: true });
+  });
+  const registry = mkdtempSync(join(tmpdir(), 'control-yeti-app-registry-'));
+  t.after(() => rmSync(registry, { recursive: true, force: true }));
+
+  // Each parent starts an orphan and exits, so its PID is free to be handed
+  // out again while the orphan still names it as its parent. ping ends on its
+  // own after about 600 s, should the cleanup miss it. A cmd.exe `start`
+  // parent does not do: its PID was not handed out again while the orphan
+  // ran.
+  const exits = [];
+
+  for (let index = 0; index < 20; index += 1) {
+    const parent = spawn(
+      process.execPath,
+      [
+        '-e',
+        `require('node:child_process').spawn('ping', ['-n', '600', '127.0.0.1'], { detached: true, stdio: 'ignore' }).unref();`,
+      ],
+      { stdio: 'ignore', windowsHide: true },
+    );
+    assert.ok(parent.pid !== undefined);
+    parents.add(parent.pid);
+    exits.push(new Promise((done) => parent.on('close', done)));
+  }
+
+  await Promise.all(exits);
+  const orphans = processTable().filter(isOrphan);
+  const orphaned = new Set(orphans.map(({ ppid }) => ppid));
+  assert.ok(orphans.length > 0, 'no parent left an orphan behind');
+
+  // Windows hands a freed PID out again only after many others, so a few
+  // lanes start and stop stand-ins until one holds a parent's PID.
+  let attempts = 0;
+  const lane = async () => {
+    while (root === undefined && attempts < 20000) {
+      attempts += 1;
+      const standIn = spawn('cmd.exe', ['/d', '/k'], {
+        stdio: ['pipe', 'ignore', 'ignore'],
+        windowsHide: true,
+      });
+      standIn.on('error', () => undefined);
+
+      if (
+        root === undefined &&
+        standIn.pid !== undefined &&
+        orphaned.has(standIn.pid)
+      ) {
+        root = standIn;
+      } else {
+        standIn.kill();
+        await new Promise((done) => standIn.on('close', done));
+      }
+    }
+  };
+  await Promise.all([lane(), lane(), lane(), lane(), lane(), lane()]);
+
+  assert.ok(
+    root?.pid !== undefined,
+    `no stand-in got one of ${String(orphaned.size)} exited parent PIDs in ${String(attempts)} starts`,
+  );
+  const rootRecord = recordOf(root.pid);
+  const orphan = orphans.find(({ ppid }) => ppid === rootRecord.pid);
+  assert.ok(orphan, `no orphan names ${String(rootRecord.pid)} as its parent`);
+  killStarted(orphans.filter(({ pid }) => pid !== orphan.pid));
+  assert.ok(
+    orphan.start < rootRecord.start,
+    'the orphan did not start before the stand-in root',
+  );
+  const state = standInState('test-pre-root', [rootRecord], await freePort());
+  t.after(() => rmSync(state.evidenceDir, { recursive: true, force: true }));
+  writeState(state);
+  const env = { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: registry };
+  const listed = new RegExp(`\\b${String(orphan.pid)}\\b`);
+  const recordedTree = () =>
+    existsSync(stateFile) ? recordsIn(readState()['tree']) : [];
+
+  // The first down finds the root alive; the second runs on the state as
+  // recorded, the root now gone.
+  for (const run of ['live root', 'dead root']) {
+    if (!existsSync(stateFile)) {
+      writeState(state);
+    }
+
+    const { code, result } = controlWith(env, 'down');
+    assert.equal(
+      listedPids(result).includes(orphan.pid),
+      false,
+      `${run}: ${JSON.stringify(result)}`,
+    );
+    assert.doesNotMatch(JSON.stringify(result), listed, run);
+    assert.equal(
+      recordedTree().some(({ pid }) => pid === orphan.pid),
+      false,
+      `${run}: the state file records the orphan`,
+    );
+    assert.equal(code, 0, `${run}: ${JSON.stringify(result)}`);
+    assert.ok(alive(orphan.pid), `${run}: down stopped the orphan`);
+  }
+
+  assert.equal(alive(rootRecord.pid), false, 'down left the root running');
+});
+
+test('down leaves alone a recorded process that started before the root', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const older = spawn(
+    process.execPath,
+    ['-e', 'setInterval(() => {}, 1 << 30)'],
+    { detached: true, stdio: 'ignore', windowsHide: true },
+  );
+  t.after(() => older.kill());
+  older.unref();
+  t.after(() => rmSync(stateFile, { force: true }));
+  assert.ok(older.pid !== undefined);
+  const olderRecord = recordOf(older.pid);
+  const port = await freePort();
+  const registry = mkdtempSync(join(tmpdir(), 'control-yeti-app-registry-'));
+  t.after(() => rmSync(registry, { recursive: true, force: true }));
+  const launch = await standInLaunch(port, t);
+  const state = standInState('test-older-record', launch.tree, port);
+  t.after(() => rmSync(state.evidenceDir, { recursive: true, force: true }));
+  assert.ok(olderRecord.start < (launch.tree[0]?.start ?? 0));
+  writeState({
+    ...state,
+    tree: [...launch.tree, { ...olderRecord, ppid: launch.pid }],
+  });
+
+  const { code, result } = controlWith(
+    { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: registry },
+    'down',
+  );
+  assert.equal(code, 0, JSON.stringify(result));
+  assert.equal(
+    listedPids(result).includes(olderRecord.pid),
+    false,
+    JSON.stringify(result),
+  );
+  assert.ok(
+    alive(olderRecord.pid),
+    'down stopped a process older than the root',
+  );
+  await waitGone(launch.child);
+});
+
+/**
+ * A copy of the skill in a checkout of its own, whose stand-in nx runs
+ * `nxSource` (CommonJS; `out(name, pid)` writes a PID to `<name>.txt` in the
+ * checkout). Every process whose PID the stand-in wrote, started since this
+ * call, is stopped after the test.
+ *
+ * @param {import('node:test').TestContext} t
+ * @param {string} nxSource
+ */
+function standInCheckout(t, nxSource) {
+  const began = Date.now() - 1000;
+  mkdirSync(join(root, 'tmp', 'control-yeti-app'), { recursive: true });
+  const checkout = mkdtempSync(
+    join(root, 'tmp', 'control-yeti-app', 'launch-exit-'),
+  );
+  /** @param {string} name */
+  const written = (name) => {
+    const file = join(checkout, `${name}.txt`);
+
+    return existsSync(file) ? Number(readFileSync(file, 'utf8')) : undefined;
+  };
+  /**
+   * The live process the stand-in wrote as `name`, if it still runs.
+   *
+   * @param {string} name
+   */
+  const liveOf = (name) => {
+    const pid = written(name);
+
+    return pid === undefined
+      ? undefined
+      : processTable().find((row) => row.pid === pid && row.start >= began);
+  };
+  /** @type {string[]} */
+  const names = [];
+  t.after(() => {
+    killStarted(
+      names.flatMap((name) => {
+        const record = liveOf(name);
+
+        return record === undefined ? [] : [record];
+      }),
+    );
+    rmSync(checkout, { recursive: true, force: true });
+  });
+  const skill = join(checkout, '.claude', 'skills', 'control-yeti-app');
+  const nx = join(checkout, 'node_modules', 'nx');
+  mkdirSync(join(checkout, '.git'));
+  mkdirSync(join(skill, 'scripts'), { recursive: true });
+  mkdirSync(nx, { recursive: true });
+
+  for (const name of ['control.mjs', 'fingerprint.mjs', 'proctree.mjs']) {
+    copyFileSync(join(here, name), join(skill, 'scripts', name));
+  }
+
+  writeFileSync(
+    join(nx, 'package.json'),
+    '{ "name": "nx", "main": "index.js" }\n',
+  );
+  writeFileSync(
+    join(nx, 'index.js'),
+    `const out = (name, pid) => require('node:fs').writeFileSync(require('node:path').join(${JSON.stringify(checkout)}, name + '.txt'), String(pid));
+const idle = () => require('node:child_process').spawn(process.execPath, ['-e', 'setTimeout(() => {}, 300000)'], { cwd: require('node:os').tmpdir(), detached: true, stdio: 'ignore' });
+${nxSource}
+`,
+  );
+
+  /**
+   * @param {NodeJS.ProcessEnv} env
+   * @param {string[]} args
+   */
+  const control = (env, ...args) => {
+    const run = spawnSync(
+      process.execPath,
+      [join(skill, 'scripts', 'control.mjs'), ...args, '--json'],
+      {
+        cwd: checkout,
+        env,
+        encoding: 'utf8',
+        timeout: 120000,
+        windowsHide: true,
+      },
+    );
+    assert.ok(run.stdout, run.stderr);
+    /** @type {ControlResult} */
+    const result = JSON.parse(run.stdout);
+
+    return { code: run.status, result };
+  };
+
+  return {
+    stateFile: join(checkout, 'tmp', 'control-yeti-app', 'state.json'),
+    control,
+    written,
+    liveOf,
+    /** @param {string[]} more */
+    track: (...more) => names.push(...more),
+  };
+}
+
+test('up never reports a launch that exited as stopped while a child it started still runs', async (t) => {
+  // The stand-in nx starts a child that outlives it and exits right after,
+  // between two of up's polls.
+  const standIn = standInCheckout(
+    t,
+    `setTimeout(() => { out('child', idle().pid); process.exit(0); }, 3000);`,
+  );
+  standIn.track('child');
+  const port = await freePort();
+
+  const { code, result } = standIn.control(
+    process.env,
+    'up',
+    `--port=${String(port)}`,
+  );
+  const child = standIn.written('child');
+  const running = standIn.liveOf('child');
+  assert.ok(child !== undefined, 'the stand-in nx started no child');
+  assert.equal(code, 1, JSON.stringify(result));
+  assert.match(result.error ?? '', /^the launch exited before it was ready/);
+  assert.equal(existsSync(standIn.stateFile), false, 'up kept the state file');
+  assert.equal(
+    Array.isArray(result.stopped) && result.stopped.includes(result.pid),
+    false,
+    `up stopped the exited launch's PID: ${JSON.stringify(result)}`,
+  );
+
+  if (running === undefined) {
+    assert.ok(
+      Array.isArray(result.stopped) && result.stopped.includes(child),
+      `the child ${String(child)} is gone but up did not stop it through the tree: ${JSON.stringify(result)}`,
+    );
+  } else {
+    assert.equal(result.launchStopped, false, JSON.stringify(result));
+    assert.ok(
+      (result.survivors ?? []).includes(child),
+      `up did not name the running child ${String(child)}: ${JSON.stringify(result)}`,
+    );
+    assert.match(result.error ?? '', new RegExp(`PID ${String(child)} `));
+  }
+});
+
+test('up names the children of a launch it never saw in the process table', async (t) => {
+  // up's lookups miss on purpose, while the launch starts a child and exits.
+  const standIn = standInCheckout(
+    t,
+    `out('child', idle().pid); setTimeout(() => process.exit(0), 300);`,
+  );
+  standIn.track('child');
+  const port = await freePort();
+
+  const { code, result } = standIn.control(
+    { ...process.env, CONTROL_PID_LOOKUP_MISSES: '1000' },
+    'up',
+    `--port=${String(port)}`,
+  );
+  const child = standIn.written('child');
+  assert.ok(child !== undefined, 'the stand-in nx started no child');
+  assert.ok(standIn.liveOf('child'), 'the child did not outlive the launch');
+  assert.equal(code, 1, JSON.stringify(result));
+  assert.match(result.error ?? '', /did not appear in the process table/);
+  assert.equal(result.launchStopped, false, JSON.stringify(result));
+  assert.deepEqual(result.survivors, [child], JSON.stringify(result));
+  assert.match(result.error ?? '', new RegExp(`PID ${String(child)} `));
+  assert.equal(existsSync(standIn.stateFile), false, 'up kept a state file');
+});
+
+test('up keeps the processes it never recorded in the kept state file, and down names them again', async (t) => {
+  // A recorded child that a zero-round stop leaves running, and a child the
+  // launch starts right before it exits, which no poll records.
+  const standIn = standInCheckout(
+    t,
+    `out('recorded', idle().pid);
+setTimeout(() => { out('late', idle().pid); process.exit(0); }, 3000);`,
+  );
+  standIn.track('recorded', 'late');
+  const registry = mkdtempSync(join(tmpdir(), 'control-yeti-app-registry-'));
+  t.after(() => rmSync(registry, { recursive: true, force: true }));
+  const env = { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: registry };
+  const port = await freePort();
+
+  const up = standIn.control(
+    { ...env, CONTROL_STOP_ROUNDS: '0' },
+    'up',
+    `--port=${String(port)}`,
+  );
+  const recorded = standIn.written('recorded');
+  const late = standIn.written('late');
+  assert.ok(recorded !== undefined && late !== undefined, 'no child written');
+  assert.ok(standIn.liveOf('late'), 'the late child is gone');
+  assert.equal(up.code, 1, JSON.stringify(up.result));
+  assert.match(
+    up.result.error ?? '',
+    new RegExp(
+      `still runs after the last round; PID ${String(late)} .*; state kept at .*; run down$`,
+    ),
+  );
+  assert.deepEqual(up.result.survivors, [late]);
+  assert.ok(existsSync(standIn.stateFile), 'up removed the state file');
+  const kept = JSON.parse(readFileSync(standIn.stateFile, 'utf8'));
+  assert.deepEqual(
+    recordsIn(kept.unrecorded).map(({ pid }) => pid),
+    [late],
+    'the kept state file does not record the late child',
+  );
+
+  const down = standIn.control(env, 'down');
+  assert.equal(down.code, 0, JSON.stringify(down.result));
+  assert.ok(
+    Array.isArray(down.result.stopped) &&
+      down.result.stopped.includes(recorded),
+    JSON.stringify(down.result),
+  );
+  assert.deepEqual(down.result.unrecorded, [late]);
+  assert.ok(
+    (down.result.notes ?? []).some((note) =>
+      note.startsWith(`left PID ${String(late)} `),
+    ),
+    JSON.stringify(down.result.notes),
+  );
+  assert.ok(standIn.liveOf('late'), 'down stopped the unrecorded child');
 });
 
 test('down without playwright-cli exits 1 while the session is listed as open', async (t) => {

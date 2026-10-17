@@ -27,6 +27,7 @@ import { stripVTControlCharacters } from 'node:util';
 import { mapFresh, printable } from './fingerprint.mjs';
 import {
   describe,
+  isSharedHelper,
   matches,
   merge,
   processTable,
@@ -114,6 +115,7 @@ const sessionName = /^[\w-]+$/;
  * @property {string} logFile
  * @property {string} evidenceDir
  * @property {[ProcRecord, ...ProcRecord[]]} tree  the recorded process tree, root first
+ * @property {ProcRecord[]} [unrecorded]  processes a failed up named but did not stop
  * @property {unknown} [mode]
  * @property {unknown} [configuration]
  * @property {unknown} [start]
@@ -126,7 +128,12 @@ const sessionName = /^[\w-]+$/;
  */
 const isValueFlag = (name) => valueFlags.some((flag) => flag === name);
 
-const [command, ...rest] = process.argv.slice(2);
+// Run as a script; imported (by the tests), it only exports.
+const invoked =
+  process.argv[1] !== undefined &&
+  resolve(process.argv[1]).toLowerCase() ===
+    fileURLToPath(import.meta.url).toLowerCase();
+const [command, ...rest] = invoked ? process.argv.slice(2) : [];
 const json = rest.includes('--json');
 const flags = parseFlags(rest);
 
@@ -297,6 +304,114 @@ function refreshed(tree, rows) {
     : merge(tree, snapshot(rootRecord, { table: () => rows }));
 }
 
+/** @param {ProcRecord} record */
+const recordKey = (record) => `${record.pid}@${record.start}`;
+
+/**
+ * Notes the time each record is first seen gone: no live process with its
+ * PID, start time and command line.
+ *
+ * @param {ProcRecord[]} records
+ * @param {ProcRecord[]} rows  read just before the call
+ * @param {Map<string, number>} goneAt  by `recordKey`, in milliseconds
+ */
+function noteGone(records, rows, goneAt) {
+  const now = Date.now();
+  const byPid = new Map(rows.map((row) => [row.pid, row]));
+
+  for (const record of records) {
+    if (
+      !goneAt.has(recordKey(record)) &&
+      !matches(record, byPid.get(record.pid))
+    ) {
+      goneAt.set(recordKey(record), now);
+    }
+  }
+}
+
+/**
+ * The live processes started by recorded processes that are gone, which no
+ * snapshot reaches once their parent exited, and the live processes below
+ * them. A child counts only when it started no earlier than its parent and,
+ * for a gone parent, no later than the time it was first seen gone, so a later
+ * holder of that PID cannot pass for it; a gone record without that time, or
+ * whose PID a live process holds again, is not followed. Shared helpers are
+ * left out. Windows keeps only a process's parent PID, so a process whose
+ * parent is neither recorded nor found (its parent and grandparent both
+ * exited unrecorded) is never found. The result is named, never stopped,
+ * since no record proves it is the run's own.
+ *
+ * @param {ProcRecord[]} records
+ * @param {ProcRecord[]} rows
+ * @param {Map<string, number>} goneAt  by `recordKey`, in milliseconds
+ */
+export function unrecorded(records, rows, goneAt) {
+  const live = new Set(rows.map((row) => row.pid));
+  const known = new Set(records.map(recordKey));
+  /** @type {Map<number, { start: number, until: number }[]>} */
+  const parents = new Map();
+  /**
+   * @param {number} pid
+   * @param {number} start
+   * @param {number} until
+   */
+  const addParent = (pid, start, until) =>
+    parents.set(pid, [...(parents.get(pid) ?? []), { start, until }]);
+
+  for (const record of records) {
+    const until = goneAt.get(recordKey(record));
+
+    if (!live.has(record.pid) && until !== undefined) {
+      addParent(record.pid, record.start, until);
+    }
+  }
+
+  /** @type {ProcRecord[]} */
+  const found = [];
+  let grew = true;
+
+  while (grew) {
+    grew = false;
+
+    for (const row of rows) {
+      const counts = (parents.get(row.ppid) ?? []).some(
+        ({ start, until }) => row.start >= start && row.start <= until,
+      );
+
+      if (
+        counts &&
+        !known.has(recordKey(row)) &&
+        !isSharedHelper(row.commandLine)
+      ) {
+        known.add(recordKey(row));
+        addParent(row.pid, row.start, Number.POSITIVE_INFINITY);
+        found.push(row);
+        grew = true;
+      }
+    }
+  }
+
+  return found;
+}
+
+/**
+ * After a stop: notes which records are gone now and returns `unrecorded`
+ * below them, from one process table read.
+ *
+ * @param {ProcRecord[]} records
+ * @param {Map<string, number>} goneAt
+ */
+function leftBelow(records, goneAt) {
+  const rows = processTable();
+  noteGone(records, rows, goneAt);
+
+  return unrecorded(records, rows, goneAt);
+}
+
+/** @param {ProcRecord[]} left */
+const leftNote = (left) =>
+  `${left.map((record) => describe(record)).join(', ')} still runs: up never recorded it, and the recorded process that started it has exited; up left it running (only a process whose parent is recorded is found, so one whose parent also went unrecorded is not)`;
+
 // Test seams; nothing else sets them. CONTROL_LISTENER_TIMEOUT_MS makes the
 // listener query time out, from query CONTROL_LISTENER_QUERIES_OK on (0 by
 // default). CONTROL_PID_LOOKUP_MISSES makes up's first lookups of the started
@@ -440,6 +555,8 @@ function isState(value) {
     Array.isArray(value.tree) &&
     value.tree.every(isRecord) &&
     value.tree[0]?.pid === value.pid &&
+    (!('unrecorded' in value) ||
+      (Array.isArray(value.unrecorded) && value.unrecorded.every(isRecord))) &&
     'port' in value &&
     validPort(value.port) &&
     'ports' in value &&
@@ -490,12 +607,21 @@ function readState() {
 
   if (!isState(state)) {
     finish(2, {
-      error: `refused: ${stateFile} records a session outside [\\w-], a PID that is not a positive integer, a tree that is not a list of process records rooted at that PID, an invalid port or ports list, or a url, logFile or evidenceDir that is not a string; nothing was run`,
+      error: `refused: ${stateFile} records a session outside [\\w-], a PID that is not a positive integer, a tree that is not a list of process records rooted at that PID, an unrecorded list that is not a list of process records, an invalid port or ports list, or a url, logFile or evidenceDir that is not a string; nothing was run`,
       stateFile,
     });
   }
 
-  return state;
+  // A child never starts before its parent, so a record older than the root
+  // is not this run's: it is left out and never stopped.
+  const [first, ...others] = state.tree;
+  /** @type {State} */
+  const kept = {
+    ...state,
+    tree: [first, ...others.filter((record) => record.start >= first.start)],
+  };
+
+  return kept;
 }
 
 // A reader sees the old file or the new one, never a partial write.
@@ -900,6 +1026,8 @@ async function launch({
   // be recorded before the process table lists the fresh PID with both.
   /** @type {ProcRecord[]} */
   let tree = [];
+  /** @type {Map<string, number>} */
+  const goneAt = new Map();
 
   for (let attempt = 0; attempt < 20 && tree.length === 0; attempt += 1) {
     const found =
@@ -927,10 +1055,29 @@ async function launch({
       child.kill();
     }
 
+    // The launch as its spawn window bounds it, so the children it started
+    // before it exited are named even when it was never seen.
+    /** @type {ProcRecord} */
+    const spawned = {
+      pid,
+      ppid: process.pid,
+      start: notBefore - 1000,
+      commandLine: null,
+    };
+    const left = leftBelow(
+      merge([spawned], [...found, ...result.stopped]),
+      goneAt,
+    );
+
     finish(1, {
-      error: `pid ${pid} did not appear in the process table with a start time and command line; stopped its tree; see ${logFile}`,
-      launchStopped: snapshot(pid, { notBefore, notAfter }).length === 0,
+      error: `pid ${pid} did not appear in the process table with a start time and command line; stopped its tree${left.length === 0 ? '' : `; ${leftNote(left)}`}; see ${logFile}`,
+      launchStopped:
+        snapshot(pid, { notBefore, notAfter }).length === 0 &&
+        left.length === 0,
       ...stopSummary(result),
+      ...(left.length === 0
+        ? {}
+        : { survivors: left.map((record) => record.pid) }),
       logFile,
     });
   }
@@ -962,27 +1109,47 @@ async function launch({
     const survived = result.refused.filter(
       (record) => record.reason === 'survived',
     );
+    // A process the launch started between two polls, just before its
+    // parent exited, is in no record.
+    const left = leftBelow(
+      merge(records, [...result.stopped, ...result.gone]),
+      goneAt,
+    );
     const report = {
       ...state,
       tree: records,
       ...extra,
-      launchStopped: survived.length === 0,
+      launchStopped: survived.length === 0 && left.length === 0,
       ...stopSummary(result),
+      ...(left.length === 0
+        ? {}
+        : { survivors: left.map((record) => record.pid) }),
     };
+    const reason =
+      typeof extra['error'] === 'string'
+        ? extra['error']
+        : 'another process took the port';
 
     // A launch that keeps respawning children can outlast stop's rounds; its
     // state file stays, so down can stop what is left.
     if (survived.length > 0) {
-      writeState({ ...state, tree: records });
+      writeState({ ...state, tree: records, unrecorded: left });
       finish(1, {
         ...report,
-        error: `${typeof extra['error'] === 'string' ? extra['error'] : 'another process took the port'}; ${survived.map((record) => describe(record)).join(', ')} still runs after the last round; state kept at ${stateFile}; run down`,
+        error: `${reason}; ${survived.map((record) => describe(record)).join(', ')} still runs after the last round${left.length === 0 ? '' : `; ${leftNote(left)}`}; state kept at ${stateFile}; run down`,
         stateFile,
       });
     }
 
     rmSync(stateFile, { force: true });
     launchedPid = undefined;
+
+    if (left.length > 0) {
+      finish(1, {
+        ...report,
+        error: `${reason}; ${leftNote(left)}`,
+      });
+    }
 
     return report;
   };
@@ -995,6 +1162,7 @@ async function launch({
   while (Date.now() - notBefore < timeout) {
     const rows = processTable();
     const grown = refreshed(tree, rows);
+    noteGone(grown, rows, goneAt);
 
     if (grown.length !== tree.length) {
       tree = grown;
@@ -1356,7 +1524,15 @@ async function down() {
   }
 
   const [rootRecord] = state.tree;
-  const live = processTable().find((row) => row.pid === rootRecord.pid);
+  const table = processTable();
+  const live = table.find((row) => row.pid === rootRecord.pid);
+  // What a failed up named and left running is named again, never stopped.
+  const named = (state.unrecorded ?? []).filter((record) =>
+    matches(
+      record,
+      table.find((row) => row.pid === record.pid),
+    ),
+  );
 
   // Never close-all: it reaches every playwright-cli session on the machine.
   const entry = playwrightCli();
@@ -1367,7 +1543,12 @@ async function down() {
   }
 
   const { records, result } = stopTree(state.tree);
-  const summary = stopSummary(result);
+  const summary = {
+    ...stopSummary(result),
+    ...(named.length === 0
+      ? {}
+      : { unrecorded: named.map((record) => record.pid) }),
+  };
   const rootRefused = result.refused.find(
     (record) =>
       record.reason === 'reused' &&
@@ -1377,12 +1558,20 @@ async function down() {
   const survived = result.refused.filter(
     (record) => record.reason === 'survived',
   );
-  const notes = result.refused
-    .filter((record) => record !== rootRefused && record.reason !== 'survived')
-    .map(
+  const notes = [
+    ...result.refused
+      .filter(
+        (record) => record !== rootRefused && record.reason !== 'survived',
+      )
+      .map(
+        (record) =>
+          `left ${describe(record)} alone: ${record.reason === 'helper' ? 'a shared helper, never stopped' : record.reason === 'caller' ? 'it runs this script' : 'its PID now belongs to another process'}`,
+      ),
+    ...named.map(
       (record) =>
-        `left ${describe(record)} alone: ${record.reason === 'helper' ? 'a shared helper, never stopped' : record.reason === 'caller' ? 'it runs this script' : 'its PID now belongs to another process'}`,
-    );
+        `left ${describe(record)} alone: a failed up found it running, started by a recorded process after up last recorded the tree, and never recorded it`,
+    ),
+  ];
 
   if (rootRefused !== undefined || survived.length > 0) {
     writeState({ ...state, tree: records });
@@ -1481,14 +1670,17 @@ const commands = new Map([
   ['info', info],
   ['down', down],
 ]);
-const run = command === undefined ? undefined : commands.get(command);
 
-if (!run) {
-  finish(2, { error: usage });
-}
+if (invoked) {
+  const run = command === undefined ? undefined : commands.get(command);
 
-try {
-  await run();
-} catch (error) {
-  finish(2, { error: withLaunchNote(`could not run: ${String(error)}`) });
+  if (!run) {
+    finish(2, { error: usage });
+  }
+
+  try {
+    await run();
+  } catch (error) {
+    finish(2, { error: withLaunchNote(`could not run: ${String(error)}`) });
+  }
 }
