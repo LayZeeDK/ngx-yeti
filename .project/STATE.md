@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -208,3 +208,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-17 — plan — plan approved
 - 2026-10-17 — build — build started
 - 2026-10-18 — build — user ruling 2026-10-18, verbatim: "Land the verification changes in M002 as T088" (the fix-task helper took T088, so the verification task is T089); plus the wave 19 review's major inherited warning: the root tests depend on unhashed BROWSERS, PLAYWRIGHT_SERVER, SAFARI and tmp/playwright-server
+- 2026-10-18 — plan — build plan repair requested
+- 2026-10-18 — plan — build recovery: {"base": "a1815a6374b5c99bc5628167f1aca227c702eb6f", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
+- 2026-10-18 — plan — plan approved

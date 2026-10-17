@@ -217,12 +217,14 @@ Review depth: full
 
 ## Wave 20 — fix wave 19 cycle 1 review findings
 
-Goal: Repair the blocking findings of the wave 19 cycle 1 review without changing source task contracts.
+Goal: Repair the blocking findings of the wave 19 cycle 1 review without changing source task contracts. Build repair (2026-10-18) adds two tasks. T089 lands the 2026-10-18 change of the global lars-create-verification contract under Lars's ruling of 2026-10-18, verbatim, "Land the verification changes in M002 as T088" (the fix-task helper had taken T088, so it is T089): check-skill.mjs fails `fingerprint-copy` on both control skills and `readme-sections` (control-yeti-app: missing Full sweep; control-ngx-yeti-storybook: missing Full sweep and Manual only); T089 re-copies fingerprint.mjs byte for byte and adds the missing feature-map sections, with no live drive. T090 closes the MAJOR inherited warning the wave 19 cycle 1 review recorded under Lars's ruling, verbatim, "Nx cache/inputs/outputs issues are important": the root `@ngx-yeti/source:test` result depends on the unhashed BROWSERS, PLAYWRIGHT_SERVER and SAFARI variables and on the gitignored tmp/playwright-server (tools/playwright/engines.test.mjs:163 calls `vitestBrowserApi()` with no env; the configs imported by tools/playwright/vitest-configs.test.mjs call it at module top, and that file clears only FLOOR_*), so T090 makes those tests independent of the caller's environment, shown failing first. T089's dep T084 and T090's deps T061 and T066 are the last landed tasks that changed their files (file overlap). T089 and T090 share no file.
 Review depth: full
 
 | Task | Title | Deps | Files |
 |------|-------|------|-------|
 | T088 | Fix wave 19 cycle 1 review findings in T087 | T087 | project.json, tools/nx/browser-floor-inputs.test.mjs |
+| T089 | Bring both control skills to the 2026-10-18 verification contract with fresh fingerprint.mjs copies and Full sweep and Manual only feature-map sections | T084 | .claude/skills/control-yeti-app/scripts/fingerprint.mjs, .claude/skills/control-yeti-app/features/README.md, .claude/skills/control-ngx-yeti-storybook/scripts/fingerprint.mjs, .claude/skills/control-ngx-yeti-storybook/features/README.md |
+| T090 | Make the root test target's tests independent of the caller's BROWSERS, PLAYWRIGHT_SERVER, SAFARI and FLOOR_* variables and of tmp/playwright-server | T061, T066 | tools/playwright/engines.test.mjs, tools/playwright/vitest-configs.test.mjs |
 
 ## Intent coverage
 
