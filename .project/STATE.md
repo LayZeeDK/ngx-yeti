@@ -5,7 +5,7 @@ milestone: layouts-and-button
 phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: active
+status: blocked
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -202,3 +202,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-17 — plan — planning started
 - 2026-10-17 — plan — plan approved
 - 2026-10-17 — build — build started
+- 2026-10-17 — build — wave 18 cycle 1 passed with a major inherited warning under Lars's ruling "Nx cache/inputs/outputs issues are important": the root test target hashes .github/workflows/ci.yml but not floor.yml, which tools/ci-local/run-job.test.mjs reads; a task inventory repair adds its fix before ship
