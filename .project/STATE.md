@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -191,3 +191,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-16 — plan — patch plan approved
 - 2026-10-16 — build — build started
 - 2026-10-17 — build — user ruling 2026-10-17, verbatim: "Yes, wait for proctree and add T084" (T084: one /lars-maintain-verification pass on both control skills to the updated lars-create-verification contract: ports table, doctor ports line, fingerprint copy, proctree.mjs; T080 reworked to adopt proctree for down and T083 after T084). Wave 17: T078, T079, T081, T082 landed; T080 attempt 1 saved (tmp/afk-m002/tools/T080-attempt1.patch), Log copied, isolate retired, record settled; build plan repair follows once the shared proctree.mjs lands (peer session larsgyrupbrinknielse-d0)
+- 2026-10-17 — plan — build plan repair requested
+- 2026-10-17 — plan — build recovery: {"base": "82b390fd2ff81120a6dd1188e9e248de155ec78d", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
+- 2026-10-17 — plan — plan approved

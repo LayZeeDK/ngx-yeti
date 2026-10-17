@@ -2,7 +2,7 @@
 id: T083
 title: Make both control scripts' PID-mismatch refusals name only the image name and start time of the process that now holds the recorded PID
 wave: 17
-deps: [T074, T080]
+deps: [T074, T080, T084]
 status: pending
 agent: null
 base: null
@@ -27,7 +27,7 @@ Source: security review round 7, finding 3 (Low, A09 / CWE-532, CWE-200), verbat
 
 Measured by the gap reviewer at d63e7e0 (final-gap-4.md, case A3 and A4, finding (5)): a foreign node process started with `--token=FAKE-SECRET-123` on its command line held the recorded PID; storybook's `down` printed `command mismatch (live: ...node.exe -e "..." -- --token=FAKE-SECRET-123)`, and yeti-app's `down` printed `live.commandLine` holding `--token=FAKE-SECRET-123`.
 
-T080 lands first and edits control-yeti-app's control.mjs, its test and SKILL.md; find each site by its code.
+T084 lands first and edits both skills' control.mjs, tests and SKILL.md (the process trees move to proctree.mjs, whose describe() prints an escaped command line), then T080 edits control-yeti-app's; find each site by its code.
 
 ## Approach
 
@@ -64,3 +64,4 @@ Heavy: yes
 ## Log
 
 - 2026-10-16 — created by planner
+- 2026-10-17 — deps updated by planner (build-repair of wave 17, Lars's ruling "Yes, wait for proctree and add T084"): T084 added, which edits both skills' control scripts, tests and SKILL.md before this task.
