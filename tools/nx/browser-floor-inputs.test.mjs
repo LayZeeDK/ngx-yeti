@@ -111,15 +111,28 @@ for (const target of nonReaders) {
   });
 }
 
-// This guard's results change when the floor file, the package manifests that
-// shape the project graph, or the pin that creates yeti-css change, so its own
-// cached run must hash them.
+// The root test target's cached run must hash every repository file its tests
+// read: the floor file, the manifests, project files and tsconfig files that
+// shape the project graph, the pin that creates yeti-css, the workflows
+// run-job.test.mjs parses, and the lockfile run-job.mjs reads.
 for (const file of [
   floor,
   'package.json',
   'packages/ngx-yeti/package.json',
   'apps/yeti-analog/package.json',
   'vendor/yeti/COMMIT',
+  '.github/workflows/ci.yml',
+  '.github/workflows/floor.yml',
+  'package-lock.json',
+  'project.json',
+  'apps/ngx-yeti-e2e/tsconfig.json',
+  'apps/screen-reader-e2e/tsconfig.json',
+  'apps/yeti-analog/tsconfig.json',
+  'apps/yeti-analog-e2e/tsconfig.json',
+  'apps/yeti-app/tsconfig.json',
+  'apps/yeti-app-e2e/tsconfig.json',
+  'packages/ngx-yeti/tsconfig.json',
+  'packages/ngx-yeti-testing/tsconfig.json',
 ]) {
   test(`@ngx-yeti/source:test hashes ${file}`, () => {
     assert.ok(
