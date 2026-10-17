@@ -215,6 +215,15 @@ Review depth: full
 |------|-------|------|-------|
 | T087 | Hash every file the root test target's tests read, including floor.yml and package-lock.json, and guard those inputs | T085 | project.json, tools/nx/browser-floor-inputs.test.mjs |
 
+## Wave 20 — fix wave 19 cycle 1 review findings
+
+Goal: Repair the blocking findings of the wave 19 cycle 1 review without changing source task contracts.
+Review depth: full
+
+| Task | Title | Deps | Files |
+|------|-------|------|-------|
+| T088 | Fix wave 19 cycle 1 review findings in T087 | T087 | project.json, tools/nx/browser-floor-inputs.test.mjs |
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |
