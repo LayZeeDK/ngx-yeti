@@ -38,6 +38,8 @@
         "{workspaceRoot}/package-lock.json",
         "{workspaceRoot}/project.json",
         "{workspaceRoot}/{apps,packages}/*/tsconfig.json",
+        "{workspaceRoot}/apps/yeti-analog/tsconfig.app.json",
+        "{workspaceRoot}/eslint.config.mjs",
         "{workspaceRoot}/tools/nx/browser-floor-inputs.test.mjs",
         "{workspaceRoot}/nx.json",
         "{workspaceRoot}/{apps,packages}/*/project.json",

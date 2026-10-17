@@ -112,8 +112,8 @@ for (const target of nonReaders) {
 }
 
 // The root test target's cached run must hash every repository file its tests
-// read: the floor file, the manifests, project files and tsconfig files that
-// shape the project graph, the pin that creates yeti-css, the workflows
+// read: the floor file, the manifests, project files, tsconfig files and the
+// root ESLint config that shape the project graph, the pin that creates yeti-css, the workflows
 // run-job.test.mjs parses, and the lockfile run-job.mjs reads.
 for (const file of [
   floor,
@@ -125,6 +125,8 @@ for (const file of [
   '.github/workflows/floor.yml',
   'package-lock.json',
   'project.json',
+  'eslint.config.mjs',
+  'apps/yeti-analog/tsconfig.app.json',
   'apps/ngx-yeti-e2e/tsconfig.json',
   'apps/screen-reader-e2e/tsconfig.json',
   'apps/yeti-analog/tsconfig.json',
