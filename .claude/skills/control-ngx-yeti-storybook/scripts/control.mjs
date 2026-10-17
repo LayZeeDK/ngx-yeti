@@ -34,6 +34,22 @@ import {
 
 /** @typedef {import('./proctree.mjs').ProcRecord} ProcRecord */
 
+/**
+ * A process this run did not start, by PID, image name and start time. Its
+ * arguments can hold secrets, so they are never printed.
+ *
+ * @param {ProcRecord} record
+ * @returns {string}
+ */
+function foreignProcess(record) {
+  const line = (record.commandLine ?? '').trimStart();
+  // An unquoted program path with spaces gives its first word.
+  const program = /^"([^"]*)"/.exec(line)?.[1] ?? line.split(/\s/, 1)[0] ?? '';
+  const image = program.split(/[\\/]/).pop() || 'image unknown';
+
+  return `PID ${String(record.pid)} (${printable(image)}, started ${new Date(record.start).toISOString()})`;
+}
+
 const NAME = 'control-ngx-yeti-storybook';
 const SKILL_DIR = fileURLToPath(new URL('..', import.meta.url));
 const ROOT = path.resolve(
@@ -1446,7 +1462,11 @@ async function down() {
     stopped,
     live === undefined || matches(rootRecord, live)
       ? { sessionClose }
-      : { sessionClose, recorded: describe(rootRecord), live: describe(live) },
+      : {
+          sessionClose,
+          recorded: describe(rootRecord),
+          live: foreignProcess(live),
+        },
   );
   const { summary, notes } = stopped;
 
@@ -1472,7 +1492,7 @@ async function down() {
   const holderLine = (holder) => {
     const row = rows.find((candidate) => candidate.pid === holder);
 
-    return row === undefined ? `PID ${String(holder)}` : describe(row);
+    return row === undefined ? `PID ${String(holder)}` : foreignProcess(row);
   };
   const report = {
     ...summary,

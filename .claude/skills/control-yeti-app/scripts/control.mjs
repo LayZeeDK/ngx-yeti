@@ -94,6 +94,22 @@ const sessionName = /^[\w-]+$/;
 /** @typedef {import('./proctree.mjs').ProcRecord} ProcRecord */
 
 /**
+ * A process this run did not start, by PID, image name and start time. Its
+ * arguments can hold secrets, so they are never printed.
+ *
+ * @param {ProcRecord} record
+ * @returns {string}
+ */
+function foreignProcess(record) {
+  const line = (record.commandLine ?? '').trimStart();
+  // An unquoted program path with spaces gives its first word.
+  const program = /^"([^"]*)"/.exec(line)?.[1] ?? line.split(/\s/, 1)[0] ?? '';
+  const image = program.split(/[\\/]/).pop() || 'image unknown';
+
+  return `PID ${String(record.pid)} (${printable(image)}, started ${new Date(record.start).toISOString()})`;
+}
+
+/**
  * One row of the ports table as this run uses it.
  *
  * @typedef {object} PortEntry
@@ -410,7 +426,7 @@ function leftBelow(records, goneAt) {
 
 /** @param {ProcRecord[]} left */
 const leftNote = (left) =>
-  `${left.map((record) => describe(record)).join(', ')} still runs: up never recorded it, and the recorded process that started it has exited; up left it running (only a process whose parent is recorded is found, so one whose parent also went unrecorded is not)`;
+  `${left.map((record) => foreignProcess(record)).join(', ')} still runs: up never recorded it, and the recorded process that started it has exited; up left it running (only a process whose parent is recorded is found, so one whose parent also went unrecorded is not)`;
 
 // Test seams; nothing else sets them. CONTROL_LISTENER_TIMEOUT_MS makes the
 // listener query time out, from query CONTROL_LISTENER_QUERIES_OK on (0 by
@@ -1569,7 +1585,7 @@ async function down() {
       ),
     ...named.map(
       (record) =>
-        `left ${describe(record)} alone: a failed up found it running, started by a recorded process after up last recorded the tree, and never recorded it`,
+        `left ${foreignProcess(record)} alone: a failed up found it running, started by a recorded process after up last recorded the tree, and never recorded it`,
     ),
   ];
 
@@ -1582,7 +1598,7 @@ async function down() {
           : `pid ${state.pid} does not match the recorded start time or command line; refusing to stop it, and stopped the other recorded processes that still match; state kept at ${stateFile}`,
       ...(rootRefused === undefined || live === undefined
         ? {}
-        : { recorded: describe(rootRecord), live: describe(live) }),
+        : { recorded: describe(rootRecord), live: foreignProcess(live) }),
       ...summary,
       notes,
       sessions,
@@ -1633,7 +1649,7 @@ async function down() {
   const holderLine = (holder) => {
     const row = rows.find((candidate) => candidate.pid === holder);
 
-    return row === undefined ? `PID ${holder}` : describe(row);
+    return row === undefined ? `PID ${holder}` : foreignProcess(row);
   };
   const unclosed = sessions.filter(({ outcome }) => sessionLeftOpen(outcome));
   const problems = [

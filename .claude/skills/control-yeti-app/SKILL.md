@@ -71,12 +71,12 @@ measured). `--timeout=<seconds>`
 When `up` gives up (the launch exited, the timeout ran out, or another process holds the port), it stops the recorded
 tree through `stop`, never the launched PID by itself, so a PID Windows has handed to another process is left alone.
 A process the launch started after the last poll, just before its parent exited, is in no record. `up` notes when it
-first sees each recorded process gone, and names a live process in `survivors` and the error, with its escaped command
-line, when its parent is a recorded process that is gone and it started while that parent ran (no earlier than the
+first sees each recorded process gone, and names a live process in `survivors` and the error, by PID, image name and start time only (no record proves it
+is the run's own), when its parent is a recorded process that is gone and it started while that parent ran (no earlier than the
 parent and no later than the moment `up` first saw the parent gone); it leaves it running. When the started PID never
 appeared in the process table, the launch counts as such a parent from the spawn time on. When a recorded process also
-outlasts `stop`, the kept `state.json` lists the named processes in `unrecorded`, and `down` names them again in
-`notes` and `unrecorded` while they still run, without stopping them. `launchStopped` is `true` only when every
+outlasts `stop`, the kept `state.json` lists the named processes in `unrecorded`, and `down` names them again, the
+same way, in `notes` and `unrecorded` while they still run, without stopping them. `launchStopped` is `true` only when every
 recorded process is stopped or gone and no such process is found. The limit: Windows keeps only a process's parent PID,
 so a process is found only when a recorded or found process is its parent. A process whose parent and grandparent both
 exited between two polls is not found, and `launchStopped` can then be `true` while it runs.
@@ -173,7 +173,7 @@ Refusals and exits, from "Process trees" of the create skill's `references/gener
 - A live process on the recorded root PID whose start time or command line differs from `state.json`: the root is
   refused as `reused` and left running, both sessions are still closed and every other record that still matches is
   still stopped; exit 2, `does not match the recorded start time or command line; refusing to stop it, and stopped
-the other recorded processes that still match`, `state.json` kept.
+the other recorded processes that still match`, `state.json` kept. `recorded` names the root with its escaped recorded command line; `live` names the process now on that PID only by PID, image name (the program file of its command line) and start time (`PID <p> (<image>, started <ISO time>)`), never its arguments, which can hold secrets.
 - A recorded root that is no longer running (the server died on its own) is not a refusal: `down` closes both
   sessions, stops the recorded descendants that still match, and exits 0 with `recordedPidRunning: false` and the
   warning `pid <pid> was not running` (a `[WARN]` line without `--json`).
@@ -213,8 +213,8 @@ no answer in 30 s included, counts as a busy port and ends the wait at once: `po
 
 When the port still listens after the wait, its holder is outside the recorded tree: `down` removes `state.json`
 (every recorded process is stopped or gone, so another `down` could do no more) and exits 1 with an error that starts
-`teardown incomplete`, names each listener with its escaped command line and says it is not the recorded tree and may
-be another session's instance or the user's own (`port <port> still held by PID <p> (<command line>), not the
+`teardown incomplete`, names each listener by PID, image name and start time (never its arguments) and says it is not the recorded tree and may
+be another session's instance or the user's own (`port <port> still held by PID <p> (<image>, started <ISO time>), not the
 recorded tree; it may be another session's instance or the user's own, so down left it running`), or `not confirmed
 free` with the query's error. It never offers a process outside the tree for stopping. Another `down` then exits 2
 (no state file), and `up` moves past that port to the next slot, or with `--port` exits 2 naming its holder. `up`
@@ -301,7 +301,9 @@ copy of the skill against a stand-in page (`[WARN]` unproven, `[OK]` after `reco
 changes, exit 0 in all three) and its `[SKIP] ports` line with `--url`; the refused flags (unknown ones and ones the
 command does not take); an unhandled error exiting 2 with JSON; `info` naming both sessions, the state file, `ports`
 and `tree`; every command's exit-2 refusal of a state file that is not JSON or has no `tree` rooted at its `pid`, and of an old
-state file without `tree` (naming its PID and the way out); escaped command lines in the human output; a
+state file without `tree` (naming its PID and the way out); escaped command lines in the human output; a foreign process started with `--token=FAKE-SECRET-123` on the recorded root PID, which `down --json` and plain `down` refuse (exit 2, state kept) naming only its image name and start time, the secret nowhere in stdout or stderr, and also named that way in `notes` when `unrecorded` lists it; a
+`down` whose port a process started with that secret holds, which stops the tree (exit 1, state removed) and names
+the holder only by image name and start time; a
 worktree copy refusing 4200 and 4000 with `--port` and naming a derived port in its mode's range; ten busy slots (the
 checkout's own ten, by the slot rule, so 4200 and 4620-4628 in the main checkout; the slot list `up` prints must
 equal the rule's) exiting 2 with each port and holder; the checkout's own port busy moving `up` to the next slot with

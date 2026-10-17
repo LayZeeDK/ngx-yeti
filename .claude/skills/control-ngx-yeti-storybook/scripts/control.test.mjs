@@ -1047,36 +1047,49 @@ test('down leaves alone a recorded child whose PID now belongs to another proces
 
 test('down names a listener outside the tree without offering to stop it, and then shows a failed listener query', async (t) => {
   assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
-  const server = createServer();
-  await new Promise((done) => server.listen(0, () => done(undefined)));
-  const address = server.address();
-  assert.ok(address !== null && typeof address === 'object');
-  const { port } = address;
+  const secret = 'FAKE-SECRET-123';
+  const port = await freePort();
+  const registry = mkdtempSync(join(tmpdir(), 'control-storybook-registry-'));
+  const holder = spawn(
+    process.execPath,
+    ['-e', listenScript(port), '--', `--token=${secret}`],
+    { argv0: 'node', detached: true, stdio: 'ignore', windowsHide: true },
+  );
   const stand = spawn(
     process.execPath,
     ['-e', 'setInterval(() => {}, 1 << 30)', target, `--port=${String(port)}`],
     { detached: true, stdio: 'ignore', windowsHide: true },
   );
-  stand.unref();
-  const { pid } = stand;
-  assert.ok(pid !== undefined);
-  const registry = mkdtempSync(join(tmpdir(), 'control-storybook-registry-'));
-  t.after(async () => {
-    killAll([pid]);
-    await new Promise((done) => server.close(done));
+  t.after(() => {
+    holder.kill();
+    stand.kill();
     rmSync(stateFile, { force: true });
     rmSync(registry, { recursive: true, force: true });
   });
+  holder.unref();
+  stand.unref();
+  const { pid } = stand;
+  assert.ok(pid !== undefined && holder.pid !== undefined);
+  await waitListening(port);
+  const held = recordOf(holder.pid);
+  assert.ok(
+    held.commandLine?.includes(secret),
+    'the secret is not on the command line',
+  );
   writeState(standInState('test-held', [recordOf(pid)], port));
   const env = { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: registry };
 
   const first = controlWith(env, 'down');
   assert.equal(first.code, 1, JSON.stringify(first.result));
-  assert.match(
-    first.result.message ?? '',
-    new RegExp(
-      `port ${String(port)} still held by PID ${String(process.pid)} \\(.*\\), not the recorded tree; it may be another session's instance or the user's own, so down left it running; removed `,
+  assert.ok(
+    !JSON.stringify(first.result).includes(secret),
+    `down printed the secret: ${JSON.stringify(first.result)}`,
+  );
+  assert.ok(
+    (first.result.message ?? '').includes(
+      `port ${String(port)} still held by PID ${String(holder.pid)} (node, started ${new Date(held.start).toISOString()}), not the recorded tree; it may be another session's instance or the user's own, so down left it running; removed `,
     ),
+    first.result.message,
   );
   assert.doesNotMatch(first.result.message ?? '', /stop by hand/);
   assert.deepEqual(first.result.stoppedPids, [pid]);
@@ -1157,6 +1170,77 @@ test('down refuses a root whose start time does not match, and still stops the r
   assert.ok(existsSync(stateFile), 'down removed the state file');
   assert.ok(alive(launch.pid), 'down stopped the mismatched root');
   await waitGone(launch.child);
+});
+
+test('down names only the image name and start time of a foreign process that holds the recorded PID', async (t) => {
+  assert.equal(existsSync(stateFile), false, `${stateFile} exists`);
+  const secret = 'FAKE-SECRET-123';
+  const registry = mkdtempSync(join(tmpdir(), 'control-storybook-registry-'));
+  const foreign = spawn(
+    process.execPath,
+    ['-e', 'setInterval(() => {}, 1 << 30)', '--', `--token=${secret}`],
+    { argv0: 'node', detached: true, stdio: 'ignore', windowsHide: true },
+  );
+  t.after(() => {
+    foreign.kill();
+    rmSync(stateFile, { force: true });
+    rmSync(registry, { recursive: true, force: true });
+  });
+  foreign.unref();
+  const { pid } = foreign;
+  assert.ok(pid !== undefined);
+  const live = recordOf(pid);
+  assert.ok(
+    live.commandLine?.includes(secret),
+    'the secret is not on the command line',
+  );
+  const port = await freePort();
+  writeState(
+    standInState(
+      'test-foreign',
+      [
+        {
+          pid,
+          ppid: 0,
+          start: live.start - 60_000,
+          commandLine: 'node recorded.js',
+        },
+      ],
+      port,
+    ),
+  );
+  const env = { ...envWithoutCli(), CONTROL_SESSION_REGISTRY: registry };
+  const startedAt = new Date(live.start).toISOString();
+
+  for (const args of [['down', '--json'], ['down']]) {
+    const run = spawnSync(process.execPath, [script, ...args], {
+      cwd: root,
+      env,
+      encoding: 'utf8',
+      timeout: 60_000,
+      windowsHide: true,
+    });
+    const output = `${run.stdout}${run.stderr}`;
+    assert.equal(run.status, 2, output);
+    assert.ok(
+      existsSync(stateFile),
+      `${args.join(' ')} removed the state file`,
+    );
+    assert.ok(
+      !output.includes(secret),
+      `${args.join(' ')} printed the secret: ${output}`,
+    );
+    assert.ok(
+      output.includes(`PID ${String(pid)} (node, started ${startedAt})`),
+      output,
+    );
+    assert.ok(
+      !output.includes('setInterval'),
+      `${args.join(' ')} printed an argument: ${output}`,
+    );
+  }
+
+  assert.ok(alive(pid), 'down stopped the foreign process');
 });
 
 test('down exits 2 and keeps the state file when a recorded process survives the last round', async (t) => {
