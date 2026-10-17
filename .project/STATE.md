@@ -5,7 +5,7 @@ milestone: layouts-and-button
 phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: active
+status: blocked
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -195,3 +195,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-17 — plan — build recovery: {"base": "82b390fd2ff81120a6dd1188e9e248de155ec78d", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-17 — plan — plan approved
 - 2026-10-17 — build — build started
+- 2026-10-17 — build — user ruling 2026-10-17, verbatim: "Correct SC8 now: native local checks only, real NVDA lane" and "Land T085 first, then correct SC8" (SC8's local set narrows to native checks; container jobs pass in CI; the project Verify runs the real nvda lane)
