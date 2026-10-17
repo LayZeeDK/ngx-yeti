@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -203,3 +203,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-17 — plan — plan approved
 - 2026-10-17 — build — build started
 - 2026-10-17 — build — wave 18 cycle 1 passed with a major inherited warning under Lars's ruling "Nx cache/inputs/outputs issues are important": the root test target hashes .github/workflows/ci.yml but not floor.yml, which tools/ci-local/run-job.test.mjs reads; a task inventory repair adds its fix before ship
+- 2026-10-17 — plan — build plan repair requested
+- 2026-10-17 — plan — build recovery: {"base": "8a710a8355a700e37f3613a4d07268c808c4d140", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
+- 2026-10-17 — plan — plan approved

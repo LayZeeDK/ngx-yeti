@@ -206,6 +206,15 @@ Review depth: full
 | T085 | Fix wave 17 cycle 1 review findings in T079 | T079 | nx.json, packages/ngx-yeti-testing/project.json, packages/ngx-yeti/project.json, project.json, tools/nx/browser-floor-inputs.test.mjs |
 | T086 | Make the local-CI rule in AGENTS.md, references/ci-local.md, and the testing skill say that container jobs pass in CI and need no local run, while the native jobs and the real NVDA lane pass locally | T064, T070, T048 | AGENTS.md, references/ci-local.md, .claude/skills/ngx-yeti-testing/SKILL.md |
 
+## Wave 19 — close the root test target's remaining input gaps
+
+Goal: Close the MAJOR inherited defect the wave 18 cycle 1 review recorded as a warning under Lars's ruling, verbatim, "Nx cache/inputs/outputs issues are important": the root `@ngx-yeti/source:test` target hashes `.github/workflows/ci.yml` but not `.github/workflows/floor.yml`, which tools/ci-local/run-job.test.mjs reads and asserts on, nor `package-lock.json`, which tools/ci-local/run-job.mjs parses. T087 sweeps every test file of the target for the repository files it reads, adds each missing one to the target's inputs, and extends the self-check guard in tools/nx/browser-floor-inputs.test.mjs to assert them, shown failing first. Its dep T085 is the last landed task that changed project.json and tools/nx/browser-floor-inputs.test.mjs (file overlap). No run-job leg (Lars, 2026-10-17, verbatim: "Other checks may be deferred to CI").
+Review depth: full
+
+| Task | Title | Deps | Files |
+|------|-------|------|-------|
+| T087 | Hash every file the root test target's tests read, including floor.yml and package-lock.json, and guard those inputs | T085 | project.json, tools/nx/browser-floor-inputs.test.mjs |
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |
