@@ -239,8 +239,10 @@ function voiceOverLane(): Lane {
     // and VO-Space presses it; Guidepup polls right after the press. Focus
     // set from the page does not move VoiceOver's keyboard focus in a
     // safaridriver session, so the cursor cannot follow it there.
-    press: async (name, settle = 0) =>
-      move(async () => {
+    // The walk stays in the log but out of what `press` returns, so text
+    // already on the page is never counted as the press's announcement.
+    async press(name, settle = 0) {
+      await move(async () => {
         await voiceOver.perform(voiceOver.keyboardCommands.jumpToLeftEdge);
 
         for (let step = 0; ; step++) {
@@ -256,11 +258,14 @@ function voiceOverLane(): Lane {
             break;
           }
         }
+      });
 
+      return move(async () => {
         await voiceOver.act();
         await browser.pause(settle);
         await requireSafariInFront();
-      }),
+      });
+    },
     heard: () => log,
     stop: async () => Promise.resolve(),
   };
