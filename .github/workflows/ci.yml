@@ -148,9 +148,29 @@ jobs:
         with:
           path: ~/Library/Caches/guidepup/
           key: guidepup-voiceover-${{ runner.os }}-${{ steps.guidepup.outputs.version }}
-      # Writes the TCC and VoiceOver AppleScript settings the runner needs.
-      - run: npx --no-install guidepup setup --ci
-      - run: npx --no-install guidepup install voiceover
+      # Starting VoiceOver mounts Guidepup's preferences disk image, and Finder
+      # opens a window for a new disk that can take the foreground from Safari.
+      # cfprefsd caches the old value, so it restarts with Finder.
+      - run: |
+          defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool false
+          killall cfprefsd || true
+          killall Finder || true
+      # Writes the TCC and VoiceOver AppleScript settings the runner needs. Its
+      # Do Not Disturb step can fail with "Not authorized to send Apple events
+      # to System Events (-2700)" right after it writes those permissions;
+      # @guidepup/setup 0.29.2 and later rewrite them on a second run.
+      - run: |
+          npx --no-install guidepup setup --ci || {
+            echo "::warning::guidepup setup failed; retrying once in 30 s."
+            sleep 30
+            npx --no-install guidepup setup --ci
+          }
+      - run: |
+          npx --no-install guidepup install voiceover || {
+            echo "::warning::guidepup install failed; retrying once in 15 s."
+            sleep 15
+            npx --no-install guidepup install voiceover
+          }
       - run: npx nx run screen-reader-e2e:voiceover --output-style=static
       - if: always()
         uses: actions/upload-artifact@v7
