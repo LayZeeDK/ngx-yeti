@@ -46,7 +46,7 @@ if (laneName() === 'voiceover') {
     lane,
   }) => {
     await lane.open('cluster--tags');
-    await lane.change(dropListRole, 'ul');
+    await lane.change(dropListRole, '[data-testid="cluster"]');
     const heard = await walk(lane, lanes.voiceover.steps, 'nextListItem');
 
     expect(inOrder(heard, tags)).toEqual(tags);

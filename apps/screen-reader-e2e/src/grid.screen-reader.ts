@@ -46,7 +46,7 @@ if (laneName() === 'voiceover') {
     lane,
   }) => {
     await lane.open('grid--default');
-    await lane.change(dropListRole, 'ul');
+    await lane.change(dropListRole, '[data-testid="grid"]');
     const heard = await walk(lane, lanes.voiceover.steps, 'nextListItem');
 
     expect(inOrder(heard, names)).toEqual(names);

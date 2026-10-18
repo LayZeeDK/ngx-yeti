@@ -58,7 +58,7 @@ if (laneName() === 'voiceover') {
     lane,
   }) => {
     await lane.open('timeline--default');
-    await lane.change(dropListRole, 'ol');
+    await lane.change(dropListRole, '[data-testid="timeline"]');
     const heard = await walk(lane, lanes.voiceover.steps, 'nextListItem');
 
     expect(inOrder(heard, entries)).toEqual(entries);
