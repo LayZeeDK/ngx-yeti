@@ -87,11 +87,17 @@ async function chooseWebContent(): Promise<void> {
   for (let attempt = 0; ; attempt++) {
     if (attempt === maxChooserAttempts) {
       throw new Error(
-        `VoiceOver did not open its Item Chooser with ${await frontmostApplication()} in front; it said ${JSON.stringify([...heard])}.`,
+        `VoiceOver did not open its Item Chooser with ${await frontmostApplication()} in front; after its restart it said ${JSON.stringify([...heard])}.`,
       );
     }
 
     if (attempt === restartChooserAfter) {
+      // A rescue still leaves a trace in the job log, so a VoiceOver that
+      // goes stale more often shows.
+      console.warn(
+        `VoiceOver restarted: its Item Chooser stayed shut after ${String(restartChooserAfter)} tries; it said ${JSON.stringify([...heard])}.`,
+      );
+      heard.clear();
       await voiceOver.stop();
       await voiceOver.start(startOptions);
     }
