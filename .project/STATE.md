@@ -2,10 +2,10 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: build
+phase: plan
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: blocked
+status: done
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -223,3 +223,6 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-18 — plan — patch plan approved
 - 2026-10-18 — build — build started
 - 2026-10-18 — build — build blocked for plan repair: npm 12.2.0 (live on this machine since 05:21) prints npm pack --json as an object, so tools/package/pack-check.mjs:97 throws; diagnostic Verify at b04cc90 failed only there (other steps passed); add a pack-check task to wave 22
+- 2026-10-18 — plan — build plan repair requested
+- 2026-10-18 — plan — build recovery: {"base": "0152898815dc2ea9888ff6bfaa911ccad5e7680b", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
+- 2026-10-18 — plan — plan approved
