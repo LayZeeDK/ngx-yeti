@@ -109,24 +109,25 @@ function voiceOverLane(): Lane {
     nextListItem: async () => move(async () => voiceOver.next()),
     next: async () => move(async () => voiceOver.next()),
     // Guidepup logs only what VoiceOver speaks during one of its own
-    // actions, so the change runs inside `voiceOver.capture`.
+    // actions, so the change runs inside `voiceOver.capture`. It polls
+    // VoiceOver's last phrase only once the action returns, so the action
+    // is the script alone: a wait inside it would leave a later phrase to
+    // replace the announcement before the first poll (guidepup#183).
     change: async (script, argument, settle = 0) =>
       move(async () => {
-        await voiceOver.capture(async () => {
-          await browser.execute(script, argument);
-          await browser.pause(settle);
+        await voiceOver.capture(async () => browser.execute(script, argument));
+        await browser.pause(settle);
 
-          // VoiceOver announces a page change only while Safari is in front,
-          // so a lost front window fails the test instead of passing for
-          // silence.
-          const front = await frontmostApplication();
+        // VoiceOver announces a page change only while Safari is in front,
+        // so a lost front window fails the test instead of passing for
+        // silence.
+        const front = await frontmostApplication();
 
-          if (front !== 'Safari') {
-            throw new Error(
-              `Safari lost the foreground to ${front}: what VoiceOver spoke is not the page.`,
-            );
-          }
-        });
+        if (front !== 'Safari') {
+          throw new Error(
+            `Safari lost the foreground to ${front}: what VoiceOver spoke is not the page.`,
+          );
+        }
       }),
     heard: () => log,
     stop: async () => Promise.resolve(),
