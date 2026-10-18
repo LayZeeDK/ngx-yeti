@@ -235,6 +235,15 @@ Review depth: full
 |------|-------|------|-------|
 | T091 | Run the project-graph guard in its own uncached root target that the root test target depends on, and drop the graph-only inputs no remaining root test reads | T088 | project.json, tools/nx/browser-floor-inputs.test.mjs |
 
+## Wave 22 — keep the Firefox 145 floor download in the workspace
+
+Goal: Clear final-review finding P001 of ship attempt 3 (.project/review/PATCH-FINDINGS.md, source .project/review/final-gap-1.md): the project Verify failed at 8222987 in the firefox-145 floor step, because WebdriverIO 9.32 caches the downloaded Firefox 145 and geckodriver in the OS temp folder (getCacheDir falls back to `os.tmpdir()` when no cacheDir is set), the Firefox install there was emptied after 2026-10-16, and @puppeteer/browsers refuses to reinstall into a folder that lacks the executable. T092 points the FLOOR_FIREFOX provider's `wdio:geckodriverOptions` cacheDir at the workspace root's gitignored tmp/floor-firefox, resolved from the config file's location, the way the chromium-141 floor already keeps Chrome for Testing 141 in tmp/floor-chrome; it proves the provider option with a test in tools/playwright/vitest-configs.test.mjs shown failing first, runs the real floor step from a fresh install, and updates the two documents that say where WebdriverIO downloads Firefox 145. The planner's sweep found one site of the pattern; the Safari sites use the runner's safaridriver and download nothing. T092's deps T061, T090 and T086 are the last landed tasks that changed vitest.unit.config.mts, vitest-configs.test.mjs, and references/ci-local.md with the testing skill (file overlap). No task owns an INTENT success criterion.
+Review depth: full
+
+| Task | Title | Deps | Files |
+|------|-------|------|-------|
+| T092 | Keep the firefox-145 floor's Firefox and geckodriver download in the workspace's gitignored tmp/floor-firefox instead of the OS temp folder | T061, T086, T090 | packages/ngx-yeti/vitest.unit.config.mts, tools/playwright/vitest-configs.test.mjs, references/ci-local.md, .claude/skills/ngx-yeti-testing/SKILL.md, tmp/floor-firefox/firefox/win64-stable_145.0/core/firefox.exe |
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |

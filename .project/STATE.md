@@ -2,7 +2,7 @@
 pipeline: gsd-path/v2
 project: ngx-yeti
 milestone: layouts-and-button
-phase: ship
+phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
 status: active
@@ -218,3 +218,7 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-18 — plan — plan approved
 - 2026-10-18 — build — build started
 - 2026-10-18 — ship — build done; final review pending
+- 2026-10-18 — ship — project Verify failed at 8222987 (ship attempt 3): firefox-145 floor step could not start Firefox 145, WebdriverIO cache win64-stable_145.0 in TEMP holds no firefox.exe; evidence .project/review/final-gap-1.md and verify-ledger.jsonl
+- 2026-10-18 — plan — patch plan reopened
+- 2026-10-18 — plan — patch plan approved
+- 2026-10-18 — build — build started
