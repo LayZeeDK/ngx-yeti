@@ -59,11 +59,18 @@ async function cancelInteraction(): Promise<void> {
  * and entered the start marker's text, a button's title, or nothing.
  */
 async function chooseWebContent(): Promise<void> {
+  const heard = new Set<string>();
+
   for (let attempt = 0; ; attempt++) {
     if (attempt === maxChooserAttempts) {
-      throw new Error('VoiceOver did not open its Item Chooser.');
+      throw new Error(
+        `VoiceOver did not open its Item Chooser with ${await frontmostApplication()} in front; it said ${JSON.stringify([...heard])}.`,
+      );
     }
 
+    // The Item Chooser lists the front application's items, so Safari is
+    // brought back before each attempt.
+    await macOSActivate('Safari');
     await cancelInteraction();
     await voiceOver.perform(
       { keyCode: MacOSKeyCodes.Escape },
@@ -72,13 +79,13 @@ async function chooseWebContent(): Promise<void> {
     await delay(100);
     await voiceOver.perform(voiceOver.keyboardCommands.openItemChooser);
 
-    if (
-      (await voiceOver.lastSpokenPhrase())
-        .toLowerCase()
-        .includes('item chooser')
-    ) {
+    const phrase = await voiceOver.lastSpokenPhrase();
+
+    if (phrase.toLowerCase().includes('item chooser')) {
       break;
     }
+
+    heard.add(phrase);
   }
 
   for (let attempt = 0; ; attempt++) {
