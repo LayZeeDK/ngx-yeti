@@ -4,7 +4,6 @@ import { macOSActivate, voiceOver } from '@guidepup/guidepup';
 import { remote } from 'webdriverio';
 import {
   addStartMarker,
-  focusButton,
   spoken,
   startMarkerText,
   storyRendered,
@@ -35,6 +34,9 @@ async function frontmostApplication(): Promise<string> {
     });
   }
 }
+
+/** How many VoiceOver items `press` walks past looking for its button. */
+const maxPressSteps = 10;
 
 /**
  * VoiceOver announces a page change only while Safari is in front, so a lost
@@ -141,14 +143,28 @@ function voiceOverLane(): Lane {
         await browser.pause(settle);
         await requireSafariInFront();
       }),
-    // VoiceOver's cursor follows the keyboard focus to the button, and VO-Space
-    // presses it; Guidepup polls right after the press.
+    // The VoiceOver cursor walks from the web area's left edge to the button,
+    // and VO-Space presses it; Guidepup polls right after the press. Focus
+    // set from the page does not move VoiceOver's keyboard focus in a
+    // safaridriver session, so the cursor cannot follow it there.
     press: async (name, settle = 0) =>
       move(async () => {
-        await browser.execute(focusButton, name);
-        await voiceOver.perform(
-          voiceOver.keyboardCommands.moveCursorToKeyboardFocus,
-        );
+        await voiceOver.perform(voiceOver.keyboardCommands.jumpToLeftEdge);
+
+        for (let step = 0; ; step++) {
+          if (step === maxPressSteps) {
+            throw new Error(
+              `VoiceOver found no ${name} button in ${String(maxPressSteps)} steps.`,
+            );
+          }
+
+          await voiceOver.next();
+
+          if ((await voiceOver.lastSpokenPhrase()).includes(`${name} button`)) {
+            break;
+          }
+        }
+
         await voiceOver.act();
         await browser.pause(settle);
         await requireSafariInFront();

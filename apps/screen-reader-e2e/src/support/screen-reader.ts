@@ -157,22 +157,6 @@ export function clickButton(name: string): void {
 }
 
 /**
- * Runs in the page: moves the keyboard focus to the button named `name`.
- * The browser runs a page script alone, so it finds the button itself.
- */
-export function focusButton(name: string): void {
-  const button = [...document.querySelectorAll('button')].find(
-    (candidate) => candidate.textContent.trim() === name,
-  );
-
-  if (!button) {
-    throw new Error(`No button named ${name}`);
-  }
-
-  button.focus();
-}
-
-/**
  * Moves the reader from the start marker into the story and then `steps`
  * times on, and returns only what those moves made it say: the arrival may
  * read the whole page.
