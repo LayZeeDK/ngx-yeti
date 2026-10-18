@@ -1,0 +1,1 @@
+export { YetiIcon } from './icon';

@@ -1,6 +1,7 @@
+// @ts-check
 import { fileURLToPath } from 'node:url';
 import { devices } from '@playwright/test';
-import { engines, localEnv } from './engines.mjs';
+import { chromiumFloor, engines, localEnv } from './engines.mjs';
 
 /**
  * The command the e2e web servers start Nx with: this Node and the installed
@@ -25,6 +26,32 @@ function project({ name, engine, options }) {
   };
 }
 
+/**
+ * The Playwright worker count of a local container run, spread after the
+ * preset. Only tools/ci-local/run-job.mjs sets E2E_LOCAL_WORKERS, so CI keeps
+ * the preset's count, and a command-line `--workers` still wins.
+ *
+ * @param {NodeJS.ProcessEnv} env
+ * @returns {{ workers?: number }}
+ */
+export function localWorkers(env = process.env) {
+  const value = env['E2E_LOCAL_WORKERS'];
+
+  if (!value) {
+    return {};
+  }
+
+  const workers = Number(value);
+
+  if (!Number.isInteger(workers) || workers < 1) {
+    throw new Error(
+      `E2E_LOCAL_WORKERS must be a whole number from 1, not ${value}`,
+    );
+  }
+
+  return { workers };
+}
+
 /** @param {string} url */
 export function hostPort(url) {
   const { hostname, port, protocol } = new URL(url);
@@ -42,7 +69,7 @@ export function hostPort(url) {
  * @param {NodeJS.ProcessEnv} env
  */
 export function browserProjects(webServerUrls, env = localEnv()) {
-  const chromiumFloor = env['FLOOR_CHROMIUM_PATH'];
+  const floor = chromiumFloor(env);
 
   if (env['FLOOR_WEBKIT'] === 'true') {
     return [project({ name: 'webkit', engine: 'webkit' })];
@@ -52,14 +79,8 @@ export function browserProjects(webServerUrls, env = localEnv()) {
     return [project({ name: 'firefox', engine: 'firefox' })];
   }
 
-  if (chromiumFloor) {
-    return [
-      project({
-        name: 'chromium',
-        engine: 'chromium',
-        options: { launchOptions: { executablePath: chromiumFloor } },
-      }),
-    ];
+  if (floor) {
+    return [project(floor)];
   }
 
   return engines(env, webServerUrls.map(hostPort)).map((browser) =>

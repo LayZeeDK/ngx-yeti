@@ -1,3 +1,4 @@
+// @ts-check
 import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import http from 'node:http';
@@ -16,7 +17,11 @@ const cli = path.join(
   'cli.js',
 );
 
-/** Two distinct ports the OS hands out on 127.0.0.1 now. */
+/**
+ * Two distinct ports the OS hands out on 127.0.0.1 now.
+ *
+ * @returns {Promise<[number, number]>}
+ */
 async function twoFreePorts() {
   const servers = [net.createServer(), net.createServer()];
 
@@ -38,7 +43,11 @@ async function twoFreePorts() {
     await once(server, 'close');
   }
 
-  return ports;
+  const [first, second] = ports;
+
+  assert.ok(first !== undefined && second !== undefined);
+
+  return [first, second];
 }
 
 /**
@@ -285,7 +294,10 @@ test('stops once no admitted connection has been open for the idle time', async 
     port: outer,
     token: idleToken,
     listenHost: '127.0.0.1',
-    idleMs: 500,
+    // The idle timer runs while run-server starts, and only the readiness
+    // polls reset it; a stall of this process longer than idleMs between two
+    // polls would stop the server before it ever answers.
+    idleMs: 5000,
   });
   // A tokenless peer every 300 ms must not keep the server up.
   const peer = setInterval(() => {

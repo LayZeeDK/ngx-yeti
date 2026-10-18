@@ -3,14 +3,33 @@ import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 import {
   browserProjects,
+  localWorkers,
   nx,
 } from '../../tools/playwright/browser-projects.mjs';
 
-const configuration =
-  process.env['FIXTURE_CONFIGURATION'] === 'production'
-    ? 'production'
-    : 'development';
-const port = configuration === 'production' ? 4311 : 4310;
+/** Each Fixture app build configuration and the port its server takes. */
+const ports = {
+  development: 4310,
+  production: 4311,
+  'tailwind-c1': 4313,
+  'tailwind-c2': 4314,
+};
+
+function isConfiguration(value: string): value is keyof typeof ports {
+  return Object.hasOwn(ports, value);
+}
+
+const requested = process.env['FIXTURE_CONFIGURATION'] ?? 'development';
+
+if (!isConfiguration(requested)) {
+  throw new Error(
+    `FIXTURE_CONFIGURATION is one of ${Object.keys(ports).join(', ')}, not ${requested}`,
+  );
+}
+
+const configuration = requested;
+const port = ports[configuration];
+const tailwindSpec = 'tailwind.spec.ts';
 const baseURL = `http://localhost:${String(port)}/sub/`;
 
 // Never reuse a server: a server left on these ports by another checkout or
@@ -49,9 +68,15 @@ const webServer = [
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
+  ...localWorkers(),
   // In CI a test that passes only on a retry fails the run: the retry keeps
   // its trace, and a timing regression no longer passes as flaky.
   failOnFlakyTests: Boolean(process.env['CI']),
+  // The Tailwind builds change the global stylesheet only, so they run the
+  // one spec about it, which the other builds cannot pass.
+  ...(configuration.startsWith('tailwind-')
+    ? { testMatch: tailwindSpec }
+    : { testIgnore: tailwindSpec }),
   use: {
     baseURL,
     trace: 'on-first-retry',

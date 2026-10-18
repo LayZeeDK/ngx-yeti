@@ -3,6 +3,7 @@ import { nxE2EPreset } from '@nx/playwright/preset';
 import { workspaceRoot } from '@nx/devkit';
 import {
   browserProjects,
+  localWorkers,
   nx,
 } from '../../tools/playwright/browser-projects.mjs';
 
@@ -26,6 +27,7 @@ const baseURL = 'http://localhost:4300';
  */
 export default defineConfig({
   ...nxE2EPreset(import.meta.dirname, { testDir: './src' }),
+  ...localWorkers(),
   // In CI a test that passes only on a retry fails the run, so a timing
   // regression no longer passes as flaky.
   failOnFlakyTests: Boolean(process.env['CI']),

@@ -4,14 +4,15 @@ import { waitForHydration } from './support/hydration';
 import { clickWhileHeld, holdBackMainBundle } from './support/main-bundle';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
   recordFrames,
   recordItemRequests,
 } from './support/style-probe';
 
 /**
- * Ticket 37's consumer `@boundary` cases as setup.md:343 keeps them, as
- * regression tests of the setup spec's `@boundary` documentation.
+ * The consumer `@boundary` cases setup.md:343 keeps, as regression tests of
+ * the setup spec's `@boundary` documentation.
  */
 
 /**
@@ -119,17 +120,16 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('transition-property', 'all');
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const frames = await cardPadding();
-      const unstyled = frames.filter((value) => value === '0px');
-
-      test.info().annotations.push({
-        type: 'frames',
-        description: `card (preloaded): ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
+      // WebKit applies no newly loaded sheet while another is pending, so the
+      // preloaded card waits for lift.css (upstream-bugs.md O17).
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, preloaded card after $reset()`,
+        ...(browserName === 'webkit'
+          ? { recordedAs: 'webkit-pending-sheet-frames' }
+          : {}),
       });
-      expect(
-        unstyled,
-        'no frame shows the preloaded card without Yeti',
-      ).toEqual([]);
+
       // Firefox serves a re-inserted link from memory even with its cache off.
       expect(requests()).toEqual(
         browserName === 'firefox' ? [] : ['utilities/lift/lift.css'],
@@ -137,6 +137,7 @@ for (const { kind, prefix } of routeKinds) {
     });
 
     test("records the lift's frames after $reset() without a preload", async ({
+      browserName,
       page,
     }) => {
       await breakTheOnlyCard(page, prefix);
@@ -156,12 +157,10 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('transition-property', 'all');
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const frames = await liftTransition();
-      const unstyled = frames.filter((value) => value === 'all');
-
-      test.info().annotations.push({
-        type: 'frames',
-        description: `lift (not preloaded): ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
+      expectStyledFrames(await liftTransition(), {
+        styled: (value) => value !== 'all',
+        label: `${browserName}, ${kind}, lift after $reset() without a preload`,
+        recordedAs: 'no-preload-frames',
       });
     });
 

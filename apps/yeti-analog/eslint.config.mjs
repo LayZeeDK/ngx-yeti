@@ -1,3 +1,4 @@
+// @ts-check
 import nx from '@nx/eslint-plugin';
 import baseConfig, {
   angularConfig,

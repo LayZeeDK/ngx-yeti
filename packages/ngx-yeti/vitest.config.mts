@@ -34,6 +34,9 @@ export default defineConfig({
         ],
         test: {
           name: 'storybook',
+          // The box--paint-alerts stories walk 800 cases each and ran past
+          // the 15 s default in the ci unit job's Firefox and WebKit.
+          testTimeout: 30_000,
           browser: {
             enabled: true,
             api,

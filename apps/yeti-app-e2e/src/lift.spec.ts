@@ -1,6 +1,7 @@
+import { expectItemSheetsApplied } from '@ngx-yeti/testing/playwright';
 import {
-  clientCardPreload,
   expect,
+  expectOnlyClientPreloads,
   isProduction,
   routeKinds,
   test,
@@ -13,6 +14,7 @@ import {
 } from './support/hydration';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
   recordFrames,
   recordHostAttributes,
@@ -54,10 +56,7 @@ for (const { kind, prefix } of routeKinds) {
       await page.goto(`${prefix}lift`);
       await waitForHydration(page);
 
-      expect(
-        await styleMutations(),
-        'only the client card preload is added after parsing ends',
-      ).toEqual([clientCardPreload]);
+      expectOnlyClientPreloads(await styleMutations());
       expect(
         await hostAttributes(),
         'hydration changes no attribute on the hosts',
@@ -92,6 +91,7 @@ for (const { kind, prefix } of routeKinds) {
     });
 
     test('records the client-only lifted card without a lift preload', async ({
+      browserName,
       page,
     }) => {
       const liftFrames = await recordFrames(
@@ -116,21 +116,17 @@ for (const { kind, prefix } of routeKinds) {
 
       const card = page.locator('#client-card');
 
-      // Upstream bug O2: read geometry only once the lift's sheet has applied.
+      await expectItemSheetsApplied(page, ['lift']);
       await expect(card).not.toHaveCSS(
         'transition-property',
         unstyledTransition,
       );
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const frames = await liftFrames();
-
-      expect(frames.length, 'the client-only card was sampled').toBeGreaterThan(
-        0,
-      );
-      test.info().annotations.push({
-        type: 'frames',
-        description: `${String(frames.filter((value) => value === unstyledTransition).length)} of ${String(frames.length)} frames without the lift file (no preload)`,
+      expectStyledFrames(await liftFrames(), {
+        styled: (value) => value !== unstyledTransition,
+        label: `${browserName}, ${kind}, client-only lifted card without a lift preload`,
+        recordedAs: 'no-preload-frames',
       });
     });
 

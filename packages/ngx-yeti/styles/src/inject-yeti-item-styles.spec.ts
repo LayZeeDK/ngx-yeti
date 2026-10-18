@@ -1,9 +1,11 @@
 import {
   APP_ID,
+  ApplicationRef,
   CSP_NONCE,
   Component,
   Directive,
   EnvironmentInjector,
+  PendingTasks,
   type EnvironmentProviders,
   ErrorHandler,
   type Provider,
@@ -70,6 +72,14 @@ class ProbeShell {
 class ProbeCard {
   constructor() {
     injectYetiItemStyles('card');
+  }
+}
+
+/** Acquires an item it marks no host for, as button acquires spinner. */
+@Directive({ selector: '[yetiProbeCrossItem]' })
+class ProbeCrossItem {
+  constructor() {
+    injectYetiItemStyles('cover');
   }
 }
 
@@ -353,6 +363,50 @@ describe(injectYetiItemStyles, () => {
     expect(itemLinks()).toStrictEqual([other]);
   });
 
+  it('keeps an adopted link that a directive acquires before the application is stable', async () => {
+    expect.assertions(5);
+
+    setup();
+    const acquired = serverLink('cover', appId);
+    const unused = serverLink('center', appId);
+    document.head.append(acquired, unused);
+    const removed: Node[] = [];
+    const removals = new MutationObserver((records) => {
+      removed.push(...records.flatMap((record) => [...record.removedNodes]));
+    });
+    removals.observe(document.head, { childList: true });
+    const appRef = TestBed.inject(ApplicationRef);
+    // Held as the initial navigation holds a hydrating application.
+    const settle = TestBed.inject(PendingTasks).add();
+
+    try {
+      TestBed.createDirective(ProbeStack, { tagName: 'div' });
+      // The first render callback, then the frame its check would run in.
+      appRef.tick();
+      await nextFrame();
+      // A route component's directive that marks no host for its item.
+      TestBed.createDirective(ProbeCrossItem, { tagName: 'div' });
+      appRef.tick();
+      await nextFrame();
+
+      expect(itemLinks('cover')).toStrictEqual([acquired]);
+      expect(unused.isConnected).toBe(true);
+    } finally {
+      settle();
+    }
+
+    await appRef.whenStable();
+    await nextFrame();
+    removed.push(
+      ...removals.takeRecords().flatMap((record) => [...record.removedNodes]),
+    );
+    removals.disconnect();
+
+    expect(itemLinks('cover')).toStrictEqual([acquired]);
+    expect(removed).not.toContain(acquired);
+    expect(unused.isConnected).toBe(false);
+  });
+
   it('inserts before the first later-ranked link in <head>, whatever its application', async () => {
     expect.assertions(1);
 
@@ -489,27 +543,29 @@ describe(injectYetiItemStyles, () => {
     expect.assertions(2);
 
     setup();
-    const observers: MutationObserver[] = [];
-
-    class CountingObserver extends MutationObserver {
-      constructor(callback: MutationCallback) {
-        super(callback);
-        observers.push(this);
-      }
-    }
-
-    vi.stubGlobal('MutationObserver', CountingObserver);
+    // A prototype spy counts an observer however the loader reaches the
+    // constructor; in Safari a stubbed global constructor counted none.
+    const observe = vi.spyOn(MutationObserver.prototype, 'observe');
 
     try {
       const fixture = TestBed.createDirective(ProbeCard, { tagName: 'div' });
 
-      expect(observers).toHaveLength(0);
+      expect(observe).not.toHaveBeenCalled();
 
       await fixture.whenStable();
+      // Safari can run the render callback after the fixture is stable.
+      await vi.waitFor(() => {
+        if (observe.mock.calls.length === 0) {
+          throw new Error('No observer has started');
+        }
+      });
 
-      expect(observers).toHaveLength(1);
+      expect(observe).toHaveBeenCalledExactlyOnceWith(document, {
+        childList: true,
+        subtree: true,
+      });
     } finally {
-      vi.unstubAllGlobals();
+      observe.mockRestore();
     }
   });
 });

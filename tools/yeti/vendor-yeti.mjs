@@ -1,3 +1,4 @@
+// @ts-check
 import { execFileSync } from 'node:child_process';
 import {
   mkdirSync,
@@ -13,7 +14,7 @@ import { dirname, join, resolve } from 'node:path';
 const [sha, source = 'https://github.com/foundation/yeti.git'] =
   process.argv.slice(2);
 
-if (!/^[0-9a-f]{40}$/.test(sha ?? '')) {
+if (sha === undefined || !/^[0-9a-f]{40}$/.test(sha)) {
   console.error('Usage: node tools/yeti/vendor-yeti.mjs <full sha> [<repo>]');
   process.exit(1);
 }

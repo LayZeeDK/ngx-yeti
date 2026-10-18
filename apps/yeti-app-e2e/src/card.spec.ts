@@ -1,25 +1,27 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { workspaceRoot } from '@nx/devkit';
-import { type Page } from '@playwright/test';
 import {
-  clientCardPreload,
+  childRects,
+  expectItemSheetsApplied,
+  rect,
+} from '@ngx-yeti/testing/playwright';
+import { workspaceRoot } from '@nx/devkit';
+import { type Locator, type Page } from '@playwright/test';
+import {
   expect,
+  expectOnlyClientPreloads,
   isProduction,
   routeKinds,
   test,
 } from './support/fixtures';
 import { expectHoverLifts, removeEveryHost } from './support/hosts';
-import {
-  nextFrames,
-  waitForHydration,
-  watchHydration,
-} from './support/hydration';
+import { nextFrames, waitForHydration } from './support/hydration';
+import { describeStandardRouteCases } from './support/standard-cases';
 import {
   delayCss,
-  expectHydrationFrames,
+  expectStyledFrames,
+  firstPaintFramesRecordedAs,
   itemLinks,
-  itemSheetsLoaded,
   recordFrames,
   recordHostAttributes,
   recordStyleMutations,
@@ -30,25 +32,52 @@ const yetiPin = readFileSync(
   'utf8',
 ).trim();
 const cardHref = `yeti-css/components/card/card.css?v=${yetiPin}`;
+const cardAndLift = expect.arrayContaining(['card', 'lift']);
+/** The items whose files the first card's and the grid's geometry needs. */
+const geometryItems = ['card', 'grid', 'button'];
 
-/** The boxes of the card and its children. */
+/** The tags of the card's children and the boxes of the card and of each. */
 async function cardGeometry(page: Page): Promise<unknown> {
-  return page.locator('article').evaluate((card) =>
-    [card, ...card.children].map((element) => {
-      const { x, y, width, height } = element.getBoundingClientRect();
+  const card = page.locator('article');
 
-      return { tag: element.localName, x, y, width, height };
-    }),
-  );
+  return {
+    tags: await card.evaluate((element) =>
+      [...element.children].map((child) => child.localName),
+    ),
+    boxes: [await rect(card), ...(await childRects(card))],
+  };
 }
 
-/** Upstream bug O2: read geometry only once the card's sheet has applied. */
-async function expectCardSheetApplied(page: Page): Promise<void> {
-  expect(
-    await itemSheetsLoaded(page, ['card']),
-    'the card stylesheet is loaded',
-  ).toBe(true);
-  await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
+/**
+ * Expects the lifted cards side by side in one row of a grid, and the first
+ * card's footer link to be a button.
+ */
+async function expectGridOfCards(page: Page, grid: Locator): Promise<void> {
+  const footerLink = page.getByRole('link', { name: 'Read more' });
+
+  await expectItemSheetsApplied(page, geometryItems);
+  await expect(grid).toHaveCSS('display', 'grid');
+  await expect(grid.locator('> li[data-ngx-yeti-item-card]')).toHaveCount(3);
+  await expect(footerLink).toHaveClass('button');
+  await expect(footerLink).toHaveAttribute('data-ngx-yeti-item-button', '');
+
+  const cards = await childRects(grid);
+  const [first] = cards;
+
+  if (first === undefined) {
+    throw new Error('The grid has no card');
+  }
+
+  for (const [index, card] of cards.entries()) {
+    expect(
+      Math.abs(card.top - first.top),
+      'every card starts in the first row',
+    ).toBeLessThanOrEqual(1);
+    expect(
+      card.left,
+      'each card starts after the one before it',
+    ).toBeGreaterThanOrEqual(cards[index - 1]?.right ?? 0);
+  }
 }
 
 /**
@@ -104,22 +133,12 @@ async function recordCardLinkRemoval(
 
 for (const { kind, prefix } of routeKinds) {
   test.describe(`the ${kind} card route`, () => {
-    test('hydrates with 0 skipped components and no NG05xx message', async ({
-      page,
-    }) => {
-      test.skip(
-        isProduction,
-        'Angular logs hydration diagnostics in development mode only',
-      );
-
-      const expectCleanHydration = watchHydration(page);
-
-      await page.goto(`${prefix}card`);
-
-      await expect(
-        page.getByRole('link', { name: 'Weekend in the hills' }),
-      ).toBeVisible();
-      await expectCleanHydration();
+    describeStandardRouteCases({
+      item: 'card',
+      prefix,
+      liveHost: 'article',
+      leaveLink: 'Leave for a page without cards',
+      styled: { property: 'padding-top', value: /^(?!0px$)/ },
     });
 
     test("adopts the server's card link at hydration", async ({
@@ -137,15 +156,12 @@ for (const { kind, prefix } of routeKinds) {
       await page.goto(`${prefix}card`);
       await waitForHydration(page);
 
-      expect(
-        await styleMutations(),
-        'only the client card preload is added after parsing ends',
-      ).toEqual([clientCardPreload]);
+      expectOnlyClientPreloads(await styleMutations());
       expect(
         await hostAttributes(),
         'hydration changes no attribute on the card hosts',
       ).toEqual([]);
-      expect(await itemLinks(page)).toEqual(['card', 'lift']);
+      expect(await itemLinks(page)).toEqual(cardAndLift);
 
       const link = page.locator('head link[data-ngx-yeti-styles="card"]');
 
@@ -160,7 +176,11 @@ for (const { kind, prefix } of routeKinds) {
       await expect(link).toHaveAttribute('data-ngx-yeti-app', /.+/);
       await expect(link).toHaveAttribute('data-beasties-skip', '');
 
-      expectHydrationFrames(await cardPadding(), browserName);
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, card from first paint`,
+        ...firstPaintFramesRecordedAs(browserName),
+      });
     });
 
     test("keeps the hydrate-never host's card and lift links, lift, and border after every live card leaves", async ({
@@ -180,7 +200,7 @@ for (const { kind, prefix } of routeKinds) {
       expect(
         await itemLinks(page),
         'the hydrate never host keeps both links',
-      ).toEqual(['card', 'lift']);
+      ).toEqual(cardAndLift);
 
       await expectHoverLifts(page, card);
       await expect(card, 'the card keeps its border').toHaveCSS(
@@ -190,10 +210,23 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('border-top-width', '0px');
     });
 
+    test('lays the lifted cards out in the columns of a grid, with a button for the footer link', async ({
+      page,
+    }) => {
+      await page.goto(`${prefix}card`);
+      await waitForHydration(page);
+
+      const grid = page.locator('ul[data-ngx-yeti-item-grid]');
+
+      await expect(grid).toHaveClass('grid');
+      await expectGridOfCards(page, grid);
+    });
+
     // The server hosts keep the card link in <head>, so the client-only card
     // reuses it and the preload plays no part; the setup-defer route carries
     // the preload claim (card.md:337).
     test('renders a client-only card with 0 unstyled frames while the server hosts hold the card link', async ({
+      browserName,
       page,
     }) => {
       const cardPadding = await recordFrames(
@@ -214,20 +247,16 @@ for (const { kind, prefix } of routeKinds) {
 
       await expect(card).toBeVisible();
       await expect(card).not.toHaveCSS('padding-top', '0px');
-      expect(await itemLinks(page)).toEqual(['card', 'lift']);
+      expect(await itemLinks(page)).toEqual(cardAndLift);
 
-      const frames = await cardPadding();
-
-      expect(frames.length, 'the client-only card was sampled').toBeGreaterThan(
-        0,
-      );
-      expect(
-        frames.filter((value) => value === '0px'),
-        'no frame shows the client-only card without Yeti',
-      ).toEqual([]);
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, client-only card`,
+      });
     });
 
     test("records the client-only card's frames after every card host has left", async ({
+      browserName,
       page,
     }) => {
       const cardPadding = await recordFrames(
@@ -248,23 +277,20 @@ for (const { kind, prefix } of routeKinds) {
       const card = page.locator('#client-card');
 
       await expect(card).not.toHaveCSS('padding-top', '0px');
-      expect(await itemLinks(page)).toEqual(['card']);
+      expect(await itemLinks(page, 'card')).toEqual(['card']);
+      expect(await itemLinks(page, 'lift')).toEqual([]);
 
-      const frames = await cardPadding();
-
-      expect(frames.length, 'the client-only card was sampled').toBeGreaterThan(
-        0,
-      );
       // The server's card link used the preload at load, and routing turns
       // the HTTP cache off, so the re-inserted link refetches: recorded, not
       // asserted. The setup-defer route carries the 0-frame preload claim.
-      test.info().annotations.push({
-        type: 'frames',
-        description: `${String(frames.filter((value) => value === '0px').length)} of ${String(frames.length)} frames without the card file (re-inserted)`,
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, client-only card after every host left`,
+        recordedAs: 'reinserted-frames',
       });
     });
 
-    test('removes the card link on leaving the route and re-inserts it once on returning', async ({
+    test('removes the card link in the frame after the last card host leaves, and re-inserts it once on returning', async ({
       page,
     }) => {
       const styleMutations = await recordStyleMutations(page);
@@ -276,8 +302,6 @@ for (const { kind, prefix } of routeKinds) {
       await page
         .getByRole('link', { name: 'Leave for a page without cards' })
         .click();
-      await expect(page).toHaveURL(/\/replay$/);
-      await expect(page.locator('[data-ngx-yeti-item-card]')).toHaveCount(0);
       await expect.poll(() => itemLinks(page)).toEqual([]);
 
       const { hostsLeft, linkLeft } = await removal();
@@ -292,7 +316,7 @@ for (const { kind, prefix } of routeKinds) {
       await expect(
         page.getByRole('link', { name: 'Weekend in the hills' }),
       ).toBeVisible();
-      await expect.poll(() => itemLinks(page)).toEqual(['card', 'lift']);
+      await expect.poll(() => itemLinks(page)).toEqual(cardAndLift);
       await nextFrames(page);
 
       expect(
@@ -301,7 +325,7 @@ for (const { kind, prefix } of routeKinds) {
         ),
         'returning inserts the card link once',
       ).toEqual(['add link[data-ngx-yeti-styles="card"]']);
-      expect(await itemLinks(page)).toEqual(['card', 'lift']);
+      expect(await itemLinks(page)).toEqual(cardAndLift);
     });
 
     test("records NgOptimizedImage's development-mode messages for the cropped picture and the row form", async ({
@@ -320,7 +344,8 @@ for (const { kind, prefix } of routeKinds) {
 
       await page.goto(`${prefix}card`);
       await waitForHydration(page);
-      await expectCardSheetApplied(page);
+      await expectItemSheetsApplied(page, ['card']);
+      await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
       await expect(
         page
           .locator('img[ngsrc]')
@@ -351,7 +376,7 @@ for (const { kind, prefix } of routeKinds) {
     test.describe('with JavaScript off', () => {
       test.use({ javaScriptEnabled: false });
 
-      test('serves server HTML with the card and its item link', async ({
+      test("serves server HTML with the card's threshold, its stretched link, and the route's item links", async ({
         page,
       }) => {
         await page.goto(`${prefix}card`);
@@ -360,11 +385,26 @@ for (const { kind, prefix } of routeKinds) {
 
         await expect(card).toHaveClass('card');
         await expect(card).toHaveAttribute('data-threshold', 'xs');
-        await expect(card).toHaveAttribute('data-ngx-yeti-item-card', '');
         await expect(
           page.getByRole('link', { name: 'Weekend in the hills' }),
         ).toHaveAttribute('data-stretch', '');
-        expect(await itemLinks(page)).toEqual(['card', 'lift']);
+        const named = ['grid', 'button', 'card', 'spinner', 'lift'];
+
+        expect(
+          (await itemLinks(page)).filter((item) => named.includes(item)),
+          "the server writes the route's item links in Yeti's order",
+        ).toEqual(named);
+      });
+
+      test('lays the lifted cards out in the columns of a grid, with a button for the footer link', async ({
+        page,
+      }) => {
+        await page.goto(`${prefix}card`);
+
+        const grid = page.locator('ul[data-ngx-yeti-item-grid]');
+
+        await expect(grid).toHaveClass('grid');
+        await expectGridOfCards(page, grid);
       });
 
       test('styles the card with the geometry it has with JavaScript on', async ({
@@ -373,7 +413,11 @@ for (const { kind, prefix } of routeKinds) {
         viewport,
       }) => {
         await page.goto(`${prefix}card`);
-        await expectCardSheetApplied(page);
+        await expectItemSheetsApplied(page, geometryItems);
+        await expect(page.locator('article')).not.toHaveCSS(
+          'padding-top',
+          '0px',
+        );
 
         // A test's `use` options are this context's defaults too.
         const context = await browser.newContext({
@@ -384,7 +428,11 @@ for (const { kind, prefix } of routeKinds) {
 
         await javaScriptPage.goto(page.url());
         await waitForHydration(javaScriptPage);
-        await expectCardSheetApplied(javaScriptPage);
+        await expectItemSheetsApplied(javaScriptPage, geometryItems);
+        await expect(javaScriptPage.locator('article')).not.toHaveCSS(
+          'padding-top',
+          '0px',
+        );
 
         expect(await cardGeometry(page)).toEqual(
           await cardGeometry(javaScriptPage),
@@ -397,7 +445,11 @@ for (const { kind, prefix } of routeKinds) {
         page,
       }) => {
         await page.goto(`${prefix}card`);
-        await expectCardSheetApplied(page);
+        await expectItemSheetsApplied(page, ['card']);
+        await expect(page.locator('article')).not.toHaveCSS(
+          'padding-top',
+          '0px',
+        );
 
         const href = await page
           .getByRole('link', { name: 'Weekend in the hills' })
@@ -413,15 +465,6 @@ for (const { kind, prefix } of routeKinds) {
         await page.mouse.click(box.x + box.width - 4, box.y + box.height - 4);
 
         await expect(page).toHaveURL(expected);
-      });
-
-      test('serves server HTML that axe passes', async ({
-        axeViolations,
-        page,
-      }) => {
-        await page.goto(`${prefix}card`);
-
-        expect(await axeViolations()).toEqual([]);
       });
     });
   });

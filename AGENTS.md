@@ -248,9 +248,17 @@ Read `references/fast-compile.md` before you change a Vite, Vitest, or Storybook
 
 # Run CI locally
 
-Every job in `.github/workflows/ci.yml` and `floor.yml` runs locally except `ci.yml` `safari`, which needs real Safari on macOS. Run a job that has a `container` with `node tools/ci-local/run-job.mjs <workflow> <job>`.
+Every job in `.github/workflows/ci.yml` and `floor.yml` passes in CI. Before a push, the checks that run natively pass locally: `npm run check`, the `static` and `package` jobs, the floor jobs `firefox-145` and `chromium-141`, the e2e projects `ngx-yeti-e2e` and `yeti-app-e2e` run natively, and the `nvda` lane without `BROWSERS`. The container jobs `unit`, `e2e`, `webkit-26-4`, and `firefox-146-e2e` need no local run; `node tools/ci-local/run-job.mjs <workflow> <job>` reproduces one on demand. `ci.yml` `safari` and `voiceover` need real Safari and VoiceOver on macOS and pass in CI only. The `nvda` job runs real NVDA natively on Windows in Playwright's Chromium and then Firefox, as CI does: `npm exec nx -- run screen-reader-e2e:nvda`. `BROWSERS=msedge` runs a faster native Edge lane that is not evidence for the job.
 
 Read `references/ci-local.md` before you run a CI or floor job locally. After `npm install --no-save playwright@<release>`, run `npm ci` before anything else, and then `npx playwright install chromium firefox webkit`.
+
+# Scripts
+
+Write every script in this repository as a typed `.mjs` module: `// @ts-check` with JSDoc types, checked by a `tsconfig` that includes it or by an Nx `typecheck` target. This covers committed scripts and temporary ones under `tmp/` or a scratchpad that run more than once. A `.py` or `.sh` script needs a human's approval of a compelling reason first; record that approval beside the script. GSD Path's Python helpers in `.gsd-path/` and its runtime belong to GSD Path: they stay, agents use them, and their code is left to GSD Path. `vendor/` and `docs/specs/` hold verbatim copies and keep their scripts as they are.
+
+`tsconfig.scripts.json` includes every committed `.mjs`, `.cjs`, and `.js` script outside `vendor/` and `docs/specs/`. `npm exec nx -- typecheck @ngx-yeti/source` checks them, and the `static` job of `ci.yml` runs it with every other `typecheck` target.
+
+A script gets a code review before it runs a second time, committed or not. Add a security review when it handles credentials, network access, CI permissions, Git history, or deletes files.
 
 # Specs and skills
 

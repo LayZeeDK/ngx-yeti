@@ -1,3 +1,4 @@
+// @ts-check
 // Packs the built package and builds a consumer against the tarball (setup
 // spec section 4 E; INTENT SC3). Run it through `npx nx pack-check ngx-yeti`,
 // which builds the package first. It never publishes: the user runs
@@ -15,6 +16,7 @@ import {
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { packedTarballNames } from './pack-tarball.mjs';
 
 const workspaceRoot = path.join(import.meta.dirname, '../..');
 const builtPackage = path.join(workspaceRoot, 'dist/packages/ngx-yeti');
@@ -39,6 +41,12 @@ const yetiVersion = JSON.parse(
 const versionFormat =
   /^0\.[1-9]\d*\d{2}\d{2}\.(?:0|[1-9]\d*)-yeti\.(?<yeti>.+)\.g(?<sha>[0-9a-f]{7,40})$/;
 
+/**
+ * @param {unknown} ok
+ * @param {string} claim
+ * @param {string} [detail]
+ * @returns {asserts ok}
+ */
 function check(ok, claim, detail = '') {
   if (!ok) {
     console.error(`pack-check failed: ${claim}`);
@@ -51,6 +59,11 @@ function check(ok, claim, detail = '') {
   }
 }
 
+/**
+ * @param {string} command
+ * @param {string[]} args
+ * @param {string} cwd
+ */
 function run(command, args, cwd) {
   const result = spawnSync(command, args, { cwd, encoding: 'utf8' });
 
@@ -60,6 +73,10 @@ function run(command, args, cwd) {
   };
 }
 
+/**
+ * @param {string} file
+ * @param {string} folder
+ */
 function isInside(file, folder) {
   const relative = path.relative(folder, file);
 
@@ -78,7 +95,13 @@ const pack = spawnSync(
   { cwd: workDir, encoding: 'utf8', shell: true },
 );
 check(pack.status === 0, 'npm pack ran', pack.stderr);
-const [{ filename: tarball }] = JSON.parse(pack.stdout);
+const tarballs = packedTarballNames(pack.stdout);
+const [tarball] = tarballs;
+check(
+  tarball !== undefined && tarballs.length === 1,
+  'npm pack produced exactly one tarball',
+  pack.stdout,
+);
 
 // 2. Extract the tarball as the consumer's installed `ngx-yeti`. Angular and
 // tslib resolve from the workspace's node_modules further up.
@@ -116,14 +139,14 @@ const entryPoints = [
     )
     .map(({ name }) => `ngx-yeti/${name}`),
 ];
-const specifiers = [...entryPoints, 'ngx-yeti/accessibility.css'];
+const specifiers = [...entryPoints, 'ngx-yeti/ngx-yeti-globals.css'];
 const packedExports = Object.keys(manifest.exports)
   .filter((key) => key !== './package.json')
   .map((key) => path.posix.join('ngx-yeti', key));
 check(
   JSON.stringify(packedExports.toSorted()) ===
     JSON.stringify(specifiers.toSorted()),
-  'the packed exports map lists every entry point and accessibility.css',
+  'the packed exports map lists every entry point and ngx-yeti-globals.css',
   packedExports.join(', '),
 );
 const consumerSource = readFileSync(
@@ -272,7 +295,8 @@ check(
   manifest.version,
 );
 check(
-  version.yeti === yetiVersion && yetiCommit.startsWith(version.sha),
+  version['yeti'] === yetiVersion &&
+    yetiCommit.startsWith(String(version['sha'])),
   'the packed version names the vendored Yeti version and commit',
   manifest.version,
 );
@@ -308,10 +332,10 @@ check(
   String(manifest.license),
 );
 
-for (const [shipped, source] of [
+for (const [shipped, source] of /** @type {const} */ ([
   ['LICENSE', 'LICENSE'],
   ['LICENSE-yeti', 'vendor/yeti/LICENSE'],
-]) {
+])) {
   const packed = path.join(installed, shipped);
   check(
     existsSync(packed) &&

@@ -50,6 +50,16 @@ describe('adr 0080 name collisions', () => {
     expect(yetiExportedNames()).toHaveLength(46);
   });
 
+  it('exports exactly the names Yeti exports from the primary entry point', () => {
+    const primaryNames = exportedNames(
+      readFileSync(join(builtTypes, 'ngx-yeti.d.ts'), 'utf8'),
+    );
+
+    expect(primaryNames.toSorted()).toStrictEqual(
+      yetiExportedNames().toSorted(),
+    );
+  });
+
   it('keeps every export of the package apart from them', () => {
     const packageNames = packageExportedNames();
     const yeti = new Set(yetiExportedNames());
@@ -60,6 +70,57 @@ describe('adr 0080 name collisions', () => {
         'YetiCardLink',
         'yetiCardToken',
         'NgxYetiLift',
+        'YetiStack',
+        'YetiStackChild',
+        'yetiStackToken',
+        'YetiCenter',
+        'YetiBox',
+        'YetiBorder',
+        'NgxYetiPaint',
+        'YetiText',
+        'YetiBreakout',
+        'YetiBreakoutChild',
+        'YetiBreakoutNote',
+        'yetiBreakoutToken',
+        'YetiTimeline',
+        'YetiGrid',
+        'YetiGridChild',
+        'yetiGridToken',
+        'YetiMasonry',
+        'NgxYetiEnter',
+        'YetiVisuallyHidden',
+        'YetiCluster',
+        'YetiSidebar',
+        'YetiSidebarChild',
+        'yetiSidebarToken',
+        'YetiCover',
+        'YetiCoverChild',
+        'yetiCoverToken',
+        'NgxYetiColumns',
+        'YetiColumnsChild',
+        'yetiColumnsToken',
+        'YetiLayer',
+        'YetiLayerChild',
+        'yetiLayerToken',
+        'YetiOverlay',
+        'YetiOverlayChild',
+        'yetiOverlayToken',
+        'YetiSpinner',
+        'YetiScroller',
+        'YetiScrollerJustify',
+        'YetiFrame',
+        'YetiButton',
+        'YetiButtonDisabledLink',
+        'YetiIcon',
+        'YetiContainer',
+        'YetiHide',
+        'YetiShow',
+        'YetiTable',
+        'YetiTableCell',
+        'YetiTableAlign',
+        'YetiTableHead',
+        'YetiNumeric',
+        'yetiTableToken',
         'injectYetiItemStyles',
         'provideYetiStyles',
         'YetiStylesConfig',

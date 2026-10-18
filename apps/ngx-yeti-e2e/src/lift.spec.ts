@@ -1,5 +1,5 @@
+import { expectItemSheetsApplied } from '@ngx-yeti/testing/playwright';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { expectItemSheetsApplied } from './item-styles';
 import { openStory } from './open-story';
 import { skipUnlessTabReachesLinks } from './tab-to-links';
 

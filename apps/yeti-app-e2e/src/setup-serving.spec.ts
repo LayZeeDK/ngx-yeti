@@ -1,10 +1,11 @@
+import { expectItemSheetsApplied } from '@ngx-yeti/testing/playwright';
 import { type Page } from '@playwright/test';
 import { expect, isProduction, test } from './support/fixtures';
 import { waitForHydration } from './support/hydration';
 import {
   delayCss,
+  expectStyledFrames,
   itemLinks,
-  itemSheetsLoaded,
   recordFrames,
 } from './support/style-probe';
 
@@ -58,8 +59,7 @@ test.describe('the development server', () => {
     await page.goto(`${devServerURL}setup`);
     await waitForHydration(page, '#interaction-host');
 
-    expect(await itemLinks(page)).toEqual(['card', 'lift']);
-    await expect.poll(() => itemSheetsLoaded(page)).toBe(true);
+    await expectItemSheetsApplied(page, ['card', 'lift']);
     await expect(page.locator('#shared-host')).not.toHaveCSS(
       'padding-top',
       '0px',
@@ -80,7 +80,9 @@ test.describe('the strict-CSP card route', () => {
 
     await waitForHydration(page);
 
-    expect(await itemLinks(page)).toEqual(['card', 'lift']);
+    expect(await itemLinks(page)).toEqual(
+      expect.arrayContaining(['card', 'lift']),
+    );
 
     // Browsers hide the `nonce` attribute; the property keeps its value.
     const nonced = await page
@@ -141,12 +143,10 @@ test.describe('upstream bug A4', () => {
     await waitForHydration(page);
     await expect(page.locator('article')).not.toHaveCSS('padding-top', '0px');
 
-    const frames = await cardPadding();
-
-    expect(frames.length, 'the card was sampled').toBeGreaterThan(0);
-    test.info().annotations.push({
-      type: 'frames',
-      description: `${browserName}, critical-CSS inlining ${isProduction ? 'on (production)' : 'off (development)'}: ${String(frames.filter((value) => value === '0px').length)} of ${String(frames.length)} frames with padding: 0`,
+    expectStyledFrames(await cardPadding(), {
+      styled: (value) => value !== '0px',
+      label: `${browserName}, critical-CSS inlining ${isProduction ? 'on (production)' : 'off (development)'}, card while the global stylesheet is delayed`,
+      recordedAs: 'a4-frames',
     });
   });
 });

@@ -3,6 +3,9 @@ import {
   attributeValue,
   head,
   headLinks,
+  itemHref,
+  itemLinkOf,
+  jsactionTags,
   openingTags,
 } from './html';
 
@@ -29,6 +32,18 @@ describe(attributeValue, () => {
     expect(
       attributeValue('<a title="x jsaction y" href="/">', 'jsaction'),
     ).toBeNull();
+  });
+
+  it('throws, naming the tag, on a tag the parser drops outside its parent', () => {
+    expect(() => attributeValue('<td data-x="1">', 'data-x')).toThrow(
+      'Not an opening tag the HTML parser keeps: <td data-x="1">',
+    );
+  });
+
+  it('throws, naming the tag, on a tag after leading text', () => {
+    expect(() => attributeValue('x<a data-x="1">', 'data-x')).toThrow(
+      'Not an opening tag the HTML parser keeps: x<a data-x="1">',
+    );
   });
 });
 
@@ -76,5 +91,69 @@ describe(head, () => {
 
     expect(head(html)).toBe('<head lang="en"><link rel="a"></head>');
     expect(headLinks(html)).toStrictEqual(['<link rel="a">']);
+  });
+});
+
+const pin = 'f52d1e8b93de5bbde322480ba77d5be26c49b0ef';
+
+describe(itemLinkOf, () => {
+  it("counts the item's head links and reads the first", () => {
+    const html = `<html><head><link data-ngx-yeti-styles="box" href="b"><link data-ngx-yeti-styles="stack" href="s1" data-beasties-skip=""><link data-ngx-yeti-styles="stack" href="s2"></head><body><link data-ngx-yeti-styles="center" href="c"></body></html>`;
+
+    expect(itemLinkOf(html, 'stack')).toStrictEqual({
+      count: 2,
+      beastiesSkip: true,
+      href: 's1',
+    });
+    expect(itemLinkOf(html, 'box')).toStrictEqual({
+      count: 1,
+      beastiesSkip: false,
+      href: 'b',
+    });
+  });
+
+  it('finds no link outside the head or of another item', () => {
+    const html =
+      '<html><head><link data-ngx-yeti-styles="stack-x" href="x"></head><body><link data-ngx-yeti-styles="stack" href="s"></body></html>';
+
+    expect(itemLinkOf(html, 'stack')).toStrictEqual({
+      count: 0,
+      beastiesSkip: false,
+      href: null,
+    });
+  });
+});
+
+describe(itemHref, () => {
+  it("matches the whole href of the item's file with a 40-character pin", () => {
+    const href = itemHref('layouts', 'stack');
+
+    expect(`yeti-css/layouts/stack/stack.css?v=${pin}`).toMatch(href);
+    expect(`yeti-css/layouts/stack/stack.css?v=${pin}x`).not.toMatch(href);
+    expect(`/yeti-css/layouts/stack/stack.css?v=${pin}`).not.toMatch(href);
+    expect(`yeti-css/layouts/stack/stack.css?v=${pin.slice(1)}`).not.toMatch(
+      href,
+    );
+    expect(`yeti-css/components/stack/stack.css?v=${pin}`).not.toMatch(href);
+    expect(`yeti-css/layouts/stack/stackXcss?v=${pin}`).not.toMatch(href);
+  });
+
+  it('matches a hyphenated item name literally', () => {
+    expect(
+      `yeti-css/utilities/visually-hidden/visually-hidden.css?v=${pin}`,
+    ).toMatch(itemHref('utilities', 'visually-hidden'));
+  });
+});
+
+describe(jsactionTags, () => {
+  it('lists the opening tags that carry jsaction, and only those', () => {
+    const html =
+      '<html><head></head><body><p title="jsaction"><a jsaction="click:;" href="/">A</a><yeti-x jsaction="">B</yeti-x></p></body></html>';
+
+    expect(jsactionTags(html)).toStrictEqual([
+      '<a jsaction="click:;" href="/">',
+      '<yeti-x jsaction="">',
+    ]);
+    expect(jsactionTags('<p></p>')).toStrictEqual([]);
   });
 });

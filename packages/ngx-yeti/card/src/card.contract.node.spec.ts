@@ -1,4 +1,4 @@
-import { checkContract } from '@ngx-yeti/testing/server';
+import { checkContract, widths } from '@ngx-yeti/testing/server';
 import manifest from 'yeti-css/manifest';
 import { YetiCard } from './card';
 import { YetiCardLink } from './card-link';
@@ -14,7 +14,6 @@ const variants = [
   'black',
   'white',
 ] as const;
-const widths = ['2xs', 'xs', 'sm', 'md', 'lg', 'xl', '2xl'] as const;
 const ratios = ['1/1', '4/3', '3/2', '16/9', '21/9'] as const;
 
 // Compile-time half: each list holds exactly the values its input accepts,

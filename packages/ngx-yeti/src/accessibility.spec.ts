@@ -19,7 +19,7 @@ async function setup(): Promise<{ readonly probe: HTMLElement }> {
   return { probe };
 }
 
-describe('ngx-yeti/accessibility.css', () => {
+describe('ngx-yeti/ngx-yeti-globals.css', () => {
   // Yeti's fluid base: 1rem at the 320px viewport to 1.125rem at 1280px.
   // Without the workaround Firefox 145 to 152 compute 0px here.
   it("resolves Yeti's fluid scale in every engine", async () => {

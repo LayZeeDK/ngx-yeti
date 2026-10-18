@@ -1,0 +1,38 @@
+import { expect, test } from './support/screen-reader';
+
+// Long enough for a polite live region to be spoken after the click. NVDA's
+// capture covers the whole wait. VoiceOver exposes only its last phrase, which
+// Guidepup reads right after the press, so a later repeat of the same words
+// is invisible to it; spinner's one human listen per release covers that.
+const settle = 3000;
+
+// The visible paragraph next to the status; it is not the status.
+const paragraph = 'Loading the latest posts';
+
+function times(phrases: readonly string[], text: string): number {
+  return phrases.join('\n').split(text).length - 1;
+}
+
+test('spinner--waiting: the inserted status is spoken at most once and the end of the wait is spoken once', async ({
+  lane,
+}, testInfo) => {
+  await lane.open('spinner--waiting');
+
+  const inserted = await lane.press('Load', settle);
+  const announced = times(
+    inserted.map((phrase) => phrase.replaceAll(paragraph, '')),
+    'Loading',
+  );
+
+  // Whether a reader announces a status region inserted with a name and no
+  // text is recorded; announcing it more than once breaks the spec.
+  testInfo.annotations.push({
+    type: 'spinner inserted status',
+    description: `"Loading" spoken ${announced === 0 ? 'not at all' : announced === 1 ? 'once' : `${String(announced)} times`} by ${lane.name} in ${testInfo.project.name}: ${JSON.stringify(inserted)}`,
+  });
+  expect(announced).toBeLessThanOrEqual(1);
+
+  const finished = await lane.press('Finish', settle);
+
+  expect(times(finished, 'Loaded 12 posts')).toBe(1);
+});

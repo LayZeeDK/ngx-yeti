@@ -10,8 +10,30 @@ Built against Yeti `7.0.0-alpha.0` at commit `f52d1e8b93de5bbde322480ba77d5be26c
 
 - `ngx-yeti`: types only, generated from Yeti's `yeti.d.ts` at the pin, such as `YetiComponentName`, `YetiVariant`, `YetiWidth`, `YetiRatio`, and `YetiLift`.
 - `ngx-yeti/styles`: `provideYetiStyles` with its `YetiStylesConfig` type, and `injectYetiItemStyles`, which load each item's Yeti file as a counted link in `<head>` on the server and the client.
+- `ngx-yeti/box`: `YetiBox`, and the any-element markers `YetiBorder`, `NgxYetiPaint`, and `YetiText`, which load no item file.
+- `ngx-yeti/breakout`: `YetiBreakout`, `YetiBreakoutChild`, `YetiBreakoutNote`, and `yetiBreakoutToken`.
+- `ngx-yeti/button`: `YetiButton`, and `YetiButtonDisabledLink`, which gives a disabled `a[yetiButton]` the `link` role and `aria-disabled="true"`.
 - `ngx-yeti/card`: `YetiCard`, `YetiCardLink`, and `yetiCardToken`.
+- `ngx-yeti/center`: `YetiCenter`.
+- `ngx-yeti/cluster`: `YetiCluster`.
+- `ngx-yeti/columns`: `NgxYetiColumns`, `YetiColumnsChild`, and `yetiColumnsToken`.
+- `ngx-yeti/container`: `YetiContainer`, and the any-element `YetiShow` and `YetiHide`, which load no item file.
+- `ngx-yeti/cover`: `YetiCover`, `YetiCoverChild`, and `yetiCoverToken`.
+- `ngx-yeti/enter`: `NgxYetiEnter`, which plays Yeti's entrance animation on load or when the element scrolls into view.
+- `ngx-yeti/frame`: `YetiFrame`.
+- `ngx-yeti/grid`: `YetiGrid`, `YetiGridChild`, and `yetiGridToken`.
+- `ngx-yeti/icon`: `YetiIcon`.
+- `ngx-yeti/layer`: `YetiLayer`, `YetiLayerChild`, and `yetiLayerToken`.
 - `ngx-yeti/lift`: `NgxYetiLift`.
-- `ngx-yeti/accessibility.css`: the package's accessibility stylesheet, in `@layer ngx-yeti`. Import it after the Yeti imports in the global stylesheet, before your theme and application CSS. It has no accessibility rule yet; it carries a workaround that makes Yeti's sizes render in Firefox 145 to 152, which reject the `atan2()` division of relative lengths that Yeti's scale uses.
+- `ngx-yeti/masonry`: `YetiMasonry`.
+- `ngx-yeti/overlay`: `YetiOverlay`, `YetiOverlayChild`, and `yetiOverlayToken`.
+- `ngx-yeti/scroller`: `YetiScroller` and the `YetiScrollerJustify` type. The scroller is a focusable region, so keyboard users can scroll it.
+- `ngx-yeti/sidebar`: `YetiSidebar`, `YetiSidebarChild`, and `yetiSidebarToken`.
+- `ngx-yeti/spinner`: `YetiSpinner`.
+- `ngx-yeti/stack`: `YetiStack`, `YetiStackChild`, and `yetiStackToken`.
+- `ngx-yeti/table`: `YetiTable`, `YetiTableCell`, `YetiTableHead`, `YetiNumeric`, `yetiTableToken`, and the `YetiTableAlign` type. `YetiNumeric` is an any-element marker that loads no item file.
+- `ngx-yeti/timeline`: `YetiTimeline`.
+- `ngx-yeti/visually-hidden`: `YetiVisuallyHidden`.
+- `ngx-yeti/ngx-yeti-globals.css`: the package's global stylesheet, in `@layer ngx-yeti`. Import it after the Yeti imports in the global stylesheet, before your theme and application CSS. Under forced colours it draws a pressed toggle button and a checked toggle label with a border in the highlight colour, which Yeti shows by their fill alone, and it keeps the turning edge of the spinner's ring, and of a busy button's ring, visible. It also carries a workaround that makes Yeti's sizes render in Firefox 145 to 152, which reject the `atan2()` division of relative lengths that Yeti's scale uses. And it withholds a `once` arrival of `enter` with a named arrival, such as `rise`, or a staggered `slide` from the end edge or in a right-to-left page, which with Yeti alone never plays. And it draws the focus ring of a control inside a painted band (`yetiPaint`) in the band's text colour, because Yeti's ring is the primary colour on every band and is 1.00:1 against a `primary` one. A toggle label (`label[yetiButton]`), whose ring Yeti draws on the label, takes the band's text colour too. Inside a Yeti surface that paints its own fill in a band (a card, a nav, an alert of the default emphasis in any variant but `black` and `white`, an accordion, a box with a surface, a sticky table head) and inside any `dialog` or popover, Yeti's dialog and its dropdown and nav panels included, the ring keeps Yeti's own colour, as it has outside a band, because it sits on that fill and not on the band. A low-emphasis alert paints no fill, and a `black` or `white` alert of the default emphasis only tints the band, so the ring inside them takes the band's text colour. A high-emphasis alert fills with its variant, so the ring inside it takes the alert's own text colour. Usage rule 8 of `YetiBox` and `NgxYetiPaint`: inside a painted band, use `yetiButton`, or set a plain `button`'s text with `yetiText`, because a plain `button` keeps Yeti's raised fill and inherits the band's text colour.
 
 The package declares no `yeti-css` dependency or peer dependency, and its declarations never import `yeti-css`.

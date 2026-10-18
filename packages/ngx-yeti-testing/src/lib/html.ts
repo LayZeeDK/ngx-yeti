@@ -96,3 +96,50 @@ export function head(html: string): string {
 export function headLinks(html: string): string[] {
   return openingTags(head(html), 'link');
 }
+
+/**
+ * The head links of `html` whose `data-ngx-yeti-styles` is `item`: how many
+ * there are, and whether the first carries `data-beasties-skip` and what its
+ * `href` is (`null` when there is none).
+ */
+export function itemLinkOf(
+  html: string,
+  item: string,
+): {
+  readonly count: number;
+  readonly beastiesSkip: boolean;
+  readonly href: string | null;
+} {
+  const links = headLinks(html).filter(
+    (tag) => attributeValue(tag, 'data-ngx-yeti-styles') === item,
+  );
+  const [first] = links;
+
+  return {
+    count: links.length,
+    beastiesSkip:
+      first !== undefined &&
+      attributeValue(first, 'data-beasties-skip') !== null,
+    href: first === undefined ? null : attributeValue(first, 'href'),
+  };
+}
+
+/**
+ * Matches the whole href of `item`'s file in Yeti's `kind` folder, such as
+ * `layouts`, with the 40-character pin as its version.
+ */
+export function itemHref(kind: string, item: string): RegExp {
+  const folder = RegExp.escape(kind);
+  const name = RegExp.escape(item);
+
+  return new RegExp(
+    String.raw`^yeti-css/${folder}/${name}/${name}\.css\?v=[0-9a-f]{40}$`,
+  );
+}
+
+/** The opening tags of `html` that carry `jsaction`, in document order. */
+export function jsactionTags(html: string): readonly string[] {
+  return allOpeningTags(html, String.raw`[a-z][\w-]*`).filter(
+    (tag) => attributeValue(tag, 'jsaction') !== null,
+  );
+}

@@ -2,7 +2,15 @@ import { NgOptimizedImage } from '@angular/common';
 import { provideLocationMocks } from '@angular/common/testing';
 import { Component, signal, type WritableSignal } from '@angular/core';
 import { RouterLink, RouterOutlet, provideRouter } from '@angular/router';
-import { contrastRatio, itemStylesLoaded, parseColor } from '@ngx-yeti/testing';
+import {
+  assertWithin,
+  contrastRatio,
+  itemStyled,
+  manifestValues,
+  parseColor,
+  storyStates,
+  usedLength,
+} from '@ngx-yeti/testing';
 import {
   applicationConfig,
   moduleMetadata,
@@ -14,6 +22,9 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import manifest from 'yeti-css/manifest';
 // Kept a URL in the static build too: NgOptimizedImage refuses `data:` URLs.
 import trail from '../../.storybook/assets/trail.svg?no-inline';
+import { YetiButton } from 'ngx-yeti/button';
+import { YetiGrid } from 'ngx-yeti/grid';
+import { YetiLayer, YetiLayerChild } from 'ngx-yeti/layer';
 import { NgxYetiLift } from 'ngx-yeti/lift';
 import { YetiCard } from './card';
 import { YetiCardLink } from './card-link';
@@ -23,15 +34,6 @@ import { YetiCardLink } from './card-link';
   template: '<p>The hills page</p>',
 })
 class HillsPage {}
-
-/** The values of one of the card's enum attributes, from Yeti's manifest. */
-function cardValues(name: string): readonly string[] {
-  return (
-    manifest.components.card.attributes.find(
-      (attribute) => attribute.name === name,
-    )?.values ?? []
-  );
-}
 
 interface CardState {
   readonly variant: YetiVariant | undefined;
@@ -51,17 +53,7 @@ const unset: CardState = {
  * The inputs each rendered story binds, by story id, so a play function can
  * change them the way a Storybook control does.
  */
-const cardStates = new Map<string, WritableSignal<CardState>>();
-
-function cardState(id: string): WritableSignal<CardState> {
-  const state = cardStates.get(id);
-
-  if (state === undefined) {
-    throw new Error(`No card state for the story ${id}`);
-  }
-
-  return state;
-}
+const cardStates = storyStates<WritableSignal<CardState>>('card');
 
 const heading = 'Weekend in the hills';
 const summary = 'Six miles, one summit, and a view worth the early start.';
@@ -69,8 +61,9 @@ const summary = 'Six miles, one summit, and a view worth the early start.';
 // otherwise reports through console.error.
 const picture = `<img [ngSrc]="trail" width="1600" height="900" priority alt="A mountain trail at dawn" />`;
 const headingLink = `<h3><a yetiCardLink stretch routerLink="/hills">${heading}</a></h3>`;
+const footerLink = `<a yetiButton emphasis="low" routerLink="/hills" tabindex="-1">Read more</a>`;
 
-/** Section 8's markup, with a plain `span` and link for the badge and button. */
+/** Section 8's markup, with a plain `span` for the badge. */
 function defaultCard(dir: 'ltr' | 'rtl'): string {
   return `
     <div data-testid="frame" dir="${dir}" style="inline-size: 40rem; resize: horizontal; overflow: auto">
@@ -80,7 +73,7 @@ function defaultCard(dir: 'ltr' | 'rtl'): string {
         <p>${summary}</p>
         <footer>
           <span>Open</span>
-          <a routerLink="/hills" tabindex="-1">Read more</a>
+          ${footerLink}
         </footer>
       </article>
     </div>`;
@@ -95,7 +88,7 @@ function trackedDefaultCard(
   id: string,
 ): { props: Record<string, unknown>; template: string } {
   const state = signal<CardState>(unset);
-  cardStates.set(id, state);
+  cardStates.track(id, state);
 
   // Template props are named unlike the inputs, which they would collide
   // with once `component` is set.
@@ -113,31 +106,15 @@ function element(canvas: HTMLElement, selector: string): HTMLElement {
 }
 
 /**
- * Waits for the card's item file to apply. Chromium and WebKit can keep stale
- * computed styles right after a stylesheet is inserted (upstream bug O2).
- */
-async function cardStyled(card: HTMLElement): Promise<void> {
-  await itemStylesLoaded('card');
-
-  await waitFor(async () => {
-    await expect(getComputedStyle(card).display).toBe('flex');
-  });
-}
-
-/**
  * The frame width at the `xs` stop: `16rem` of card content plus the card's
- * padding and border, read from a probe styled with the card's tokens, so the
- * width holds for any token value.
+ * padding and border, from the card's tokens, so the width holds for any
+ * token value.
  */
 function xsStop(frame: HTMLElement): number {
-  const probe = document.createElement('div');
-  probe.style.cssText =
-    'box-sizing: content-box; inline-size: 16rem; padding-inline: var(--yeti-card-padding); border-inline: var(--yeti-border-width) solid';
-  frame.append(probe);
-  const { width } = probe.getBoundingClientRect();
-  probe.remove();
-
-  return width;
+  return usedLength(
+    frame,
+    'calc(16rem + 2 * var(--yeti-card-padding) + 2 * var(--yeti-border-width))',
+  );
 }
 
 /** The card's padding box, inside its computed border widths. */
@@ -242,6 +219,7 @@ const meta: Meta<YetiCard> = {
       imports: [
         YetiCard,
         YetiCardLink,
+        YetiButton,
         NgOptimizedImage,
         RouterLink,
         RouterOutlet,
@@ -269,7 +247,7 @@ export const Default: Story = {
     const card = canvas.getByRole('article');
     const title = canvas.getByRole('heading', { level: 3 });
     const link = within(title).getByRole('link');
-    const footerLink = canvas.getByRole('link', { name: 'Read more' });
+    const readMore = canvas.getByRole('link', { name: 'Read more' });
     const media = element(canvasElement, 'article > img');
 
     await expect(card).toHaveAttribute('class', 'card');
@@ -290,13 +268,16 @@ export const Default: Story = {
       );
 
     await expect(marked('[role]')).toStrictEqual([]);
-    await expect(marked('[tabindex]')).toStrictEqual([footerLink]);
+    await expect(marked('[tabindex]')).toStrictEqual([readMore]);
+    await expect(readMore).toHaveAttribute('class', 'button');
+    await expect(readMore).toHaveAttribute('data-emphasis', 'low');
+    await expect(readMore).toHaveAttribute('data-ngx-yeti-item-button', '');
 
-    await cardStyled(card);
+    await itemStyled('card', card, 'display', 'flex');
     await expectReadable(frame, card, [link, canvas.getByText(summary)]);
 
     // The ratio is set for the geometry, after the unset case above.
-    cardState(id).update((state) => ({ ...state, ratio: '4/3' }));
+    cardStates.get(id).update((state) => ({ ...state, ratio: '4/3' }));
     await waitFor(async () => {
       await expect(card).toHaveAttribute('data-ratio', '4/3');
     });
@@ -326,7 +307,7 @@ export const StretchedLink: Story = {
         <p>${summary}</p>
         <footer>
           <button type="button" (click)="saved.set(true)">{{ saved() ? 'Saved' : 'Save' }}</button>
-          <a routerLink="/hills" tabindex="-1">Read more</a>
+          ${footerLink}
         </footer>
       </article>
       <router-outlet />`,
@@ -337,7 +318,7 @@ export const StretchedLink: Story = {
     const link = within(title).getByRole('link', { name: title.textContent });
     const button = canvas.getByRole('button', { name: 'Save' });
 
-    await cardStyled(card);
+    await itemStyled('card', card, 'display', 'flex');
 
     // The accessible name is the heading's text alone.
     await expect(link).toHaveAccessibleName(title.textContent);
@@ -390,9 +371,18 @@ export const Inputs: Story = {
   argTypes: {
     // Yeti's vocabularies, which the contract spec proves equal to the
     // inputs' types, so a pin move that adds a value adds its option.
-    variant: { control: 'select', options: cardValues('data-variant') },
-    threshold: { control: 'select', options: cardValues('data-threshold') },
-    ratio: { control: 'select', options: cardValues('data-ratio') },
+    variant: {
+      control: 'select',
+      options: manifestValues(manifest.components.card, 'data-variant'),
+    },
+    threshold: {
+      control: 'select',
+      options: manifestValues(manifest.components.card, 'data-threshold'),
+    },
+    ratio: {
+      control: 'select',
+      options: manifestValues(manifest.components.card, 'data-ratio'),
+    },
     raised: { control: 'boolean' },
   },
   render: (args, { id }) => {
@@ -402,7 +392,7 @@ export const Inputs: Story = {
       ratio: args.ratio,
       raised: args.raised === true,
     });
-    cardStates.set(id, state);
+    cardStates.track(id, state);
 
     return {
       props: { state },
@@ -416,7 +406,7 @@ export const Inputs: Story = {
     };
   },
   play: async ({ canvas, id }) => {
-    const state = cardState(id);
+    const state = cardStates.get(id);
     const card = canvas.getByRole('article');
     const cases: readonly {
       readonly attribute: string;
@@ -433,7 +423,7 @@ export const Inputs: Story = {
       { attribute: 'data-raised', set: { raised: true }, value: '' },
     ];
 
-    await cardStyled(card);
+    await itemStyled('card', card, 'display', 'flex');
     await expectReadable(canvas.getByTestId('frame'), card, [
       within(card).getByRole('link'),
       canvas.getByText(summary),
@@ -495,7 +485,7 @@ export const Figure: Story = {
     const media = element(canvasElement, 'figure > img');
     const caption = element(canvasElement, 'figcaption');
 
-    await cardStyled(card);
+    await itemStyled('card', card, 'display', 'flex');
 
     frame.style.inlineSize = `${String(xsStop(frame) - 4)}px`;
 
@@ -504,6 +494,47 @@ export const Figure: Story = {
       media.getBoundingClientRect().bottom,
     );
     await expectReadable(frame, card, [caption]);
+  },
+};
+
+/**
+ * Yeti's caption over the picture: the card's first child is a `figure` that
+ * is a layer. The caption's contrast over a picture is the layer stories'.
+ */
+export const LayerCaption: Story = {
+  decorators: [moduleMetadata({ imports: [YetiLayer, YetiLayerChild] })],
+  render: () => ({
+    props: { trail },
+    template: `
+      <div data-testid="frame" style="inline-size: 24rem; max-inline-size: 100%">
+        <article yetiCard>
+          <figure yetiLayer>
+            ${picture}
+            <figcaption yetiLayerChild alignSelf="end">The ridge path at first light.</figcaption>
+          </figure>
+          ${headingLink}
+          <p>${summary}</p>
+        </article>
+      </div>`,
+  }),
+  play: async ({ canvas, canvasElement }) => {
+    const card = canvas.getByRole('article');
+    const layer = element(canvasElement, 'article > figure');
+    const media = element(canvasElement, 'figure > img');
+    const caption = element(canvasElement, 'figcaption');
+
+    await expect(layer).toHaveAttribute('class', 'layer');
+    await itemStyled('card', card, 'display', 'flex');
+    await itemStyled('layer', layer, 'display', 'grid');
+
+    const mediaRect = media.getBoundingClientRect();
+    const captionRect = caption.getBoundingClientRect();
+
+    assertWithin(captionRect.bottom, mediaRect.bottom);
+    await expect(captionRect.top).toBeGreaterThan(mediaRect.top);
+    await expect(
+      parseColor(getComputedStyle(caption).backgroundColor).alpha,
+    ).toBeGreaterThan(0);
   },
 };
 
@@ -543,6 +574,72 @@ export const List: Story = {
   },
 };
 
+const rankedTrails = [
+  { name: 'Weekend in the hills', path: '/hills', text: summary },
+  { name: 'A day by the lake', path: '/lake', text: 'Flat all the way.' },
+  {
+    name: 'The coast path',
+    path: '/coast',
+    text: 'Two days along the cliffs, with a night in the harbour town between them and the ferry back on the second evening.',
+  },
+];
+
+/**
+ * Yeti's cards in a ranked grid: `rows` counts the parts of a card, so the
+ * footers of cards of different lengths share one row. The list sits in a
+ * `section`: outside sectioning content, an `li` card's `footer` is a
+ * `contentinfo` landmark, one per card.
+ */
+export const GridRows: Story = {
+  decorators: [moduleMetadata({ imports: [YetiGrid] })],
+  render: () => ({
+    props: { rankedTrails, trail },
+    template: `
+      <section style="inline-size: 48rem; max-inline-size: 100%">
+        <ul yetiGrid min="none" columns="3" rows="4" role="list">
+          @for (item of rankedTrails; track item.path) {
+            <li yetiCard>
+              ${picture}
+              <h3><a yetiCardLink stretch [routerLink]="item.path">{{ item.name }}</a></h3>
+              <p>{{ item.text }}</p>
+              <footer>
+                <a yetiButton emphasis="low" [routerLink]="item.path" tabindex="-1">Read more</a>
+              </footer>
+            </li>
+          }
+        </ul>
+      </section>`,
+  }),
+  play: async ({ canvas }) => {
+    const grid = canvas.getByRole('list');
+    const cards = within(grid).getAllByRole('listitem');
+
+    await expect(grid).toHaveAttribute('data-rows', '4');
+    await expect(cards).toHaveLength(rankedTrails.length);
+    await itemStyled('grid', grid, 'display', 'grid');
+
+    for (const card of cards) {
+      await itemStyled('card', card, 'border-top-style', 'solid');
+    }
+
+    const [first, ...rest] = cards.map(
+      (card) => element(card, ':scope > footer').getBoundingClientRect().bottom,
+    );
+
+    if (first === undefined) {
+      throw new Error('No card');
+    }
+
+    for (const bottom of rest) {
+      assertWithin(bottom, first);
+    }
+
+    for (const card of cards) {
+      await expectBleed(card, element(card, ':scope > img'));
+    }
+  },
+};
+
 export const Rtl: Story = {
   render: (_args, { id }) => trackedDefaultCard('rtl', id),
   play: async ({ canvas, canvasElement }) => {
@@ -551,7 +648,7 @@ export const Rtl: Story = {
     const title = canvas.getByRole('heading', { level: 3 });
     const media = element(canvasElement, 'article > img');
 
-    await cardStyled(card);
+    await itemStyled('card', card, 'display', 'flex');
 
     frame.style.inlineSize = `${String(2 * xsStop(frame))}px`;
 
@@ -619,8 +716,13 @@ export const WithLift: Story = {
       throw new Error('No card');
     }
 
-    await cardStyled(first);
-    await itemStylesLoaded('lift');
+    await itemStyled('card', first, 'display', 'flex');
+    await itemStyled(
+      'lift',
+      first,
+      'transition-property',
+      (value) => value !== 'all',
+    );
 
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();

@@ -53,6 +53,10 @@ jobs:
       # GitHub runs the container as root with HOME owned by the image's
       # pwuser, and Firefox refuses to start as root in another user's home.
       HOME: /root
+      # Vitest's default is one page per CPU less one, for each of the three
+      # engines, which leaves the runner no slack for its 15 s test and 60 s
+      # connect timeouts.
+      VITEST_MAX_WORKERS: 2
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -60,7 +64,9 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx nx run-many --output-style=static -t test test-storybook
+      # test and test-storybook each open pages in all three engines, and
+      # together they overload the runner.
+      - run: npx nx run-many --output-style=static -t test test-storybook --parallel=1
 
   e2e:
     runs-on: ubuntu-latest
@@ -70,7 +76,10 @@ jobs:
       fail-fast: false
       matrix:
         engine: [chromium, firefox, webkit]
-        configuration: [development, production]
+        # tailwind-c1 and tailwind-c2 are the Fixture app beside Tailwind v4,
+        # in the two forms of the setup spec, which tests them in layer 4, so
+        # in the three engines as every other layer-4 case.
+        configuration: [development, production, tailwind-c1, tailwind-c2]
     name: e2e (${{ matrix.engine }}, ${{ matrix.configuration }})
     env:
       HOME: /root
@@ -84,8 +93,8 @@ jobs:
       - run: npm ci
       # e2e depends on ^yeti-build, so Nx builds Yeti before Playwright starts
       # the web servers, whose own Nx processes then hit the cache.
-      # The production configuration changes the Fixture app only.
-      - run: npx nx run-many --output-style=static -t e2e -p ${{ matrix.configuration == 'production' && 'yeti-app-e2e' || 'yeti-analog-e2e ngx-yeti-e2e yeti-app-e2e' }} -- --project=${{ matrix.engine }}
+      # Every other configuration changes the Fixture app only.
+      - run: npx nx run-many --output-style=static -t e2e -p ${{ matrix.configuration == 'development' && 'yeti-analog-e2e ngx-yeti-e2e yeti-app-e2e' || 'yeti-app-e2e' }} -- --project=${{ matrix.engine }}
 
   safari:
     # Real Safari, as the macOS image ships it (26.6 on every macOS image in
@@ -106,3 +115,105 @@ jobs:
       - run: sudo safaridriver --enable
       # The unit job runs the engine-independent node project.
       - run: npx nx test ngx-yeti -- --project=browser
+
+  # Real screen readers through Guidepup on stories of the static Storybook
+  # (apps/screen-reader-e2e). Each runs headed with one worker; the retry
+  # budget is in screen-reader.config.mts (2 retries: a check fails after
+  # three attempts). The phrase report uploads whether the job passes or
+  # fails, so every run records what the reader said.
+  voiceover:
+    # Pinned, never macos-latest: an image update broke VoiceOver's
+    # AppleScript control once (actions/runner-images#11257). VoiceOver reads
+    # WebKit's tree in real Safari, through WebdriverIO and safaridriver.
+    runs-on: macos-26
+    # A VoiceOver test takes about a minute and a failed one retries twice;
+    # 20 minutes ended the run before its last tests twice.
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: sudo safaridriver --enable
+      - id: guidepup
+        # A failed lookup or an empty version fails the step, so the cache key
+        # always names a guidepup version.
+        run: |
+          version=$(node -p "require('@guidepup/guidepup/package.json').version")
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ~/Library/Caches/guidepup/
+          key: guidepup-voiceover-${{ runner.os }}-${{ steps.guidepup.outputs.version }}
+      # Starting VoiceOver mounts Guidepup's preferences disk image, and Finder
+      # opens a window for a new disk that can take the foreground from Safari.
+      # cfprefsd caches the old value, so it restarts with Finder.
+      - run: |
+          defaults write com.apple.finder OpenWindowForNewRemovableDisk -bool false
+          killall cfprefsd || true
+          killall Finder || true
+      # Writes the TCC and VoiceOver AppleScript settings the runner needs. Its
+      # Do Not Disturb step can fail with "Not authorized to send Apple events
+      # to System Events (-2700)" right after it writes those permissions;
+      # @guidepup/setup 0.29.2 and later rewrite them on a second run.
+      - run: |
+          npx --no-install guidepup setup --ci || {
+            echo "::warning::guidepup setup failed; retrying once in 30 s."
+            sleep 30
+            npx --no-install guidepup setup --ci
+          }
+      - run: |
+          npx --no-install guidepup install voiceover || {
+            echo "::warning::guidepup install failed; retrying once in 15 s."
+            sleep 15
+            npx --no-install guidepup install voiceover
+          }
+      - run: npx nx run screen-reader-e2e:voiceover --output-style=static
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screen-reader-voiceover
+          path: |
+            dist/screen-reader-e2e/
+            dist/.playwright/apps/screen-reader-e2e/
+          if-no-files-found: warn
+
+  nvda:
+    # NVDA reads Chromium's and Gecko's trees, in Playwright's Chromium and
+    # Firefox. The nvda target installs NVDA through @guidepup/setup when the
+    # cache lacks it.
+    runs-on: windows-2025
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - id: guidepup
+        shell: bash
+        # A failed lookup or an empty version fails the step, so the cache key
+        # always names a guidepup version.
+        run: |
+          version=$(node -p "require('@guidepup/guidepup/package.json').version")
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v6
+        with:
+          path: ~\AppData\Local\guidepup
+          key: guidepup-nvda-${{ runner.os }}-${{ steps.guidepup.outputs.version }}
+      - run: npx --no-install guidepup setup --ci
+      - run: npx playwright install chromium firefox
+      - run: npx nx run screen-reader-e2e:nvda --output-style=static
+      - if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screen-reader-nvda
+          path: |
+            dist/screen-reader-e2e/
+            dist/.playwright/apps/screen-reader-e2e/
+          if-no-files-found: warn

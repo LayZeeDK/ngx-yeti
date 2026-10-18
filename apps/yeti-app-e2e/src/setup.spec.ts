@@ -1,6 +1,6 @@
 import {
-  clientCardPreload,
   expect,
+  expectOnlyClientPreloads,
   isProduction,
   routeKinds,
   test,
@@ -13,14 +13,20 @@ import {
 } from './support/hydration';
 import {
   delayCss,
-  expectHydrationFrames,
+  expectStyledFrames,
+  firstPaintFramesRecordedAs,
   itemLinks,
+  productionFramesRecordedAs,
   recordFrames,
   recordStyleMutations,
 } from './support/style-probe';
 
 /** The `hydrate on interaction` host, which keeps `jsaction` until it hydrates. */
 const interactionHost = '#interaction-host';
+
+/** The client's style preload of the card file, one of the app's preloads. */
+const cardStylePreload =
+  'head link[rel="preload"][as="style"][href*="components/card/card.css"]';
 
 /** The `hydrate never` and `hydrate on interaction` hosts. */
 const dehydratedHosts = `#never-host, ${interactionHost}`;
@@ -59,10 +65,7 @@ for (const { kind, prefix } of routeKinds) {
       await page.goto(`${prefix}setup`);
       await waitForHydration(page, interactionHost);
 
-      expect(
-        await styleMutations(),
-        'only the client card preload is added after parsing ends',
-      ).toEqual([clientCardPreload]);
+      expectOnlyClientPreloads(await styleMutations());
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
       for (const item of ['card', 'lift']) {
@@ -77,7 +80,11 @@ for (const { kind, prefix } of routeKinds) {
       await expect(shared).toHaveAttribute('data-ngx-yeti-item-card', '');
       await expect(shared).toHaveAttribute('data-ngx-yeti-item-lift', '');
 
-      expectHydrationFrames(await cardPadding(), browserName);
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, shared host from first paint`,
+        ...firstPaintFramesRecordedAs(browserName),
+      });
     });
 
     test("keeps the dehydrated hosts' links after every live host leaves, and after hydrating one", async ({
@@ -116,10 +123,7 @@ for (const { kind, prefix } of routeKinds) {
       await nextFrames(page);
 
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
-      expect(
-        await styleMutations(),
-        'no item link is removed or added again on the way, only the client card preload is added',
-      ).toEqual([clientCardPreload]);
+      expectOnlyClientPreloads(await styleMutations());
 
       const host = page.locator(interactionHost);
 
@@ -164,33 +168,19 @@ for (const { kind, prefix } of routeKinds) {
       await expect(leaving).toHaveCount(0);
       await expect.poll(() => itemLinks(page)).toEqual([]);
 
-      const present = await leavingPadding();
-      const leaveFrames = await leaveWindow();
-
-      expect(present.length, 'the leaving host was sampled').toBeGreaterThan(0);
-      expect(
-        leaveFrames.length,
-        'the leaving host was sampled while it left',
-      ).toBeGreaterThan(0);
-      expect(
-        leaveFrames.filter((value) => value === '0px'),
-        'no frame shows the leaving card without Yeti while it leaves',
-      ).toEqual([]);
-
-      if (isProduction) {
-        test.info().annotations.push({
-          type: 'a4-frames',
-          description: `${browserName}, critical-CSS inlining on (production): ${String(present.filter((value) => value === '0px').length)} of ${String(present.length)} frames without Yeti from first paint`,
-        });
-      } else {
-        expect(
-          present.filter((value) => value === '0px'),
-          'no frame after first paint shows the leaving card without Yeti',
-        ).toEqual([]);
-      }
+      expectStyledFrames(await leaveWindow(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, leaving host while it leaves`,
+      });
+      expectStyledFrames(await leavingPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, leaving host from first paint`,
+        ...productionFramesRecordedAs(),
+      });
     });
 
     test("records the client-only @defer's frames after every host has left", async ({
+      browserName,
       page,
     }) => {
       const cardPadding = await recordFrames(
@@ -204,9 +194,15 @@ for (const { kind, prefix } of routeKinds) {
       await removeEveryHost(page, 'Remove the live hosts', dehydratedHosts);
 
       await expect(
-        page.locator('head link[rel="preload"][as="style"]'),
-        'the app preloads the card file only',
-      ).toHaveAttribute('href', /components\/card\/card\.css/);
+        page.locator(cardStylePreload),
+        'the app preloads the card file',
+      ).toHaveCount(1);
+      await expect(
+        page.locator(
+          'head link[rel="preload"][as="style"][href*="utilities/lift/lift.css"]',
+        ),
+        'the app does not preload the lift file',
+      ).toHaveCount(0);
 
       const liftTransition = await recordFrames(
         page,
@@ -226,26 +222,18 @@ for (const { kind, prefix } of routeKinds) {
       );
       expect(await itemLinks(page)).toEqual(['card', 'lift']);
 
-      const card = await cardPadding();
-
-      expect(card.length, 'the client-only card was sampled').toBeGreaterThan(
-        0,
-      );
-
-      const lift = await liftTransition();
-
       // Recorded, not asserted: the `setup-defer` route below carries the
       // 0-frame claim.
-      test.info().annotations.push(
-        {
-          type: 'frames',
-          description: `${String(card.filter((value) => value === '0px').length)} of ${String(card.length)} frames without the card file (re-inserted)`,
-        },
-        {
-          type: 'frames',
-          description: `${String(lift.filter((value) => value === 'all').length)} of ${String(lift.length)} frames without the lift file (no preload)`,
-        },
-      );
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, client-only card after every host left`,
+        recordedAs: 'reinserted-frames',
+      });
+      expectStyledFrames(await liftTransition(), {
+        styled: (value) => value !== 'all',
+        label: `${browserName}, ${kind}, client-only lift without a lift preload`,
+        recordedAs: 'no-preload-frames',
+      });
     });
 
     test.describe('with JavaScript off', () => {
@@ -364,6 +352,7 @@ for (const { kind, prefix } of routeKinds) {
     });
 
     test('renders the client-only card with 0 unstyled frames through the preload', async ({
+      browserName,
       page,
     }) => {
       const styleMutations = await recordStyleMutations(page);
@@ -378,7 +367,11 @@ for (const { kind, prefix } of routeKinds) {
         document.addEventListener(
           'load',
           ({ target }) => {
-            if (target instanceof HTMLLinkElement && target.rel === 'preload') {
+            if (
+              target instanceof HTMLLinkElement &&
+              target.rel === 'preload' &&
+              target.href.includes('components/card/card.css')
+            ) {
               Reflect.set(window, '__ngxYetiPreloaded', true);
             }
           },
@@ -390,14 +383,9 @@ for (const { kind, prefix } of routeKinds) {
       await page.goto(`${prefix}setup-defer`);
       await waitForHydration(page);
 
-      expect(
-        await styleMutations(),
-        'only the client card preload is added after parsing ends',
-      ).toEqual([clientCardPreload]);
+      expectOnlyClientPreloads(await styleMutations());
       expect(await itemLinks(page), 'the server rendered no card').toEqual([]);
-      await expect(
-        page.locator('head link[rel="preload"][as="style"]'),
-      ).toHaveAttribute('href', /components\/card\/card\.css/);
+      await expect(page.locator(cardStylePreload)).toHaveCount(1);
       // The client's preload has loaded before the interaction. Routing turns
       // the HTTP cache off, so the server's prefetch, whose response would
       // otherwise serve it, cannot stand in for it here.
@@ -419,15 +407,10 @@ for (const { kind, prefix } of routeKinds) {
       await expect(card).not.toHaveCSS('padding-top', '0px');
       expect(await itemLinks(page)).toEqual(['card']);
 
-      const frames = await cardPadding();
-      const unstyled = frames.filter((value) => value === '0px');
-
-      expect(frames.length, 'the deferred card was sampled').toBeGreaterThan(0);
-
-      expect(
-        unstyled,
-        'no frame shows the preloaded card without Yeti',
-      ).toEqual([]);
+      expectStyledFrames(await cardPadding(), {
+        styled: (value) => value !== '0px',
+        label: `${browserName}, ${kind}, deferred card through the preload`,
+      });
     });
 
     test.describe('with JavaScript off', () => {
@@ -442,10 +425,11 @@ for (const { kind, prefix } of routeKinds) {
           page.getByRole('button', { name: 'Show the deferred card' }),
         ).toBeVisible();
         expect(await itemLinks(page)).toEqual([]);
-        await expect(page.locator('head link[rel="prefetch"]')).toHaveAttribute(
-          'href',
-          /components\/card\/card\.css/,
-        );
+        await expect(
+          page.locator(
+            'head link[rel="prefetch"][href*="components/card/card.css"]',
+          ),
+        ).toHaveCount(1);
         await expect(
           page.locator('head link[rel="preload"]'),
           'a server style preload holds the first paint in WebKit (upstream bug O4)',
@@ -462,6 +446,81 @@ for (const { kind, prefix } of routeKinds) {
       }) => {
         await page.goto(`${prefix}setup-defer`);
 
+        expect(await axeViolations()).toEqual([]);
+      });
+    });
+  });
+}
+
+// The order case (setup.md:342): `stack` and `center` tie inside
+// `yeti.layouts`, so the order of their two links is the claim here.
+for (const { kind, prefix } of routeKinds) {
+  test.describe(`the ${kind} setup-order route`, () => {
+    test('hydrates with 0 skipped components and no NG05xx message', async ({
+      page,
+    }) => {
+      test.skip(
+        isProduction,
+        'Angular logs hydration diagnostics in development mode only',
+      );
+
+      const expectCleanHydration = watchHydration(page);
+
+      await page.goto(`${prefix}setup-order`);
+
+      await expect(
+        page.getByRole('button', { name: 'Show the stack and its center' }),
+      ).toBeVisible();
+      await expectCleanHydration();
+    });
+
+    test('keeps the center centred when the client renders a stack, then a center inside it', async ({
+      page,
+    }) => {
+      await page.goto(`${prefix}setup-order`);
+      await waitForHydration(page);
+
+      expect(await itemLinks(page), 'the server rendered no item').toEqual([]);
+
+      await page
+        .getByRole('button', { name: 'Show the stack and its center' })
+        .click();
+
+      const center = page.locator('#order-center');
+
+      await expect(page.locator('#order-stack')).toHaveCSS('display', 'flex');
+      await expect(center).toHaveCSS('box-sizing', 'content-box');
+      expect(await itemLinks(page)).toEqual(['stack', 'center']);
+
+      const { start, end } = await center.evaluate((element) => {
+        const outer = element.parentElement?.getBoundingClientRect();
+        const inner = element.getBoundingClientRect();
+
+        return {
+          start: inner.left - (outer?.left ?? NaN),
+          end: (outer?.right ?? NaN) - inner.right,
+        };
+      });
+
+      expect(start, 'the center is narrower than the stack').toBeGreaterThan(
+        50,
+      );
+      expect(Math.abs(start - end)).toBeLessThanOrEqual(1);
+    });
+
+    test.describe('with JavaScript off', () => {
+      test.use({ javaScriptEnabled: false });
+
+      test('serves the placeholder and server HTML that axe passes', async ({
+        axeViolations,
+        page,
+      }) => {
+        await page.goto(`${prefix}setup-order`);
+
+        await expect(
+          page.getByRole('button', { name: 'Show the stack and its center' }),
+        ).toBeVisible();
+        expect(await itemLinks(page)).toEqual([]);
         expect(await axeViolations()).toEqual([]);
       });
     });

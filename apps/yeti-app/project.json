@@ -57,6 +57,12 @@
           "optimization": false,
           "extractLicenses": false,
           "sourceMap": true
+        },
+        "tailwind-c1": {
+          "styles": ["apps/yeti-app/src/styles-tailwind-c1.css"]
+        },
+        "tailwind-c2": {
+          "styles": ["apps/yeti-app/src/styles-tailwind-c2.css"]
         }
       }
     },
@@ -83,7 +89,9 @@
       "defaultConfiguration": "development",
       "configurations": {
         "development": {},
-        "production": {}
+        "production": {},
+        "tailwind-c1": {},
+        "tailwind-c2": {}
       },
       "metadata": {
         "description": "Build the app and run its Node server on PORT (4000 by default)"

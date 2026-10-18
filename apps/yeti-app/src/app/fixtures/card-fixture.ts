@@ -1,7 +1,9 @@
 import { NgOptimizedImage } from '@angular/common';
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { YetiButton } from 'ngx-yeti/button';
 import { YetiCard, YetiCardLink } from 'ngx-yeti/card';
+import { YetiGrid } from 'ngx-yeti/grid';
 import { NgxYetiLift } from 'ngx-yeti/lift';
 
 /**
@@ -9,14 +11,21 @@ import { NgxYetiLift } from 'ngx-yeti/lift';
  * a grid of lifted cards, which one control removes; a `card` and `lift`
  * host in a `hydrate never` block (ADR 0045); a card in a client-only
  * `@defer` (the app preloads `card`); and a link to a route with no card.
- * Until `badge` and `button` land, a plain `span` and a plain footer link
- * stand in for `yetiBadge` and `yetiButton`, and until `grid` lands the grid
- * is a plain list. The `h2` puts the cards' `h3`s one level below a heading,
- * as axe's `heading-order` asks under the app's `h1`.
+ * Until `badge` lands, a plain `span` stands in for `yetiBadge`. The `h2`
+ * puts the cards' `h3`s one level below a heading, as axe's `heading-order`
+ * asks under the app's `h1`.
  */
 @Component({
   selector: 'app-card-fixture',
-  imports: [NgOptimizedImage, NgxYetiLift, RouterLink, YetiCard, YetiCardLink],
+  imports: [
+    NgOptimizedImage,
+    NgxYetiLift,
+    RouterLink,
+    YetiButton,
+    YetiCard,
+    YetiCardLink,
+    YetiGrid,
+  ],
   template: `<h2>Weekend trips</h2>
     <button type="button" [disabled]="!live()" (click)="live.set(false)">
       Remove the live cards
@@ -36,10 +45,12 @@ import { NgxYetiLift } from 'ngx-yeti/lift';
         <p i18n>Six miles, one summit, and a view worth the early start.</p>
         <footer>
           <span>Open</span>
-          <a routerLink="/replay" tabindex="-1">Read more</a>
+          <a yetiButton emphasis="low" routerLink="/replay" tabindex="-1"
+            >Read more</a
+          >
         </footer>
       </article>
-      <ul role="list">
+      <ul yetiGrid role="list">
         <li id="crop-card" yetiCard yetiLift raised threshold="2xl" ratio="1/1">
           <img
             ngSrc="trail.svg"

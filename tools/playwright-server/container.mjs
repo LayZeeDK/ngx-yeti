@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Runs `playwright run-server` on the loopback address and pipes a public
  * port to it. Inside the image: `node container.mjs <token>`; the test calls
@@ -165,6 +166,11 @@ export function serve({
 
 if (import.meta.main) {
   const [token] = process.argv.slice(2);
+
+  if (token === undefined) {
+    throw new Error('usage: node container.mjs <token>');
+  }
+
   const { server } = serve({
     cli: '/playwright-core/cli.js',
     innerPort: 3001,

@@ -1,0 +1,82 @@
+# Fixture app feature map
+
+The maintained recipes for walking the Fixture app (`apps/yeti-app`) with control-yeti-app. Read this index, then
+the feature file that matches the case.
+
+## Baseline preconditions
+
+- Run every command from the checkout root.
+- `playwright-cli --version` answers. If it does not, stop and ask Lars: a global install is his call.
+- `node .claude/skills/control-yeti-app/scripts/control.mjs up --json` exited 0, and
+  `node .claude/skills/control-yeti-app/scripts/control.mjs doctor --json` exited 0 for the build the case needs
+  (`build` says `development` or `production`).
+- `node .claude/skills/control-yeti-app/scripts/control.mjs info --json` gives `url` (`http://localhost:<port>/sub/`),
+  `session` (`control-yeti-app-<flow id>`) and `evidenceDir` (`tmp/control-yeti-app/<run-id>/`). The recipes write
+  these as `<url>`, `<session>` and `<evidenceDir>`.
+- Viewport: playwright-cli's default. Resize with `playwright-cli -s=<session> resize <w> <h>` where a case names
+  320 px or another width.
+- Never drive an instance this run did not start, except on purpose through `doctor --url`.
+
+## Driving conventions
+
+- Routes come from the registry `apps/yeti-app/src/app/fixtures/fixtures.ts`: every key `<item>` is a prerendered
+  route `<url><item>` and a server-rendered route `<url>server/<item>` (`app.routes.ts`,
+  `app.routes.server.ts`). Read the registry for the current keys: one per item (`box`, `card`, `stack`, ...) plus
+  case routes such as `replay`, `setup-order` and `table-without-tbody`.
+- Prefer roles and accessible names from a snapshot; then the package's runtime attributes
+  (`data-ngx-yeti-item-<item>`, `data-ngx-yeti-styles`); CSS last.
+- Snapshot, one action, fresh snapshot, check the change. Wait on an end state inside `run-code`, never a sleep.
+- Recipe scripts for `run-code --filename` are saved under `<evidenceDir>`; the commands below are literal apart
+  from the three placeholders.
+- A recipe file is one `async function <name>(page) { ... }` declaration. playwright-cli 0.1.21 wraps the file in
+  parentheses and evaluates it as one expression, so a trailing `;` is a `SyntaxError` (measured 2026-10-15), and
+  Prettier adds that `;` back to an arrow function in Markdown. Prettier leaves a declaration without one.
+
+## Proof and skip reporting
+
+- Drive the path a reader of the Fixture app takes (a route URL, a click, a key), not component internals.
+- Record the state before and after the action: a snapshot each, plus a screenshot with the `Welcome yeti-app`
+  heading in view.
+- Check the side effect next to the screen: item links in the head, the `jsaction` count, the hydration summary in
+  the console, the URL.
+- A recipe that passed once after a fix runs a second time before it counts.
+- For a fix, run the same recipe on a baseline (the parent commit in a second worktree on its own derived port) and
+  report one verdict: verified, not verified, or inconclusive. A negative result is reported as it is.
+- A mock counts only where a production boundary already isolates the external system; the Fixture app has none
+  to mock.
+- Name an entry point you could not reach and why; never report it as covered through another path.
+- Screen readers are automated, not manual: `apps/screen-reader-e2e` runs real NVDA (CI's `nvda` job, and locally
+  on Windows) and real VoiceOver in Safari (CI's `voiceover` job) on Storybook stories (ngx-yeti-testing,
+  "Screen readers"). Firefox and WebKit run in the e2e projects, and real Safari in CI's `safari` job.
+
+## Feature entry contract
+
+Each feature file has an H1, one paragraph of user-visible behavior, and four H2s in this order: `Sub-features`,
+`How to get to it (user POV)`, `Driving it with control-yeti-app` (starting with `Preconditions:`), and `Gotchas`.
+
+## Features
+
+- [Item routes](./item-routes.md): the prerendered and server-rendered route of each fixture, its item links and a
+  screenshot.
+- [JavaScript off](./javascript-off.md): the same routes as server HTML with no script.
+- [Hydration and replay](./hydration-and-replay.md): the hydration summary, `main.js` held back, and a click
+  replayed after hydration.
+- [Build configurations](./build-configurations.md): development and production builds through `serve` and
+  `serve-ssr`.
+
+## Full sweep
+
+A full pass drives the features in this order; Build configurations comes last because it restarts the instance
+in each of the four builds.
+
+1. [Item routes](./item-routes.md)
+2. [JavaScript off](./javascript-off.md)
+3. [Hydration and replay](./hydration-and-replay.md)
+4. [Build configurations](./build-configurations.md)
+
+## Manual only
+
+- Angular DevTools checks: a browser extension that playwright-cli does not load.
+- With JavaScript off, playwright-cli's `eval` and `run-code` hang, so a computed-style claim (geometry, colour) has
+  no recipe here. Take it to the e2e suite (`npm exec nx -- e2e yeti-app-e2e`), whose JavaScript-off cases evaluate
+  through Playwright's locator API.

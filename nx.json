@@ -15,6 +15,7 @@
       "!{projectRoot}/src/test-setup.[jt]s"
     ],
     "sharedGlobals": [],
+    "browserFloor": ["{workspaceRoot}/.browserslistrc"],
     "storybook": [
       {
         "externalDependencies": [
@@ -54,6 +55,7 @@
         "env": "FIXTURE_CONFIGURATION"
       },
       "browserEngines",
+      "browserFloor",
       {
         "env": "FLOOR_CHROMIUM_PATH"
       },
@@ -69,22 +71,22 @@
     "@angular/build:application": {
       "cache": true,
       "dependsOn": ["^yeti-build"],
-      "inputs": ["production", "^production"]
+      "inputs": ["production", "^production", "browserFloor"]
     },
     "@angular/build:unit-test": {
       "cache": true,
-      "inputs": ["default", "^production"],
+      "inputs": ["default", "^production", "browserFloor"],
       "dependsOn": ["^yeti-build"]
     },
     "@nx/angular:package": {
       "cache": true,
       "dependsOn": ["^build"],
-      "inputs": ["production", "^production"]
+      "inputs": ["production", "^production", "browserFloor"]
     },
     "build-storybook": {
       "dependsOn": ["^yeti-build"],
       "cache": true,
-      "inputs": ["default", "^production", "storybook"],
+      "inputs": ["default", "^production", "storybook", "browserFloor"],
       "configurations": {
         "fast": {
           "env": {
@@ -108,7 +110,8 @@
             "playwright"
           ]
         },
-        "browserEngines"
+        "browserEngines",
+        "browserFloor"
       ],
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "configurations": {
@@ -238,6 +241,9 @@
     "e2e-ci--**/*": {
       "dependsOn": ["^yeti-build"],
       "inputs": ["e2e", "^default"]
+    },
+    "e2e-ci--merge-reports": {
+      "cache": false
     }
   },
   "plugins": [

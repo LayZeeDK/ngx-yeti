@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import {
   attributeValue,
   headLinks,
+  itemHref,
+  jsactionTags,
   openingTags,
   renderServer,
 } from '@ngx-yeti/testing/server';
@@ -53,24 +55,16 @@ describe(NgxYetiLift, () => {
 
     expect(attribute('data-ngx-yeti-styles')).toStrictEqual(['card', 'lift']);
     expect(attribute('href')).toStrictEqual([
-      expect.stringMatching(
-        /^yeti-css\/components\/card\/card\.css\?v=[0-9a-f]{40}$/,
-      ),
-      expect.stringMatching(
-        /^yeti-css\/utilities\/lift\/lift\.css\?v=[0-9a-f]{40}$/,
-      ),
+      expect.stringMatching(itemHref('components', 'card')),
+      expect.stringMatching(itemHref('utilities', 'lift')),
     ]);
     expect(attribute('data-ngx-yeti-app')).toStrictEqual(['ng', 'ng']);
     expect(attribute('data-beasties-skip')).toStrictEqual(['', '']);
   });
 
-  it('puts no jsaction on the hosts', async () => {
-    expect.assertions(2);
+  it('puts no jsaction on any element', async () => {
+    expect.assertions(1);
 
-    const html = await renderServer(LiftFixture);
-
-    for (const host of openingTags(html, 'article')) {
-      expect(host).not.toContain('jsaction');
-    }
+    expect(jsactionTags(await renderServer(LiftFixture))).toStrictEqual([]);
   });
 });

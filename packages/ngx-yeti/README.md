@@ -2,7 +2,7 @@
 
 Angular directives for [Yeti](https://github.com/foundation/yeti), version 7 of Foundation (`yeti-css`). You write Yeti's own markup, and the directives add typed inputs, generated ids, keyboard and focus behaviour, and the item's styles.
 
-> **Pre-release.** Nothing is published to npm yet. The setup, the `card` item, and the `lift` item are implemented; the other items follow the [specs](https://github.com/LayZeeDK/ngx-yeti/blob/main/docs/specs/README.md), and the API can change until the first release.
+> **Pre-release.** Nothing is published to npm yet. The setup, the 17 layouts (`box`, `breakout`, `center`, `cluster`, `columns`, `container`, `cover`, `frame`, `grid`, `icon`, `layer`, `masonry`, `overlay`, `scroller`, `sidebar`, `stack`, and `timeline`), and the `button`, `card`, `enter`, `lift`, `spinner`, `table`, and `visually-hidden` items are implemented; the other items follow the [specs](https://github.com/LayZeeDK/ngx-yeti/blob/main/docs/specs/README.md), and the API can change until the first release.
 
 ## What the package will give you
 
@@ -16,13 +16,35 @@ The package ships none of Yeti's CSS. You bring a build of Yeti at the commit th
 
 ## Entry points
 
-| Specifier                    | What it exports                                                                |
-| ---------------------------- | ------------------------------------------------------------------------------ |
-| `ngx-yeti`                   | Types only, such as `YetiComponentName`, generated from Yeti at the pin        |
-| `ngx-yeti/styles`            | `provideYetiStyles`, `injectYetiItemStyles`, and `YetiStylesConfig`            |
-| `ngx-yeti/card`              | `YetiCard`, `YetiCardLink`, and `yetiCardToken`                                |
-| `ngx-yeti/lift`              | `NgxYetiLift`                                                                  |
-| `ngx-yeti/accessibility.css` | The package's accessibility stylesheet, and Yeti's scale in Firefox 145 to 152 |
+| Specifier                       | What it exports                                                                                                                         |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `ngx-yeti`                      | Types only, such as `YetiComponentName`, generated from Yeti at the pin                                                                 |
+| `ngx-yeti/styles`               | `provideYetiStyles`, `injectYetiItemStyles`, and `YetiStylesConfig`                                                                     |
+| `ngx-yeti/box`                  | `YetiBox`, `YetiBorder`, `NgxYetiPaint`, and `YetiText`                                                                                 |
+| `ngx-yeti/breakout`             | `YetiBreakout`, `YetiBreakoutChild`, `YetiBreakoutNote`, and `yetiBreakoutToken`                                                        |
+| `ngx-yeti/button`               | `YetiButton` and `YetiButtonDisabledLink`                                                                                               |
+| `ngx-yeti/card`                 | `YetiCard`, `YetiCardLink`, and `yetiCardToken`                                                                                         |
+| `ngx-yeti/center`               | `YetiCenter`                                                                                                                            |
+| `ngx-yeti/cluster`              | `YetiCluster`                                                                                                                           |
+| `ngx-yeti/columns`              | `NgxYetiColumns`, `YetiColumnsChild`, and `yetiColumnsToken`                                                                            |
+| `ngx-yeti/container`            | `YetiContainer`, `YetiShow`, and `YetiHide`                                                                                             |
+| `ngx-yeti/cover`                | `YetiCover`, `YetiCoverChild`, and `yetiCoverToken`                                                                                     |
+| `ngx-yeti/enter`                | `NgxYetiEnter`                                                                                                                          |
+| `ngx-yeti/frame`                | `YetiFrame`                                                                                                                             |
+| `ngx-yeti/grid`                 | `YetiGrid`, `YetiGridChild`, and `yetiGridToken`                                                                                        |
+| `ngx-yeti/icon`                 | `YetiIcon`                                                                                                                              |
+| `ngx-yeti/layer`                | `YetiLayer`, `YetiLayerChild`, and `yetiLayerToken`                                                                                     |
+| `ngx-yeti/lift`                 | `NgxYetiLift`                                                                                                                           |
+| `ngx-yeti/masonry`              | `YetiMasonry`                                                                                                                           |
+| `ngx-yeti/overlay`              | `YetiOverlay`, `YetiOverlayChild`, and `yetiOverlayToken`                                                                               |
+| `ngx-yeti/scroller`             | `YetiScroller` and the `YetiScrollerJustify` type                                                                                       |
+| `ngx-yeti/sidebar`              | `YetiSidebar`, `YetiSidebarChild`, and `yetiSidebarToken`                                                                               |
+| `ngx-yeti/spinner`              | `YetiSpinner`                                                                                                                           |
+| `ngx-yeti/stack`                | `YetiStack`, `YetiStackChild`, and `yetiStackToken`                                                                                     |
+| `ngx-yeti/table`                | `YetiTable`, `YetiTableCell`, `YetiTableHead`, `YetiNumeric`, `yetiTableToken`, and the `YetiTableAlign` type                           |
+| `ngx-yeti/timeline`             | `YetiTimeline`                                                                                                                          |
+| `ngx-yeti/visually-hidden`      | `YetiVisuallyHidden`                                                                                                                    |
+| `ngx-yeti/ngx-yeti-globals.css` | The package's global stylesheet: its accessibility rules, Yeti's scale in Firefox 145 to 152, and the `once` arrival of a named `enter` |
 
 ## Requirements
 
@@ -59,7 +81,7 @@ Serve the `yeti-css/` folder with a long `Cache-Control: max-age`. That is safe,
 
 ### C. Order the global stylesheet
 
-Your application's global stylesheet (its `styles` entry) starts with the cascade-layer statement, then Yeti's always-loaded group in Yeti's order with `layers.css` first, then the package's accessibility stylesheet:
+Your application's global stylesheet (its `styles` entry) starts with the cascade-layer statement, then Yeti's always-loaded group in Yeti's order with `layers.css` first, then the package's global stylesheet:
 
 ```css
 @layer yeti, ngx-yeti;
@@ -79,7 +101,7 @@ Your application's global stylesheet (its `styles` entry) starts with the cascad
 @import 'yeti-css/css/base/media.css';
 @import 'yeti-css/css/base/transitions.css';
 @import 'yeti-css/css/layouts/attributes.css';
-@import 'ngx-yeti/accessibility.css';
+@import 'ngx-yeti/ngx-yeti-globals.css';
 ```
 
 Your theme (token values on `:root`) and your application CSS come after. Unlayered application CSS beats every Yeti and package cascade layer wherever it sits, and a cascade layer you declare after the statement sits above both.
@@ -139,7 +161,7 @@ The package's JSDoc cites these rules by number.
 1. Build Yeti at the commit the installed package version names. Rebuild it at each pin move.
 2. Write `@layer yeti, ngx-yeti;` (or the Tailwind form) before any other CSS in the global stylesheet, and import `layers.css` first among Yeti's files.
 3. Import the always-loaded group globally, in Yeti's order, and never an item file: item files belong to the loader.
-4. Import the package's accessibility stylesheet after the always-loaded group. Without it, the accessibility gaps its rules close are open again.
+4. Import the package's global stylesheet after the always-loaded group. Without it, the accessibility gaps its rules close are open again.
 5. Keep the `assets` entry's `output` and `provideYetiStyles({ url })` in agreement: `url` is the path of the folder that `output` names, relative to `<base href>`, with a trailing slash. Usage rule 6 covers a prefix that `<base href>` does not name. They default to `yeti-css` and `yeti-css/`.
 6. Use `<base href>` for a subpath: item files follow it, so a subpath needs nothing else. `APP_BASE_HREF` sets where routes live and does not move item files, as it does not move Angular's own asset links. When the application's files sit under a prefix that `<base href>` does not name (Analog's subpath guide keeps `<base href="/">` and sets Vite's `base`), set `<base href>` to that prefix, or give `url` the prefixed path relative to `<base href>`, for example `url: 'basehref/yeti-css/'`. `deployUrl` and absolute or root-relative `url` values are not supported.
 7. Write no Yeti class, no Yeti `data-*` attribute, and no `data-ngx-yeti-*` attribute by hand. Presence attributes belong to the package.
@@ -147,7 +169,7 @@ The package's JSDoc cites these rules by number.
 9. Provide `withI18nSupport()` wherever the application uses `i18n`.
 10. Call `provideYetiStyles()` at most once, in the root providers. The loader is a root service, so a call in a route's providers has no effect.
 11. Put a `@boundary` inside a `@defer` block, never only around it, when the deferred content holds package directives.
-12. Never remove a `link[data-ngx-yeti-styles]` from `<head>`, by hand or through a head manager. The item it styles stays unstyled until that item is acquired again, by a new instance of it or of an item that loads its file.
+12. Never remove a `link[data-ngx-yeti-styles]` from `<head>`, by hand or through a head manager. The item it styles stays unstyled until that item is acquired again, by a new instance of it or of an item that loads its file. Removal waits until the application first becomes stable, so an application that never does keeps its unused links; they style nothing.
 
 ## Error boundaries
 

@@ -5,6 +5,7 @@ import { webdriverio } from '@vitest/browser-webdriverio';
 import { defineConfig } from 'vitest/config';
 import type { BrowserConfigOptions } from 'vitest/node';
 import {
+  chromiumFloor,
   vitestBrowserApi,
   vitestInstances,
 } from '../../tools/playwright/engines.mjs';
@@ -15,13 +16,22 @@ function browserEngines(): Pick<
   BrowserConfigOptions,
   'provider' | 'instances'
 > {
-  const chromiumFloor = process.env['FLOOR_CHROMIUM_PATH'];
+  const floor = chromiumFloor();
 
   if (process.env['FLOOR_FIREFOX'] === 'true') {
     // Measured in ticket 27: the plain '145.0' tag finds no Firefox build.
     return {
       provider: webdriverio({
-        capabilities: { browserVersion: 'stable_145.0' },
+        capabilities: {
+          browserVersion: 'stable_145.0',
+          // cacheDir holds both the Firefox download and geckodriver. It stays
+          // out of the OS temp folder: a cleanup there can leave a browser
+          // folder without its executable, and @puppeteer/browsers, which
+          // downloads the browser, does not reinstall over such a folder.
+          'wdio:geckodriverOptions': {
+            cacheDir: path.join(import.meta.dirname, '../../tmp/floor-firefox'),
+          },
+        },
       }),
       instances: [{ browser: 'firefox' }],
     };
@@ -41,12 +51,10 @@ function browserEngines(): Pick<
     return { provider: playwright(), instances: [{ browser: 'webkit' }] };
   }
 
-  if (chromiumFloor) {
+  if (floor) {
     return {
-      provider: playwright({
-        launchOptions: { executablePath: chromiumFloor },
-      }),
-      instances: [{ browser: 'chromium' }],
+      provider: playwright(floor.options),
+      instances: [{ browser: floor.engine }],
     };
   }
 

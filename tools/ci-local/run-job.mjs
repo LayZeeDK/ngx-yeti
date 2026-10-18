@@ -1,34 +1,122 @@
 #!/usr/bin/env node
+// @ts-check
 /** See references/ci-local.md. */
 import { execFileSync, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
+import {
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { isAbsolute, join, relative } from 'node:path';
+import { createInterface } from 'node:readline';
 import { load } from 'js-yaml';
 
 const root = join(import.meta.dirname, '../..');
 const usage =
-  'usage: node tools/ci-local/run-job.mjs <workflow> <job> [--matrix key=value]... [--dry-run] [-- <command>...]';
+  'usage: node tools/ci-local/run-job.mjs <workflow> <job> [--matrix key=value]... [--legs <n>] [--e2e-workers <n>] [--dry-run] [-- <command>...]';
+/** Matrix legs at once, capped by their peak memory in the Docker VM. */
+const defaultLegs = 2;
+/** Playwright workers per e2e leg; 0 leaves the configs' CI count. */
+const defaultE2eWorkers = 3;
 
+/**
+ * A matrix combination, or the `--matrix` filter.
+ *
+ * @typedef {Record<string, unknown>} Matrix
+ */
+
+/**
+ * @typedef {object} Leg
+ * @property {string[]} args
+ * @property {string} name
+ * @property {string} label
+ * @property {string} out
+ * @property {string} log
+ */
+
+/**
+ * @param {string} message
+ * @returns {never}
+ */
 function fail(message) {
   console.error(`run-job: ${message}`);
   process.exit(2);
 }
 
-function parseArgs(argv) {
+/** Input the script will not use; the command line reports it through `fail`. */
+class Refusal extends Error {}
+
+/**
+ * Workflow names, job ids, and matrix values reach host paths: only plain names pass.
+ *
+ * @param {unknown} value
+ * @param {string} what
+ */
+export function assertSafeName(value, what) {
+  const scalar =
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean';
+
+  if (
+    !scalar ||
+    !/^[\w.-]+$/.test(String(value)) ||
+    /^\.+$/.test(String(value))
+  ) {
+    throw new Refusal(
+      `${what} ${JSON.stringify(value)} is not a safe name: it must match ^[\\w.-]+$ and not be only dots`,
+    );
+  }
+}
+
+/**
+ * @param {unknown} value
+ * @returns {value is Record<string, unknown>}
+ */
+function isObject(value) {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * @param {string} option
+ * @param {string | undefined} text
+ * @param {number} min
+ */
+function count(option, text, min) {
+  if (text === undefined || !/^\d+$/.test(text) || Number(text) < min) {
+    fail(`${option} takes a whole number from ${String(min)}`);
+  }
+
+  return Number(text);
+}
+
+/** @param {string[]} argv */
+export function parseArgs(argv) {
   const dash = argv.indexOf('--');
   const own = dash === -1 ? argv : argv.slice(0, dash);
   const command = dash === -1 ? [] : argv.slice(dash + 1);
   const [workflow, job, ...rest] = own;
+  /** @type {Record<string, string>} */
   const matrix = {};
   let dryRun = false;
+  let legs = defaultLegs;
+  let e2eWorkers = defaultE2eWorkers;
 
   for (let index = 0; index < rest.length; index += 1) {
     const argument = rest[index];
 
     if (argument === '--dry-run') {
       dryRun = true;
+    } else if (argument === '--legs') {
+      index += 1;
+      legs = count(argument, rest[index], 1);
+    } else if (argument === '--e2e-workers') {
+      index += 1;
+      e2eWorkers = count(argument, rest[index], 0);
     } else if (argument === '--matrix') {
       index += 1;
       const pair = rest[index] ?? '';
@@ -48,18 +136,30 @@ function parseArgs(argv) {
     fail(usage);
   }
 
+  const workflowName = workflow.replace(/\.ya?ml$/, '');
+
+  assertSafeName(workflowName, 'workflow name');
+  assertSafeName(job, 'job id');
+
   return {
-    workflow: workflow.replace(/\.ya?ml$/, ''),
+    workflow: workflowName,
     job,
     matrix,
     dryRun,
+    legs,
+    e2eWorkers,
     command,
   };
 }
 
 const token = /'(?:[^']|'')*'|==|&&|\|\||matrix\.\w+/g;
 
-/** GitHub compares strings with `==` case-insensitively. */
+/**
+ * GitHub compares strings with `==` case-insensitively.
+ *
+ * @param {string} expression
+ * @param {Matrix} matrix
+ */
 function evaluate(expression, matrix) {
   if (expression.replace(token, '').trim() !== '') {
     fail(`unsupported expression: ${expression}`);
@@ -131,12 +231,23 @@ function evaluate(expression, matrix) {
   return value;
 }
 
-function resolve(text, matrix) {
-  return String(text).replace(/\$\{\{\s*(.*?)\s*\}\}/g, (_, expression) =>
-    String(evaluate(expression, matrix)),
+/**
+ * @param {unknown} text
+ * @param {Matrix} matrix
+ */
+export function resolve(text, matrix) {
+  return String(text).replace(
+    /\$\{\{\s*(.*?)\s*\}\}/g,
+    (_, /** @type {string} */ expression) =>
+      String(evaluate(expression, matrix)),
   );
 }
 
+/**
+ * @param {string} where
+ * @param {unknown} object
+ * @param {string[]} allowed
+ */
 function assertKeys(where, object, allowed) {
   const unknown = Object.keys(object ?? {}).filter(
     (key) => !allowed.includes(key),
@@ -149,6 +260,10 @@ function assertKeys(where, object, allowed) {
   }
 }
 
+/**
+ * @param {string} workflowName
+ * @param {string} jobName
+ */
 function loadJob(workflowName, jobName) {
   const file = join(root, '.github/workflows', `${workflowName}.yml`);
 
@@ -157,13 +272,21 @@ function loadJob(workflowName, jobName) {
   }
 
   const workflow = load(readFileSync(file, 'utf8'));
-  const job = workflow.jobs?.[jobName];
 
-  if (!job) {
+  if (!isObject(workflow)) {
+    fail(`${workflowName}.yml is not a mapping`);
+  }
+
+  const jobs = workflow['jobs'];
+  const job = isObject(jobs) ? jobs[jobName] : undefined;
+
+  if (!isObject(job)) {
     fail(`${workflowName}.yml has no job ${jobName}`);
   }
 
-  if (!job.container) {
+  const container = job['container'];
+
+  if (!container) {
     fail(
       `${workflowName}.yml ${jobName} has no container; run it natively (references/ci-local.md)`,
     );
@@ -187,36 +310,57 @@ function loadJob(workflowName, jobName) {
     'env',
     'steps',
   ]);
-  assertKeys(`${where} strategy`, job.strategy, ['fail-fast', 'matrix']);
+  const strategy = job['strategy'];
 
-  if (typeof job.container !== 'string') {
-    assertKeys(`${where} container`, job.container, ['image']);
+  assertKeys(`${where} strategy`, strategy, ['fail-fast', 'matrix']);
+
+  if (typeof container !== 'string') {
+    assertKeys(`${where} container`, container, ['image']);
   }
 
-  const actions = { checkout: [], 'setup-node': ['node-version', 'cache'] };
-  let nodeVersion = null;
+  const image = isObject(container) ? container['image'] : container;
 
-  for (const step of job.steps ?? []) {
-    if (step === null || typeof step !== 'object') {
+  if (typeof image !== 'string') {
+    fail(`${where} container names no image`);
+  }
+
+  /** @type {Record<string, string[]>} */
+  const actions = { checkout: [], 'setup-node': ['node-version', 'cache'] };
+  /** @type {unknown[]} */
+  const steps = listOf(job['steps'] ?? [], where);
+  /** @type {unknown} */
+  let nodeVersion = null;
+  /** @type {string[]} */
+  const runs = [];
+
+  for (const step of steps) {
+    if (!isObject(step)) {
       fail(`${where} has an empty step`);
     }
 
-    const action = /^actions\/([\w-]+)@/.exec(step.uses ?? '')?.[1];
+    const uses = String(step['uses'] ?? '');
+    const action = /^actions\/([\w-]+)@/.exec(uses)?.[1];
 
     if ('run' in step) {
       assertKeys(`a step of ${where}`, step, ['name', 'run']);
+
+      if (typeof step['run'] !== 'string') {
+        fail(`a step of ${where} has a run that is not text`);
+      }
+
+      runs.push(step['run']);
     } else if (action !== undefined && action in actions) {
+      const inputs = step['with'];
+
       assertKeys(`a step of ${where}`, step, ['name', 'uses', 'with']);
-      assertKeys(`${step.uses} in ${where}`, step.with, actions[action]);
-      nodeVersion = step.with?.['node-version'] ?? nodeVersion;
+      assertKeys(`${uses} in ${where}`, inputs, actions[action] ?? []);
+      nodeVersion =
+        (isObject(inputs) ? inputs['node-version'] : undefined) ?? nodeVersion;
     } else {
-      assertKeys(`a step of ${where}`, { [step.uses]: true }, []);
+      assertKeys(`a step of ${where}`, { [String(step['uses'])]: true }, []);
     }
   }
 
-  const runs = (job.steps ?? [])
-    .filter((step) => 'run' in step)
-    .map((step) => step.run);
   const split = runs.findIndex((run) => !isSetup(run));
   const setup = split === -1 ? runs : runs.slice(0, split);
   const checks = split === -1 ? [] : runs.slice(split);
@@ -226,18 +370,52 @@ function loadJob(workflowName, jobName) {
   }
 
   return {
-    env: { ...workflow.env, ...job.env },
-    image:
-      typeof job.container === 'string' ? job.container : job.container.image,
-    matrix: job.strategy?.matrix ?? {},
+    env: {
+      ...mapping(workflow['env'], 'the workflow env'),
+      ...mapping(job['env'], `${where} env`),
+    },
+    image,
+    matrix: mapping(
+      isObject(strategy) ? strategy['matrix'] : undefined,
+      `${where} strategy.matrix`,
+    ),
     nodeVersion,
     setup,
     checks,
   };
 }
 
-/** The matrix combinations the filter keeps, in GitHub's expansion order. */
-function combinations(matrix, filter) {
+/**
+ * @param {unknown} value
+ * @param {string} where
+ * @returns {unknown[]}
+ */
+function listOf(value, where) {
+  return Array.isArray(value) ? value : fail(`${where} steps is not a list`);
+}
+
+/**
+ * @param {unknown} value an optional YAML mapping
+ * @param {string} what
+ * @returns {Record<string, unknown>}
+ */
+function mapping(value, what) {
+  if (value === undefined || value === null) {
+    return {};
+  }
+
+  return isObject(value) && !Array.isArray(value)
+    ? value
+    : fail(`${what} is not a mapping`);
+}
+
+/**
+ * The matrix combinations the filter keeps, in GitHub's expansion order.
+ *
+ * @param {Matrix} matrix
+ * @param {Record<string, string>} filter
+ */
+export function combinations(matrix, filter) {
   if ('include' in matrix || 'exclude' in matrix) {
     fail('matrix include and exclude are not supported');
   }
@@ -248,6 +426,7 @@ function combinations(matrix, filter) {
     }
   }
 
+  /** @type {Matrix[]} */
   let result = [{}];
 
   for (const [key, values] of Object.entries(matrix)) {
@@ -255,8 +434,15 @@ function combinations(matrix, filter) {
       fail(`matrix ${key} is not a list, which run-job.mjs does not run`);
     }
 
+    for (const value of values) {
+      assertSafeName(value, `matrix ${key} value`);
+    }
+
     result = result.flatMap((combo) =>
-      values.map((value) => ({ ...combo, [key]: value })),
+      values.map((/** @type {unknown} */ value) => ({
+        ...combo,
+        [key]: value,
+      })),
     );
   }
 
@@ -267,17 +453,37 @@ function combinations(matrix, filter) {
   );
 }
 
+/** @param {string} run */
 const isSetup = (run) => /^npm (ci|install)\b/.test(run.trim());
 
-function quote(argument) {
+/** @param {unknown} argument */
+export function quote(argument) {
   return `'${String(argument).replaceAll("'", "'\\''")}'`;
 }
 
-/** Each folder gets its own volume, so installs survive the `--rm` container. */
+/**
+ * The leg's check steps: the job's, or the command after `--` as literal words.
+ *
+ * @param {string[]} checks
+ * @param {Matrix} combo
+ * @param {string[]} command
+ */
+export function legChecks(checks, combo, command) {
+  return command.length > 0
+    ? [command.map(quote).join(' ')]
+    : checks.map((run) => resolve(run, combo));
+}
+
+/**
+ * Each folder gets its own volume, so installs survive the `--rm` container.
+ *
+ * @param {unknown} lockfile
+ */
 function modulesFolders(lockfile) {
   const folders = new Set(['node_modules']);
+  const packages = isObject(lockfile) ? lockfile['packages'] : undefined;
 
-  for (const path of Object.keys(lockfile.packages ?? {})) {
+  for (const path of Object.keys(packages ?? {})) {
     const nested = path.indexOf('/node_modules/');
 
     if (nested > 0 && !path.startsWith('node_modules/')) {
@@ -288,17 +494,56 @@ function modulesFolders(lockfile) {
   return [...folders].sort();
 }
 
-/** Tracked and untracked, not ignored, files; deleted tracked files would fail tar. */
-function sourceFiles() {
+/**
+ * What a checkout's legs share by name: the 8-hex hash of its path, the
+ * prefix of the job's volumes, and the host folder a leg's reports go to.
+ *
+ * @param {string} checkoutRoot
+ * @param {string} workflow
+ * @param {string} jobName
+ * @param {string} label
+ */
+export function legPaths(checkoutRoot, workflow, jobName, label) {
+  const checkout = createHash('sha256')
+    .update(checkoutRoot)
+    .digest('hex')
+    .slice(0, 8);
+
+  const base = join(tmpdir(), 'ngx-yeti-run-job', checkout);
+  const out = join(base, label);
+  const inside = relative(base, out);
+
+  if (inside === '' || inside.startsWith('..') || isAbsolute(inside)) {
+    throw new Refusal(`the reports folder ${out} is not inside ${base}`);
+  }
+
+  return {
+    checkout,
+    volume: `ngx-yeti-run-job-${checkout}-${workflow}-${jobName}`,
+    out,
+  };
+}
+
+/**
+ * Tracked and untracked, not ignored, files; deleted tracked files would fail tar.
+ *
+ * @param {string} directory
+ */
+export function sourceFiles(directory) {
   return execFileSync('git', ['ls-files', '-co', '--exclude-standard', '-z'], {
-    cwd: root,
+    cwd: directory,
     encoding: 'utf8',
     maxBuffer: 256 * 1024 * 1024,
   })
     .split('\0')
-    .filter((path) => path && existsSync(join(root, path)));
+    .filter((path) => path && existsSync(join(directory, path)));
 }
 
+/**
+ * @param {{ image: string }} job
+ * @param {string[]} setup
+ * @param {string[]} files
+ */
 function setupKey(job, setup, files) {
   const hash = createHash('sha256').update(job.image).update(setup.join('\n'));
 
@@ -311,8 +556,16 @@ function setupKey(job, setup, files) {
   return hash.digest('hex');
 }
 
-function containerScript({ setup, checks, key, folders, nodeVersion }) {
-  const step = (run) => `bash -e -c ${quote(run)}`;
+/**
+ * @param {object} options
+ * @param {string[]} options.setup
+ * @param {string[]} options.checks
+ * @param {string} options.key
+ * @param {string[]} options.folders
+ * @param {unknown} options.nodeVersion
+ */
+export function containerScript({ setup, checks, key, folders, nodeVersion }) {
+  const step = (/** @type {string} */ run) => `bash -e -c ${quote(run)}`;
   const keyFiles = folders.map((folder) => `${folder}/.run-job-key`);
   const current = keyFiles
     .map((file) => `[ "$(cat ${file} 2>/dev/null)" = ${quote(key)} ]`)
@@ -324,6 +577,10 @@ function containerScript({ setup, checks, key, folders, nodeVersion }) {
     // that need a root-owned HOME set `HOME: /root` themselves.
     'mkdir -p /github/home && chown 1001:1001 /github/home',
     'tar -xf - -C /src',
+    // run-job.mjs keeps stdin open while it runs, so the leg stops when it
+    // dies, even when no Ctrl+C handler runs.
+    'exec 3<&0 < /dev/null',
+    '{ cat <&3 > /dev/null; kill -KILL $$; } &',
     'cd /src',
     'echo "run-job: node $(node --version)"',
     ...(nodeVersion === null
@@ -345,31 +602,94 @@ function containerScript({ setup, checks, key, folders, nodeVersion }) {
   ].join('\n');
 }
 
-function runContainer(args, files) {
+/**
+ * Containers this run started, removed on an interrupt.
+ *
+ * @type {Set<string>}
+ */
+const running = new Set();
+
+/** @param {number} code */
+function stop(code) {
+  if (running.size > 0) {
+    try {
+      execFileSync('docker', ['rm', '-f', ...running], { stdio: 'ignore' });
+    } catch {
+      // Already gone.
+    }
+  }
+
+  process.exit(code);
+}
+
+/**
+ * Prints each line with its leg's label and keeps the leg's own copy in `log`.
+ *
+ * @param {NodeJS.ReadableStream} stream
+ * @param {string} label
+ * @param {NodeJS.WritableStream} log
+ * @param {NodeJS.WritableStream} sink
+ */
+function relay(stream, label, log, sink) {
+  createInterface({ input: stream, crlfDelay: Infinity }).on('line', (line) => {
+    log.write(`${line}\n`);
+    sink.write(`[${label}] ${line}\n`);
+  });
+}
+
+/**
+ * @param {Leg} leg
+ * @param {string[]} files
+ * @returns {Promise<number>} The leg's exit status.
+ */
+function runContainer({ args, name, label, log }, files) {
   return new Promise((done) => {
     const tar = spawn('tar', ['-cf', '-', '--null', '-T', '-'], {
       cwd: root,
-      stdio: ['pipe', 'pipe', 'inherit'],
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
     const docker = spawn('docker', args, {
-      stdio: ['pipe', 'inherit', 'inherit'],
+      stdio: ['pipe', 'pipe', 'pipe'],
     });
-    let tarStatus = null;
+    const output = createWriteStream(log);
+    /** @type {string | null} */
+    let tarFailure = null;
+    // The container's stdin stays open on success (its watchdog reads it), so
+    // a failed tar has to end it, or `tar -xf -` in the container waits on it
+    // for ever.
+    const endInput = (/** @type {string} */ reason) => {
+      tarFailure ??= reason;
+      tar.stdout.unpipe(docker.stdin);
+      docker.stdin.end();
+    };
+
+    running.add(name);
 
     for (const stream of [tar, docker, tar.stdin, docker.stdin]) {
-      stream.on('error', (error) => {
+      stream.on('error', (/** @type {NodeJS.ErrnoException} */ error) => {
         if (error.code !== 'EPIPE') {
           console.error(`run-job: ${error.message}`);
         }
       });
     }
 
-    tar.on('close', (code) => {
-      tarStatus = code;
+    relay(tar.stderr, label, output, process.stderr);
+    relay(docker.stdout, label, output, process.stdout);
+    relay(docker.stderr, label, output, process.stderr);
+    tar.on('error', (error) => {
+      endInput(`tar failed: ${error.message}`);
+    });
+    tar.on('close', (code, signal) => {
+      if (code !== 0) {
+        endInput(`tar exited with ${String(code ?? signal)}`);
+      }
     });
     docker.on('close', (code) => {
-      if (tarStatus !== null && tarStatus !== 0) {
-        console.error(`run-job: tar exited with ${tarStatus}`);
+      running.delete(name);
+      output.end();
+
+      if (tarFailure !== null) {
+        console.error(`run-job: [${label}] ${tarFailure}`);
         done(1);
 
         return;
@@ -377,18 +697,34 @@ function runContainer(args, files) {
 
       done(code ?? 1);
     });
-    tar.stdout.pipe(docker.stdin);
+    tar.stdout.pipe(docker.stdin, { end: false });
     tar.stdin.end(files.join('\0'));
   });
 }
 
-async function run({
-  workflow,
-  job: jobName,
-  matrix: filter,
-  dryRun,
-  command,
-}) {
+/** @param {number} ms */
+function seconds(ms) {
+  const total = Math.round(ms / 1000);
+
+  return `${String(Math.floor(total / 60))} m ${String(total % 60)} s`;
+}
+
+/**
+ * @param {ReturnType<typeof parseArgs>} options
+ * @param {string[]} [files] the checkout files a run ships; the Git listing when left out
+ */
+export async function run(
+  {
+    workflow,
+    job: jobName,
+    matrix: filter,
+    dryRun,
+    legs: cap,
+    e2eWorkers,
+    command,
+  },
+  files,
+) {
   const job = loadJob(workflow, jobName);
   const combos = combinations(job.matrix, filter);
 
@@ -396,28 +732,36 @@ async function run({
     fail('the --matrix filter matches no combination');
   }
 
-  const files = sourceFiles();
+  const listed = files ?? sourceFiles(root);
   const folders = modulesFolders(
     JSON.parse(readFileSync(join(root, 'package-lock.json'), 'utf8')),
   );
-  const checkout = createHash('sha256').update(root).digest('hex').slice(0, 8);
-  const volume = `ngx-yeti-run-job-${checkout}-${workflow}-${jobName}`;
-  const results = [];
+  const legs = Math.min(cap, combos.length);
 
-  for (const combo of combos) {
+  /**
+   * Slot 0 keeps the job's volumes; each other concurrent slot has its own, so legs never share a writable node_modules.
+   *
+   * @param {Matrix} combo
+   * @param {number} slot
+   */
+  function leg(combo, slot) {
     const setup = job.setup.map((run) => resolve(run, combo));
-    const checks =
-      command.length > 0
-        ? [command.map(quote).join(' ')]
-        : job.checks.map((run) => resolve(run, combo));
-    const key = setupKey(job, setup, files);
+    const checks = legChecks(job.checks, combo, command);
+    const key = setupKey(job, setup, listed);
     const label = [workflow, jobName, ...Object.values(combo)].join('-');
-    const out = join(tmpdir(), 'ngx-yeti-run-job', label);
+    const { checkout, volume, out } = legPaths(root, workflow, jobName, label);
+    const name =
+      `ngx-yeti-run-job-${checkout}-${label}-${String(process.pid)}`.replace(
+        /[^\w.-]/g,
+        '-',
+      );
+    const slotVolume = slot === 0 ? volume : `${volume}-leg${String(slot + 1)}`;
     const env = {
       CI: 'true',
       HOME: '/github/home',
       HOST_UID: String(process.getuid?.() ?? ''),
       npm_config_cache: '/npm-cache',
+      ...(e2eWorkers > 0 ? { E2E_LOCAL_WORKERS: String(e2eWorkers) } : {}),
       ...job.env,
     };
     const args = [
@@ -425,17 +769,19 @@ async function run({
       '--rm',
       '-i',
       '--init',
+      '--name',
+      name,
       ...folders.flatMap((folder) => [
         '-v',
-        `${volume}-${folder.replaceAll('/', '-')}:/src/${folder}`,
+        `${slotVolume}-${folder.replaceAll('/', '-')}:/src/${folder}`,
       ]),
       '-v',
       'ngx-yeti-run-job-npm-cache:/npm-cache',
       '-v',
       `${out}:/out`,
-      ...Object.entries(env).flatMap(([name, value]) => [
+      ...Object.entries(env).flatMap(([variable, value]) => [
         '-e',
-        `${name}=${resolve(value, combo)}`,
+        `${variable}=${resolve(value, combo)}`,
       ]),
       job.image,
       'bash',
@@ -449,25 +795,69 @@ async function run({
       }),
     ];
 
-    console.log(`\n=== ${label} (${job.image})`);
-
-    if (dryRun) {
-      console.log(['docker', ...args].map(quote).join(' '));
-      continue;
-    }
-
-    rmSync(out, { recursive: true, force: true });
-    mkdirSync(out, { recursive: true });
-    results.push({ label, out, status: await runContainer(args, files) });
+    return { args, name, label, out, log: join(out, 'run-job.log') };
   }
 
-  for (const { label, out, status } of results) {
+  if (dryRun) {
+    combos.forEach((combo, index) => {
+      const { args, label } = leg(combo, index % legs);
+
+      console.log(`\n=== ${label} (${job.image})`);
+      console.log(['docker', ...args].map(quote).join(' '));
+    });
+
+    return;
+  }
+
+  process.on('SIGINT', () => stop(130));
+  process.on('SIGTERM', () => stop(143));
+
+  const queue = combos.map((combo, index) => ({ combo, index }));
+  /** @type {(Leg & { status: number, ms: number })[]} */
+  const results = [];
+
+  console.log(
+    `run-job: ${String(combos.length)} legs of ${workflow} ${jobName}, ${String(legs)} at a time (${job.image})`,
+  );
+  await Promise.all(
+    Array.from({ length: legs }, async (_, slot) => {
+      for (let next = queue.shift(); next; next = queue.shift()) {
+        const current = leg(next.combo, slot);
+        const start = Date.now();
+
+        rmSync(current.out, { recursive: true, force: true });
+        mkdirSync(current.out, { recursive: true });
+        console.log(`=== start ${current.label}`);
+
+        const status = await runContainer(current, listed);
+
+        results[next.index] = { ...current, status, ms: Date.now() - start };
+        console.log(
+          `=== ${status === 0 ? 'pass' : 'FAIL'} ${current.label} in ${seconds(Date.now() - start)}`,
+        );
+      }
+    }),
+  );
+
+  console.log('');
+
+  for (const { label, out, log, status, ms } of results) {
     console.log(
-      `${status === 0 ? 'pass' : `FAIL (${status})`}  ${label}  reports: ${out}`,
+      `${status === 0 ? 'pass' : `FAIL (${String(status)})`}  ${label}  ${seconds(ms)}  reports: ${out}  log: ${log}`,
     );
   }
 
   process.exitCode = results.some(({ status }) => status !== 0) ? 1 : 0;
 }
 
-await run(parseArgs(process.argv.slice(2)));
+if (import.meta.main) {
+  try {
+    await run(parseArgs(process.argv.slice(2)));
+  } catch (error) {
+    if (error instanceof Refusal) {
+      fail(error.message);
+    }
+
+    throw error;
+  }
+}

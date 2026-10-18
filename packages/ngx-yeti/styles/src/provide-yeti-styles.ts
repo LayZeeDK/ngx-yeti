@@ -39,7 +39,7 @@ import {
  * The rest of the one-time setup is build configuration: build Yeti at the
  * pin the package version names (usage rule 1), write the layer statement
  * first (rule 2), import the always-loaded group and never an item file (rule
- * 3), import the accessibility stylesheet after it (rule 4), write no Yeti
+ * 3), import the package's global stylesheet after it (rule 4), write no Yeti
  * class, Yeti `data-*` attribute, or `data-ngx-yeti-*` attribute by hand (rule
  * 7), provide `withI18nSupport()` wherever `i18n` is used (rule 9), and, when
  * deferred content holds package directives, put a `@boundary` inside the
@@ -51,9 +51,11 @@ export function provideYetiStyles(
   return makeEnvironmentProviders([
     { provide: yetiStylesConfigToken, useValue: config },
     // Created at application start, the loader writes the prefetch or preload
-    // links and adopts the server's links at bootstrap (ADR 0060 point 5), so
-    // its check removes a server link with no host even before any item
-    // renders.
+    // links and adopts the server's links at bootstrap (ADR 0060 point 5). Its
+    // first check waits until the application is stable, so the hydrated
+    // route keeps every server link it acquires, and a server link that
+    // nothing acquires and no host holds is removed after that, even when no
+    // item renders.
     provideEnvironmentInitializer(() => {
       inject(YetiStyles);
     }),

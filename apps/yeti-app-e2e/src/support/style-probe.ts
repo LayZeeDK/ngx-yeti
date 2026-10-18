@@ -134,6 +134,125 @@ export async function recordHostAttributes(
   return reader(page, key);
 }
 
+/**
+ * Call before `goto`. The returned function lists one entry
+ * `{element} {attribute}` (the element's id, else its tag name) for each
+ * animation frame in which an element matching `selector` carried one of
+ * `attributes`, so an empty list means no painted frame showed them. A
+ * requestAnimationFrame probe reads the attributes at the start of each
+ * frame's callbacks. Angular may run change detection in a later callback of
+ * the same frame (its zoneless scheduler races a frame against a timeout),
+ * so a MutationObserver applies every change made by those callbacks. A
+ * ResizeObserver armed by the probe's callback records the frame: its
+ * callback runs after every animation frame callback and layout, just before
+ * the paint. An attribute that is written and removed again between two
+ * frames is never painted and is not listed.
+ */
+export async function recordPaintedAttributes(
+  page: Page,
+  selector: string,
+  attributes: readonly string[],
+): Promise<() => Promise<readonly string[]>> {
+  const key = '__ngxYetiPaintedAttributes';
+  const framesKey = `${key}Frames`;
+
+  await page.addInitScript(
+    ([name, frameCount, hostSelector, names]) => {
+      const entries: string[] = [];
+      const entryFor = (element: Element, attribute: string): string =>
+        `${element.id || element.localName} ${attribute}`;
+      let frame: Map<string, boolean> | null = null;
+      let frames = 0;
+
+      const record = (): void => {
+        if (frame === null) {
+          return;
+        }
+
+        for (const [entry, present] of frame) {
+          if (present) {
+            entries.push(entry);
+          }
+        }
+
+        frame = null;
+        frames += 1;
+        Reflect.set(window, frameCount, frames);
+      };
+
+      Reflect.set(window, name, entries);
+      Reflect.set(window, frameCount, frames);
+      const beforePaint = new ResizeObserver(record);
+
+      new MutationObserver((mutations) => {
+        for (const { target, attributeName } of mutations) {
+          if (
+            frame !== null &&
+            target instanceof Element &&
+            attributeName !== null &&
+            target.matches(hostSelector)
+          ) {
+            frame.set(
+              entryFor(target, attributeName),
+              target.hasAttribute(attributeName),
+            );
+          }
+        }
+      }).observe(document, {
+        attributes: true,
+        attributeFilter: [...names],
+        subtree: true,
+      });
+
+      const sample = (): void => {
+        record();
+        frame = new Map();
+
+        for (const element of document.querySelectorAll(hostSelector)) {
+          for (const attribute of names) {
+            frame.set(
+              entryFor(element, attribute),
+              element.hasAttribute(attribute),
+            );
+          }
+        }
+
+        // A new observation reports once, in this frame's resize step.
+        const root = document.documentElement;
+
+        beforePaint.unobserve(root);
+        beforePaint.observe(root);
+        requestAnimationFrame(sample);
+      };
+
+      requestAnimationFrame(sample);
+    },
+    [key, framesKey, selector, attributes] as const,
+  );
+
+  const read = reader(page, key);
+
+  // As in recordFrames: each read waits for one more frame, taken after the
+  // call, because headless WebKit on Linux fires few frames a second.
+  return async () => {
+    const sampled: unknown = await page.evaluate(
+      (name): unknown => Reflect.get(window, name),
+      framesKey,
+    );
+
+    await page.waitForFunction(
+      ([name, count]) => {
+        const frames: unknown = Reflect.get(window, name);
+
+        return typeof frames === 'number' && frames > count;
+      },
+      [framesKey, typeof sampled === 'number' ? sampled : 0] as const,
+    );
+
+    return read();
+  };
+}
+
 let frameProbes = 0;
 
 /**
@@ -204,30 +323,56 @@ export async function recordFrames(
 }
 
 /**
- * The hydration frame rule for a card's `padding-top` frames, sampled from
- * first paint (setup.md:338): the development run expects 0 frames without
- * Yeti in Chromium and WebKit. Firefox's frames are recorded against upstream
- * bug A4 (setup.md:403), and so are every engine's in production, where
- * critical-CSS inlining lets a server-rendered card paint before the global
- * stylesheet applies, in Chromium too (1 of 20 production runs).
+ * Why frames sampled from first paint are recorded instead of asserted
+ * (setup.md:338): upstream bug A4. Critical-CSS inlining lets a
+ * server-rendered host paint before the global stylesheet applies in every
+ * engine in production, and Firefox paints such a frame in development too.
+ * Elsewhere the frames are asserted.
  */
-export function expectHydrationFrames(
-  frames: readonly string[],
-  browserName: string,
-): void {
-  const unstyled = frames.filter((value) => value === '0px');
+export function firstPaintFramesRecordedAs(browserName: string): {
+  readonly recordedAs?: string;
+} {
+  return isProduction || browserName === 'firefox'
+    ? { recordedAs: 'a4-frames' }
+    : {};
+}
 
-  expect(frames.length, 'the card was sampled').toBeGreaterThan(0);
+/**
+ * Why frames of a client-only host are recorded instead of asserted: upstream
+ * bug A4, in production only. A server-rendered host that every engine paints
+ * styled in development follows the same rule.
+ */
+export function productionFramesRecordedAs(): {
+  readonly recordedAs?: string;
+} {
+  return isProduction ? { recordedAs: 'a4-frames' } : {};
+}
+
+/**
+ * Expects at least one sampled frame and pushes one annotation
+ * `{label}: {unstyled} of {sampled} frames unstyled`, typed `recordedAs`, or
+ * `frames` without it. Expects no unstyled frame unless `recordedAs` names
+ * why the frames are recorded, such as `a4-frames` for upstream bug A4.
+ */
+export function expectStyledFrames(
+  frames: readonly string[],
+  options: {
+    readonly styled: (value: string) => boolean;
+    readonly label: string;
+    readonly recordedAs?: string;
+  },
+): void {
+  const { styled, label, recordedAs } = options;
+  const unstyled = frames.filter((value) => !styled(value));
+
+  expect(frames.length, `${label}: frames were sampled`).toBeGreaterThan(0);
   test.info().annotations.push({
-    type: isProduction ? 'a4-frames' : 'frames',
-    description: `${browserName}${isProduction ? ', critical-CSS inlining on (production)' : ''}: ${String(unstyled.length)} of ${String(frames.length)} frames without Yeti`,
+    type: recordedAs ?? 'frames',
+    description: `${label}: ${String(unstyled.length)} of ${String(frames.length)} frames unstyled`,
   });
 
-  if (!isProduction && browserName !== 'firefox') {
-    expect(
-      unstyled,
-      'no frame after first paint shows the card without Yeti',
-    ).toEqual([]);
+  if (recordedAs === undefined) {
+    expect(unstyled, `${label}: no frame is unstyled`).toEqual([]);
   }
 }
 
@@ -267,35 +412,19 @@ export async function delayCss(
 }
 
 /**
- * Whether the item links in `<head>` named in `items`, or all of them, have
- * loaded their stylesheets.
+ * The `data-ngx-yeti-styles` values of the item links in `<head>`, in
+ * document order: every item's, or only `item`'s, so a list a later item
+ * extends can still be compared exactly.
  */
-export async function itemSheetsLoaded(
+export async function itemLinks(
   page: Page,
-  items?: readonly string[],
-): Promise<boolean> {
-  return page
-    .locator('head link[data-ngx-yeti-styles]')
-    .evaluateAll((links, names) => {
-      const itemOf = (link: Element): string =>
-        link.getAttribute('data-ngx-yeti-styles') ?? '';
-      const loaded = links
-        .filter(
-          (link) => link instanceof HTMLLinkElement && link.sheet !== null,
-        )
-        .map(itemOf);
-
-      return (names ?? links.map(itemOf)).every((item) =>
-        loaded.includes(item),
-      );
-    }, items ?? null);
-}
-
-/** The `data-ngx-yeti-styles` values of the item links in `<head>`, in document order. */
-export async function itemLinks(page: Page): Promise<readonly string[]> {
-  return page
+  item?: string,
+): Promise<readonly string[]> {
+  const items = await page
     .locator('head link[data-ngx-yeti-styles]')
     .evaluateAll((links) =>
       links.map((link) => link.getAttribute('data-ngx-yeti-styles') ?? ''),
     );
+
+  return item === undefined ? items : items.filter((name) => name === item);
 }

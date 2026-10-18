@@ -1,3 +1,4 @@
+// @ts-check
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { browserProjects } from './browser-projects.mjs';
@@ -32,4 +33,15 @@ test('runs the floor engine alone when its variable is set', () => {
     }).map(({ name }) => name),
     ['webkit'],
   );
+});
+
+test('starts the Chromium floor build without the stack profiler', () => {
+  const [project] = browserProjects(['http://localhost:4310'], {
+    FLOOR_CHROMIUM_PATH: '/floor/chrome',
+  });
+
+  assert.deepEqual(project?.use.launchOptions, {
+    executablePath: '/floor/chrome',
+    args: ['--disable-stack-profiler'],
+  });
 });

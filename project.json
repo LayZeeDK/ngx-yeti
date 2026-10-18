@@ -1,18 +1,49 @@
 {
   "name": "@ngx-yeti/source",
   "$schema": "node_modules/nx/schemas/project-schema.json",
+  "implicitDependencies": ["*"],
   "targets": {
-    "test": {
-      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright/playwright-configs.test.mjs tools/playwright-server/container.test.mjs",
+    "typecheck": {
+      "command": "tsc -p tsconfig.scripts.json && node --test tools/typecheck/scripts-coverage.test.mjs",
       "dependsOn": [],
       "cache": true,
       "inputs": [
+        "{workspaceRoot}/tsconfig.scripts.json",
+        "{workspaceRoot}/tsconfig.base.json",
+        "{workspaceRoot}/**/*.{mjs,cjs,js}",
+        "{workspaceRoot}/**/*.d.ts",
+        "{workspaceRoot}/package-lock.json",
+        "{workspaceRoot}/tools/typecheck/scripts-coverage.test.mjs"
+      ],
+      "outputs": []
+    },
+    "cache-inputs": {
+      "command": "node --test tools/nx/browser-floor-inputs.test.mjs",
+      "cache": false
+    },
+    "test": {
+      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright/playwright-configs.test.mjs tools/playwright-server/container.test.mjs tools/ci-local/run-job.test.mjs tools/playwright/navigation-budget.test.mjs tools/verification/lars-verify-spec.test.mjs tools/package/pack-tarball.test.mjs",
+      "dependsOn": ["cache-inputs"],
+      "cache": true,
+      "inputs": [
         "{workspaceRoot}/tools/playwright/**/*",
+        "{workspaceRoot}/{apps,packages}/**/*.{ts,mts,mjs,tsx}",
         "{workspaceRoot}/{apps,packages}/**/vitest*.config.{ts,mts,cts,js,mjs,cjs}",
         "{workspaceRoot}/{apps,packages}/**/vite.config.{ts,mts,cts,js,mjs,cjs}",
         "{workspaceRoot}/{apps,packages}/**/playwright.config.{ts,mts,cts,js,mjs,cjs}",
         "{workspaceRoot}/tools/playwright-server/container.mjs",
-        "{workspaceRoot}/tools/playwright-server/container.test.mjs"
+        "{workspaceRoot}/tools/playwright-server/container.test.mjs",
+        "{workspaceRoot}/tools/ci-local/run-job.mjs",
+        "{workspaceRoot}/tools/ci-local/run-job.test.mjs",
+        "{workspaceRoot}/tools/verification/lars-verify-spec.mjs",
+        "{workspaceRoot}/tools/verification/lars-verify-spec.test.mjs",
+        "{workspaceRoot}/tools/package/pack-tarball.mjs",
+        "{workspaceRoot}/tools/package/pack-tarball.test.mjs",
+        "{workspaceRoot}/.github/workflows/ci.yml",
+        "{workspaceRoot}/.github/workflows/floor.yml",
+        "{workspaceRoot}/package-lock.json",
+        "{workspaceRoot}/nx.json",
+        "{workspaceRoot}/package.json"
       ]
     },
     "local-registry": {

@@ -43,6 +43,9 @@ Thumbs.db
 .claude/worktrees
 .claude/settings.local.json
 
+# playwright-cli sessions of the control skills; their evidence and state live under tmp/control-*/
+.playwright-cli/
+
 .nx/polygraph
 .angular
 
