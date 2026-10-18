@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { globSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { test } from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 // Every Vitest browser config in a workspace project. Loading the unit
 // config imports webdriverio, which changes this process's DNS order, so
@@ -126,6 +127,26 @@ test('the unit config starts the Chromium floor build without the stack profiler
     args: ['--disable-stack-profiler'],
   });
   assert.deepEqual(browser.instances, [{ browser: 'chromium' }]);
+});
+
+test('the unit config downloads the Firefox floor into tmp/floor-firefox', async () => {
+  const { default: config } = await importConfig(
+    new URL('packages/ngx-yeti/vitest.unit.config.mts?floor-firefox', root)
+      .href,
+    { FLOOR_FIREFOX: 'true' },
+  );
+  const browser = config.test.projects.find(
+    (/** @type {{ test: { name: string } }} */ project) =>
+      project.test.name === 'browser',
+  ).test.browser;
+
+  assert.deepEqual(browser.provider.options.capabilities, {
+    browserVersion: 'stable_145.0',
+    'wdio:geckodriverOptions': {
+      cacheDir: fileURLToPath(new URL('tmp/floor-firefox', root)),
+    },
+  });
+  assert.deepEqual(browser.instances, [{ browser: 'firefox' }]);
 });
 
 test('leaves the caller browser variables as it found them', () => {

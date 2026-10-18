@@ -112,12 +112,12 @@ The project has no `test`, `test-storybook` or `e2e` target, so `npm run check`,
 
 `.github/workflows/floor.yml` reruns layers 2 and 4 at the Baseline 2025 floor on every pull request and every push to `main` or `release/**`. Its jobs report on every pull request, and nothing requires them to pass before merging. The departures table of the `ngx-yeti-specs` skill lists where this differs from ticket 93. The workflow owns the browser versions, container images, and Playwright releases, with the reason for each in its comments. Each job sets one variable:
 
-| Variable                     | Job               | Runs                                                                                                    |
-| ---------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------- |
-| `FLOOR_CHROMIUM_PATH=<path>` | `chromium-141`    | `nx test ngx-yeti` and both e2e projects in Chromium only, on the Chrome for Testing build at that path |
-| `FLOOR_FIREFOX=true`         | `firefox-145`     | `nx test ngx-yeti` in Firefox through WebdriverIO, which downloads the browser                          |
-| `FLOOR_FIREFOX_E2E=true`     | `firefox-146-e2e` | Both e2e projects in Firefox only, with the Playwright release of the job's image                       |
-| `FLOOR_WEBKIT=true`          | `webkit-26-4`     | `nx test ngx-yeti` and both e2e projects in WebKit only, with the Playwright release of the job's image |
+| Variable                     | Job               | Runs                                                                                                                                          |
+| ---------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FLOOR_CHROMIUM_PATH=<path>` | `chromium-141`    | `nx test ngx-yeti` and both e2e projects in Chromium only, on the Chrome for Testing build at that path                                       |
+| `FLOOR_FIREFOX=true`         | `firefox-145`     | `nx test ngx-yeti` in Firefox through WebdriverIO, which downloads Firefox 145 and geckodriver into `tmp/floor-firefox` at the workspace root |
+| `FLOOR_FIREFOX_E2E=true`     | `firefox-146-e2e` | Both e2e projects in Firefox only, with the Playwright release of the job's image                                                             |
+| `FLOOR_WEBKIT=true`          | `webkit-26-4`     | `nx test ngx-yeti` and both e2e projects in WebKit only, with the Playwright release of the job's image                                       |
 
 `FLOOR_FIREFOX`, `FLOOR_FIREFOX_E2E`, and `FLOOR_WEBKIT` act only when set to `true`, in `packages/ngx-yeti/vitest.unit.config.mts` and in `tools/playwright/browser-projects.mjs`, which all three e2e configs share; any other value leaves the default engines. Each variable, `BROWSERS`, `FIREFOX_PATH`, and `PLAYWRIGHT_SERVER` is a cache input of the targets it changes (the `browserEngines` named input in `nx.json` holds the last three). `e2e` depends on `^yeti-build`, so Nx builds Yeti before Playwright starts the web servers, and the servers' nested Nx processes reuse that build instead of each rebuilding `dist/`.
 

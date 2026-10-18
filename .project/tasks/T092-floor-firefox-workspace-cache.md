@@ -3,9 +3,9 @@ id: T092
 title: Keep the firefox-145 floor's Firefox and geckodriver download in the workspace's gitignored tmp/floor-firefox instead of the OS temp folder
 wave: 22
 deps: [T061, T086, T090]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T092
+base: b04cc90df9485f6250ec554e312e0da027daac8c
 worktree: null
 task_branch: null
 files:
@@ -81,3 +81,36 @@ Heavy: yes
 
 - 2026-10-18 — created by planner (final-review patch, ship attempt 3, P001)
 - 2026-10-18 — planner notes: `--skip-nx-cache` on the floor step keeps a cached replay (no download) from reaching the `test -f` check. The last check was dry-run by the planner at 8222987 and prints "no cacheDir: packages\ngx-yeti\vitest.unit.config.mts" (exit 1); apps/screen-reader-e2e/src/support/voiceover.ts passes it (Safari only). The firefox.exe entry in files is the gitignored download the Verify checks, not a tracked file.
+- 2026-10-18 — coder (build_T092): red first. Added the test "the unit config keeps the Firefox floor download in the workspace, outside packages/" to tools/playwright/vitest-configs.test.mjs (imports vitest.unit.config.mts?floor-firefox with FLOOR_FIREFOX=true; asserts browserVersion stable_145.0, cacheDir a string, absolute, inside the workspace root, first segment not packages, instances [{ browser: 'firefox' }]). On the unchanged config `node --test tools/playwright/vitest-configs.test.mjs`: tests 7, pass 6, fail 1, the new case failing at `assert.equal(typeof cacheDir, 'string')` (actual 'undefined').
+- 2026-10-18 — coder: implementation. packages/ngx-yeti/vitest.unit.config.mts FLOOR_FIREFOX branch now passes `capabilities: { browserVersion: 'stable_145.0', 'wdio:geckodriverOptions': { cacheDir: path.join(import.meta.dirname, '../../tmp/floor-firefox') } }`; ticket 27 comment kept, one comment added on why the folder is out of the OS temp folder. SAFARI, FLOOR_WEBKIT, Chromium-floor and default branches unchanged. Confirmed in node_modules/@wdio/utils/build/node.js:219-227 that getCacheDir reads `caps['wdio:geckodriverOptions'].cacheDir` first and that one directory feeds setupPuppeteerBrowser (:433) and startGeckodriver (:445). Docs: references/ci-local.md firefox-145 row and .claude/skills/ngx-yeti-testing/SKILL.md FLOOR_FIREFOX row now name `tmp/floor-firefox` at the workspace root as the folder WebdriverIO downloads Firefox 145 and geckodriver into (prettier re-padded the skill table). No change to nx.json, ci.yml, floor.yml or package.json (git diff empty for them); no new dependency.
+- 2026-10-18 — coder: Verify run exactly as written through the heavy lock (acquired after 0s): exit 0. node --test vitest-configs: tests 7, pass 7, fail 0. FLOOR_FIREFOX floor step (--skip-nx-cache): Test Files 27 passed (27), Tests 507 passed (507). tmp/floor-firefox/firefox/win64-stable_145.0/core/firefox.exe exists (695424 bytes) beside tmp/floor-firefox/geckodriver-0.37.1.exe. typecheck ngx-yeti and typecheck @ngx-yeti/source passed; prettier --check on the four files passed; the WebdriverIO sweep check printed nothing. Negative control untouched: C:\Users\LARSGY~1\AppData\Local\Temp\firefox\win64-stable_145.0 still holds only postSigningData (20 bytes, dated Oct 13), so the pass did not come from that folder.
+- 2026-10-18 — coder: WebdriverIO site sweep repeated (rg for `from 'webdriverio'|'@vitest/browser-webdriverio'`, `remote(`, `webdriverio(` in apps, packages, tools): packages/ngx-yeti/vitest.unit.config.mts:27 FLOOR_FIREFOX provider — now names cacheDir; packages/ngx-yeti/vitest.unit.config.mts:42 SAFARI provider — safaridriver, no cache directory read; apps/screen-reader-e2e/src/support/voiceover.ts:52 `remote({ capabilities: { browserName: 'safari' } })` — Safari only, passes the check without cacheDir. No other site.
+- 2026-10-18 — coder: Nx inputs. `nx show project ngx-yeti --json` and `nx show project @ngx-yeti/source --json` after the download: ngx-yeti targets use default/production ({projectRoot}/**/* = packages/ngx-yeti), browserEngines, browserFloor, storybook and named workspace files; none names tmp. @ngx-yeti/source:typecheck names `{workspaceRoot}/**/*.{mjs,cjs,js}` and its `default` covers the root, but Nx's file map excludes gitignored paths: .nx/workspace-data/file-map.json holds 0 paths under `tmp/` and 0 under tmp/floor-firefox (positive control: tools/playwright/engines.mjs present once). `git check-ignore -v` attributes the download to .gitignore:5 `tmp`; tsconfig.scripts.json:23 excludes `**/tmp`. So no target's inputs pick up the downloaded files.
+- 2026-10-18 — coder: rule 13 checks. `npx prettier --check .`: all matched files use Prettier code style. `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` through the heavy lock: exit 0, 26 tasks successful across 9 projects (ngx-yeti test, test-storybook, lint, typecheck; @ngx-yeti/source test and typecheck; lint/typecheck of every affected app and e2e project), 5 from cache. Git index untouched.
+- 2026-10-18 — coder: thermos triage fixes (orchestrator message). (1) The new test is now "the unit config downloads the Firefox floor into tmp/floor-firefox" and makes one exact assertion, `assert.deepEqual(browser.provider.options.capabilities, { browserVersion: 'stable_145.0', 'wdio:geckodriverOptions': { cacheDir: fileURLToPath(new URL('tmp/floor-firefox', root)) } })`, plus the instances assertion. The `isAbsolute, relative, sep` imports, the optional chaining and the typeof guard are gone. Red run with the config temporarily replaced by `git show HEAD:packages/ngx-yeti/vitest.unit.config.mts`: tests 7, pass 6, fail 1, the failing case being "the unit config downloads the Firefox floor into tmp/floor-firefox" (actual `{ browserVersion: 'stable_145.0' }`, expected adds `'wdio:geckodriverOptions'.cacheDir` = <worktree>\tmp\floor-firefox). With the change restored: tests 7, pass 7, fail 0. (2) The cacheDir comment now sits on the `'wdio:geckodriverOptions'` property and names @puppeteer/browsers as the download step that does not reinstall over a browser folder without its executable; the ticket 27 line is kept above `return`. (3) references/ci-local.md firefox-145 row adds: an interrupted download can leave tmp/floor-firefox without its executable; deleting tmp/floor-firefox makes the next run download again.
+- 2026-10-18 — coder: Verify rerun exactly as written through the heavy lock (acquired after 0s): VERIFY EXIT 0. vitest-configs: tests 7, pass 7. Floor step: Test Files 27 passed (27), Tests 507 passed (507). firefox.exe exists; both typechecks, the four-file prettier check and the sweep check passed. Rule 13: `npx prettier --check .` exit 0. `nx affected -t lint typecheck test test-storybook --base=HEAD` through the lock was killed by Claude Code's low-memory reaper (the host ran critically low on memory while the session sat idle; this is not a task failure) after 24 of its 26 tasks had passed, ngx-yeti test-storybook, test, lint and typecheck among them. The two that did not finish are @ngx-yeti/source:typecheck (it passed in the Verify run above, --skip-nx-cache) and @ngx-yeti/source:test (not rerun after the fixes; it passed in the first affected run before the fixes). The reaper notice says not to restart the run unasked, so it was not restarted. The Nx daemon it left behind was stopped, and the holder and child processes are gone (a waiter reclaims the stale lock entry). Git index untouched.
+- NEEDS-ORCHESTRATOR: Should @ngx-yeti/source:test (the one rule 13 task unproven after the fixes) be rerun before landing? Readings: rerun `npm exec nx -- test @ngx-yeti/source` (or the full affected) once memory allows / accept the pre-fix pass plus the post-fix `node --test tools/playwright/vitest-configs.test.mjs` pass, which is the file in that target the fixes changed.
+- Orchestrator answer: land now; the authoritative task Verify reruns in the finish sidecar, and the orchestrator runs the rule 13 per-commit check (prettier plus nx affected -t lint typecheck test test-storybook, @ngx-yeti/source:test included) on the landed commit before the wave review — AGENTS.md Commits (per-commit check before push), as done for T091 at 3ef902d.
+- 2026-10-18 — orchestrator Verify (isolate gsd-path-task/T092): pass, exit 0; output tail:
+  ```
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/table
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/timeline
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/visually-hidden
+  npm notice run @ngx-yeti/source@0.0.0 npx
+  npm notice run nx typecheck ngx-yeti --skip-nx-cache
+  npm notice run @ngx-yeti/source@0.0.0 npx
+  npm notice run nx typecheck @ngx-yeti/source --skip-nx-cache
+  npm notice run @ngx-yeti/source@0.0.0 npx
+  npm notice run prettier --check packages/ngx-yeti/vitest.unit.config.mts tools/playwright/vitest-configs.test.mjs references/ci-local.md .claude/skills/ngx-yeti-testing/SKILL.md
+  npm notice run @ngx-yeti/source@0.0.0 npx
+  npm notice run nx daemon --stop
+  ```

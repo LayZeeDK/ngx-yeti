@@ -22,7 +22,16 @@ function browserEngines(): Pick<
     // Measured in ticket 27: the plain '145.0' tag finds no Firefox build.
     return {
       provider: webdriverio({
-        capabilities: { browserVersion: 'stable_145.0' },
+        capabilities: {
+          browserVersion: 'stable_145.0',
+          // cacheDir holds both the Firefox download and geckodriver. It stays
+          // out of the OS temp folder: a cleanup there can leave a browser
+          // folder without its executable, and @puppeteer/browsers, which
+          // downloads the browser, does not reinstall over such a folder.
+          'wdio:geckodriverOptions': {
+            cacheDir: path.join(import.meta.dirname, '../../tmp/floor-firefox'),
+          },
+        },
       }),
       instances: [{ browser: 'firefox' }],
     };
