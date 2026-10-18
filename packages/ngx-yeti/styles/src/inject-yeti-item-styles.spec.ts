@@ -543,27 +543,29 @@ describe(injectYetiItemStyles, () => {
     expect.assertions(2);
 
     setup();
-    const observers: MutationObserver[] = [];
-
-    class CountingObserver extends MutationObserver {
-      constructor(callback: MutationCallback) {
-        super(callback);
-        observers.push(this);
-      }
-    }
-
-    vi.stubGlobal('MutationObserver', CountingObserver);
+    // A prototype spy counts an observer however the loader reaches the
+    // constructor; in Safari a stubbed global constructor counted none.
+    const observe = vi.spyOn(MutationObserver.prototype, 'observe');
 
     try {
       const fixture = TestBed.createDirective(ProbeCard, { tagName: 'div' });
 
-      expect(observers).toHaveLength(0);
+      expect(observe).not.toHaveBeenCalled();
 
       await fixture.whenStable();
+      // Safari can run the render callback after the fixture is stable.
+      await vi.waitFor(() => {
+        if (observe.mock.calls.length === 0) {
+          throw new Error('No observer has started');
+        }
+      });
 
-      expect(observers).toHaveLength(1);
+      expect(observe).toHaveBeenCalledExactlyOnceWith(document, {
+        childList: true,
+        subtree: true,
+      });
     } finally {
-      vi.unstubAllGlobals();
+      observe.mockRestore();
     }
   });
 });
