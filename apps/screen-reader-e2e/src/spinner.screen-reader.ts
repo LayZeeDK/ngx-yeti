@@ -1,6 +1,9 @@
 import { expect, test } from './support/screen-reader';
 
-// Long enough for a polite live region to be spoken after the click.
+// Long enough for a polite live region to be spoken after the click. NVDA's
+// capture covers the whole wait. VoiceOver exposes only its last phrase, which
+// Guidepup reads right after the press, so a later repeat of the same words
+// is invisible to it; spinner's one human listen per release covers that.
 const settle = 3000;
 
 // The visible paragraph next to the status; it is not the status.
