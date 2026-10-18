@@ -126,7 +126,9 @@ jobs:
     # AppleScript control once (actions/runner-images#11257). VoiceOver reads
     # WebKit's tree in real Safari, through WebdriverIO and safaridriver.
     runs-on: macos-26
-    timeout-minutes: 20
+    # A VoiceOver test takes about a minute and a failed one retries twice;
+    # 20 minutes ended the run before its last tests twice.
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
