@@ -4,6 +4,7 @@ import { macOSActivate, voiceOver } from '@guidepup/guidepup';
 import { remote } from 'webdriverio';
 import {
   addStartMarker,
+  focusButton,
   spoken,
   startMarkerText,
   storyRendered,
@@ -32,6 +33,20 @@ async function frontmostApplication(): Promise<string> {
     throw new Error('The foreground application query failed.', {
       cause: error,
     });
+  }
+}
+
+/**
+ * VoiceOver announces a page change only while Safari is in front, so a lost
+ * front window fails the test instead of passing for silence.
+ */
+async function requireSafariInFront(): Promise<void> {
+  const front = await frontmostApplication();
+
+  if (front !== 'Safari') {
+    throw new Error(
+      `Safari lost the foreground to ${front}: what VoiceOver spoke is not the page.`,
+    );
   }
 }
 
@@ -124,17 +139,19 @@ function voiceOverLane(): Lane {
       move(async () => {
         await voiceOver.capture(async () => browser.execute(script, argument));
         await browser.pause(settle);
-
-        // VoiceOver announces a page change only while Safari is in front,
-        // so a lost front window fails the test instead of passing for
-        // silence.
-        const front = await frontmostApplication();
-
-        if (front !== 'Safari') {
-          throw new Error(
-            `Safari lost the foreground to ${front}: what VoiceOver spoke is not the page.`,
-          );
-        }
+        await requireSafariInFront();
+      }),
+    // VoiceOver's cursor follows the keyboard focus to the button, and VO-Space
+    // presses it; Guidepup polls right after the press.
+    press: async (name, settle = 0) =>
+      move(async () => {
+        await browser.execute(focusButton, name);
+        await voiceOver.perform(
+          voiceOver.keyboardCommands.moveCursorToKeyboardFocus,
+        );
+        await voiceOver.act();
+        await browser.pause(settle);
+        await requireSafariInFront();
       }),
     heard: () => log,
     stop: async () => Promise.resolve(),

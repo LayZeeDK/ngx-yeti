@@ -6,6 +6,7 @@ import { nvda } from '@guidepup/guidepup';
 import type { Browser, Page } from '@playwright/test';
 import {
   addStartMarker,
+  clickButton,
   spoken,
   startMarkerText,
   storyRendered,
@@ -70,6 +71,22 @@ function nvdaLane(): Lane {
     spoken(log, nvda, command);
   const key = async (send: () => Promise<void>): Promise<void> =>
     sendKey(token, send);
+  // Guidepup logs only what NVDA speaks during one of its own actions, so
+  // the change runs inside `nvda.capture`, which first sends NVDA's stop
+  // speech key and therefore goes through the guard. NVDA announces a page
+  // change only in the foreground window, so a window that took the
+  // foreground during the wait fails the test instead of passing for
+  // silence.
+  const change: Lane['change'] = async (script, argument, settle = 0) =>
+    move(async () =>
+      key(async () => {
+        await nvda.capture(async () => {
+          await page.evaluate(script, argument);
+          await delay(settle);
+          await requireForeground(token, 'what NVDA spoke is not the page');
+        });
+      }),
+    );
 
   return {
     name: 'nvda',
@@ -141,22 +158,8 @@ function nvdaLane(): Lane {
         key(async () => nvda.perform(nvda.keyboardCommands.moveToNextListItem)),
       ),
     next: async () => move(async () => key(async () => nvda.next())),
-    // Guidepup logs only what NVDA speaks during one of its own actions, so
-    // the change runs inside `nvda.capture`, which first sends NVDA's stop
-    // speech key and therefore goes through the guard. NVDA announces a page
-    // change only in the foreground window, so a window that took the
-    // foreground during the wait fails the test instead of passing for
-    // silence.
-    change: async (script, argument, settle = 0) =>
-      move(async () =>
-        key(async () => {
-          await nvda.capture(async () => {
-            await page.evaluate(script, argument);
-            await delay(settle);
-            await requireForeground(token, 'what NVDA spoke is not the page');
-          });
-        }),
-      ),
+    change,
+    press: async (name, settle) => change(clickButton, name, settle),
     heard: () => log,
     stop: async () => Promise.resolve(),
   };

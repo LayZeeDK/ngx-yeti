@@ -1,4 +1,4 @@
-import { clickButton, expect, test } from './support/screen-reader';
+import { expect, test } from './support/screen-reader';
 
 // Long enough for a polite live region to be spoken after the click.
 const settle = 3000;
@@ -15,7 +15,7 @@ test('spinner--waiting: the inserted status is spoken at most once and the end o
 }, testInfo) => {
   await lane.open('spinner--waiting');
 
-  const inserted = await lane.change(clickButton, 'Load', settle);
+  const inserted = await lane.press('Load', settle);
   const announced = times(
     inserted.map((phrase) => phrase.replaceAll(paragraph, '')),
     'Loading',
@@ -29,7 +29,7 @@ test('spinner--waiting: the inserted status is spoken at most once and the end o
   });
   expect(announced).toBeLessThanOrEqual(1);
 
-  const finished = await lane.change(clickButton, 'Finish', settle);
+  const finished = await lane.press('Finish', settle);
 
   expect(times(finished, 'Loaded 12 posts')).toBe(1);
 });

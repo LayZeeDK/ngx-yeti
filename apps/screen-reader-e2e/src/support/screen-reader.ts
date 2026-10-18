@@ -50,6 +50,14 @@ export interface Lane {
     argument: string,
     settle?: number,
   ): Promise<string[]>;
+  /**
+   * Presses the button whose text is `name` as the reader's user would,
+   * waits `settle` milliseconds and returns what the reader spoke: NVDA
+   * clicks it from the page, as `change` does; VoiceOver moves its cursor to
+   * the button and presses VO-Space, the way VoiceOver announced a live
+   * region in CI (Praxity/learning-patterns#11).
+   */
+  press(name: string, settle?: number): Promise<string[]>;
   /** Every phrase spoken since `open` began, the arrival included. */
   heard(): readonly string[];
   /** Ends the test; the worker keeps its reader and browser. */
@@ -146,6 +154,22 @@ export function clickButton(name: string): void {
   }
 
   button.click();
+}
+
+/**
+ * Runs in the page: moves the keyboard focus to the button named `name`.
+ * The browser runs a page script alone, so it finds the button itself.
+ */
+export function focusButton(name: string): void {
+  const button = [...document.querySelectorAll('button')].find(
+    (candidate) => candidate.textContent.trim() === name,
+  );
+
+  if (!button) {
+    throw new Error(`No button named ${name}`);
+  }
+
+  button.focus();
 }
 
 /**
