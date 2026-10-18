@@ -1,6 +1,7 @@
 import { execFile } from 'node:child_process';
+import { setTimeout as delay } from 'node:timers/promises';
 import { promisify } from 'node:util';
-import { macOSActivate, voiceOver } from '@guidepup/guidepup';
+import { MacOSKeyCodes, macOSActivate, voiceOver } from '@guidepup/guidepup';
 import { remote } from 'webdriverio';
 import {
   addStartMarker,
@@ -37,6 +38,86 @@ async function frontmostApplication(): Promise<string> {
 
 /** How many VoiceOver items `press` walks past looking for its button. */
 const maxPressSteps = 10;
+
+/** How many times `chooseWebContent` retries each Item Chooser step. */
+const maxChooserAttempts = 10;
+
+/** Ends whatever VoiceOver is interacting with or speaking. */
+async function cancelInteraction(): Promise<void> {
+  await voiceOver.perform(
+    { keyCode: MacOSKeyCodes.Control },
+    { capture: false },
+  );
+  await delay(100);
+}
+
+/**
+ * Puts the VoiceOver cursor on Safari's web area, wherever it was, through
+ * the Item Chooser, as Guidepup's own Playwright fixture does
+ * (`navigateVoiceOverToWebContent` in guidepup/guidepup-playwright at
+ * c257b305, MIT). Without it, `interact` depended on the cursor's position
+ * and entered the start marker's text, a button's title, or nothing.
+ */
+async function chooseWebContent(): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    if (attempt === maxChooserAttempts) {
+      throw new Error('VoiceOver did not open its Item Chooser.');
+    }
+
+    await cancelInteraction();
+    await voiceOver.perform(
+      { keyCode: MacOSKeyCodes.Escape },
+      { capture: false },
+    );
+    await delay(100);
+    await voiceOver.perform(voiceOver.keyboardCommands.openItemChooser);
+
+    if (
+      (await voiceOver.lastSpokenPhrase())
+        .toLowerCase()
+        .includes('item chooser')
+    ) {
+      break;
+    }
+  }
+
+  for (let attempt = 0; ; attempt++) {
+    if (attempt === maxChooserAttempts) {
+      throw new Error(
+        'The VoiceOver Item Chooser offered no "web content" item.',
+      );
+    }
+
+    if (await typeUntilWebContent()) {
+      break;
+    }
+
+    await voiceOver.perform(
+      { keyCode: MacOSKeyCodes.Backspace },
+      { capture: false },
+    );
+    await delay(100);
+  }
+
+  await voiceOver.perform({ keyCode: MacOSKeyCodes.Enter }, { capture: false });
+  await delay(100);
+}
+
+/** Types "web content" into the Item Chooser until it names that item. */
+async function typeUntilWebContent(): Promise<boolean> {
+  for (const character of 'web content') {
+    await cancelInteraction();
+    await voiceOver.type(character, { capture: 'initial' });
+
+    if (
+      (await voiceOver.lastSpokenPhrase()).toLowerCase().includes('web content')
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
 
 /**
  * VoiceOver announces a page change only while Safari is in front, so a lost
@@ -111,7 +192,7 @@ function voiceOverLane(): Lane {
     async open(storyId) {
       log.length = 0;
 
-      return move(async () => {
+      const arrival = await move(async () => {
         await browser.url(storyUrl(storyId));
         await browser.waitUntil(async () => browser.execute(storyRendered), {
           timeout: 30_000,
@@ -119,9 +200,13 @@ function voiceOverLane(): Lane {
         });
         await browser.execute(addStartMarker, startMarkerText);
         await macOSActivate('Safari');
-        // Into the web area.
-        await voiceOver.interact();
       });
+
+      // The Item Chooser's own speech is not the page's, so it stays out of
+      // the log.
+      await chooseWebContent();
+
+      return [...arrival, ...(await move(async () => voiceOver.interact()))];
     },
     // The web area's first item is the start marker; the next item is the
     // story's first.
