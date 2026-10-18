@@ -1,7 +1,7 @@
 {
   "canonical_project_dir": ".project",
   "command": "verify-landed",
-  "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+  "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
   "project_dir": ".project",
   "tasks": [
     {
@@ -16,7 +16,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T001: Generate the 22 M002 secondary entry points before any item task"
       },
       "landed_commit": "5a74a07518bbb5ffc9d650293e5b3e4f70d0b4c7",
@@ -40,7 +40,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T002: Register every M002 Fixture route, grow the preload list, and make preload assertions containment checks"
       },
       "landed_commit": "c289e6cec5ae081ed8fb227cb37f7951f5ca622d",
@@ -64,7 +64,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T003: Measure whether a written-back static attribute ever paints, in three engines"
       },
       "landed_commit": "5b5ad6c768a3bca26e8d9de59d515e5a1206f5c1",
@@ -88,7 +88,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T004: Prove Guidepup with NVDA locally and add the voiceover and nvda CI jobs with the card list check"
       },
       "landed_commit": "7ad619ff51731dfc9ba3b5caa70c77d35ac15ad4",
@@ -112,7 +112,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T005: Generate and prove the control-yeti-app skill for the Fixture app"
       },
       "landed_commit": "8802d372cb8b55687e48ba732c8d0abb8b763729",
@@ -136,7 +136,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T006: Generate and prove the control-ngx-yeti-storybook skill"
       },
       "landed_commit": "310ac375abacf21390f5454844a0da415a01ae34",
@@ -160,7 +160,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T007: Ship stack and center end to end with setup's item-links story and order case"
       },
       "landed_commit": "bc655329b05e475b7d9237aafd24c2d692d6d0f3",
@@ -184,7 +184,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T008: Ship box with its three markers and complete the box compositions of stack and center"
       },
       "landed_commit": "c81f317c579d5d3f5b9af71c14bd3b1e9eb5e05f",
@@ -208,7 +208,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T009: Ship breakout and timeline with the A11Y-10c and A11Y-10a contrast assertions"
       },
       "landed_commit": "07f9f3742564ed08fc54c409a8fc2348cebd3812",
@@ -232,7 +232,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T010: Ship grid and masonry with A11Y-23's order story"
       },
       "landed_commit": "df9bfbc3c9087eb8aa862a91e682eed39ecc6b6b",
@@ -256,7 +256,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T011: Ship enter and visually-hidden with enter's held-bundle and preload cases"
       },
       "landed_commit": "15eaa62d2e12e10de813cecfe8094c7d780290da",
@@ -280,7 +280,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T012: Ship cluster with its enter shared host, the lift carry-over, and timeline's cluster measurement"
       },
       "landed_commit": "3fffc5f19f415901824a096a80abb460af0a32ca",
@@ -304,7 +304,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T013: Ship sidebar with A11Y-22's Shift+Tab walk and the sidebar-with-center order case"
       },
       "landed_commit": "375a8c53b93eeef9230bfb0e1b17536247359ef4",
@@ -328,7 +328,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T014: Ship cover and columns with the cover-with-center order case"
       },
       "landed_commit": "176dceea4a18d7fef6f81bcf7f6ca49c73a6aea7",
@@ -352,7 +352,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T015: Ship layer and overlay with A11Y-10b's scrim contrast"
       },
       "landed_commit": "7640ff7951fa6c54f35483f2c84622737c6ae5f9",
@@ -376,7 +376,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T016: Ship spinner with A11Y-13 and its forced-colours measurement"
       },
       "landed_commit": "4806542da5796f1cfdeee0ae2666f210dc62ae47",
@@ -400,7 +400,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T017: Ship scroller with its keyboard cases and focus surviving hydration"
       },
       "landed_commit": "2f0d74c234dce88a8a0ff327e455ac37a755ab65",
@@ -424,7 +424,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T018: Ship frame with its zero layout shift and the iframe reload ledger row"
       },
       "landed_commit": "426f4abf836be78594b9cfa5553111dae1c32928",
@@ -448,7 +448,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T019: Add the wave-3 items to the consumer build, name-collision list, README, and changelog"
       },
       "landed_commit": "ce3685d2e0e66c6536a20655ae97da4b869e49ad",
@@ -472,7 +472,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T020: Ship button and YetiButtonDisabledLink with A11Y-1a, event replay, and the NG8002 check"
       },
       "landed_commit": "dae9e585b07dfa848d9201607ab3f58692b9da25",
@@ -496,7 +496,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T021: Ship icon and complete button's icon cases"
       },
       "landed_commit": "3d85ae11b3e4670e2a76c4b3fdf005b50640598b",
@@ -520,7 +520,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T022: Ship container with yetiShow and yetiHide"
       },
       "landed_commit": "4dee4ddd80fb5a73fa056ac7275eb743affa0e49",
@@ -544,7 +544,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T023: Ship table with its cell, head, and numeric directives and the table compositions of earlier items"
       },
       "landed_commit": "e3a0a767ad006bb835d647e1ae7fdc5cfb33d492",
@@ -568,7 +568,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T024: Add the Tailwind C1 and C2 Fixture build configurations with their cases"
       },
       "landed_commit": "15ae0759aab7e0c05e179b7a25da5a47bce07c34",
@@ -592,7 +592,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T025: Land card's grid, layer, and button carry-overs and the card route's grid"
       },
       "landed_commit": "9d6d57abe3f40eba4b8518fac99dc83d2a929d1a",
@@ -616,7 +616,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T026: Add the wave-4 items to the registries and prove one exported type per shared input name"
       },
       "landed_commit": "b217decea8ffe45e2066bc6df32761de15f12079",
@@ -640,7 +640,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T027: Add the timeline, icon, spinner, grid, and cluster screen-reader checks and retire the manual tests"
       },
       "landed_commit": "04a6af3f5f4ba46a47bdcb73196aaf57be5983be",
@@ -664,7 +664,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T028: Run every CI and floor job locally on the milestone tip and re-time the long jobs"
       },
       "landed_commit": "c99718ab10a5e32c11fa1307a1b919b5266eedcf",
@@ -688,7 +688,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T029: Make control-yeti-app's doctor see library edits and its down keep the record of an incomplete teardown"
       },
       "landed_commit": "8fa60a6b314ca79e92bad71fe65e2bee47ef136c",
@@ -712,7 +712,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T030: Make the stub-route tests fail for a missing or broken route instead of skipping"
       },
       "landed_commit": "d9792886b83f23b9c5ba47a4f10fa0341882e030",
@@ -736,7 +736,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T031: Check the foreground window before every NVDA key and prove the guard refuses a wrong window"
       },
       "landed_commit": "6700f9fb2097cb628022afda616d6d556e5d278f",
@@ -760,7 +760,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T032: Fix wave 2 cycle 1 review findings in T007, T008"
       },
       "landed_commit": "54eb1197fbdd19cbc466d1b135540791f1a5d324",
@@ -784,7 +784,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T033: Fix wave 2 cycle 1 review findings in T030"
       },
       "landed_commit": "7ba7c0b8150232128b16b28f5c6811c23b00a781",
@@ -808,7 +808,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T034: Fix wave 3 cycle 1 review findings in T009, T010, T011, T012, T013, T014, T015, T016, T017, T018"
       },
       "landed_commit": "e387da9786f3e26c5d32f05ec7aefa0f86352b78",
@@ -832,7 +832,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T035: Record WebKit's pending-sheet frames in the setup-boundaries reset case and add upstream row O17"
       },
       "landed_commit": "c983d4c0e49594d7194b2bbf65d692f4109a2329",
@@ -856,7 +856,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T036: Share the layer-4 geometry, sheet-applied, standard-route, and styled-frame helpers across both e2e apps"
       },
       "landed_commit": "ca510a2d7bd13c8cba9bc33adb147cf2534ef965",
@@ -880,7 +880,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T037: Share the story helpers, wait for applied item styles with a longer poll, and migrate every story"
       },
       "landed_commit": "0ead13c31975d8ae7639a6fb70c53efeffdea259",
@@ -904,7 +904,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T038: Share the directive host, the server-render readers, and Yeti's gap and width lists, and migrate the layer-2 and layer-3 specs"
       },
       "landed_commit": "9885336e1a19ed1ce52b8846febbf1fa10a23fbe",
@@ -928,7 +928,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T039: Record the entry-point export rule and the audited departures, and bound the accessibility stylesheet's Yeti selectors by ledger row"
       },
       "landed_commit": "9e8c9fd99e8d4711b44433373b7bfa315931afe4",
@@ -952,7 +952,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T040: Withhold a named once arrival with one package rule, and fail when Yeti fixes its once bug"
       },
       "landed_commit": "ab65119a3e553a9847079070e300b6c374cbcd23",
@@ -976,7 +976,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T041: Make the NVDA lane pass in Firefox after Chromium and with several tests in one worker"
       },
       "landed_commit": "eedd136adc39cf0a8a710ecb7fd831443dcc162a",
@@ -1000,7 +1000,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T042: Run the ci unit job's tasks one at a time with two Vitest pages per engine"
       },
       "landed_commit": "18710cfe9dc62a3a1b56287339b469cd215c024f",
@@ -1024,7 +1024,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T043: Run a job's matrix legs concurrently in run-job.mjs, with a local e2e worker count and a build-only Nx cache, capped by measured memory"
       },
       "landed_commit": "d5085278b3cb41f82ac0fc7dc92c3ce84ce843ba",
@@ -1048,7 +1048,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T044: Walk nested selector lists in the published-output and accessibility gates, and state both once rules in enter's doc comment"
       },
       "landed_commit": "6c119707996f18c9dd26f12436cf20be8c61183f",
@@ -1072,7 +1072,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T045: Make the story and layer-2 checks the review found unable to fail assert what their specs ask"
       },
       "landed_commit": "0ee0b70457a7190970add819ca871bc1f58c67e7",
@@ -1096,7 +1096,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T046: Make the stub-route, reduced-motion, held-frame, and Storybook e2e checks fail when they should, and record the client-only preload cases"
       },
       "landed_commit": "e50f98e7832ed80c239f27df9cda1e8e7e5569ae",
@@ -1120,7 +1120,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T047: Harden both control scripts (checked session names, refused unknown flags, reported close failures, full freshness scans) and run them with the Nx daemon on"
       },
       "landed_commit": "0bde5164654937c4fe12330811e3b06f6891b895",
@@ -1144,7 +1144,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T048: Prove the html and Playwright test helpers can fail, and bring the testing skill up to date"
       },
       "landed_commit": "9a92e85c7f510a959ab5abe74a5c7112b9a1f2b5",
@@ -1168,7 +1168,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T049: Rename the package stylesheet accessibility.css to ngx-yeti-globals.css and update every reference"
       },
       "landed_commit": "470aba7cd04395e4e3c64575c0ed5e68212355f1",
@@ -1192,7 +1192,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T050: Keep the server's spinner link through hydration on the button route, so hydration adds and removes no item link"
       },
       "landed_commit": "2f5782801c9854654dc65b1a0cd46a00a8a3bdc5",
@@ -1216,7 +1216,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T051: Add the Scripts section to AGENTS.md"
       },
       "landed_commit": "94937a9b429e50153111ce4c337dd6478bedbaf0",
@@ -1240,7 +1240,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T052: Fix wave 4 cycle 1 review findings in T020, T021, T022, T023, T024, T025, T036, T037, T041, T042, T046"
       },
       "landed_commit": "2224e29fd8c0eeaaf1dc0d42f46c75aaa17700f1",
@@ -1264,7 +1264,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T053: Land the typed scripts and their type check in CI"
       },
       "landed_commit": "ccce8ddd273a6b29f2a709850b0d3ad94f0ffd69",
@@ -1288,7 +1288,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T054: Key run-job.mjs output by checkout, end a leg when the host tar fails, accept only decimal counts, and make the Playwright server test survive load"
       },
       "landed_commit": "1fc227674f45ae6611e7b5b0a2e4470a7046671e",
@@ -1312,7 +1312,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T055: Make both control scripts fail loudly on a failed listener query, prove the session close, and close sessions on a dead recorded PID"
       },
       "landed_commit": "2428b7859c8a2c6d30a5e0ab17c31877a2901fd9",
@@ -1336,7 +1336,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T056: Record the loader's stable gate and the press-ratio departure, and bring stale docs and doc comments up to date"
       },
       "landed_commit": "74f94279e23cfd2b5853fbda1ed22e707a0b755d",
@@ -1360,7 +1360,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T057: Make the review round 2 tests able to fail and correct their comments"
       },
       "landed_commit": "22cd46a9f9e4b5cba56549d51c1a4ccf60402d81",
@@ -1384,7 +1384,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T058: Give the focus ring inside a painted band a colour that reads (A11Y-35) and add the plain-button usage rule for painted bands (Y17)"
       },
       "landed_commit": "4d63e28bc5a31e951d0764918f653845fe89e07e",
@@ -1408,7 +1408,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T059: Start the floor Chromium without its stack profiler so the Chromium 141 floor run exits"
       },
       "landed_commit": "8d92f28c48846617d353ce1f79cb6dd74a57e437",
@@ -1432,7 +1432,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T060: Keep the painted-band focus ring readable on Yeti surfaces and toggle labels inside a band, and make box--paint able to catch both"
       },
       "landed_commit": "d2fc096d7da7885ccad86078494ec5bf00d56850",
@@ -1456,7 +1456,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T061: Test the run-job output folder without Git, record the unit job's skipped count, and give the floor Chromium one launch-options value"
       },
       "landed_commit": "e753cd76069646c6e52d2919370cfbdcf9c95f8b",
@@ -1480,7 +1480,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T062: Make Storybook down check the port on a dead recorded PID, survive a malformed session file, and give a left-open session its own outcome in both control scripts"
       },
       "landed_commit": "b1a3897de43ca00657ee8a0219234ef074127832",
@@ -1504,7 +1504,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T063: Make the spinner screen-reader check able to fail, guard the VoiceOver foreground, assert the decorative icon's role words, and share inOrder with card"
       },
       "landed_commit": "94717e2329be8d3f142a9592b50ccf26f18f4f35",
@@ -1528,7 +1528,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T064: Start the itemStyled deadline after the load, name .js in the typed-scripts docs, clarify the icon align doc, and drop the duplicated e2e checks"
       },
       "landed_commit": "3775a39b15e0a7eb32a127a895e580f4832c6718",
@@ -1552,7 +1552,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T065: Limit the painted-band ink reset to the alert emphasis that paints a fill the ring reads on, test low- and high-emphasis alerts in a band, and record Yeti's ring on a high-emphasis alert"
       },
       "landed_commit": "9e5f58223269d6284defed8fd662872d48ee64b0",
@@ -1576,7 +1576,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T066: Make the run-job output-folder test able to fail, let a .d.ts edit miss the scripts typecheck cache, clear every floor variable in the unit-config test, fix the ci-local unit row, and bound the VoiceOver foreground query"
       },
       "landed_commit": "b871f0c175e61e0b286a2227aeee5ab492df25e6",
@@ -1600,7 +1600,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T067: Make both control scripts refuse a malformed state file and write it atomically, keep only run members on Storybook's dead-PID path, scan Git's sources for Storybook freshness, and bound yeti-app's listener wait"
       },
       "landed_commit": "3f6f2ce2f69c1715899d9c16e251863532863bff",
@@ -1624,7 +1624,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T068: Split the pressed-contrast check of button--variants by colour scheme so it holds in the floor WebKit job with every assertion kept"
       },
       "landed_commit": "f44ebda9f3dfc30c4baa3606ec415e3b0f339ceb",
@@ -1648,7 +1648,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T069: Derive the alert ring inside painted bands from an exhaustive variant, emphasis, band, and scheme matrix in box--paint, and reset the band ink per variant with public tokens"
       },
       "landed_commit": "4cafbb1b7c30ea0eb52853594b32f5cea016e46f",
@@ -1672,7 +1672,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T070: Make run-job refuse a workflow name, job id, or matrix value that is not a safe name, and refuse a leg report folder outside its checkout folder"
       },
       "landed_commit": "5be2f30386bf134d196c563b9bc067adb6272ff9",
@@ -1696,7 +1696,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T071: Give each route visit of the registry route check its own budget, and fail the root test target on any test that loops over page loads under a fixed budget"
       },
       "landed_commit": "d6fecfedd91fb3ff0059441d5d052f19ccb8ebb7",
@@ -1720,7 +1720,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T072: Make control-yeti-app down on a dead recorded root wait for the root's surviving children, name them and the port's listeners, and remove the state file, as Storybook's down does"
       },
       "landed_commit": "08e5d5fed3876323d28cf9d557ebedd3a5501fa8",
@@ -1744,7 +1744,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T073: Run a full maintenance pass on control-yeti-app and fix every triaged survivor, the map drift, the build-fresh scan, and the contract findings"
       },
       "landed_commit": "70310995ef23275899e7944c3deaa14e09ee8bf0",
@@ -1768,7 +1768,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T074: Run a full /lars-maintain-verification pass on control-ngx-yeti-storybook from its saved first attempt, adopt the proof manifest, and make the skill runnable by /lars-verify"
       },
       "landed_commit": "9d855214737c9ab8c5e9df4e058216a6613a6a10",
@@ -1792,7 +1792,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T075: Build the static Storybook's CSS for the .browserslistrc floor so inline dark-scheme wrappers stay dark, and assert every wrapper story's colours in ngx-yeti-e2e"
       },
       "landed_commit": "07fe6cffa202dda2d235f77d0580a80b092cb048",
@@ -1816,7 +1816,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T076: Run a full /lars-maintain-verification pass on control-yeti-app, adopt the proof manifest, and make the skill runnable by /lars-verify through a spec written from its feature map"
       },
       "landed_commit": "72af0fc6d0daf25156afda19bf9cc7b41f166959",
@@ -1840,7 +1840,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T077: Fix wave 15 cycle 1 review findings in T071"
       },
       "landed_commit": "035c6086083be2c7fe203df162459aa0fdbb83f4",
@@ -1864,7 +1864,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T078: Make the root test target run in full in a checkout without .git, listing apps/ and packages/ without Git and running run-job's dry-run tests without a skip"
       },
       "landed_commit": "b996ec4c6a1992ec577f17178e2f217361c1cfc3",
@@ -1888,7 +1888,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T079: Make .browserslistrc a cache input of every Nx target that reads the browser floor, through one named input, with a standing test that lists the readers"
       },
       "landed_commit": "69323b62de0c9a76cb3f01114689670e718e8190",
@@ -1912,7 +1912,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T080: Prove on the proctree base that control-yeti-app's down, up and stopLaunch never list, stop or report as stopped a process its launch did not start, and remove the local tree walks proctree replaces"
       },
       "landed_commit": "16ca19831584050c3cbdedb3593267eab157655a",
@@ -1936,7 +1936,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T081: Refuse an --open value that leaves the app's URL in the lars-verify spec writer, and resolve the loop-budget gate's listed paths as file-system paths"
       },
       "landed_commit": "b299706a9fde275a6ad0e7e45cc31c2389ef3e34",
@@ -1960,7 +1960,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T082: Cover the stories that set their colour scheme in play code in the static-build colour-scheme guard, and make the loop-budget gate require a per-visit step timeout"
       },
       "landed_commit": "5b623c0bcea39bf79a4bb905282b8ba8b293ef1d",
@@ -1984,7 +1984,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T083: Make both control scripts' PID-mismatch refusals name only the image name and start time of the process that now holds the recorded PID"
       },
       "landed_commit": "8224cc2e20bcfcf556e94f90fc66eb14276afc51",
@@ -2008,7 +2008,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T084: Run one /lars-maintain-verification pass on both control skills to the current verification contract, with a ports table and doctor ports line, process trees through proctree.mjs, fresh byte copies, the Nx daemon left running, and a /lars-verify run per skill"
       },
       "landed_commit": "e41da12d5dac88b213275beb87ae941ea41767a1",
@@ -2032,7 +2032,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T085: Fix wave 17 cycle 1 review findings in T079"
       },
       "landed_commit": "be6af0ae49be8e1770a568832c23e83c2aa9e40d",
@@ -2056,7 +2056,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T086: Make the local-CI rule in AGENTS.md, references/ci-local.md, and the testing skill say that container jobs pass in CI and need no local run, while the native jobs and the real NVDA lane pass locally"
       },
       "landed_commit": "6fee50256a37813fa84b1b2a784dc1248d23a91f",
@@ -2080,7 +2080,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T087: Hash every file the root test target's tests read, including floor.yml and package-lock.json, and guard those inputs"
       },
       "landed_commit": "86deb7950808f8a97023add3f50228217ca5ae8a",
@@ -2104,7 +2104,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T088: Fix wave 19 cycle 1 review findings in T087"
       },
       "landed_commit": "5e2b8d5a62997bc86b9ac849fd637673b3691824",
@@ -2128,7 +2128,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T089: Bring both control skills to the 2026-10-18 verification contract with fresh fingerprint.mjs copies and Full sweep and Manual only feature-map sections"
       },
       "landed_commit": "ab650361d6db606620f09347ece182ac426d11e2",
@@ -2152,7 +2152,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T090: Make the root test target's tests independent of the caller's BROWSERS, PLAYWRIGHT_SERVER, SAFARI and FLOOR_* variables and of tmp/playwright-server"
       },
       "landed_commit": "1c03b5165ed2bf8232b3b48a7c2d7dd686d60ec2",
@@ -2176,7 +2176,7 @@
             "valid": true
           }
         ],
-        "head": "a7001858b75e7596cfdd5be02d91e93cf70714c3",
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
         "subject": "T091: Run the project-graph guard in its own uncached root target that the root test target depends on, and drop the graph-only inputs no remaining root test reads"
       },
       "landed_commit": "3ef902def548d26acac1887a5627c3e4fc1a03a3",
@@ -2186,6 +2186,54 @@
         "id": "T091",
         "status": "done",
         "task_file": ".project/tasks/T091-uncached-graph-guard-target.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "b04cc90df9485f6250ec554e312e0da027daac8c",
+            "commit": "b75d41eb884d90643d5490514754b961dea04115",
+            "valid": true
+          }
+        ],
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
+        "subject": "T092: Keep the firefox-145 floor's Firefox and geckodriver download in the workspace's gitignored tmp/floor-firefox instead of the OS temp folder"
+      },
+      "landed_commit": "b75d41eb884d90643d5490514754b961dea04115",
+      "reasons": [],
+      "task": {
+        "base": "b04cc90df9485f6250ec554e312e0da027daac8c",
+        "id": "T092",
+        "status": "done",
+        "task_file": ".project/tasks/T092-floor-firefox-workspace-cache.md"
+      }
+    },
+    {
+      "classification": "proven-landed",
+      "command": "reconcile",
+      "history": {
+        "branch": "gsd-path/M002",
+        "candidates": [
+          {
+            "base": "d3512e8c70e611a3602ad0906fe3e96657227bf5",
+            "commit": "49dea1d530fa39aeaf16d774c90e41336ee00b69",
+            "valid": true
+          }
+        ],
+        "head": "565a02844ee9df540e12fc99ba99ebd1c37238a1",
+        "subject": "T093: Make pack-check find the packed tarball under both npm 11 and npm 12"
+      },
+      "landed_commit": "49dea1d530fa39aeaf16d774c90e41336ee00b69",
+      "reasons": [],
+      "task": {
+        "base": "d3512e8c70e611a3602ad0906fe3e96657227bf5",
+        "id": "T093",
+        "status": "done",
+        "task_file": ".project/tasks/T093-pack-check-under-npm-12.md"
       }
     }
   ]
