@@ -116,6 +116,17 @@ async function setupHost() {
   };
 }
 
+/**
+ * Hovers the row's first cell. Safari's driver finds a table row itself not
+ * interactable, and a pointer over a cell is over its row too.
+ */
+async function hoverRow(row: HTMLElement): Promise<void> {
+  const cell = row.querySelector('td');
+  assert.instanceOf(cell, HTMLElement);
+
+  await page.elementLocator(cell).hover();
+}
+
 async function setupHover() {
   await globalStylesheet();
   // A link an earlier test left points at the default URL, which this
@@ -390,13 +401,13 @@ describe(YetiTable, () => {
       const resting = getComputedStyle(hovered).backgroundColor;
       const stillResting = getComputedStyle(still).backgroundColor;
 
-      await page.elementLocator(hovered).hover();
+      await hoverRow(hovered);
 
       await expect
         .poll(() => getComputedStyle(hovered).backgroundColor)
         .not.toBe(resting);
 
-      await page.elementLocator(still).hover();
+      await hoverRow(still);
 
       expect(getComputedStyle(still).backgroundColor).toBe(stillResting);
 
@@ -423,7 +434,7 @@ describe(YetiTable, () => {
           const resting = getComputedStyle(hovered).backgroundColor;
           const surface = getComputedStyle(frame).backgroundColor;
 
-          await page.elementLocator(hovered).hover();
+          await hoverRow(hovered);
 
           await expect
             .poll(() => getComputedStyle(hovered).backgroundColor)
