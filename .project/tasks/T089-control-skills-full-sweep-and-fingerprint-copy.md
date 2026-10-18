@@ -3,9 +3,9 @@ id: T089
 title: Bring both control skills to the 2026-10-18 verification contract with fresh fingerprint.mjs copies and Full sweep and Manual only feature-map sections
 wave: 20
 deps: [T084]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_t089
+base: b28bfd8ca130fee6c252e094a577e121d813cb91
 worktree: null
 task_branch: null
 files:
@@ -67,3 +67,27 @@ Heavy: no
 - 2026-10-18 — created by planner (build repair: the 2026-10-18 verification contract change)
 - 2026-10-18 — orchestrator (plan gate, before approval): added `npm ci &&` at the start of Verify, because the finish sidecar starts without node_modules and `npx prettier` and the daemon stop need the workspace's packages.
 - 2026-10-18 — orchestrator (plan-defect repair of an AC before dispatch): AC1's sha256 changed from a8c6b2bd5e1fcea32a208caa6e4f6e3e173b85c34a19f605cdc84c827433f7f2 to d3c1150a8d79004cd2115299bf341c179f21082abbfcecf7513dd3f30595e03f, because the global fingerprint.mjs changed again after planning (it now turns off git filter drivers before `git hash-object`, as verdict.mjs does; measured with certutil). The `cmp` against the global file is unchanged.
+- 2026-10-18 — build_T089 (coder, serial round in the primary at b28bfd8): before any change, check-skill.mjs `--json` exited 1 on both skills: control-yeti-app failed `fingerprint-copy` and `readme-sections` ("missing: Full sweep"); control-ngx-yeti-storybook failed `fingerprint-copy` and `readme-sections` ("missing: Full sweep, Manual only"); every other check passed; both `fingerprint.mjs check` exited 0 (4/4 and 3/3 fresh); both `cmp` against the global fingerprint.mjs exited 1 (differ at byte 1164, line 15). Changes: copied the global fingerprint.mjs with `cp` over both scripts/fingerprint.mjs (sha256 d3c1150a8d79004cd2115299bf341c179f21082abbfcecf7513dd3f30595e03f for the global file and both copies); control-yeti-app README gained `## Full sweep` between Features and Manual only (item-routes, javascript-off, hydration-and-replay, build-configurations as Markdown links, the Features order; Manual only's two items kept); control-ngx-yeti-storybook README gained `## Full sweep` (stories, play-functions, axe-results as Markdown links, the Features table order) and `## Manual only` (Angular DevTools; the manager UI's Accessibility and Interactions panels), and the "Manual only:" bullet under Proof and skip reporting moved into that section so the list lives in one place; the Features table is unchanged. No live drive ran: the change is two README sections and a byte copy of fingerprint.mjs; no recipe, feature file, route or control script changed, and features/.proven.json is unchanged and fresh by `fingerprint.mjs check`. Verify exactly as written: exit 0 (npm ci; check-skill `--json` 21/21 checks ok on control-yeti-app and 20/20 on control-ngx-yeti-storybook, including fingerprint-copy, proctree-copy, readme-sections and full-sweep; fingerprint check 4/4 and 3/3 fresh; both cmp exit 0; prettier check of both READMEs passes; daemon stopped). `npx prettier --check .`: all files pass. `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (through the heavy lock): affected project @ngx-yeti/source only, typecheck and test passed (2/2 tasks, test from cache). .prettierignore unchanged; Git index untouched.
+- 2026-10-18 — orchestrator Verify (sidecar gsd-path-verify/task-t089-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

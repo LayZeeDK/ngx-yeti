@@ -34,7 +34,6 @@ playwright-cli -s=control-ngx-yeti-storybook-wt-1a2b3c4d-static --raw run-code '
 - The play function and the axe report are the repeatable proof; a by-hand recipe that keeps proving the same thing is a candidate play function. Suggest it; do not write it uninvited.
 - Name every entry point you could not reach and its missing prerequisite; never report it as covered through another path.
 - Screen-reader output is automated, not manual: `apps/screen-reader-e2e` runs real NVDA (CI's `nvda` job, and locally on Windows) and real VoiceOver in Safari (CI's `voiceover` job) on the static build's stories (ngx-yeti-testing, "Screen readers"); playwright-cli reads only the accessibility tree. Real Safari runs in CI's `safari` job.
-- Manual only: Angular DevTools checks, and the manager UI's Accessibility and Interactions panels at `<url>/?path=/story/<story-id>`, which show the same report and play-function steps to people; drive `iframe.html` and read `storyFinished` instead.
 
 ## Feature entry contract
 
@@ -47,3 +46,16 @@ Each feature file has an H1, one paragraph of user-visible behaviour, and four H
 | Open a story by id, with or without play        | `stories.md`        |
 | Run a story's play function and read its result | `play-functions.md` |
 | Capture a story's axe result                    | `axe-results.md`    |
+
+## Full sweep
+
+A full pass drives the features in this order: opening a story comes first because the other two recipes start from it.
+
+1. [Open a story by id, with or without play](./stories.md)
+2. [Run a story's play function and read its result](./play-functions.md)
+3. [Capture a story's axe result](./axe-results.md)
+
+## Manual only
+
+- Angular DevTools checks: a browser extension for people that playwright-cli does not load.
+- The manager UI's Accessibility and Interactions panels at `<url>/?path=/story/<story-id>`: they show people the same axe report and play-function steps that an agent reads from `storyFinished` on `iframe.html`, so drive `iframe.html` instead.

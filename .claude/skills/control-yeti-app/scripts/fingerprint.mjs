@@ -12,9 +12,11 @@
 //     Exit 0 written or unchanged, 2 refused.
 //   node fingerprint.mjs check [--feature <id>] [--json]
 //     Exit 0 every feature fresh or external, 1 one is stale or unproven, 2 could not run.
-// It spawns nothing and writes only the manifest.
-import { createHash, randomBytes } from 'node:crypto';
+// Per record or check it spawns `git config` once and `git hash-object --stdin-paths` once (git must be on PATH),
+// with line-ending conversion on and every filter driver off, and writes only the manifest.
+import { randomBytes } from 'node:crypto';
 import { lstatSync, readdirSync, readFileSync, readlinkSync, realpathSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -219,14 +221,73 @@ export function printable(text) {
 }
 
 /**
- * The git blob hash of a file's bytes, as `git hash-object --no-filters` prints it.
- * @param {string} path
- * @returns {string}
+ * Runs git in `root` with no inherited `GIT_*` variable, so the root's config and attributes apply.
+ * @param {string} root
+ * @param {string[]} args
+ * @param {string} [input]
+ * @returns {import('node:child_process').SpawnSyncReturns<string>}
  */
-export function blobHash(path) {
-  const bytes = readFileSync(path);
+function gitIn(root, args, input) {
+  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/^GIT_/i.test(key)));
 
-  return createHash('sha1').update(`blob ${bytes.length}\0`).update(bytes).digest('hex');
+  return spawnSync('git', args, {
+    cwd: root,
+    env,
+    encoding: 'utf8',
+    maxBuffer: 64 * 1024 * 1024,
+    windowsHide: true,
+    ...(input === undefined ? {} : { input }),
+  });
+}
+
+/**
+ * The git blob hash of each file, as git would hash it into this checkout: line-ending conversion (core.autocrlf,
+ * the `text` and `eol` attributes) applies, so a CRLF working copy of an LF blob hashes as that blob, but every
+ * filter driver the config names is switched off, so a clean filter can neither hide an edit nor fail the run.
+ * One `git hash-object --stdin-paths` call, run from the repository root.
+ * @param {string} root
+ * @param {string[]} paths  absolute, inside `root`
+ * @returns {Map<string, string>}  keyed by the given path
+ */
+export function blobHashes(root, paths) {
+  const unique = [...new Set(paths)];
+  /** @type {Map<string, string>} */
+  const hashes = new Map();
+
+  if (unique.length === 0) {
+    return hashes;
+  }
+
+  const relativePaths = unique.map((path) => {
+    const rel = posix(root, path);
+
+    // --stdin-paths reads one path per line and C-unquotes a line that starts with a double quote.
+    if (/[\r\n]/.test(rel) || rel.startsWith('"')) {
+      throw new Error(`a path with a line break or a leading double quote cannot be hashed: ${printable(rel)}`);
+    }
+
+    return rel;
+  });
+  const drivers = new Set(
+    (gitIn(root, ['config', '--name-only', '--get-regexp', '^filter\\.']).stdout ?? '')
+      .split(/\r?\n/)
+      .filter((line) => line.startsWith('filter.'))
+      .map((line) => line.slice('filter.'.length, line.lastIndexOf('.'))),
+  );
+  const off = [...drivers].flatMap((name) =>
+    ['clean=', 'smudge=', 'process=', 'required=false'].flatMap((setting) => ['-c', `filter.${name}.${setting}`]),
+  );
+  const r = gitIn(root, [...off, 'hash-object', '--stdin-paths'], `${relativePaths.join('\n')}\n`);
+  const lines = (r.stdout ?? '').split(/\r?\n/).filter((line) => line !== '');
+
+  if (r.status !== 0 || lines.length !== unique.length || !lines.every((line) => SHA.test(line))) {
+    const why = (r.stderr || String(r.error ?? '') || `${lines.length} hashes for ${unique.length} files`).trim();
+    throw new Error(`git hash-object failed in ${printable(root)}: ${printable(why)}`);
+  }
+
+  unique.forEach((path, i) => hashes.set(path, lines[i] ?? ''));
+
+  return hashes;
 }
 
 /**
@@ -707,8 +768,11 @@ function fingerprint(root, id, entries) {
   /** @type {Record<string, string>} */
   const files = Object.create(null);
 
-  for (const path of [...closure(root, absolute, ts)].sort()) {
-    files[posix(root, path)] = blobHash(path);
+  const paths = [...closure(root, absolute, ts)].sort();
+  const hashes = blobHashes(root, paths);
+
+  for (const path of paths) {
+    files[posix(root, path)] = hashes.get(path) ?? '';
   }
 
   return {
@@ -800,8 +864,26 @@ export function checkFeatures(skillDir, only) {
   }
 
   const ids = only === undefined ? [...new Set([...manifest.features.keys(), ...featureIds(skillDir)])].sort() : [only];
-  /** @type {Map<string, string>} */
-  const hashes = new Map();
+  /** @type {Map<string, { real: string, problem: null } | { real: null, problem: string }>} */
+  const admitted = new Map();
+
+  for (const id of ids) {
+    const proven = manifest.features.get(id);
+
+    if (proven !== undefined && !('external' in proven)) {
+      for (const path of Object.keys(proven.files)) {
+        if (!admitted.has(path)) {
+          admitted.set(path, admit(root, resolve(root, ...path.split('/'))));
+        }
+      }
+    }
+  }
+
+  // Keyed by the on-disk path, so spellings of one file are hashed once.
+  const hashes = blobHashes(
+    root,
+    [...admitted.values()].flatMap(({ real }) => (real === null ? [] : [real])),
+  );
 
   return ids.map((id) => {
     const proven = manifest.features.get(id) ?? null;
@@ -818,18 +900,14 @@ export function checkFeatures(skillDir, only) {
     const changed = [];
 
     for (const [path, hash] of Object.entries(proven.files)) {
-      const { real, problem } = admit(root, resolve(root, ...path.split('/')));
+      const { real, problem } = admitted.get(path) ?? admit(root, resolve(root, ...path.split('/')));
 
       if (real === null) {
         changed.push({ path, why: problem });
         continue;
       }
 
-      // Keyed by the on-disk path, so spellings of one file are hashed once.
-      const now = hashes.get(real) ?? blobHash(real);
-      hashes.set(real, now);
-
-      if (now !== hash) {
+      if (hashes.get(real) !== hash) {
         changed.push({ path, why: 'changed' });
       }
     }

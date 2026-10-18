@@ -64,6 +64,16 @@ Each feature file has an H1, one paragraph of user-visible behavior, and four H2
 - [Build configurations](./build-configurations.md): development and production builds through `serve` and
   `serve-ssr`.
 
+## Full sweep
+
+A full pass drives the features in this order; Build configurations comes last because it restarts the instance
+in each of the four builds.
+
+1. [Item routes](./item-routes.md)
+2. [JavaScript off](./javascript-off.md)
+3. [Hydration and replay](./hydration-and-replay.md)
+4. [Build configurations](./build-configurations.md)
+
 ## Manual only
 
 - Angular DevTools checks: a browser extension that playwright-cli does not load.
