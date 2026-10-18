@@ -150,11 +150,15 @@ for (const { kind, prefix } of routeKinds) {
       ).toEqual(['cover', 'center']);
 
       const center = page.locator('#client-center');
-      const inner = await centerColumn(center);
-
       await expect(center).not.toHaveCSS('margin-left', '0px');
-      expect(inner.width).toBeCloseTo(reference.width, 1);
-      expect(inner.left).toBeCloseTo(reference.left, 1);
+      // The column settles after its sheets apply; a cold development
+      // server can show the full width first.
+      await expect(async () => {
+        const inner = await centerColumn(center);
+
+        expect(inner.width).toBeCloseTo(reference.width, 1);
+        expect(inner.left).toBeCloseTo(reference.left, 1);
+      }).toPass({ timeout: 5_000 });
     });
 
     test.describe('with JavaScript off', () => {

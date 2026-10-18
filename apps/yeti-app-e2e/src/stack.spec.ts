@@ -188,10 +188,14 @@ for (const { kind, prefix } of routeKinds) {
         'the stack link is inserted before the center link',
       ).toEqual(['stack', 'center']);
 
-      const inner = await centerColumn(page.locator('#client-center'));
+      // The column settles after its sheets apply; a cold development
+      // server can show the full width first.
+      await expect(async () => {
+        const inner = await centerColumn(page.locator('#client-center'));
 
-      expect(inner.width).toBeCloseTo(reference.width, 1);
-      expect(inner.left).toBeCloseTo(reference.left, 1);
+        expect(inner.width).toBeCloseTo(reference.width, 1);
+        expect(inner.left).toBeCloseTo(reference.left, 1);
+      }).toPass({ timeout: 5_000 });
     });
 
     test.describe('with JavaScript off', () => {
