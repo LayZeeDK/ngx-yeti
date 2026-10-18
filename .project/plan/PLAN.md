@@ -226,6 +226,15 @@ Review depth: full
 | T089 | Bring both control skills to the 2026-10-18 verification contract with fresh fingerprint.mjs copies and Full sweep and Manual only feature-map sections | T084 | .claude/skills/control-yeti-app/scripts/fingerprint.mjs, .claude/skills/control-yeti-app/features/README.md, .claude/skills/control-ngx-yeti-storybook/scripts/fingerprint.mjs, .claude/skills/control-ngx-yeti-storybook/features/README.md |
 | T090 | Make the root test target's tests independent of the caller's BROWSERS, PLAYWRIGHT_SERVER, SAFARI and FLOOR_* variables and of tmp/playwright-server | T061, T066 | tools/playwright/engines.test.mjs, tools/playwright/vitest-configs.test.mjs |
 
+## Wave 21 — run the project-graph guard outside the cached root test target
+
+Goal: Close the MAJOR warning the wave 20 cycle 1 review recorded under Lars's ruling, verbatim, "Nx cache/inputs/outputs issues are important": the root `@ngx-yeti/source:test` target hashes only eslint.config.mjs, so a later root eslint.config.js (ESLint 9 searches it first) or a project-level `.js`, `.cjs` or `.cts` config beside an existing one changes what tools/nx/browser-floor-inputs.test.mjs's `nx show` spawns return without changing the hash, and Nx replays a cached pass. It is the fourth case of one class (waves 18, 19 and 20 each found one more file the root test target misses), because the guard's result depends on the whole project graph, which no hand-kept input list can bound. Build repair (2026-10-18) takes the review's structural fix, not the narrow glob alternative: T091 moves the guard into its own root target with `"cache": false` that the root `test` target lists in `dependsOn`, so every `-t test` run, CI's unit job and the per-commit check still run it, drops from the root test inputs only the graph-only entries no remaining test reads, and makes the guard assert the new target and dependency, shown failing first, with a measured second run that reads `test` from the cache and runs the guard. That closes the class: the graph-dependent check is never replayed from the cache. T091's dep T088 is the last landed task that changed project.json and tools/nx/browser-floor-inputs.test.mjs (file overlap). No task owns an INTENT success criterion.
+Review depth: full
+
+| Task | Title | Deps | Files |
+|------|-------|------|-------|
+| T091 | Run the project-graph guard in its own uncached root target that the root test target depends on, and drop the graph-only inputs no remaining root test reads | T088 | project.json, tools/nx/browser-floor-inputs.test.mjs |
+
 ## Intent coverage
 
 | Criterion | Task | Acceptance |
