@@ -5,7 +5,7 @@ milestone: layouts-and-button
 phase: build
                     # inspect only for brownfield; greenfield starts at define
                     # roadmap only in program flow (CHARTER.md exists)
-status: active
+status: blocked
 branch: gsd-path/M002
                     # the router rebinds before any next-milestone file change
                     # the bound branch is never main; ship integrates it there
@@ -212,3 +212,4 @@ it on completion. If this file and the artifacts disagree, the artifacts win
 - 2026-10-18 — plan — build recovery: {"base": "a1815a6374b5c99bc5628167f1aca227c702eb6f", "branch": "gsd-path/M002", "kind": "plan", "source": "build"}
 - 2026-10-18 — plan — plan approved
 - 2026-10-18 — build — build started
+- 2026-10-18 — build — wave 20 cycle 1 passed with a major warning under Lars's ruling "Nx cache/inputs/outputs issues are important": the root test target hashes only eslint.config.mjs, so a later eslint.config.js (or a project-level .js/.cjs/.cts config) changes what tools/nx/browser-floor-inputs.test.mjs's nx show spawns return without changing the hash; waves 18-20 each found one more graph input, so a task inventory repair adds the structural fix (that test in its own uncached root target that test dependsOn) before ship
