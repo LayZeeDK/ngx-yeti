@@ -1,7 +1,12 @@
 import { execFile } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
 import { promisify } from 'node:util';
-import { MacOSKeyCodes, macOSActivate, voiceOver } from '@guidepup/guidepup';
+import {
+  MacOSKeyCodes,
+  macOSActivate,
+  voiceOver,
+  type StartOptions,
+} from '@guidepup/guidepup';
 import { remote } from 'webdriverio';
 import {
   addStartMarker,
@@ -42,6 +47,24 @@ const maxPressSteps = 10;
 /** How many times `chooseWebContent` retries each Item Chooser step. */
 const maxChooserAttempts = 10;
 
+/**
+ * After how many failed tries `chooseWebContent` restarts VoiceOver. In CI a
+ * VoiceOver that had run a test using `change` answered every try with "On
+ * item <the page's first item>", and the test passed on its retry, which
+ * starts a fresh VoiceOver.
+ */
+const restartChooserAfter = 3;
+
+/**
+ * Guidepup's VoiceOver settings speak a usage hint ("You are currently on
+ * ...") a second after each item; a hint that lands in a capture replaces the
+ * phrase it follows, and it describes VoiceOver, not the page.
+ */
+const startOptions = {
+  capture: true,
+  settings: { SCRShouldOutputVOInstructions: false },
+} satisfies StartOptions;
+
 /** Ends whatever VoiceOver is interacting with or speaking. */
 async function cancelInteraction(): Promise<void> {
   await voiceOver.perform(
@@ -66,6 +89,11 @@ async function chooseWebContent(): Promise<void> {
       throw new Error(
         `VoiceOver did not open its Item Chooser with ${await frontmostApplication()} in front; it said ${JSON.stringify([...heard])}.`,
       );
+    }
+
+    if (attempt === restartChooserAfter) {
+      await voiceOver.stop();
+      await voiceOver.start(startOptions);
     }
 
     // The Item Chooser lists the front application's items, so Safari is
@@ -151,14 +179,7 @@ let safari: Safari | undefined;
 
 export const voiceOverDriver: Driver = {
   async startReader() {
-    // Guidepup's VoiceOver settings speak a usage hint ("You are currently
-    // on ...") a second after each item; a hint that lands in a capture
-    // replaces the phrase it follows, and it describes VoiceOver, not the
-    // page.
-    await voiceOver.start({
-      capture: true,
-      settings: { SCRShouldOutputVOInstructions: false },
-    });
+    await voiceOver.start(startOptions);
 
     try {
       safari = await remote({
