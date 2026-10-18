@@ -160,7 +160,7 @@ test('pins the browser port only when a remote engine is selected', async () => 
 });
 
 test('names the Vite server URL 127.0.0.1 at the port vitestBrowserApi() picks', async () => {
-  const api = await vitestBrowserApi();
+  const api = await vitestBrowserApi({});
   const server = await createServer({
     configFile: false,
     logLevel: 'silent',
