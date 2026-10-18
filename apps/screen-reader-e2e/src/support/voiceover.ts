@@ -46,7 +46,14 @@ let safari: Safari | undefined;
 
 export const voiceOverDriver: Driver = {
   async startReader() {
-    await voiceOver.start({ capture: true });
+    // Guidepup's VoiceOver settings speak a usage hint ("You are currently
+    // on ...") a second after each item; a hint that lands in a capture
+    // replaces the phrase it follows, and it describes VoiceOver, not the
+    // page.
+    await voiceOver.start({
+      capture: true,
+      settings: { SCRShouldOutputVOInstructions: false },
+    });
 
     try {
       safari = await remote({
