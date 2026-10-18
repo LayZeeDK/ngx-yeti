@@ -17,9 +17,13 @@
       ],
       "outputs": []
     },
+    "cache-inputs": {
+      "command": "node --test tools/nx/browser-floor-inputs.test.mjs",
+      "cache": false
+    },
     "test": {
-      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright/playwright-configs.test.mjs tools/playwright-server/container.test.mjs tools/ci-local/run-job.test.mjs tools/playwright/navigation-budget.test.mjs tools/verification/lars-verify-spec.test.mjs tools/nx/browser-floor-inputs.test.mjs",
-      "dependsOn": [],
+      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright/playwright-configs.test.mjs tools/playwright-server/container.test.mjs tools/ci-local/run-job.test.mjs tools/playwright/navigation-budget.test.mjs tools/verification/lars-verify-spec.test.mjs",
+      "dependsOn": ["cache-inputs"],
       "cache": true,
       "inputs": [
         "{workspaceRoot}/tools/playwright/**/*",
@@ -36,18 +40,8 @@
         "{workspaceRoot}/.github/workflows/ci.yml",
         "{workspaceRoot}/.github/workflows/floor.yml",
         "{workspaceRoot}/package-lock.json",
-        "{workspaceRoot}/project.json",
-        "{workspaceRoot}/{apps,packages}/*/tsconfig.json",
-        "{workspaceRoot}/apps/yeti-analog/tsconfig.app.json",
-        "{workspaceRoot}/eslint.config.mjs",
-        "{workspaceRoot}/tools/nx/browser-floor-inputs.test.mjs",
         "{workspaceRoot}/nx.json",
-        "{workspaceRoot}/{apps,packages}/*/project.json",
-        "{workspaceRoot}/tools/yeti/nx-plugin.mjs",
-        "browserFloor",
-        "{workspaceRoot}/package.json",
-        "{workspaceRoot}/{apps,packages}/*/package.json",
-        "{workspaceRoot}/vendor/yeti/COMMIT"
+        "{workspaceRoot}/package.json"
       ]
     },
     "local-registry": {

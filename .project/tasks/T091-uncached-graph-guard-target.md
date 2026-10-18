@@ -3,9 +3,9 @@ id: T091
 title: Run the project-graph guard in its own uncached root target that the root test target depends on, and drop the graph-only inputs no remaining root test reads
 wave: 21
 deps: [T088]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T091
+base: 968b96d3e6e11ac2fdfedac17426f90546f3287e
 worktree: null
 task_branch: null
 files:
@@ -85,3 +85,42 @@ Heavy: no
   AC5, run separately: `nx run @ngx-yeti/source:test --skip-nx-cache` exit 0 (guard 32/32, root test 88/88). `nx typecheck @ngx-yeti/source --skip-nx-cache` exit 0 (1/1). `npx prettier --check project.json tools/nx/browser-floor-inputs.test.mjs` is clean. The daemon is stopped. Per the brief, no `nx affected` or `run-many` ran. The Git index is untouched.
   Note for a later task (not in scope; this task only drops inputs): the remaining root test still probes absent names that are not inputs: Vite's .env*, .postcssrc* and postcss.config.* in engines.test.mjs, and lerna.json, pnpm-workspace.yaml and nx-cloud.env in the Nx and run-job reads. Creating one of them later would not change the `test` hash.
 - 2026-10-18 — orchestrator (Claude): attempt 1 rejected only for the Verify defect the entry above measured; product unchanged. Attempt 1 diff saved as tmp/afk-m002/tools/T091-attempt1.patch (project.json +8 -13, tools/nx/browser-floor-inputs.test.mjs +28 -19; sha256 ee2676bf423c6541b393093536657e1f7309f6ee5303e92ce680df4404840661). Plan-defect repair, Verify field only: the three `printf '%s\n' "$x" | rg -q -F '...'` checks became `rg -q -F '...' <<<"$x"`, which cannot SIGPIPE under `set -o pipefail` (measured on a 300 KB string in Git Bash: here-string match 0, here-string miss 1, the old pipe 141). The task returns to pending for attempt 2 with the same bytes.
+- 2026-10-18 — build_T091 attempt 2 (serial round, primary checkout, base 968b96d). I applied the thermos findings the coordinator passed on, on top of the attempt 1 bytes:
+  - Quality M2: `nxJson` in tools/nx/browser-floor-inputs.test.mjs now keeps its parsed results in a Map keyed by the argument list, so each distinct `nx show` call spawns once. That removes the 10 repeat `show target inputs @ngx-yeti/source:test` spawns and the repeat `show project` spawns for ngx-yeti-e2e and yeti-app-e2e. Guard wall time, measured with `time node --test tools/nx/browser-floor-inputs.test.mjs` in the primary: 69.7 s before (32 tests, attempt 1 bytes) and 47.9 s after (33 tests). Inside Verify, the `cache-inputs` task took 50.5 s and 50.7 s; in attempt 1 it took 1m 18s.
+  - Quality L5 / bugs C2: '@ngx-yeti/source:test' is now in `nonReaders`, so the guard checks that it does not hash .browserslistrc.
+  - Quality L6 and C9: the target test is now titled "@ngx-yeti/source:cache-inputs is not cached, and @ngx-yeti/source:test stays cached, depends on it and does not run this file". It also asserts that `test.options.command` does not include tools/nx/browser-floor-inputs.test.mjs. The `guard` constant is gone.
+  - Quality C8: I dropped `"dependsOn": []` from `cache-inputs`. Confirmed with `nx show project @ngx-yeti/source --json`: the resolved `cache-inputs` target has no dependsOn (cache false, nx:run-commands). `test` resolves to cache true, dependsOn ["cache-inputs"], and its command no longer runs the guard file.
+  - Not done, as the orchestrator declined them: swapping the targets (H1) and removing the nx.json input (C1). `npx tsc -p tsconfig.scripts.json` exits 0.
+  Verify (the repaired one), exactly as written, run through heavy-lock in the primary: exit 0. npm ci added 1942 packages. Guard: tests 33, pass 33, fail 0. The two consecutive runs gave the same summary:
+  ```
+  NX   Running target test for project @ngx-yeti/source and 1 task it depends on:
+  > nx run @ngx-yeti/source:cache-inputs          (tests 33, pass 33)
+  > nx run @ngx-yeti/source:test  [existing outputs match the cache, left as is]   (tests 88, pass 88)
+  NX   Successfully ran target test for project @ngx-yeti/source and 1 task it depends on
+  Nx read the output from the cache instead of running the command for 1 out of 2 tasks.
+        @ngx-yeti/source:cache-inputs    50.5s   (second run: 50.7s)
+  ```
+  The first run also read `test` from the cache, because the `test` command and inputs are unchanged since attempt 1 and its earlier runs. `--skip-nx-cache` test: cache-inputs 33/33 in 51.1 s, test 88/88 in 17.4 s. `typecheck --skip-nx-cache`: 1/1. Prettier is clean, and the daemon is stopped. The Git index is untouched.
+- 2026-10-18 — orchestrator Verify (sidecar gsd-path-verify/task-t091-verify): pass, exit 0; output tail:
+  ```
+  npm warn deprecated @angular/platform-browser-dynamic@22.2.1: @angular/platform-browser-dynamic is deprecated. Use `@angular/platform-browser` instead.
+  npm warn deprecated @yuku-parser/binding-win32-arm64@0.10.2: yuku-parser runs on yuku-core since 0.14
+  npm warn deprecated @angular/animations@22.2.1: @angular/animations is deprecated. Use `animate.enter` and `animate.leave` instead. For more information see: https://v22.angular.dev/guide/animations.
+  npm warn deprecated @ngtools/webpack@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+  npm warn deprecated @angular-devkit/build-angular@22.2.1: Angular's Webpack support is deprecated. Use the esbuild and Vite-based "@angular/build" package instead.
+  npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+  npm warn allow-scripts 9 packages have install scripts not yet covered by allowScripts:
+  npm warn allow-scripts   esbuild@0.27.7 (postinstall: node install.js)
+  npm warn allow-scripts   @parcel/watcher@2.6.0 (install: node scripts/build-from-source.js)
+  npm warn allow-scripts   edgedriver@6.3.1 (install: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not build!")
+  npm warn allow-scripts   esbuild@0.28.2 (postinstall: node install.js)
+  npm warn allow-scripts   geckodriver@6.1.1 (postinstall: test -f ./dist/install.js && node ./dist/install.js || echo "Skipping install, project not built!")
+  npm warn allow-scripts   lmdb@3.5.6 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   msgpackr-extract@3.0.4 (install: node-gyp-build-optional-packages)
+  npm warn allow-scripts   nx@23.2.1 (postinstall: node -e "try{require('./dist/bin/post-install')}catch(e){}")
+  npm warn allow-scripts   esbuild@0.25.12 (postinstall: node install.js)
+  npm warn allow-scripts
+  npm warn allow-scripts Run `npm approve-scripts --allow-scripts-pending` to review, or `npm approve-scripts <pkg>` to allow.
+  ```

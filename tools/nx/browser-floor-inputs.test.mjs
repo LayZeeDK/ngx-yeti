@@ -36,18 +36,36 @@ const nonReaders = [
   'yeti-analog:build',
   'yeti-analog:test',
   'yeti-css:yeti-build',
+  '@ngx-yeti/source:test',
 ];
 
-/** @param {readonly string[]} args */
+/** @type {Map<string, unknown>} */
+const nxResults = new Map();
+
+/**
+ * Each `nx show` spawn takes seconds, so one argument list spawns once.
+ *
+ * @param {readonly string[]} args
+ * @returns {any}
+ */
 function nxJson(args) {
-  return JSON.parse(
-    execFileSync(process.execPath, [nx, ...args, '--json'], {
-      cwd: root,
-      encoding: 'utf8',
-      maxBuffer: 1 << 26,
-      timeout: 120_000,
-    }),
-  );
+  const key = args.join('\0');
+
+  if (!nxResults.has(key)) {
+    nxResults.set(
+      key,
+      JSON.parse(
+        execFileSync(process.execPath, [nx, ...args, '--json'], {
+          cwd: root,
+          encoding: 'utf8',
+          maxBuffer: 1 << 26,
+          timeout: 120_000,
+        }),
+      ),
+    );
+  }
+
+  return nxResults.get(key);
 }
 
 /** @param {string} target */
@@ -111,30 +129,45 @@ for (const target of nonReaders) {
   });
 }
 
+// This file's result depends on every file any Nx plugin reads, present or
+// absent, which no input list can bound. So it runs in its own uncached
+// target, and the cached root test target depends on it.
+test('@ngx-yeti/source:cache-inputs is not cached, and @ngx-yeti/source:test stays cached, depends on it and does not run this file', () => {
+  /** @type {{ targets: Record<string, { cache?: boolean, dependsOn?: unknown[], options?: { command?: string } }> }} */
+  const config = nxJson(['show', 'project', '@ngx-yeti/source']);
+  const rootTest = config.targets['test'];
+
+  assert.equal(config.targets['cache-inputs']?.cache, false);
+  assert.equal(rootTest?.cache, true);
+  assert.ok(
+    rootTest.dependsOn?.includes('cache-inputs'),
+    '@ngx-yeti/source:test does not depend on cache-inputs',
+  );
+  assert.ok(rootTest.options?.command, '@ngx-yeti/source:test has no command');
+  assert.ok(
+    !rootTest.options.command.includes(
+      'tools/nx/browser-floor-inputs.test.mjs',
+    ),
+    '@ngx-yeti/source:test runs tools/nx/browser-floor-inputs.test.mjs',
+  );
+});
+
 // The root test target's cached run must hash every repository file its tests
-// read: the floor file, the manifests, project files, tsconfig files and the
-// root ESLint config that shape the project graph, the pin that creates yeti-css, the workflows
-// run-job.test.mjs parses, and the lockfile run-job.mjs reads.
+// read: the modules under test, the workflows run-job.test.mjs parses, the
+// manifest and lockfile run-job.mjs reads, and nx.json, which @nx/devkit
+// reads when the Playwright configs load.
 for (const file of [
-  floor,
+  'nx.json',
   'package.json',
-  'packages/ngx-yeti/package.json',
-  'apps/yeti-analog/package.json',
-  'vendor/yeti/COMMIT',
+  'package-lock.json',
   '.github/workflows/ci.yml',
   '.github/workflows/floor.yml',
-  'package-lock.json',
-  'project.json',
-  'eslint.config.mjs',
-  'apps/yeti-analog/tsconfig.app.json',
-  'apps/ngx-yeti-e2e/tsconfig.json',
-  'apps/screen-reader-e2e/tsconfig.json',
-  'apps/yeti-analog/tsconfig.json',
-  'apps/yeti-analog-e2e/tsconfig.json',
-  'apps/yeti-app/tsconfig.json',
-  'apps/yeti-app-e2e/tsconfig.json',
-  'packages/ngx-yeti/tsconfig.json',
-  'packages/ngx-yeti-testing/tsconfig.json',
+  'tools/playwright-server/container.mjs',
+  'tools/playwright-server/container.test.mjs',
+  'tools/ci-local/run-job.mjs',
+  'tools/ci-local/run-job.test.mjs',
+  'tools/verification/lars-verify-spec.mjs',
+  'tools/verification/lars-verify-spec.test.mjs',
 ]) {
   test(`@ngx-yeti/source:test hashes ${file}`, () => {
     assert.ok(
