@@ -168,6 +168,8 @@ for (const file of [
   'tools/ci-local/run-job.test.mjs',
   'tools/verification/lars-verify-spec.mjs',
   'tools/verification/lars-verify-spec.test.mjs',
+  'tools/package/pack-tarball.mjs',
+  'tools/package/pack-tarball.test.mjs',
 ]) {
   test(`@ngx-yeti/source:test hashes ${file}`, () => {
     assert.ok(

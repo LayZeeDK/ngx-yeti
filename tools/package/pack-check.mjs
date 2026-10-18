@@ -16,6 +16,7 @@ import {
 import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { packedTarballNames } from './pack-tarball.mjs';
 
 const workspaceRoot = path.join(import.meta.dirname, '../..');
 const builtPackage = path.join(workspaceRoot, 'dist/packages/ngx-yeti');
@@ -94,7 +95,13 @@ const pack = spawnSync(
   { cwd: workDir, encoding: 'utf8', shell: true },
 );
 check(pack.status === 0, 'npm pack ran', pack.stderr);
-const [{ filename: tarball }] = JSON.parse(pack.stdout);
+const tarballs = packedTarballNames(pack.stdout);
+const [tarball] = tarballs;
+check(
+  tarball !== undefined && tarballs.length === 1,
+  'npm pack produced exactly one tarball',
+  pack.stdout,
+);
 
 // 2. Extract the tarball as the consumer's installed `ngx-yeti`. Angular and
 // tslib resolve from the workspace's node_modules further up.

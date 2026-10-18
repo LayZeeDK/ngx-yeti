@@ -3,9 +3,9 @@ id: T093
 title: Make pack-check find the packed tarball under both npm 11 and npm 12
 wave: 22
 deps: [T053, T091]
-status: pending
-agent: null
-base: null
+status: done
+agent: build_T093
+base: d3512e8c70e611a3602ad0906fe3e96657227bf5
 worktree: null
 task_branch: null
 files:
@@ -64,3 +64,36 @@ Heavy: no
 ## Log
 
 - 2026-10-18 — created by planner (build repair: npm 12 breaks pack-check)
+- 2026-10-18 — build_T093 implementation: chose to accept both `npm pack --json` shapes rather than scan tmp/pack-check for one `.tgz`. Reason: the JSON is npm's own report of what it packed, so the tests can pin both real shapes and the red run is literal; a folder scan would also work but tests a side effect instead. New typed module tools/package/pack-tarball.mjs exports `packedTarball(stdout)`: an array (npm 11) or the values of an object keyed by package name (npm 12) are filtered to entries with a string `filename`; zero entries throw "npm pack --json reported no tarball: <stdout>", more than one throws "npm pack --json reported N tarballs, expected one: <names>". pack-check.mjs imports it and turns a throw into `check(false, 'npm pack reported one tarball', ...)`; the array destructure of `JSON.parse(pack.stdout)` is gone. Root `@ngx-yeti/source:test` command now also runs tools/package/pack-tarball.test.mjs; `targets.test.inputs` gained tools/package/pack-tarball.mjs and tools/package/pack-tarball.test.mjs (before the change, project.json's test inputs at base held no glob covering tools/package, read from the file; after it, `nx show project @ngx-yeti/source --json` lists both); tools/nx/browser-floor-inputs.test.mjs asserts both are hashed. No other target, input, dependency or package content changed. Observation: pack-check's hash does not include the npm version, so the Verify runs it with `--skip-nx-cache`.
+- 2026-10-18 — build_T093 red run: tools/package/pack-tarball.mjs first held the old expression `const [{ filename: tarball }] = JSON.parse(stdout); return tarball;`. `node --test tools/package/pack-tarball.test.mjs`: tests 7, pass 1 (npm 11 array), fail 6; the npm 12 object case threw "TypeError: object is not iterable (cannot read property Symbol(Symbol.iterator))", the same error as the diagnostic Verify. After the fix: tests 7, pass 7.
+- 2026-10-18 — build_T093 Verify (run once through the heavy lock, exactly as written): the first run failed at `nx typecheck @ngx-yeti/source` (TS2322/TS2345 from noUncheckedIndexedAccess in pack-tarball.mjs:45 and pack-tarball.test.mjs:26); fixed by destructuring the first tarball and typing the test cases as objects. Second run exit 0: `npm ci` added 1950 packages; `npm --version` 12.2.0; pack-tarball.test.mjs tests 7 pass 7 fail 0; `nx run ngx-yeti:pack-check --skip-nx-cache` succeeded (with build) and printed ngx-yeti-0.220200.0-yeti.7.0.0-alpha.0.gf52d1e8.tgz; `nx typecheck @ngx-yeti/source --skip-nx-cache` succeeded (scripts-coverage tests 1 pass 1); `nx run @ngx-yeti/source:test --skip-nx-cache` succeeded (cache-inputs tests 35 pass 35, root tests 96 pass 96, fail 0); prettier: all matched files use Prettier code style; daemon stopped.
+- 2026-10-18 — build_T093 bisect check: `npx prettier --check .` all files pass. `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (through the heavy lock): 6 affected projects (@ngx-yeti/source, ngx-yeti, screen-reader-e2e, ngx-yeti-e2e, yeti-app, yeti-app-e2e), 18 tasks succeeded, 15 read from cache, exit 0.
+- 2026-10-18 — build_T093 review fixes (orchestrator triage of the thermos reviews; quality M1/L1-L5, bugs L1/L2; M2 declined): the export is renamed `packedTarballNames(stdout)` and returns `string[]`, the names of every result `npm pack --json` printed (npm 11 array or npm 12 object keyed by package name), with no count rule. It throws, naming the stdout, only when npm's output is malformed: "npm pack --json printed no JSON: <stdout>" (parse failure, with the SyntaxError as `cause`), "npm pack --json printed neither an array nor an object: <stdout>", and "npm pack --json printed a result without a filename: <stdout>" (malformed entries are now an error, not filtered out). pack-check.mjs has no try/catch and no `let tarball = ''`: it destructures the names and calls `check(tarball !== undefined && tarballs.length === 1, 'npm pack produced exactly one tarball', pack.stdout)`, so the no-tarball and several-tarball cases fail through pack-check's own `check()` once, and the test file covers them as the returned `[]` and two-name arrays (their message now lives in pack-check, not the module). A malformed-output throw is uncaught in pack-check and exits non-zero with the stdout in the message. The JSDoc keeps only the npm 11/12 shape note; pre-existing pack-check.mjs comments untouched.
+- 2026-10-18 — build_T093 correction to the earlier Log line: the statement that pack-check needs `--skip-nx-cache` because its hash lacks the npm version is wrong. ngx-yeti:pack-check has no `cache` key, and Nx 23.2.1 treats such a target as uncached (create-task-graph.js:207, measured by the bugs reviewer; not re-measured by build_T093), so pack-check runs every time and `--skip-nx-cache` changes nothing for it. The Verify command is left as written.
+- 2026-10-18 — build_T093 new red run (the test assertions changed from a string to `string[]` and from throw-on-count to returned arrays, so the old red run no longer applied): pack-tarball.mjs temporarily held the old expression adapted to the new signature, `const [{ filename }] = JSON.parse(stdout); return [filename];`. `node --test tools/package/pack-tarball.test.mjs`: tests 7, pass 1 (npm 11 array), fail 6; the npm 12 object case threw "TypeError: object is not iterable (cannot read property Symbol(Symbol.iterator))". After the fix: tests 7, pass 7.
+- 2026-10-18 — build_T093 Verify rerun after the review fixes (through the heavy lock, exactly as written): exit 0. `npm ci` added 1950 packages; `npm --version` 12.2.0; pack-tarball.test.mjs tests 7 pass 7 fail 0; `nx run ngx-yeti:pack-check --skip-nx-cache` succeeded and printed ngx-yeti-0.220200.0-yeti.7.0.0-alpha.0.gf52d1e8.tgz; `nx typecheck @ngx-yeti/source --skip-nx-cache` succeeded (scripts-coverage tests 1 pass 1); `nx run @ngx-yeti/source:test --skip-nx-cache` succeeded (cache-inputs 35/35, root tests 96/96, fail 0); prettier: all matched files pass; daemon stopped.
+- 2026-10-18 — build_T093 bisect check rerun: `npx prettier --check .` all files pass; `npm exec nx -- affected -t lint typecheck test test-storybook --base=HEAD` (heavy lock): 6 projects, 18 tasks succeeded (15 from cache), exit 0.
+- 2026-10-18 — orchestrator: the AC2 placement of the no-tarball and several-tarball messages in pack-check.mjs's check() (the module returns the names) follows the orchestrator's triage of thermos quality M1 (one error style, scratchpad T093-thermos-quality.md); the test covers both cases as returned arrays and pack-check reports each with one clear message. Bugs review ruling: no Nx inputs gap, ngx-yeti:pack-check is uncached.
+- 2026-10-18 — orchestrator Verify (isolate gsd-path-task/T093): pass, exit 0; output tail:
+  ```
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/table
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/timeline
+  - Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Compiling with Angular sources in partial compilation mode.
+  [32m✔[39m Generating FESM and DTS bundles
+  [32m✔[39m Built ngx-yeti/visually-hidden
+  npm notice run @ngx-yeti/source@0.0.0 npx
+  npm notice run nx typecheck @ngx-yeti/source --skip-nx-cache
+  npm notice run @ngx-yeti/source@0.0.0 npx
+  npm notice run nx run @ngx-yeti/source:test --skip-nx-cache
+  npm notice run @ngx-yeti/source@0.0.0 npx
+  npm notice run prettier --check tools/package/pack-check.mjs tools/package/pack-tarball.mjs tools/package/pack-tarball.test.mjs project.json tools/nx/browser-floor-inputs.test.mjs
+  npm notice run @ngx-yeti/source@0.0.0 npx
+  npm notice run nx daemon --stop
+  ```

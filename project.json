@@ -22,7 +22,7 @@
       "cache": false
     },
     "test": {
-      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright/playwright-configs.test.mjs tools/playwright-server/container.test.mjs tools/ci-local/run-job.test.mjs tools/playwright/navigation-budget.test.mjs tools/verification/lars-verify-spec.test.mjs",
+      "command": "node --test tools/playwright/engines.test.mjs tools/playwright/browser-projects.test.mjs tools/playwright/vitest-configs.test.mjs tools/playwright/playwright-configs.test.mjs tools/playwright-server/container.test.mjs tools/ci-local/run-job.test.mjs tools/playwright/navigation-budget.test.mjs tools/verification/lars-verify-spec.test.mjs tools/package/pack-tarball.test.mjs",
       "dependsOn": ["cache-inputs"],
       "cache": true,
       "inputs": [
@@ -37,6 +37,8 @@
         "{workspaceRoot}/tools/ci-local/run-job.test.mjs",
         "{workspaceRoot}/tools/verification/lars-verify-spec.mjs",
         "{workspaceRoot}/tools/verification/lars-verify-spec.test.mjs",
+        "{workspaceRoot}/tools/package/pack-tarball.mjs",
+        "{workspaceRoot}/tools/package/pack-tarball.test.mjs",
         "{workspaceRoot}/.github/workflows/ci.yml",
         "{workspaceRoot}/.github/workflows/floor.yml",
         "{workspaceRoot}/package-lock.json",
