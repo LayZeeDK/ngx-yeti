@@ -8,25 +8,35 @@ import {
 
 /**
  * What each reader says, as substrings in spoken order. `image` is the
- * reader's word for an image role, and `steps` is how many times the test
- * moves the reader on after it arrives in the story.
+ * reader's word for an image role, `namedInLink` is what it says of the
+ * link once its SVG is a named image, and `steps` is how many times the
+ * test moves the reader on after it arrives in the story.
  */
 const lanes = {
   nvda: {
     image: 'graphic',
+    namedInLink: 'graphic',
     steps: 3,
     decorative: ['link', 'Download', 'button', 'Save'],
     standalone: ['button', 'Close', 'graphic', 'Warning'],
   },
   voiceover: {
     image: 'image',
+    // VoiceOver reads the image's name into the link's, with no role word.
+    namedInLink: 'link Arrow Download',
     steps: 4,
     decorative: ['Download', 'link', 'Save', 'button'],
     standalone: ['Close', 'Warning', 'image'],
   },
 } satisfies Record<
   LaneName,
-  { image: string; steps: number; decorative: string[]; standalone: string[] }
+  {
+    image: string;
+    namedInLink: string;
+    steps: number;
+    decorative: string[];
+    standalone: string[];
+  }
 >;
 
 /** Runs in the page: takes `aria-hidden` off the SVG `selector` names. */
@@ -71,7 +81,7 @@ test('icon--default: a decorative SVG adds no image to the name of its link or b
 test('icon--default: the SVG without aria-hidden, as a named image, adds an image to its link', async ({
   lane,
 }, testInfo) => {
-  const { image, steps } = lanes[lane.name];
+  const { image, namedInLink, steps } = lanes[lane.name];
 
   // A measurement, not an assertion: with only aria-hidden removed, the SVG
   // has no role and no name, and NVDA skips it in Chromium and Gecko.
@@ -89,7 +99,7 @@ test('icon--default: the SVG without aria-hidden, as a named image, adds an imag
   const heard = await walk(lane, steps, 'next');
 
   expect(inOrder(heard, ['Arrow', 'Download'])).toEqual(['Arrow', 'Download']);
-  expect(heard.join('\n')).toContain(image);
+  expect(heard.join('\n')).toContain(namedInLink);
 });
 
 test('icon--standalone: a meaningful SVG is announced with its name as an image', async ({
