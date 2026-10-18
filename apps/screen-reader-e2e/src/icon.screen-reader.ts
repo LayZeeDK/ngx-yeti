@@ -25,7 +25,7 @@ const lanes = {
     // VoiceOver reads the image's name into the link's, with no role word.
     namedInLink: 'link Arrow Download',
     steps: 4,
-    decorative: ['Download', 'link', 'Save', 'button'],
+    decorative: ['link', 'Download', 'Save', 'button'],
     standalone: ['Close', 'Warning', 'image'],
   },
 } satisfies Record<
