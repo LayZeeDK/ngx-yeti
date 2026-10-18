@@ -61,8 +61,8 @@ Open questions
 Goal: All 17 layouts plus table, visually-hidden, enter, button, and spinner ship at their own entry points with their ledger rows, giving every later item its composition partners.
 Depends on: [M001]
 Surfaces: Storybook stories, Fixture app routes, package entry points
-Status: active
-Archive: null
+Status: shipped
+Archive: .project/archive/002-layouts-and-button
 Integrated: null
 
 Scope: in
