@@ -48,7 +48,7 @@ Current READMEs: control-yeti-app has Baseline preconditions, Driving convention
 
 ## Acceptance criteria
 
-1. Each skill's scripts/fingerprint.mjs is byte-identical to C:/Users/LarsGyrupBrinkNielse/.claude/skills/lars-create-verification/scripts/fingerprint.mjs (`cmp` exits 0; sha256 a8c6b2bd5e1fcea32a208caa6e4f6e3e173b85c34a19f605cdc84c827433f7f2), and check-skill's `fingerprint-copy` and `proctree-copy` pass on both.
+1. Each skill's scripts/fingerprint.mjs is byte-identical to C:/Users/LarsGyrupBrinkNielse/.claude/skills/lars-create-verification/scripts/fingerprint.mjs (`cmp` exits 0; sha256 d3c1150a8d79004cd2115299bf341c179f21082abbfcecf7513dd3f30595e03f), and check-skill's `fingerprint-copy` and `proctree-copy` pass on both.
 2. Each features/README.md has Baseline preconditions, Driving conventions, Proof and skip reporting, Feature entry contract, Features, Full sweep and Manual only as H2s in that order; each Full sweep links every top-level feature file except README.md exactly once as a Markdown link, in map order; check-skill's `readme-sections` and `full-sweep` pass on both.
 3. control-ngx-yeti-storybook's Manual only lists what no agent can prove in the Storybook, or says `None` with a reason; control-yeti-app's Manual only keeps its two existing items.
 4. check-skill.mjs `--json` exits 0 on both skills, and `node <skill>/scripts/fingerprint.mjs check` exits 0 on both with the new copies (features/.proven.json unchanged and fresh). The Log records both check-skill results and that no live drive ran, with the reason.
@@ -66,3 +66,4 @@ Heavy: no
 
 - 2026-10-18 — created by planner (build repair: the 2026-10-18 verification contract change)
 - 2026-10-18 — orchestrator (plan gate, before approval): added `npm ci &&` at the start of Verify, because the finish sidecar starts without node_modules and `npx prettier` and the daemon stop need the workspace's packages.
+- 2026-10-18 — orchestrator (plan-defect repair of an AC before dispatch): AC1's sha256 changed from a8c6b2bd5e1fcea32a208caa6e4f6e3e173b85c34a19f605cdc84c827433f7f2 to d3c1150a8d79004cd2115299bf341c179f21082abbfcecf7513dd3f30595e03f, because the global fingerprint.mjs changed again after planning (it now turns off git filter drivers before `git hash-object`, as verdict.mjs does; measured with certutil). The `cmp` against the global file is unchanged.
